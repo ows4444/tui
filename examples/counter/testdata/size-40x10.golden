@@ -1,0 +1,6 @@
+From-scratch TUI — Counter
+
+  Count: 0
+
+(40x10) ↑/→ increment ↓/← decrement
+q/ctrl+c quit

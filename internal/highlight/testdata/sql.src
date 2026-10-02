@@ -1,0 +1,4 @@
+-- comment
+SELECT id, 'it''s' AS s, 3.5 FROM "users" u /* b */
+WHERE u.active = TRUE AND x IS NULL ORDER BY id; -- tail
+create table t (id int primary key, name varchar(10));

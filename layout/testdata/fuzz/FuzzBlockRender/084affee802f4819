@@ -1,0 +1,4 @@
+go test fuzz v1
+string("00\x1b[")
+int(3)
+int(87)

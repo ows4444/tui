@@ -1,0 +1,166 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      # Let every OS report, so a Windows-only failure doesn't hide a macOS one.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      - name: go build
+        run: go build ./...
+      - name: go vet
+        run: go vet ./...
+      # Includes TestBuildsOnSupportedPlatforms, which cross-compiles the
+      # module for linux, darwin, windows and the BSDs.
+      - name: go test -race
+        run: go test -race ./...
+      # Linux only: one coverage profile is enough, and the floor is per package.
+      - name: coverage floor (90% per library package)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          go test -coverprofile=cover.out -coverpkg=./... ./...
+          go run ./internal/tools/covercheck cover.out
+      - name: every exported identifier has a doc comment
+        if: matrix.os == 'ubuntu-latest'
+        run: go run ./internal/tools/doccheck
+      - name: benchmarks (smoke)
+        if: matrix.os == 'ubuntu-latest'
+        run: go test -run '^$' -bench 'VirtualList10k|RenderDiff|Frame|Repaint' -benchtime=100x ./...
+
+  conpty:
+    name: probe under ConPTY (windows-latest)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      # Builds examples/probe, runs it inside a Windows pseudo console, sends an
+      # Up arrow, a resize and Ctrl+C, and asserts the decoded keys, the new
+      # size, and that the console input/output modes after exit equal the
+      # modes before start. See examples/probe/conpty_windows_test.go.
+      - name: drive the probe under ConPTY
+        run: go test -count=1 -v -run 'TestProbeUnderConPTY' ./examples/probe
+
+  api:
+    name: public API listing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the tags, for the breaking-change check below
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      # Fails when the exported API changed without api.txt being updated, so
+      # every change to the public surface shows up in the PR diff.
+      - name: api.txt is current
+        run: go run ./internal/tools/apilist -check
+      # Fails when an exported symbol present at the latest tag was removed or
+      # changed and the unreleased section of CHANGELOG.md has no "- BREAKING"
+      # entry naming it. With no tag yet it does nothing.
+      - name: every breaking change since the latest tag is in the CHANGELOG
+        run: go run ./internal/tools/apilist -since-tag -changelog CHANGELOG.md
+
+  # FreeBSD has no hosted runner, so the module is built and tested inside a
+  # FreeBSD VM. vmactions/freebsd-vm is a CI action, not a module dependency:
+  # go.mod keeps no require directive. The tests that need a pseudo-terminal
+  # run too, so the select(2) reader is exercised on a real BSD.
+  freebsd:
+    name: test (freebsd)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build and test in FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "14.2"
+          usesh: true
+          prepare: pkg install -y go
+          run: |
+            go version
+            go build ./...
+            go vet ./...
+            go test ./...
+
+  widthtables:
+    name: width tables are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      # Regenerates the tables from the pinned Unicode files (fetched from
+      # unicode.org, each verified by SHA-256) and fails if
+      # ansi/runewidth_tables.go differs. Retried a few times so a network
+      # blip is not mistaken for a stale file; a stale file fails every try.
+      - name: ansi/runewidth_tables.go is current
+        run: |
+          for attempt in 1 2 3; do
+            go run ./internal/tools/genwidth -check && exit 0
+            sleep 10
+          done
+          exit 1
+      - name: ansi/graphemebreak_tables.go is current
+        run: |
+          for attempt in 1 2 3; do
+            go run ./internal/tools/gengrapheme -check && exit 0
+            sleep 10
+          done
+          exit 1
+      - name: internal/bidi/tables.go is current
+        run: |
+          for attempt in 1 2 3; do
+            go run ./internal/tools/genbidi -check -o internal/bidi/tables.go && exit 0
+            sleep 10
+          done
+          exit 1
+
+  # golangci-lint v2 enforces the depguard mirror of internal/archtest's import
+  # rules (.golangci.yml, generated by TestGolangciMirror). It is a dev tool
+  # installed here, not a module dependency: go.mod keeps no require directive.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      - name: install golangci-lint v2
+        run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
+      - name: golangci-lint
+        run: golangci-lint run ./...
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      # gosec is a dev tool, not a module dependency; pinned to the version
+      # the findings were cleared against. Any finding fails the job.
+      - name: install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@v2.29.0
+      - name: gosec
+        run: gosec ./...

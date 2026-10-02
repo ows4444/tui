@@ -1,0 +1,14 @@
+#region Models
+using System;
+// A record with a verbatim path.
+public record User(string Name, int Age);
+
+[Serializable]
+public class Repo<T> where T : class
+{
+    private readonly string path = @"C:\data\""users""";
+    public async Task<int> CountAsync() => await Task.FromResult(42);
+    /* block */ var msg = $"Hello {Name}, you are {Age:D2}";
+    bool ok = true; object o = null; double d = 1.5e-3;
+}
+#endregion

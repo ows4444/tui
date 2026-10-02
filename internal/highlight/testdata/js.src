@@ -1,0 +1,4 @@
+// add
+const add = async (a, b) => a + b;
+let s = `t${1}` + 'x' + "y", n = 0xFF, r = /ab+c/gi;
+/* block */ if (a === undefined || null) { return true; }

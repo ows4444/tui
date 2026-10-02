@@ -1,0 +1,20 @@
+-- A module.
+local M = {}
+
+--[[ A block
+comment ]]
+
+--[==[ another
+]==]
+
+function M.greet(name)
+  local msg = [[multi
+line]]
+  if name == nil then
+    return "hello, " .. 'world'
+  end
+  for i = 1, 0x10 do print(i * 2.5e1) end
+  return self, true, false
+end
+
+return M

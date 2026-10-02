@@ -1,0 +1,17 @@
+┌────────────────────────────────────────────────────┐
+│                                                    │
+│ Create an account                                  │
+│                                                    │
+│ Name:  Ada Lovelace                                │
+│   required                                         │
+│ Email: ada@example.com                             │
+│   required                                         │
+│ Password:                                          │
+│   required                                         │
+│ Plan: < Free >                                     │
+│ [ ] Accept terms                                   │
+│   you must accept the terms                        │
+│                                                    │
+│ [tab] next  [←→/space] change  [enter] submit      │
+│                                                    │
+└────────────────────────────────────────────────────┘

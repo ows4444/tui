@@ -1,0 +1,5 @@
+import os  # c
+class A:
+    def f(self, n: int = 0x1F) -> None:
+        return f'x{n}' + """doc
+more"""

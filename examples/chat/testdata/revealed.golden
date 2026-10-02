@@ -1,0 +1,48 @@
+Chat                            session #1      ⣀⣤⣤⣤⣤⣀      
+                                             ⢀⣴⠟⠉⠁  ⠈⠉⠻⣦⡀   
+                                            ⢠⡟⠁        ⠈⢻⡄  
+                                            ⣿⠁   35%    ⠈⣿  
+                                                            
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│ Refactor parseArgs to return an error instead of calling │
+│ os.Exit.                                                 │
+│                                                          │
+│ • keep the flag order                                    │
+│ • add a regression test                                  │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+                                                            
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│ Sure — here's the change. parseArgs now returns          │
+│ (Config, error); main is the only place left that can    │
+│ exit.█                                                   │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+                                                            
+┌──────────────────────────────────────────────────────────┐
+│ 1 │ func parseArgs(args []string) (Config, error) {      │
+│ 2 │     if len(args) < 2 {                               │
+│ 3 │         return Config{}, errors.New("usage: prog <f… │
+│ 4 │     }                                                │
+│ 5 │     return Config{Path: args[1]}, nil                │
+│ 6 │ }                                                    │
+└──────────────────────────────────────────────────────────┘
+                                                            
+┌──────────────────────────────────────────────────────────┐
+│ --- a/args.go                                            │
+│ +++ b/args.go                                            │
+│ @@ -1,6 +1,6 @@                                          │
+│ -func parseArgs(args []string) Config {                  │
+│ +func parseArgs(args []string) (Config, error) {         │
+│      if len(args) < 2 {                                  │
+│ -        os.Exit(1)                                      │
+│ +        return Config{}, errors.New("usage: prog <file… │
+│      }                                                   │
+│ -    return Config{Path: args[1]}                        │
+│ +    return Config{Path: args[1]}, nil                   │
+│  }                                                       │
+└──────────────────────────────────────────────────────────┘
+                                                            
+2.4k / 8k tokens   [r] replay  [t] theme  [q] quit          

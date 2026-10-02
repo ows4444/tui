@@ -1,0 +1,324 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkFrame200x60Styled-12      	   26773	     46262 ns/op	   43090 B/op	       7 allocs/op
+BenchmarkFrame200x60Styled-12      	   23774	     47704 ns/op	   43092 B/op	       7 allocs/op
+BenchmarkFrame200x60Styled-12      	   27165	     49280 ns/op	   43091 B/op	       7 allocs/op
+BenchmarkFrame200x60Styled-12      	   23317	     45126 ns/op	   43092 B/op	       7 allocs/op
+BenchmarkFrame200x60Styled-12      	   27212	     47150 ns/op	   43091 B/op	       7 allocs/op
+BenchmarkFrame200x60Styled-12      	   26980	     44584 ns/op	   43091 B/op	       7 allocs/op
+BenchmarkFrame300x80Styled-12    	   13730	     83855 ns/op	   76674 B/op	       7 allocs/op
+BenchmarkFrame300x80Styled-12    	   13860	     90102 ns/op	   76673 B/op	       7 allocs/op
+BenchmarkFrame300x80Styled-12    	   13705	     82693 ns/op	   76674 B/op	       7 allocs/op
+BenchmarkFrame300x80Styled-12    	   13573	     84100 ns/op	   76674 B/op	       7 allocs/op
+BenchmarkFrame300x80Styled-12    	   12902	     85277 ns/op	   76675 B/op	       7 allocs/op
+BenchmarkFrame300x80Styled-12    	   13263	     95570 ns/op	   76675 B/op	       7 allocs/op
+BenchmarkOneCellChange200x60-12    	  186998	      7181 ns/op	    2129 B/op	       7 allocs/op
+BenchmarkOneCellChange200x60-12    	  184140	      6450 ns/op	    2129 B/op	       7 allocs/op
+BenchmarkOneCellChange200x60-12    	  188390	      6303 ns/op	    2129 B/op	       7 allocs/op
+BenchmarkOneCellChange200x60-12    	  191968	      6354 ns/op	    2129 B/op	       7 allocs/op
+BenchmarkOneCellChange200x60-12    	  186823	      6324 ns/op	    2129 B/op	       7 allocs/op
+BenchmarkOneCellChange200x60-12    	  184833	      6372 ns/op	    2129 B/op	       7 allocs/op
+BenchmarkRenderDiff-12             	  304447	      3929 ns/op	     984 B/op	       7 allocs/op
+BenchmarkRenderDiff-12             	  297417	      3939 ns/op	     984 B/op	       7 allocs/op
+BenchmarkRenderDiff-12             	  293721	      3959 ns/op	     984 B/op	       7 allocs/op
+BenchmarkRenderDiff-12             	  263216	      3940 ns/op	     984 B/op	       7 allocs/op
+BenchmarkRenderDiff-12             	  297440	      4220 ns/op	     984 B/op	       7 allocs/op
+BenchmarkRenderDiff-12             	  297405	      3935 ns/op	     984 B/op	       7 allocs/op
+BenchmarkFrame-12                  	   15370	     78993 ns/op	   39659 B/op	     308 allocs/op
+BenchmarkFrame-12                  	   15418	     78033 ns/op	   39660 B/op	     308 allocs/op
+BenchmarkFrame-12                  	   15339	     77638 ns/op	   39659 B/op	     308 allocs/op
+BenchmarkFrame-12                  	   15504	     77813 ns/op	   39662 B/op	     308 allocs/op
+BenchmarkFrame-12                  	   15453	     77860 ns/op	   39661 B/op	     308 allocs/op
+BenchmarkFrame-12                  	   15352	     77620 ns/op	   39659 B/op	     308 allocs/op
+BenchmarkRepaint-12                	   20181	     64149 ns/op	   44448 B/op	     284 allocs/op
+BenchmarkRepaint-12                	   20337	     59068 ns/op	   44448 B/op	     284 allocs/op
+BenchmarkRepaint-12                	   20270	     59191 ns/op	   44448 B/op	     284 allocs/op
+BenchmarkRepaint-12                	   20374	     61006 ns/op	   44448 B/op	     284 allocs/op
+BenchmarkRepaint-12                	   20276	     59155 ns/op	   44448 B/op	     284 allocs/op
+BenchmarkRepaint-12                	   20238	     59017 ns/op	   44448 B/op	     284 allocs/op
+BenchmarkE2EKeystrokeLine-12       	  226008	      5259 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeLine-12       	  226866	      5230 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeLine-12       	  228868	      5224 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeLine-12       	  231070	      5608 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeLine-12       	  226285	      5232 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeLine-12       	  228068	      5232 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCell-12       	  229029	      5259 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCell-12       	  227167	      5250 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCell-12       	  229196	      5276 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCell-12       	  221529	      5234 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCell-12       	  229731	      5251 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCell-12       	  227486	      5285 ns/op	    6872 B/op	      34 allocs/op
+BenchmarkE2EKeystrokeCellTextarea-12    	   17746	     67594 ns/op	    2240 B/op	       8 allocs/op
+BenchmarkE2EKeystrokeCellTextarea-12    	   15495	     68847 ns/op	    2240 B/op	       8 allocs/op
+BenchmarkE2EKeystrokeCellTextarea-12    	   17680	     68489 ns/op	    2240 B/op	       8 allocs/op
+BenchmarkE2EKeystrokeCellTextarea-12    	   17914	     72352 ns/op	    2240 B/op	       8 allocs/op
+BenchmarkE2EKeystrokeCellTextarea-12    	   17906	     67712 ns/op	    2240 B/op	       8 allocs/op
+BenchmarkE2EKeystrokeCellTextarea-12    	   17623	     68394 ns/op	    2240 B/op	       8 allocs/op
+PASS
+ok  	github.com/ows4444/tui	64.634s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/ansi
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkAnsiWidth-12             	11357299	        92.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidth-12             	12987484	        93.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidth-12             	13033034	        98.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidth-12             	13006026	        93.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidth-12             	12876826	        91.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidth-12             	12339399	        95.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthASCII-12        	18093350	        66.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthASCII-12        	17898996	        67.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthASCII-12        	18386689	        66.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthASCII-12        	17478271	        66.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthASCII-12        	17923946	        66.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthASCII-12        	17526511	        66.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStyleRender-12           	 7495273	       158.4 ns/op	     160 B/op	       1 allocs/op
+BenchmarkStyleRender-12           	 7535709	       158.7 ns/op	     160 B/op	       1 allocs/op
+BenchmarkStyleRender-12           	 7512465	       169.4 ns/op	     160 B/op	       1 allocs/op
+BenchmarkStyleRender-12           	 7587753	       158.4 ns/op	     160 B/op	       1 allocs/op
+BenchmarkStyleRender-12           	 7653674	       158.6 ns/op	     160 B/op	       1 allocs/op
+BenchmarkStyleRender-12           	 7582996	       159.1 ns/op	     160 B/op	       1 allocs/op
+BenchmarkAnsiWidthWide-12         	  816814	      1469 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthWide-12         	  827076	      1451 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthWide-12         	  818677	      1464 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthWide-12         	  823729	      1460 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthWide-12         	  799219	      1454 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAnsiWidthWide-12         	  853143	      1447 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/word-12    	    3236	    361261 ns/op	1909.97 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/word-12    	    3369	    389305 ns/op	1772.39 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/word-12    	    3292	    367007 ns/op	1880.08 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/word-12    	    3266	    368012 ns/op	1874.94 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/word-12    	    3280	    364096 ns/op	1895.10 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/word-12    	    3160	    363829 ns/op	1896.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/byteloop-12         	    2760	    439069 ns/op	1571.51 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/byteloop-12         	    2725	    436469 ns/op	1580.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/byteloop-12         	    2742	    439999 ns/op	1568.18 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/byteloop-12         	    2568	    445515 ns/op	1548.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/byteloop-12         	    2656	    447942 ns/op	1540.38 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNeedsSanitize/byteloop-12         	    2736	    442155 ns/op	1560.54 MB/s	       0 B/op	       0 allocs/op
+BenchmarkTruncateASCII-12                  	19621658	        64.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTruncateASCII-12                  	19798822	        60.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTruncateASCII-12                  	19570695	        61.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTruncateASCII-12                  	19520067	        60.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTruncateASCII-12                  	19828759	        61.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTruncateASCII-12                  	19269229	        60.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTrimLeftWidthASCII-12             	17358229	        68.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTrimLeftWidthASCII-12             	17604630	        68.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTrimLeftWidthASCII-12             	17874168	        68.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTrimLeftWidthASCII-12             	17391241	        68.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTrimLeftWidthASCII-12             	17556446	        68.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTrimLeftWidthASCII-12             	17605171	        72.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkWrapStyled10kWords-12             	    2427	    497959 ns/op	 120.51 MB/s	  153806 B/op	   10003 allocs/op
+BenchmarkWrapStyled10kWords-12             	    2418	    500542 ns/op	 119.89 MB/s	  153807 B/op	   10003 allocs/op
+BenchmarkWrapStyled10kWords-12             	    2388	    500502 ns/op	 119.90 MB/s	  153807 B/op	   10003 allocs/op
+BenchmarkWrapStyled10kWords-12             	    2412	    494410 ns/op	 121.37 MB/s	  153807 B/op	   10003 allocs/op
+BenchmarkWrapStyled10kWords-12             	    2421	    512077 ns/op	 117.19 MB/s	  153806 B/op	   10003 allocs/op
+BenchmarkWrapStyled10kWords-12             	    2347	    494289 ns/op	 121.40 MB/s	  153808 B/op	   10003 allocs/op
+PASS
+ok  	github.com/ows4444/tui/ansi	69.616s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/layout
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkNodeTreeCells-12    	   20707	     61681 ns/op	      82 B/op	       1 allocs/op
+BenchmarkNodeTreeCells-12    	   20916	     57816 ns/op	      82 B/op	       1 allocs/op
+BenchmarkNodeTreeCells-12    	   20577	     61812 ns/op	      80 B/op	       1 allocs/op
+BenchmarkNodeTreeCells-12    	   21342	     57844 ns/op	      80 B/op	       1 allocs/op
+BenchmarkNodeTreeCells-12    	   21043	     57606 ns/op	      82 B/op	       1 allocs/op
+BenchmarkNodeTreeCells-12    	   17955	     56801 ns/op	      82 B/op	       1 allocs/op
+BenchmarkBoxJoin-12     	    9260	    128469 ns/op	   15712 B/op	       5 allocs/op
+BenchmarkBoxJoin-12     	    9570	    128954 ns/op	   15712 B/op	       5 allocs/op
+BenchmarkBoxJoin-12     	    9421	    129635 ns/op	   15712 B/op	       5 allocs/op
+BenchmarkBoxJoin-12     	    9440	    129997 ns/op	   15712 B/op	       5 allocs/op
+BenchmarkBoxJoin-12     	    9550	    136813 ns/op	   15712 B/op	       5 allocs/op
+BenchmarkBoxJoin-12     	    9472	    129353 ns/op	   15712 B/op	       5 allocs/op
+BenchmarkNodeTree-12    	    9045	    131451 ns/op	   62592 B/op	      92 allocs/op
+BenchmarkNodeTree-12    	    9195	    130911 ns/op	   62592 B/op	      92 allocs/op
+BenchmarkNodeTree-12    	    8779	    130912 ns/op	   62592 B/op	      92 allocs/op
+BenchmarkNodeTree-12    	    9145	    131714 ns/op	   62592 B/op	      92 allocs/op
+BenchmarkNodeTree-12    	    9076	    131367 ns/op	   62592 B/op	      92 allocs/op
+BenchmarkNodeTree-12    	    8953	    131491 ns/op	   62592 B/op	      92 allocs/op
+PASS
+ok  	github.com/ows4444/tui/layout	16.609s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/virtuallist
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkVirtualList10k-12        	  634548	      1879 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkVirtualList10k-12        	  634052	      1887 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkVirtualList10k-12        	  637580	      2007 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkVirtualList10k-12        	  605445	      1883 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkVirtualList10k-12        	  640332	      1923 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkVirtualList10k-12        	  637284	      1953 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkList10kWheelScroll-12    	  535872	      2248 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkList10kWheelScroll-12    	  519978	      2192 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkList10kWheelScroll-12    	  542482	      2183 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkList10kWheelScroll-12    	  534078	      2185 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkList10kWheelScroll-12    	  544534	      2191 ns/op	    1280 B/op	      62 allocs/op
+BenchmarkList10kWheelScroll-12    	  545115	      2186 ns/op	    1280 B/op	      62 allocs/op
+PASS
+ok  	github.com/ows4444/tui/virtuallist	17.979s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/logview
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkAppend100k-12    	      51	  24389665 ns/op	10523730 B/op	  100034 allocs/op
+BenchmarkAppend100k-12    	      48	  22781071 ns/op	10523621 B/op	  100034 allocs/op
+BenchmarkAppend100k-12    	      54	  22859056 ns/op	10523610 B/op	  100034 allocs/op
+BenchmarkAppend100k-12    	      55	  22820724 ns/op	10523624 B/op	  100034 allocs/op
+BenchmarkAppend100k-12    	      52	  22722879 ns/op	10523617 B/op	  100034 allocs/op
+BenchmarkAppend100k-12    	      55	  22803728 ns/op	10523608 B/op	  100034 allocs/op
+BenchmarkView-12          	  374900	      2962 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView-12          	  372666	      2941 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView-12          	  378678	      2948 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView-12          	  381170	      2900 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView-12          	  389179	      3033 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView-12          	  384870	      2960 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkAppend-12        	 5047768	       273.4 ns/op	      99 B/op	       1 allocs/op
+BenchmarkAppend-12        	 5225931	       290.2 ns/op	      96 B/op	       1 allocs/op
+BenchmarkAppend-12        	 4054762	       306.6 ns/op	      99 B/op	       1 allocs/op
+BenchmarkAppend-12        	 5148481	       261.3 ns/op	      98 B/op	       1 allocs/op
+BenchmarkAppend-12        	 5040633	       229.2 ns/op	      99 B/op	       1 allocs/op
+BenchmarkAppend-12        	 5010568	       241.4 ns/op	     100 B/op	       1 allocs/op
+PASS
+ok  	github.com/ows4444/tui/logview	26.624s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/viewport
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkSetContent10k-12       	    2026	    499414 ns/op	  163842 B/op	       1 allocs/op
+BenchmarkSetContent10k-12       	    2395	    498081 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10k-12       	    2348	    493887 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10k-12       	    2439	    503036 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10k-12       	    2469	    536762 ns/op	  163842 B/op	       1 allocs/op
+BenchmarkSetContent10k-12       	    2408	    517517 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkView10k-12             	  405554	      2926 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView10k-12             	  397689	      2972 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView10k-12             	  421386	      2895 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView10k-12             	  404206	      2926 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView10k-12             	  405450	      2898 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkView10k-12             	  388228	      2926 ns/op	    3776 B/op	       2 allocs/op
+BenchmarkSetContent10kRaw-12    	    2073	    589751 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10kRaw-12    	    2071	    588990 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10kRaw-12    	    2072	    601500 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10kRaw-12    	    2046	    586628 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10kRaw-12    	    2047	    635140 ns/op	  163840 B/op	       1 allocs/op
+BenchmarkSetContent10kRaw-12    	    2054	    599523 ns/op	  163840 B/op	       1 allocs/op
+PASS
+ok  	github.com/ows4444/tui/viewport	23.341s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/textarea
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkTextareaTypeLongLine1MB-12    	  508974	      3126 ns/op	    8475 B/op	      20 allocs/op
+BenchmarkTextareaTypeLongLine1MB-12    	  547186	      3204 ns/op	    8533 B/op	      20 allocs/op
+BenchmarkTextareaTypeLongLine1MB-12    	  485888	      3205 ns/op	    8521 B/op	      20 allocs/op
+BenchmarkTextareaTypeLongLine1MB-12    	  416101	      3904 ns/op	    8495 B/op	      20 allocs/op
+BenchmarkTextareaTypeLongLine1MB-12    	  537526	      3151 ns/op	    8452 B/op	      20 allocs/op
+BenchmarkTextareaTypeLongLine1MB-12    	  566628	      3210 ns/op	    8439 B/op	      20 allocs/op
+BenchmarkTyping-12                     	  524983	      3561 ns/op	    8890 B/op	      20 allocs/op
+BenchmarkTyping-12                     	  556152	      3685 ns/op	    8909 B/op	      20 allocs/op
+BenchmarkTyping-12                     	  560071	      4487 ns/op	    8874 B/op	      20 allocs/op
+BenchmarkTyping-12                     	  496635	      4515 ns/op	    8847 B/op	      20 allocs/op
+BenchmarkTyping-12                     	  492466	      3781 ns/op	    8885 B/op	      20 allocs/op
+BenchmarkTyping-12                     	  499108	      3610 ns/op	    8836 B/op	      20 allocs/op
+BenchmarkView-12                       	    8570	    135576 ns/op	   49168 B/op	       2 allocs/op
+BenchmarkView-12                       	    8996	    148280 ns/op	   49168 B/op	       2 allocs/op
+BenchmarkView-12                       	    8384	    138207 ns/op	   49168 B/op	       2 allocs/op
+BenchmarkView-12                       	    7566	    144504 ns/op	   49168 B/op	       2 allocs/op
+BenchmarkView-12                       	    8059	    141158 ns/op	   49168 B/op	       2 allocs/op
+BenchmarkView-12                       	    8834	    136173 ns/op	   49168 B/op	       2 allocs/op
+BenchmarkViewWindowed-12               	  126616	      9262 ns/op	    4400 B/op	      43 allocs/op
+BenchmarkViewWindowed-12               	  127310	      9015 ns/op	    4400 B/op	      43 allocs/op
+BenchmarkViewWindowed-12               	  127725	      9065 ns/op	    4400 B/op	      43 allocs/op
+BenchmarkViewWindowed-12               	  114390	     10384 ns/op	    4400 B/op	      43 allocs/op
+BenchmarkViewWindowed-12               	  101091	     10237 ns/op	    4400 B/op	      43 allocs/op
+BenchmarkViewWindowed-12               	  126278	      9462 ns/op	    4400 B/op	      43 allocs/op
+BenchmarkLineStarts100k-12             	     151	   8578330 ns/op	19455467 B/op	   15657 allocs/op
+BenchmarkLineStarts100k-12             	     151	   7932962 ns/op	19455466 B/op	   15657 allocs/op
+BenchmarkLineStarts100k-12             	     144	   7949788 ns/op	19455471 B/op	   15657 allocs/op
+BenchmarkLineStarts100k-12             	     147	   9216410 ns/op	19455470 B/op	   15657 allocs/op
+BenchmarkLineStarts100k-12             	     139	   8140648 ns/op	19455467 B/op	   15657 allocs/op
+BenchmarkLineStarts100k-12             	     150	   8287484 ns/op	19455469 B/op	   15657 allocs/op
+BenchmarkIndexEdit100k-12              	  269372	      4538 ns/op	   28040 B/op	      12 allocs/op
+BenchmarkIndexEdit100k-12              	  267657	      4412 ns/op	   28040 B/op	      12 allocs/op
+BenchmarkIndexEdit100k-12              	  261706	      4854 ns/op	   28040 B/op	      12 allocs/op
+BenchmarkIndexEdit100k-12              	  264009	      4495 ns/op	   28040 B/op	      12 allocs/op
+BenchmarkIndexEdit100k-12              	  266708	      4376 ns/op	   28040 B/op	      12 allocs/op
+BenchmarkIndexEdit100k-12              	  283854	      4466 ns/op	   28040 B/op	      12 allocs/op
+BenchmarkTypingWindowed100k-12         	  192356	      7260 ns/op	   35992 B/op	      20 allocs/op
+BenchmarkTypingWindowed100k-12         	  185696	      7302 ns/op	   35819 B/op	      20 allocs/op
+BenchmarkTypingWindowed100k-12         	  180355	      7137 ns/op	   35689 B/op	      20 allocs/op
+BenchmarkTypingWindowed100k-12         	  186258	      7110 ns/op	   35834 B/op	      20 allocs/op
+BenchmarkTypingWindowed100k-12         	  190126	      7075 ns/op	   35934 B/op	      20 allocs/op
+BenchmarkTypingWindowed100k-12         	  191413	      7176 ns/op	   35968 B/op	      20 allocs/op
+PASS
+ok  	github.com/ows4444/tui/textarea	71.095s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/markdown
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkRender-12    	  839491	      1246 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRender-12    	  956434	      1122 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRender-12    	 1000000	      1118 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRender-12    	 1000000	      1123 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRender-12    	 1000000	      1117 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRender-12    	 1000000	      1119 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/ows4444/tui/markdown	7.745s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/datatable
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkDrawCells-12               	   34174	     34080 ns/op	    3944 B/op	      70 allocs/op
+BenchmarkDrawCells-12               	   34473	     36886 ns/op	    3944 B/op	      70 allocs/op
+BenchmarkDrawCells-12               	   35644	     33704 ns/op	    3944 B/op	      70 allocs/op
+BenchmarkDrawCells-12               	   35538	     34296 ns/op	    3944 B/op	      70 allocs/op
+BenchmarkDrawCells-12               	   34820	     34561 ns/op	    3944 B/op	      70 allocs/op
+BenchmarkDrawCells-12               	   35480	     33939 ns/op	    3944 B/op	      70 allocs/op
+BenchmarkLayoutNodeCursorMove/100-12         	  187455	      6336 ns/op	    4773 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/100-12         	  191523	      6339 ns/op	    4773 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/100-12         	  186500	      6357 ns/op	    4773 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/100-12         	  188794	      6962 ns/op	    4773 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/100-12         	  190608	      6374 ns/op	    4773 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/100-12         	  187839	      6449 ns/op	    4773 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/10000-12       	  168520	      7045 ns/op	    4856 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/10000-12       	  169130	      6999 ns/op	    4856 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/10000-12       	  166430	      6990 ns/op	    4856 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/10000-12       	  168632	      7015 ns/op	    4856 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/10000-12       	  167410	      7558 ns/op	    4856 B/op	      25 allocs/op
+BenchmarkLayoutNodeCursorMove/10000-12       	  169366	      7000 ns/op	    4856 B/op	      25 allocs/op
+BenchmarkTable10kScroll-12    	  129564	      7932 ns/op	    3375 B/op	      14 allocs/op
+BenchmarkTable10kScroll-12    	  148582	      8095 ns/op	    3374 B/op	      14 allocs/op
+BenchmarkTable10kScroll-12    	  144387	      7842 ns/op	    3375 B/op	      14 allocs/op
+BenchmarkTable10kScroll-12    	  148707	      8974 ns/op	    3374 B/op	      14 allocs/op
+BenchmarkTable10kScroll-12    	  121725	      8532 ns/op	    3376 B/op	      14 allocs/op
+BenchmarkTable10kScroll-12    	  139132	      8053 ns/op	    3375 B/op	      14 allocs/op
+PASS
+ok  	github.com/ows4444/tui/datatable	7.834s
+goos: darwin
+goarch: amd64
+pkg: github.com/ows4444/tui/streamtext
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+BenchmarkStream1kTokensInline-12        	    2104	   1279734 ns/op	   26032 B/op	      41 allocs/op
+BenchmarkStream1kTokensInline-12        	    2245	    507504 ns/op	   26032 B/op	      41 allocs/op
+BenchmarkStream1kTokensInline-12        	    2097	    796617 ns/op	   26032 B/op	      41 allocs/op
+BenchmarkStream1kTokensInline-12        	    2241	   1006772 ns/op	   26032 B/op	      41 allocs/op
+BenchmarkStream1kTokensInline-12        	    2011	    549855 ns/op	   26032 B/op	      41 allocs/op
+BenchmarkStream1kTokensInline-12        	    2130	    547132 ns/op	   26032 B/op	      41 allocs/op
+BenchmarkStream10kTokens-12             	    1482	    774620 ns/op	  154848 B/op	      30 allocs/op
+BenchmarkStream10kTokens-12             	    1602	    833672 ns/op	  154848 B/op	      30 allocs/op
+BenchmarkStream10kTokens-12             	    1648	    795588 ns/op	  154848 B/op	      30 allocs/op
+BenchmarkStream10kTokens-12             	    1614	    773606 ns/op	  154848 B/op	      30 allocs/op
+BenchmarkStream10kTokens-12             	    1254	   1628912 ns/op	  154855 B/op	      30 allocs/op
+BenchmarkStream10kTokens-12             	    1478	   1503266 ns/op	  154848 B/op	      30 allocs/op
+BenchmarkStreamSingleParagraph10k-12    	     130	  18228776 ns/op	 2982736 B/op	     281 allocs/op
+BenchmarkStreamSingleParagraph10k-12    	     168	   6877747 ns/op	 2982666 B/op	     281 allocs/op
+BenchmarkStreamSingleParagraph10k-12    	     171	   6758965 ns/op	 2982667 B/op	     281 allocs/op
+BenchmarkStreamSingleParagraph10k-12    	     156	   6988540 ns/op	 2982666 B/op	     281 allocs/op
+BenchmarkStreamSingleParagraph10k-12    	     160	   7992054 ns/op	 2982666 B/op	     281 allocs/op
+BenchmarkStreamSingleParagraph10k-12    	     158	   7183040 ns/op	 2982665 B/op	     281 allocs/op
+PASS
+ok  	github.com/ows4444/tui/streamtext	22.374s

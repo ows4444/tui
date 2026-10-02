@@ -1,0 +1,6 @@
+//! crate doc
+/* block /* nested */ still */
+pub fn main<'a>(x: &'a str) -> Option<u32> {
+    let r = r#"raw "q""#; let b = b'x'; let n = 1_000u32 + 0xFFi64;
+    println!("{}", x); Some(n) // tail
+}

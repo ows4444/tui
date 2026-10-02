@@ -1,0 +1,17 @@
+╭──────────────────────────────────────────────────────────────╮         
+│                                                              │         
+│ Pager                                                        │         
+│                                                              │         
+│ Paragraph 1                                                  │         
+│ This from-scratch TUI framework talks to the terminal        │         
+│ directly via raw syscall ioctls, no golang.org/x/term and no │         
+│ Bubble Tea.                                                  │         
+│                                                              │         
+│ Paragraph 2                                                  │         
+│ The event loop follows the Elm Architecture: a Model         │         
+│ implements Init, Update, and View, and Program owns the      │         
+│ terminal, the input parsing, and a line-level diffing        │         
+│ renderer.                                                    │         
+│                                                              │         
+╰──────────────────────────────────────────────────────────────╯         
+up/down/pgup/pgdown/home/end/wheel scroll  gg top  G bottom  q quit    0%

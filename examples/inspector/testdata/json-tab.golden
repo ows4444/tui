@@ -1,0 +1,14 @@
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  Table  [JSON]                                           │
+│                                                          │
+│ > ▾ root {}                                              │
+│       healthy: true                                      │
+│       region: null                                       │
+│       replicas: 3                                        │
+│       service: "inspector"                               │
+│     ▸ tags []                                            │
+│                                                          │
+│ [←→] tabs  [↑↓] move  [enter] select/toggle  [q] quit    │
+│                                                          │
+└──────────────────────────────────────────────────────────┘

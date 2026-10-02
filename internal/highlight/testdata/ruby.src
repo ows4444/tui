@@ -1,0 +1,28 @@
+# frozen_string_literal: true
+require 'json'
+
+=begin
+A block comment
+=end
+
+module Shop
+  class Cart
+    attr_reader :items
+
+    def initialize(items = [])
+      @items = items
+      @@count ||= 0
+      $debug = false
+    end
+
+    def empty?
+      items.empty? && !nil
+    end
+
+    def to_h
+      { total: items.sum, label: "cart #{@items.size}", tag: :cart }
+    end
+  end
+end
+
+Shop::Cart.new.to_h if 3.14 > 1_000

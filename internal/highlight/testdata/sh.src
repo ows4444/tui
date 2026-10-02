@@ -1,0 +1,5 @@
+#!/bin/sh
+# build
+if [ -n "$HOME" ]; then
+  echo ${X:-1} $1
+fi

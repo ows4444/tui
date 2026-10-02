@@ -1,0 +1,21 @@
+<?php
+declare(strict_types=1);
+
+namespace App;
+
+#[Attribute]
+final class User {
+    // A comment.
+    # Another comment.
+    public function __construct(private string $name, private int $age = 30) {}
+
+    public function greet(): string {
+        /* block */
+        return "Hello, {$this->name}" . ' (' . $this->age . ')';
+    }
+}
+
+$u = new User('Ada');
+IF ($u !== NULL && TRUE) { echo $u->greet(); }
+$n = 0x1F + 3.14;
+?>

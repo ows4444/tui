@@ -1,0 +1,21 @@
+import Foundation
+
+#if DEBUG
+let level = "debug"
+#endif
+
+/// A shape protocol.
+protocol Shape { func area() -> Double }
+
+@MainActor
+struct Circle: Shape {
+    var radius: Double = 1.5
+    func area() -> Double { return .pi * radius * radius }
+}
+
+/* outer /* nested */ done */
+let poem = """
+    Roses are red, \(level)
+    """
+guard let x = Int("42") else { fatalError("nil") }
+let maybe: Int? = nil; let yes = true

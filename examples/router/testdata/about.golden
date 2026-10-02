@@ -1,0 +1,11 @@
+╭─────────────────────────────────────────────────────────────╮
+│                                                             │
+│ Router reference — About                                    │
+│                                                             │
+│ This example demonstrates switching between independent     │
+│ top-level screens via an internal `screen` field, distinct  │
+│ from wizard.Model's linear within-one-flow step navigation. │
+│                                                             │
+│ esc back  ctrl+c quit                                       │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯

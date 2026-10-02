@@ -1,0 +1,12 @@
+; Global settings
+# also a comment
+[server]
+host = example.com
+port = 8080
+debug = true
+name = "my app"
+ratio: -0.5
+
+[paths]
+  root = /var/www
+empty =

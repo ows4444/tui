@@ -1,0 +1,15 @@
+tui probe: what does your terminal do?
+
+  TERM="xterm-256color"  COLORTERM="truecolor"  NO_COLOR=""
+  Colour profile:  truecolor   (detected; drives the strip below)
+                                                  
+
+  Focus reports:   in=0 out=0  last=unknown   (click another window, then back)
+  Background:      waiting  theme=-   (asked once at start, 700ms timeout)
+  Last key:        -
+  Size (resize):   120x40
+
+  q or ctrl+c to quit; a summary line stays in your scrollback
+  probe: profile=truecolor focus_in=0 focus_out=0 background=waiting theme=-
+  focus timeline:
+    focus reporting enabled: (not yet)

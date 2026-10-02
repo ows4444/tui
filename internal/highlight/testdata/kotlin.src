@@ -1,0 +1,17 @@
+package app
+
+import kotlin.math.max
+
+// A data class.
+data class Point(val x: Int, val y: Int = 0)
+
+@JvmStatic
+fun main(args: Array<String>) {
+    val name: String? = null
+    val text = """
+        Hello, ${name ?: "world"}
+    """.trimIndent()
+    /* outer /* nested */ still comment */
+    when (val n = max(1, 2)) { 2 -> println("two") else -> println(n) }
+    val big = 1_000_000L; val ok = true
+}

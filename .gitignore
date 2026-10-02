@@ -1,0 +1,39 @@
+
+# acline: per-machine state
+.claude/vault/*
+!.claude/vault/roles
+!.claude/vault/*.md
+
+.acline-project
+.env
+
+# go build output accidentally left in examples/ dirs (go build ./... with no -o)
+/asyncload
+/focus
+# ...but the root focus/ package is source, not a stray binary
+!/focus/
+/procstream
+/chat
+/counter
+/dashboard
+/form
+# ...but the root form/ package is source, not a stray binary
+!/form/
+/inspector
+/list
+/pager
+/settings
+/table
+/loginflow
+/setupflow
+/splashscreen
+/welcomescreen
+bench/new.txt
+
+/scripts/
+
+# compiled test binaries (go test -c)
+*.test
+
+# acline: per-machine state
+.claude/vault/.state/

@@ -1,0 +1,6 @@
+# cfg
+name: "web"
+port: 8080
+on: true
+items:
+  - id: 7

@@ -1,0 +1,8 @@
+# base
+FROM golang:1.22 AS build
+ARG V=1
+ENV A="b" C=$V
+RUN go build \
+  -o /app ${V}
+COPY --from=build /app /app
+CMD ["/app", 'x']

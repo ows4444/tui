@@ -1,0 +1,7 @@
+package a.b;
+/** doc */
+public final class A extends B implements C {
+    @Override public String f(int n) { return "s" + n + 1.5f + null + true; }
+    String t = """
+        text""";
+}

@@ -1,0 +1,27 @@
+name: Benchmarks
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "**.go"
+      - "bench/**"
+      - ".github/workflows/bench.yml"
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false # no go.sum to key the module cache on
+      - name: run benchmarks
+        run: set -o pipefail; go test -run '^$' -bench . -benchmem -count=6 . ./ansi ./layout ./virtuallist ./logview ./viewport ./textarea ./markdown ./datatable ./streamtext | tee bench/new.txt
+      # ns/op depends on the machine, so it is not gated; the gate fails on
+      # allocs/op and B/op, which do not. Only tools in this repository run.
+      - name: gate on allocations
+        run: set -o pipefail; go run ./internal/tools/benchgate -base bench/baseline.txt -new bench/new.txt | tee -a "$GITHUB_STEP_SUMMARY"

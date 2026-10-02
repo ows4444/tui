@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- configuration -->
+<config xmlns:x="urn:x" version='2'>
+  <x:item id="1" enabled="true">First &lt;item&gt;</x:item>
+  <data><![CDATA[raw <b>text</b>]]></data>
+  <empty/>
+</config>

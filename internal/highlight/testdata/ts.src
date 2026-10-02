@@ -1,0 +1,4 @@
+interface P<T> { readonly id: number; name?: string }
+export type K = keyof P<string>;
+enum E { A = 1 }
+function f(x: unknown): x is string { return typeof x === "string"; }

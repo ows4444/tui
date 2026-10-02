@@ -1,0 +1,20 @@
+ok go: downloading modules
+ok compile internal/ansi
+ok compile layout
+ok compile widgets
+ok compile theme
+ok link tui
+ok test ./... ok
+ok package done
+build finished
+compile theme
+link tui
+test ./... ok
+package done
+
+
+
+
+
+
+

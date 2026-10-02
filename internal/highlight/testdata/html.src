@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset=utf-8>
+  <!-- a comment
+       over two lines -->
+  <style>
+    body { color: #333; margin: 0 auto; }
+  </style>
+</head>
+<body class="main" data-x='1' hidden>
+  <p>Fish &amp; chips &#169; < not a tag</p>
+  <img src="a.png" alt="A"/>
+  <script>
+    const n = 1; // count
+    if (n < 2) { console.log("small"); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+#include <vector>
+namespace a { template <typename T> class B : public C { virtual void f() const override; }; }
+auto s = R"(raw "x")"; bool ok = true && nullptr == p; // end
+std::string t = "é"; int n = 1'000;

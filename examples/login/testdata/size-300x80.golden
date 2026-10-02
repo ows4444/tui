@@ -1,0 +1,28 @@
+┌──────────────────────────────────────────────┐  ┌──────────────────────────────────────────┐
+│                                              │  │                                          │
+│ Sign in                                      │  │ Design system                            │
+│                                              │  │                                          │
+│ demo: ada / lovelace                         │  │   Theme         Dark                     │
+│                                              │  │   Mode          As designed              │
+│ Username:  ada                               │  │   Border        Theme                    │
+│ Password:                                    │  │   Border color  Theme                    │
+│ [ ] Remember me                              │  │   Accent        Theme                    │
+│                                              │  │   Glyphs        Unicode                  │
+│ [tab] next  [enter] sign in  [ctrl+t] design │  │   Color depth   True color               │
+│                                              │  │   Padding       Small                    │
+│                                              │  │   Title         Heading                  │
+│                                              │  │   Fill          None                     │
+│                                              │  │                                          │
+│                                              │  │ Palette                                  │
+│                                              │  │    Primary      Second.      Success     │
+│                                              │  │    Warning      Error        Info        │
+│                                              │  │    Focus        Muted        Text        │
+│                                              │  │    Border       Select       Surface     │
+│                                              │  │                                          │
+│                                              │  │ Type  H1 H2 bold italic code link        │
+│                                              │  │ Glyph ✓ ✗ ⚠ ℹ ● ○ • → ███░░ •••          │
+│                                              │  │ ⚠ AA: 1 low — Info 4.4                   │
+│                                              │  │                                          │
+│                                              │  │ [ctrl+t] edit design                     │
+│                                              │  │                                          │
+└──────────────────────────────────────────────┘  └──────────────────────────────────────────┘

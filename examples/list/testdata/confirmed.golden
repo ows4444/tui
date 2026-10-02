@@ -1,0 +1,15 @@
+╭─────────────────────────────────────────────────────────╮  ┌───────┐
+│                                                         │  │       │
+│ Tasks                                                   │  │ Done  │
+│                                                         │  │       │
+│ > [x] Design raw-mode terminal layer                    │  │ 1 / 6 │
+│   [ ] Build ANSI styling package                        │  │       │
+│   [ ] Write escape-sequence key parser                  │  └───────┘
+│   [ ] Implement Elm-architecture event loop             │           
+│   [ ] Add diff-based renderer                           │           
+│   [ ] Ship zero-dependency TUI                          │           
+│                                                         │           
+│ up/down move  space/click toggle  enter confirm  q quit │           
+│ Confirmed!                                              │           
+│                                                         │           
+╰─────────────────────────────────────────────────────────╯           

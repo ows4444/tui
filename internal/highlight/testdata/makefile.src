@@ -1,0 +1,19 @@
+# Build settings
+GO ?= go
+PKGS := $(shell $(GO) list ./...)
+CFLAGS += -O2 # optimise
+
+.PHONY: all test
+all: build test
+
+build: $(PKGS) main.go
+	$(GO) build -o "bin/app" ./cmd/$@   # shell comment, not make's
+
+ifeq ($(OS),Windows_NT)
+EXE := .exe
+else
+EXE :=
+endif
+
+clean:
+	rm -rf bin $${HOME}/tmp

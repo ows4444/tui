@@ -1,0 +1,17 @@
+╭──────────────────────────────────────────────────────────────╮         
+│                                                              │         
+│ Pager                                                        │         
+│                                                              │         
+│                                                              │         
+│ Paragraph 3                                                  │         
+│ This viewport widget scrolls a window over content taller    │         
+│ than it. Try the up/down arrows, page up/down, home/end, or  │         
+│ the mouse wheel.                                             │         
+│                                                              │         
+│ Paragraph 4                                                  │         
+│ Every widget in this framework - textinput, and now viewport │         
+│ - lives in its own package depending on the root tui         │         
+│ package, composed into a parent Model the same way this      │         
+│                                                              │         
+╰──────────────────────────────────────────────────────────────╯         
+up/down/pgup/pgdown/home/end/wheel scroll  gg top  G bottom  q quit   56%

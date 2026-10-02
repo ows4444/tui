@@ -1,0 +1,10 @@
+# cfg
+title = "TOML"
+[owner]
+name = 'x'
+dob = 1979-05-27T07:32:00Z
+nums = [1, 2.5, 0xFF, -3]
+on = true
+"quoted key" = """
+multi"""
+[[products]]

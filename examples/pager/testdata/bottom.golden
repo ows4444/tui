@@ -1,0 +1,17 @@
+╭──────────────────────────────────────────────────────────────╮         
+│                                                              │         
+│ Pager                                                        │         
+│                                                              │         
+│ - lives in its own package depending on the root tui         │         
+│ package, composed into a parent Model the same way this      │         
+│ example does.                                                │         
+│                                                              │         
+│ Paragraph 5                                                  │         
+│ Long lines wrap into separate paragraph lines here just so   │         
+│ there's enough content to make scrolling worth               │         
+│ demonstrating; a real pager would usually reflow text to the │         
+│ viewport's width instead of relying on pre-wrapped input.    │         
+│                                                              │         
+│                                                              │         
+╰──────────────────────────────────────────────────────────────╯         
+up/down/pgup/pgdown/home/end/wheel scroll  gg top  G bottom  q quit  100%

@@ -1,0 +1,10 @@
+Chat        session #1      ⣀⣤⣤⣤⣤⣀      
+                         ⢀⣴⠟⠉⠁  ⠈⠉⠻⣦⡀   
+                        ⢠⡟⠁        ⠈⢻⡄  
+                        ⣿⠁   35%    ⠈⣿  
+                                        
+┌──────────────────────────────────────┐
+│                                      │
+│ Refactor parseArgs to return an      │
+│ error instead of calling os.Exit.    │
+│                                      │

@@ -1,0 +1,10 @@
+╭──────────────────────────────────────╮
+│ Tasks  0 / 6 done                    │
+│ > [ ] Design raw-mode terminal layer │
+│   [ ] Build ANSI styling package     │
+│   [ ] Write escape-sequence key pars │
+│   [ ] Implement Elm-architecture eve │
+│   [ ] Add diff-based renderer        │
+│   [ ] Ship zero-dependency TUI       │
+│ up/down space enter q                │
+╰──────────────────────────────────────╯

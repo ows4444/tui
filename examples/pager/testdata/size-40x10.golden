@@ -1,0 +1,10 @@
+╭──────────────────────────────────────╮
+│ Pager                                │
+│ Paragraph 1                          │
+│ This from-scratch TUI framework      │
+│ talks to the terminal directly via   │
+│ raw syscall ioctls, no               │
+│ golang.org/x/term and no Bubble Tea. │
+│                                      │
+╰──────────────────────────────────────╯
+scroll: arrows pgup/dn  gg G q    0%    
