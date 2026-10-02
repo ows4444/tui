@@ -3,14 +3,59 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
 const repo = 'https://github.com/ows4444/tui';
+const site = 'https://tui.nizaami.com';
+const description =
+	'tui is a terminal UI (TUI) framework for Go built on the Elm Architecture: Model, Update and View. Standard library only, with 40+ widgets, flex and grid layout, theming, a cell-diff renderer, accessible output and a headless test harness.';
+
+// Structured data for search engines and AI assistants: the site, and the Go
+// library it documents. Every field is a fact from the repository.
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'WebSite',
+			'@id': `${site}/#website`,
+			url: `${site}/`,
+			name: 'tui',
+			alternateName: 'tui: terminal UI framework for Go',
+			description,
+			inLanguage: 'en',
+			about: { '@id': `${site}/#software` },
+		},
+		{
+			'@type': 'SoftwareSourceCode',
+			'@id': `${site}/#software`,
+			name: 'tui',
+			description,
+			url: `${site}/`,
+			codeRepository: repo,
+			programmingLanguage: { '@type': 'ComputerLanguage', name: 'Go', url: 'https://go.dev' },
+			runtimePlatform: 'Go 1.25 or later',
+			operatingSystem: 'Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD, DragonFly BSD',
+			license: `${repo}/blob/code/LICENSE`,
+			keywords: 'Go, Golang, TUI, terminal UI, terminal user interface, CLI, Elm Architecture, widgets, ANSI, accessibility',
+			image: `${site}/og.png`,
+		},
+	],
+};
 
 export default defineConfig({
-	site: 'https://tui.nizaami.com',
+	site,
 	integrations: [
 		starlight({
 			title: 'tui',
-			description:
-				'A terminal UI framework for Go built on the Elm Architecture. Standard library only.',
+			description,
+			head: [
+				{ tag: 'meta', attrs: { property: 'og:image', content: `${site}/og.png` } },
+				{ tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+				{ tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+				{ tag: 'meta', attrs: { property: 'og:image:alt', content: 'tui, a terminal UI framework for Go, with a dashboard built in it' } },
+				{ tag: 'meta', attrs: { name: 'twitter:image', content: `${site}/og.png` } },
+				{ tag: 'meta', attrs: { name: 'theme-color', content: '#0b0f14' } },
+				{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
+				{ tag: 'link', attrs: { rel: 'alternate', type: 'text/plain', title: 'llms.txt', href: '/llms.txt' } },
+				{ tag: 'script', attrs: { type: 'application/ld+json' }, content: JSON.stringify(jsonLd) },
+			],
 			logo: { src: './src/assets/logo.svg', alt: 'tui' },
 			favicon: '/favicon.svg',
 			social: [{ icon: 'github', label: 'GitHub', href: repo }],

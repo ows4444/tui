@@ -102,6 +102,16 @@ sources, not the generated files, which are gitignored. A page added to `docs/`
 needs an entry in `pages` in the sync script and in the sidebar in
 `site/astro.config.mjs`. The sync fails on a relative link that points nowhere.
 
+For search engines and AI assistants the sync also gives each page a
+descriptive `<title>` (`seoTitle` in `pages`), a meta description (the
+`description` in `pages`, or else the first prose sentences), JSON-LD, and a
+plain Markdown copy at `/<page>.md`, indexed by `/llms.txt` and joined in
+`/llms-full.txt`. Site-wide JSON-LD and the social image tags are in
+`site/astro.config.mjs`; the landing page's FAQ JSON-LD in
+`site/src/content/docs/index.mdx` must match the FAQ text on that page.
+`site/public/og.png` is rendered from `site/scripts/og-image.html`, whose header
+comment has the command.
+
 ```console
 $ cd site
 $ npm ci

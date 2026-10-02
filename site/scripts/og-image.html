@@ -1,0 +1,75 @@
+<!doctype html>
+<!--
+  Source of public/og.png (the 1200x630 social preview image). Regenerate after
+  editing, from site/:
+
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+      --hide-scrollbars --window-size=1200,630 --screenshot=public/og.png \
+      "file://$PWD/scripts/og-image.html"
+
+  The screen is examples/dashboard/testdata/size-80x24.golden.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>tui social image</title>
+<style>
+	html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+	body {
+		background: radial-gradient(1200px 630px at 85% 20%, #12382a 0%, #0b0f14 60%);
+		color: #d6e2ea;
+		font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+		position: relative;
+	}
+	.left { position: absolute; left: 72px; top: 92px; width: 520px; }
+	.brand { display: flex; align-items: center; gap: 22px; }
+	.brand svg { width: 92px; height: 92px; }
+	.brand h1 { margin: 0; font: 700 96px/1 Menlo, 'SF Mono', monospace; letter-spacing: -2px; }
+	.brand h1 span { color: #1f9d6b; }
+	.tag { margin: 34px 0 0; font-size: 38px; line-height: 1.25; font-weight: 600; }
+	.sub { margin: 18px 0 0; font-size: 24px; line-height: 1.4; color: #8b9aa8; }
+	.url { position: absolute; left: 72px; bottom: 64px; font: 26px Menlo, monospace; color: #1f9d6b; }
+	.term {
+		position: absolute; right: -40px; top: 120px; width: 620px;
+		background: #0b0f14; border-radius: 16px; overflow: hidden;
+		box-shadow: 0 30px 80px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.08);
+	}
+	.bar { height: 34px; background: #1a222c; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+	.bar i { width: 12px; height: 12px; border-radius: 50%; background: #3a4654; }
+	pre { margin: 0; padding: 18px 20px; font: 15px/1.25 Menlo, 'SF Mono', monospace; color: #d6e2ea; }
+</style>
+</head>
+<body>
+	<div class="left">
+		<div class="brand">
+			<svg viewBox="0 0 64 64" fill="none"><rect x="2" y="6" width="60" height="52" rx="10" fill="#0b0f14"/><rect x="2" y="6" width="60" height="52" rx="10" stroke="#1f9d6b" stroke-width="3"/><path d="M15 24l10 8-10 8" stroke="#1f9d6b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 42h18" stroke="#d6e2ea" stroke-width="5" stroke-linecap="round"/></svg>
+			<h1><span>$</span> tui</h1>
+		</div>
+		<p class="tag">A terminal UI framework for Go</p>
+		<p class="sub">Elm Architecture. Standard library only. 40+ widgets, cell-diff rendering, accessible output and a test harness.</p>
+	</div>
+	<div class="url">tui.nizaami.com</div>
+	<div class="term">
+		<div class="bar"><i></i><i></i><i></i></div>
+<pre>┌────────────────────────────────────────────────────
+│
+│ Service Dashboard
+│ ─────────────────────────────── status ────────────
+│
+│ ✓ API           ✓ healthy      ✓ Build → ● Test → ○
+│ ⚠ Worker Queue  ⚠ degraded     ⠋ Deploying build  ██
+│ ✗ Database      ✗ down
+│
+│ ────────────────────────────── metrics ────────────
+│
+│ CPU  ▅▆▄▁▁▄▂▃▃▆▂▅▃▆▇▅▂█▅▆  69.2%
+│ Mem  █▄▆▂▃▇▄▄▃▂▄▇▃▂▆▁▅▁▁▃  30.2%
+│ Disk ███░░░░░░░░░░░░       17.3%
+│
+│ ───────────────────────────────────────────────────
+│ [r] refresh  [d] about  [q] quit
+│
+└────────────────────────────────────────────────────</pre>
+	</div>
+</body>
+</html>
