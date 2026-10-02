@@ -90,6 +90,25 @@ file (`TestEveryPackageHasExample` in the root package, and
 `TestEveryPublicPackageHasExample` in `internal/archtest`). Code shown in
 Markdown should be copied from an Example so `go test` compiles it.
 
+### Website
+
+The site at <https://tui.nizaami.com> is an [Astro Starlight](https://starlight.astro.build/)
+project in `site/`. Its npm packages are site tooling, not module dependencies.
+It has no pages of its own except the landing page
+(`site/src/content/docs/index.mdx`): `site/scripts/sync-docs.mjs` generates the
+rest from `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md` and `docs/`, and the
+Examples page from each `examples/*/testdata/size-80x24.golden`. Edit those
+sources, not the generated files, which are gitignored. A page added to `docs/`
+needs an entry in `pages` in the sync script and in the sidebar in
+`site/astro.config.mjs`. The sync fails on a relative link that points nowhere.
+
+```console
+$ cd site
+$ npm ci
+$ npm run dev     # http://localhost:4321, regenerates pages on start
+$ npm run build   # static site in site/dist/
+```
+
 ## Coverage
 
 Each library package needs at least 90% statement coverage, counted per

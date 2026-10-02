@@ -1,0 +1,99 @@
+/* Accent: terminal green. Starlight reads these for links, buttons and highlights. */
+:root {
+	--sl-color-accent-low: #0d2e22;
+	--sl-color-accent: #1f9d6b;
+	--sl-color-accent-high: #a6f0cf;
+	--sl-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+	--screen-bg: #0b0f14;
+	--screen-fg: #d6e2ea;
+	--screen-chrome: #1a222c;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #c9f2e0;
+	--sl-color-accent: #0f7a50;
+	--sl-color-accent-high: #0a3d29;
+}
+
+/* Hero */
+.hero h1 {
+	font-family: var(--sl-font-mono);
+	letter-spacing: -0.02em;
+}
+.hero h1::before {
+	content: '$ ';
+	color: var(--sl-color-accent);
+}
+
+/* Terminal window used for real screen captures (src/components/Screen.astro). */
+.screen {
+	margin: 2rem auto 0;
+	max-width: 52rem;
+	border-radius: 0.75rem;
+	overflow: hidden;
+	background: var(--screen-bg);
+	box-shadow: 0 20px 50px -20px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+.screen-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.55rem 0.8rem;
+	background: var(--screen-chrome);
+	font-family: var(--sl-font-mono);
+	font-size: 0.75rem;
+	color: #8b9aa8;
+}
+.screen-bar i {
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 50%;
+	background: #3a4654;
+}
+.screen-bar span {
+	margin-inline-start: 0.6rem;
+}
+.screen pre {
+	margin: 0;
+	padding: 1rem 1.2rem;
+	overflow-x: auto;
+	background: transparent;
+	border: 0;
+	color: var(--screen-fg);
+	font-family: var(--sl-font-mono);
+	font-size: clamp(0.5rem, 1.45vw, 0.82rem);
+	line-height: 1.2;
+}
+.screen figcaption {
+	padding: 0.5rem 1rem 0.8rem;
+	font-size: 0.75rem;
+	color: #8b9aa8;
+}
+
+/* Install line on the landing page */
+.install {
+	display: flex;
+	justify-content: center;
+	margin-top: 1.5rem;
+}
+.install code {
+	padding: 0.6rem 1rem;
+	border-radius: 0.5rem;
+	border: 1px solid var(--sl-color-gray-5);
+	background: var(--sl-color-gray-6);
+	font-size: 0.95rem;
+}
+.install code::before {
+	content: '$ ';
+	color: var(--sl-color-accent);
+}
+
+/* Gallery grid on the landing page */
+.gallery {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+	gap: 1.5rem;
+}
+.gallery .screen {
+	margin: 0;
+}

@@ -1,0 +1,25 @@
+---
+// A real screen from an example's golden file (examples/<name>/testdata/size-80x24.golden),
+// copied into src/generated/screens.json by scripts/sync-docs.mjs.
+import screens from '../generated/screens.json';
+
+interface Props {
+	name: keyof typeof screens;
+	caption?: boolean;
+}
+
+const { name, caption = true } = Astro.props;
+const screen = screens[name];
+if (!screen) throw new Error(`Screen: no golden screen for examples/${name}`);
+const text = screen.text
+	.split('\n')
+	.map((line) => line.trimEnd())
+	.join('\n')
+	.replace(/\n+$/, '');
+---
+
+<figure class="screen not-content">
+	<div class="screen-bar" aria-hidden="true"><i></i><i></i><i></i><span>go run ./examples/{name}</span></div>
+	<pre aria-label={`Screen of examples/${name}`}>{text}</pre>
+	{caption && <figcaption>examples/{name}, first frame at 80×24 (its test's golden file)</figcaption>}
+</figure>
