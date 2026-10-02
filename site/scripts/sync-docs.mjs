@@ -252,25 +252,37 @@ function syncExamples() {
 		description: 'Every program under examples/, with the 80×24 screen its test checks.',
 	};
 	const head = frontmatter({ title: meta.title, description: meta.description, editUrl: false, head: pageHead(meta) });
-	let md = `Every directory under [examples/](${GITHUB}/tree/${BRANCH}/examples) is a runnable program. `;
-	md += `Clone the repository and run one from its root, for example \`go run ./examples/dashboard\`.\n\n`;
-	md += `The screens below are not mock-ups: each is the example's \`${SCREEN}\` golden file, `;
-	md += `the first frame at 80×24 that its own test compares against, so they show text and layout without colour.\n\n`;
+	// The page is MDX so each screen is drawn by the Screen component; the
+	// Markdown copy for llms.txt gets the same text with plain-text screens.
+	const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
+	let page = `import Screen from '../../components/Screen.astro';\n\n`;
+	let copy = '';
+	const both = (s) => {
+		page += s;
+		copy += s;
+	};
+	both(`Every directory under [examples/](${GITHUB}/tree/${BRANCH}/examples) is a runnable program. `);
+	both(`Clone the repository and run one from its root, for example \`go run ./examples/dashboard\`.\n\n`);
+	both(`The screens below are not mock-ups: each is the example's \`${SCREEN}\` golden file, `);
+	both(`the first frame at 80×24 that its own test compares against, so they show text and layout without colour.\n\n`);
 	for (const name of withScreen) {
 		const { text, description } = screens[name];
-		md += `## ${name}\n\n` + (description ? `${description}\n\n` : '');
-		md += '````text frame="terminal" title="go run ./examples/' + name + '"\n' + text + '\n````\n\n';
-		md += `[Source](${GITHUB}/tree/${BRANCH}/examples/${name})\n\n`;
+		page += `## ${name}\n\n` + (description ? `${mdx(description)}\n\n` : '');
+		copy += `## ${name}\n\n` + (description ? `${description}\n\n` : '');
+		page += `<Screen name="${name}" caption={false} />\n\n`;
+		copy += '````text\n' + text + '\n````\n\n';
+		both(`[Source](${GITHUB}/tree/${BRANCH}/examples/${name})\n\n`);
 	}
 	if (without.length) {
-		md += `## Without a screen capture\n\n`;
+		both(`## Without a screen capture\n\n`);
 		for (const name of without) {
 			const desc = firstSentence(packageDoc(name));
-			md += `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${desc}` : '') + '\n';
+			page += `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${mdx(desc)}` : '') + '\n';
+			copy += `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${desc}` : '') + '\n';
 		}
 	}
-	fs.writeFileSync(path.join(outDir, 'examples.md'), head + md);
-	addMarkdownCopy({ ...meta, body: md.replace(/````text frame="terminal" title="[^"]*"/g, '````text') });
+	fs.writeFileSync(path.join(outDir, 'examples.mdx'), head + page);
+	addMarkdownCopy({ ...meta, body: copy });
 	fs.mkdirSync(genDir, { recursive: true });
 	fs.writeFileSync(path.join(genDir, 'screens.json'), JSON.stringify(screens, null, '\t') + '\n');
 	return withScreen.length;

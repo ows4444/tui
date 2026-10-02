@@ -313,15 +313,9 @@ body {
 }
 .hero-visual .screen {
 	margin: 0;
-	transform: perspective(1600px) rotateY(-4deg) rotateX(2deg);
-	transition: transform 0.4s ease;
-}
-.hero-visual .screen:hover {
-	transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
 	.pulse { animation: none; }
-	.hero-visual .screen { transform: none; transition: none; }
 }
 
 /* Install line with copy button */
@@ -593,17 +587,104 @@ body {
 }
 .screen pre {
 	margin: 0;
-	padding: 1.1rem 1.25rem;
+	padding: 18px 20px;
 	overflow-x: auto;
 	background: transparent;
 	border: 0;
 	color: var(--screen-fg);
 	font-family: var(--sl-font-mono);
-	font-size: clamp(0.5rem, 1.2vw, 0.8rem);
-	line-height: 1.25;
+	/* Stepped so one column (0.6em in JetBrains Mono) is a whole number of
+	   pixels: 5, 6 or 7px. Fractional columns make lines wobble by a pixel. */
+	font-size: 8.3333px;
+	--col: 5px; /* column width, set explicitly: deriving it from 1ch rounds down */
+	--row: 11px; /* whole pixels too, so rows meet without seams */
+	line-height: var(--row);
+	font-variant-ligatures: none;
+	tab-size: 8;
 }
-.screen pre .b {
-	color: var(--screen-dim);
+
+@media (min-width: 40rem) {
+	.screen pre { font-size: 10px; --col: 6px; --row: 13px; }
+	.gallery .screen pre { font-size: 8.3333px; --col: 5px; --row: 11px; }
+}
+@media (min-width: 64rem) {
+	.screen pre { font-size: 11.6667px; --col: 7px; --row: 15px; }
+	.gallery .screen pre { font-size: 10px; --col: 6px; --row: 13px; }
+}
+
+/* Cells drawn by Screen.astro: exactly one column wide and one row tall, so
+   every column and line meets, whatever font the visitor has. The real
+   character stays as transparent text for copying and screen readers. */
+.screen .c {
+	display: inline-block;
+	position: relative;
+	width: var(--col);
+	height: var(--row);
+	vertical-align: top;
+	text-align: center;
+	overflow: visible;
+}
+.screen .t {
+	display: inline-block;
+	width: calc(var(--col) * var(--n));
+	height: var(--row);
+	vertical-align: top;
+	white-space: pre;
+	overflow: visible;
+}
+.screen .bx,
+.screen .blk,
+.screen .shade,
+.screen .brl {
+	color: transparent;
+}
+.screen .sym {
+	/* Fallback-font symbols: centred in their column, which keeps its width
+	   whatever the glyph's own width is. */
+	white-space: nowrap;
+}
+
+/* Box drawing: a horizontal and a vertical stroke through the cell centre,
+   each reaching only the sides the character has arms on. */
+.screen .bx::before,
+.screen .bx::after {
+	content: '';
+	position: absolute;
+	background: var(--screen-dim);
+}
+.screen .bx::before {
+	top: calc(50% - 0.5px);
+	height: 1px;
+	/* Arms run 0.5px past the cell edge so neighbouring strokes overlap
+	   instead of leaving a hairline seam when the cell edge rounds. */
+	left: calc(50% - 50% * var(--l) - 0.5px);
+	right: calc(50% - 50% * var(--r) - 0.5px);
+	opacity: min(1, calc(var(--l) + var(--r)));
+}
+.screen .bx::after {
+	left: calc(50% - 0.5px);
+	width: 1px;
+	top: calc(50% - 50% * var(--u) - 0.5px);
+	bottom: calc(50% - 50% * var(--d) - 0.5px);
+	opacity: min(1, calc(var(--u) + var(--d)));
+}
+/* ▁▂▃▄▅▆▇█: a bar of --h eighths from the bottom of the cell. */
+.screen .blk::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: calc(88% * var(--h) / 8);
+	background: var(--screen-fg);
+}
+/* ░▒▓: the cell filled at a quarter, half or three-quarter strength. */
+.screen .shade::before {
+	content: '';
+	position: absolute;
+	inset: 12% 0 0 0;
+	background: var(--screen-fg);
+	opacity: calc(var(--o) * 0.7);
 }
 .screen figcaption {
 	padding: 0 1.25rem 0.9rem;
@@ -626,9 +707,6 @@ body {
 .gallery .screen:hover {
 	transform: translateY(-3px);
 	border-color: color-mix(in srgb, var(--sl-color-accent) 50%, #1e2731);
-}
-.gallery .screen pre {
-	font-size: clamp(0.45rem, 0.85vw, 0.68rem);
 }
 @media (prefers-reduced-motion: reduce) {
 	.gallery .screen, .gallery .screen:hover { transition: none; transform: none; }
