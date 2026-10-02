@@ -28,12 +28,7 @@ func FromCtx(fn CtxCmd) Cmd {
 
 // dispatchCtx runs fn with the Program context and delivers its result.
 func (p *Program) dispatchCtx(fn CtxCmd, done <-chan struct{}) {
-	defer func() {
-		if r := recover(); r != nil {
-			p.restoreViaLoop()
-			panic(r)
-		}
-	}()
+	defer p.recoverCmdPanic(done)
 	msg := fn(p.ctx)
 	if msg == nil {
 		return

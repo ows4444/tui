@@ -72,7 +72,7 @@ func (m Model) imageID() uint32 {
 	return 1
 }
 
-// New returns a Model for png at width by height cells, using theme.Dark.
+// New returns a Model for png at width by height cells, using theme.DarkTheme().
 func New(png []byte, width, height int, alt string) Model {
 	return Model{PNG: png, Width: width, Height: height, Alt: alt, Theme: theme.DarkTheme()}
 }

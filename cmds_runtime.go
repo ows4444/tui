@@ -215,12 +215,7 @@ func (p *Program) interceptCmdMsg(msg Msg, done <-chan struct{}) (out Msg, handl
 }
 
 func (p *Program) runSequence(cmds []Cmd, done <-chan struct{}) {
-	defer func() {
-		if r := recover(); r != nil {
-			p.restoreViaLoop()
-			panic(r)
-		}
-	}()
+	defer p.recoverCmdPanic(done)
 	for _, c := range cmds {
 		msg := c()
 		if cm, ok := msg.(ctxMsg); ok {
@@ -295,12 +290,7 @@ func (pool *cmdPool) work(f func()) {
 }
 
 func (p *Program) runEvery(e everyMsg, done <-chan struct{}) {
-	defer func() {
-		if r := recover(); r != nil {
-			p.restoreViaLoop()
-			panic(r)
-		}
-	}()
+	defer p.recoverCmdPanic(done)
 	if e.d <= 0 {
 		return
 	}

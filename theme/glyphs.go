@@ -186,7 +186,7 @@ func (t Theme) ASCII() Theme {
 // UnicodeGlyphSet otherwise; see
 // DetectGlyphsEnv. Typical use:
 //
-//	th := theme.Dark
+//	th := theme.DarkTheme()
 //	th.Glyphs = theme.DetectGlyphs()
 func DetectGlyphs() Glyphs { return DetectGlyphsEnv(os.Getenv) }
 

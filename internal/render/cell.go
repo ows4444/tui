@@ -18,11 +18,13 @@ import (
 // Rows are style-independent in this model: the pen starts as the default at
 // the start of every row, so a view whose row leaves a style open does not
 // bleed into the next row. Colon-parameter SGR (4:3, 38:2::r:g:b, ...) and
-// OSC 8 hyperlinks are part of the style. Anything the grid cannot represent
-// (tabs and other control characters, other escapes, unknown SGR codes, a
-// view taller than the terminal, width disagreements) makes the frame fall
-// back to the line renderer, which is always correct; the reason is kept in
-// Cells.reason for the frame log (a slug such as "control_character").
+// OSC 8 hyperlinks are part of the style. Tabs are expanded before parsing. A
+// row the grid cannot represent (control characters, other escapes, unknown
+// SGR codes, width disagreements) is written from its source line, and listed
+// in Stats.Fallbacks with a slug such as "control_character". The whole frame
+// falls back to the line renderer, which is always correct, when the view is
+// taller than the terminal or when such a row appears in a frame with wide
+// clusters; the reason is kept in Cells.reason for the frame log.
 
 // cell is one terminal column. A wide cluster occupies a head cell (w == 2)
 // followed by a continuation cell (w == 0, empty s).

@@ -145,7 +145,7 @@ func (m Model) Bindings() []keymap.Binding {
 	return []keymap.Binding{m.keys().Dismiss}
 }
 
-// New returns an already-open Model with Content, Theme: theme.Dark,
+// New returns an already-open Model with Content, Theme: theme.DarkTheme(),
 // Edge: EdgeRight and sane default Width/Height — the common case is
 // showing a drawer immediately in response to some trigger, not
 // constructing one ahead of time and opening it later (though Show/Hide

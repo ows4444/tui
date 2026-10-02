@@ -5,7 +5,7 @@
 # authoritative check (it runs in go test ./...). Every rule is a strict
 # allowlist: a package may import the standard library and the module packages
 # listed for it, nothing else. Checked with golangci-lint v2.1.6, which CI runs.
-# See docs/architecture/ARCHITECTURE_REVIEW.md section 7.
+# See the "Package layers" section of docs/architecture/overview.md.
 version: "2"
 linters:
   default: none

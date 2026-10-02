@@ -26,7 +26,7 @@ func (a app) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 // tui.WithBackgroundDetection, and let theme.Detect pick Light or Dark when
 // the answer (or the timeout) arrives. Any later change is one assignment.
 //
-//	tui.NewProgram(app{theme: theme.Dark}, tui.WithBackgroundDetection(200*time.Millisecond))
+//	tui.NewProgram(app{theme: theme.DarkTheme()}, tui.WithBackgroundDetection(200*time.Millisecond))
 func ExampleDetect_switchTheme() {
 	var m tui.Model = app{theme: theme.DarkTheme()}
 

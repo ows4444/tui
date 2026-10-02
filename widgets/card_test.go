@@ -11,7 +11,7 @@ import (
 
 // TestCardAlwaysRounded proves criterion #306: Card always renders with a
 // rounded border, regardless of the theme's configured border style —
-// tested against theme.Dark (a single-line border) and a custom theme
+// tested against theme.DarkTheme() (a single-line border) and a custom theme
 // with a double-line border, neither of which is rounded.
 func TestCardAlwaysRounded(t *testing.T) {
 	themes := []theme.Theme{theme.DarkTheme(), theme.LightTheme()}

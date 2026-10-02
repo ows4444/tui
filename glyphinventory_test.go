@@ -16,7 +16,7 @@ import (
 // packages that contains a non-ASCII string or rune literal, each with the
 // reason it may. Every entry is a definition: a glyph set, a default or a font
 // that the theme replaces at render time, so nothing here reaches the screen
-// under theme.Dark.ASCII() (the rendered-output check for the whole widget
+// under theme.DarkTheme().ASCII() (the rendered-output check for the whole widget
 // set is the ASCII snapshot test). A widget that draws a fixed Unicode symbol
 // instead of taking it from theme.Glyphs would add a file that is not listed
 // here, and TestGlyphInventoryIsComplete fails until it is routed.

@@ -59,7 +59,7 @@ type Theme struct {
 	// Theme.ASCII.
 	Glyphs Glyphs
 	// Spacing is the spacing scale. Zero fields mean the defaults; read it
-	// through Theme.Spacing.
+	// through Theme.ResolvedSpacing.
 	Spacing SpacingScale
 	// States are the styles for focus, hover, disabled and selected. Empty
 	// styles fall back to the colour roles; read them through
@@ -159,7 +159,7 @@ var light = Theme{
 // 256- or 16-color terminal. Under ansi.NoColor all colors become nil
 // (unset) while Border is kept. Pair with ansi.DetectColorProfile:
 //
-//	th := theme.Dark.ForProfile(ansi.DetectColorProfile())
+//	th := theme.DarkTheme().ForProfile(ansi.DetectColorProfile())
 func (t Theme) ForProfile(p ansi.Profile) Theme {
 	for _, c := range []*ansi.Color{
 		&t.Primary, &t.Secondary, &t.Success, &t.Warning, &t.Error, &t.Info,
@@ -195,7 +195,7 @@ func isLight(bg ansi.RGB) bool {
 // false.
 //
 //	case tui.BackgroundColorEvent, tui.BackgroundUnknownMsg:
-//		if th, ok := theme.Detect(msg, theme.Dark); ok {
+//		if th, ok := theme.Detect(msg, theme.DarkTheme()); ok {
 //			m.theme = th
 //		}
 func Detect(msg any, fallback Theme) (Theme, bool) {

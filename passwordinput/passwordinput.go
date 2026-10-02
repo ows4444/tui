@@ -24,7 +24,7 @@ type Model struct {
 	textinput.Model
 
 	// Theme supplies the mask glyph (theme.Glyphs.Mask): Mask under the
-	// default theme, '*' under an ASCII one. New sets theme.Dark; a zero Theme
+	// default theme, '*' under an ASCII one. New sets theme.DarkTheme(); a zero Theme
 	// draws Mask.
 	Theme theme.Theme
 }

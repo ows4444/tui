@@ -20,7 +20,7 @@
 // Package tui owns the event loop. Terminal I/O is performed by package term
 // and internal/termio, which tui drives. The other packages are building
 // blocks that tui and applications share, in layers that each import only the ones above them in this list (an import
-// that points up is a test failure, see docs/architecture/ARCHITECTURE_REVIEW.md):
+// that points up is a test failure, see docs/architecture/overview.md):
 //
 // Primitives, with no dependency on the rest (stability: core):
 //
@@ -64,5 +64,5 @@
 // for resizes; a wrapper model exposes the optional interfaces of the model it
 // wraps with Unwrapper.
 //
-// docs/architecture/ARCHITECTURE_REVIEW.md describes how the packages layer.
+// docs/architecture/overview.md describes how the packages layer.
 package tui

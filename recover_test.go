@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui/ansi"
 )
@@ -21,6 +22,13 @@ func (m recoverModel) Init() Cmd {
 		panic("boom-init")
 	case "cmd":
 		return func() Msg { panic("boom-cmd") }
+	case "tick":
+		return Tick(time.Millisecond, func(time.Time) Msg { panic("boom-tick") })
+	case "sequence":
+		return Sequence(func() Msg { panic("boom-sequence") })
+	case "every":
+		cmd, _ := Every(time.Millisecond, func(time.Time) Msg { panic("boom-every") })
+		return cmd
 	}
 	return nil
 }
@@ -59,7 +67,7 @@ func runRecoverModel(t *testing.T, where string, opts ...ProgramOption) (string,
 }
 
 func TestWithRecoverReturnsPanicError(t *testing.T) {
-	for _, where := range []string{"init", "update", "view", "cmd"} {
+	for _, where := range []string{"init", "update", "view", "cmd", "tick", "sequence", "every"} {
 		t.Run(where, func(t *testing.T) {
 			out, err := runRecoverModel(t, where, WithRecover(true))
 			var pe *PanicError

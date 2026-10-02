@@ -30,7 +30,7 @@ type Model struct {
 	Mask rune
 
 	// Theme supplies the default mask glyph (theme.Glyphs.Mask). New sets
-	// theme.Dark; a zero Theme draws the default '•'.
+	// theme.DarkTheme(); a zero Theme draws the default '•'.
 	Theme theme.Theme
 }
 

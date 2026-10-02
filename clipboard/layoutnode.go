@@ -5,6 +5,6 @@ import (
 )
 
 // LayoutNode adapts the button to a layout.Node: it measures and renders
-// whatever View shows (for a clock, read afresh each time), cut to the
+// whatever View shows, cut to the
 // allotted Size. The Model is not changed.
 func (m Model) LayoutNode() layout.Node { return layout.ViewFunc(m.View) }

@@ -274,7 +274,7 @@ func (in fieldInput) selectView(th theme.Theme) string {
 
 // Model is a form. Build one with New.
 type Model struct {
-	// Theme colors the error lines. New sets theme.Dark.
+	// Theme colors the error lines. New sets theme.DarkTheme().
 	Theme theme.Theme
 
 	// tokens is the per-instance colour override set by WithTokens.

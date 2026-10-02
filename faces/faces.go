@@ -4,9 +4,6 @@
 // cell head) or Large (10x5 cell head) Size. All frames at one Size are
 // the same block of cells, so swapping faces never moves the layout.
 //
-// Stability: experimental. The catalog and the widget's API may change before
-// v1.
-//
 // Stability: experimental. Its API may change in any minor release.
 package faces
 
@@ -134,7 +131,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 }
 
 // View renders the current frame in the theme's primary colour. Under an ASCII
-// glyph set (theme.Dark.ASCII()) the braille dots are drawn as a density ramp of
+// glyph set (theme.DarkTheme().ASCII()) the braille dots are drawn as a density ramp of
 // ASCII characters instead, one per 2x4 cell, so the face keeps its shape and
 // size on a terminal that cannot show braille.
 func (m Model) View() string {

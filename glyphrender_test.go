@@ -285,9 +285,9 @@ func TestUnicodeThemeDrawsNonASCIIGlyphs(t *testing.T) {
 		}
 	}
 	n := len(drawing)
-	t.Logf("%d widget outputs draw non-ASCII glyphs under theme.Dark: %s", n, strings.Join(drawing, ", "))
+	t.Logf("%d widget outputs draw non-ASCII glyphs under theme.DarkTheme(): %s", n, strings.Join(drawing, ", "))
 	if n < 25 {
-		t.Errorf("only %d widget outputs draw non-ASCII glyphs under theme.Dark; the harness is not exercising the glyph paths", n)
+		t.Errorf("only %d widget outputs draw non-ASCII glyphs under theme.DarkTheme(); the harness is not exercising the glyph paths", n)
 	}
 }
 

@@ -101,7 +101,7 @@ func (m Model) Bindings() []keymap.Binding { return m.keys().all() }
 
 // New returns a Model that renders itemCount items in a window height rows
 // tall, calling renderItem on demand. ItemHeight defaults to 1, Overscan to
-// 2, and Theme to theme.Dark; set the fields on the returned Model to change
+// 2, and Theme to theme.DarkTheme(); set the fields on the returned Model to change
 // them.
 func New(itemCount, height int, renderItem func(i int) string) Model {
 	return Model{

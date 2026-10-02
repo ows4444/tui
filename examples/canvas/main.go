@@ -1,5 +1,5 @@
 // Command canvas is a custom widget that draws straight into the cell grid
-// through DrawCells: a colour gradient with a moving marker. See docs/cells.md.
+// through DrawCells: a colour gradient with a moving marker. See docs/rendering.md.
 package main
 
 import (

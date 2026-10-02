@@ -16,7 +16,7 @@ func TestNew_DefaultsThemeToDark(t *testing.T) {
 	m := New("My App", 20, 3)
 
 	if m.Theme != theme.DarkTheme() {
-		t.Fatalf("New's default Theme = %+v, want theme.Dark", m.Theme)
+		t.Fatalf("New's default Theme = %+v, want theme.DarkTheme()", m.Theme)
 	}
 }
 

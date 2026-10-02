@@ -326,22 +326,7 @@ func (p *Program) kickResize() {
 // trying to send into a channel nobody drains anymore — done, closed when
 // Run returns, guards against exactly that.
 func (p *Program) dispatch(cmd Cmd, done <-chan struct{}) {
-	// A panic on a Cmd goroutine would end the process without Run's
-	// deferred restoreTerminal; restore the terminal, then re-panic with the
-	// same value so the trace is still reported.
-	defer func() {
-		if r := recover(); r != nil {
-			if p.recoverPanics {
-				select {
-				case p.msgs <- panicMsg{&PanicError{Value: r, Stack: debug.Stack()}}:
-				case <-done:
-				}
-				return
-			}
-			p.restoreViaLoop()
-			panic(r)
-		}
-	}()
+	defer p.recoverCmdPanic(done)
 	msg := cmd()
 	if msg == nil {
 		return
@@ -350,6 +335,27 @@ func (p *Program) dispatch(cmd Cmd, done <-chan struct{}) {
 	case p.msgs <- msg:
 	case <-done:
 	}
+}
+
+// recoverCmdPanic is deferred by every goroutine that runs Cmd code (dispatch,
+// dispatchCtx, runSequence, runEvery). A panic there would end the process
+// without Run's deferred restoreTerminal. With WithRecover it is handed to the
+// loop as a *PanicError; otherwise the terminal is restored and the panic
+// continues with the same value so the trace is still reported.
+func (p *Program) recoverCmdPanic(done <-chan struct{}) {
+	r := recover()
+	if r == nil {
+		return
+	}
+	if p.recoverPanics {
+		select {
+		case p.msgs <- panicMsg{&PanicError{Value: r, Stack: debug.Stack()}}:
+		case <-done:
+		}
+		return
+	}
+	p.restoreViaLoop()
+	panic(r)
 }
 
 // allowRender reports whether render() should run now for an ordinary

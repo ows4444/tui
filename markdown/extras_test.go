@@ -201,7 +201,7 @@ func TestNoLexerIsUnchanged(t *testing.T) {
 	}
 }
 
-// Criterion #81: output stays 7-bit ASCII under theme.Dark.ASCII().
+// Criterion #81: output stays 7-bit ASCII under theme.DarkTheme().ASCII().
 func TestASCIIOutput(t *testing.T) {
 	th := theme.DarkTheme().ASCII()
 	md := "Title\n=====\n\nSub\n---\n\n| a | b |\n|:-|-:|\n| 1 | 2 |\n\n" +

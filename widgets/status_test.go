@@ -32,7 +32,7 @@ func TestStatusIndicator(t *testing.T) {
 	}
 }
 
-// statusGlyph is the dot StatusIndicator draws under theme.Dark: the neutral
+// statusGlyph is the dot StatusIndicator draws under theme.DarkTheme(): the neutral
 // dot, or the variant's icon so the status shows without colour.
 func statusGlyph(v Variant) string {
 	if m := v.Mark(theme.DarkTheme().GlyphSet()); m != "" {

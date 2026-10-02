@@ -197,7 +197,7 @@ func TestView_EmptyOrInvalidDimensions(t *testing.T) {
 }
 
 // TestNewDefaults proves New's documented zero-opts defaults: ItemHeight
-// 1, Overscan 2, Theme theme.Dark.
+// 1, Overscan 2, Theme theme.DarkTheme().
 func TestNewDefaults(t *testing.T) {
 	m := New(10, 5, func(i int) string { return "" })
 	if m.ItemHeight != 1 {
@@ -207,7 +207,7 @@ func TestNewDefaults(t *testing.T) {
 		t.Errorf("Overscan = %d, want %d", m.Overscan, defaultOverscan)
 	}
 	if m.Theme != theme.DarkTheme() {
-		t.Errorf("Theme = %+v, want theme.Dark", m.Theme)
+		t.Errorf("Theme = %+v, want theme.DarkTheme()", m.Theme)
 	}
 }
 

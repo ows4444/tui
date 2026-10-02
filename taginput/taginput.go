@@ -74,7 +74,7 @@ func (m Model) Bindings() []keymap.Binding {
 	return append([]keymap.Binding{km.Commit, km.RemoveLast}, m.Input.Bindings()...)
 }
 
-// New returns a Model with textinput's default styling and theme.Dark.
+// New returns a Model with textinput's default styling and theme.DarkTheme().
 func New() Model {
 	return Model{
 		Input:  textinput.New(),

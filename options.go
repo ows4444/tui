@@ -135,8 +135,8 @@ func WithKittyKeyboard(enabled bool) ProgramOption {
 
 // WithReducedMotion overrides the Program's reduced-motion preference,
 // read back via (*Program).ReducedMotion. Without this option, the
-// preference defaults to motion.Detect() (the NO_ANIMATION environment
-// variable), so existing motion.Preference-aware code keeps working
+// preference defaults to motion.Detect() (the NO_ANIMATION and REDUCE_MOTION
+// environment variables), so existing motion.Preference-aware code keeps working
 // whether or not a Program explicitly opts in.
 //
 // This is a signal, not automatic enforcement: Program has no way to know
@@ -253,9 +253,11 @@ func WithChordTimeout(d time.Duration) ProgramOption {
 // https://no-color.org); CLICOLOR_FORCE (non-empty, not "0") to colour a
 // non-terminal; otherwise output that is not a terminal, or CLICOLOR=0, gives
 // ansi.NoColor; TERM=dumb gives ansi.NoColor; COLORTERM (truecolor or 24bit),
-// WT_SESSION and TERM_PROGRAM (for example iTerm.app, WezTerm, vscode) give
-// ansi.TrueColor; then the TERM name (256color gives ansi.ANSI256; empty gives
-// ansi.NoColor, or ansi.ANSI16 on Windows; anything else ansi.ANSI16).
+// WT_SESSION and TERM_PROGRAM (iTerm.app, WezTerm, vscode, ghostty, Hyper) give
+// ansi.TrueColor, and TERM_PROGRAM=Apple_Terminal gives ansi.ANSI256; then the
+// TERM name (xterm-kitty, xterm-ghostty, alacritty and wezterm give
+// ansi.TrueColor; 256color gives ansi.ANSI256; empty gives ansi.NoColor, or
+// ansi.ANSI16 on Windows; anything else ansi.ANSI16).
 // Truecolor terminals that export none of these (some SSH sessions, tmux with
 // TERM=screen) are detected as lower depth; pass
 // WithColorProfile(ansi.TrueColor) to opt out. Passing this option, even
@@ -328,9 +330,12 @@ func WithFrameLog(w io.Writer) ProgramOption {
 // writes fewer bytes than rewriting whole changed rows. The screen it
 // produces is the same as the line renderer's, with one difference: rows are
 // style-independent, so a style a View row leaves open does not carry into
-// the next row. A frame it cannot represent (tabs or other control
-// characters, escapes other than SGR, unknown SGR codes, a view taller than
-// the terminal) is drawn by the line renderer.
+// the next row. Tabs are expanded. A row it cannot represent (control
+// characters, escapes other than SGR and OSC 8, unknown SGR codes) is
+// rewritten whole, as the line renderer would; the rest of the frame is still
+// diffed. The whole frame is drawn by the line renderer when the view is
+// taller than the terminal, or when an unrepresentable row appears in a frame
+// that has wide characters.
 func WithCellRenderer(enabled bool) ProgramOption {
 	return func(p *Program) { p.cellRender = enabled }
 }

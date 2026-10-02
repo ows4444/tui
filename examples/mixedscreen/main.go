@@ -1,5 +1,5 @@
 // Command mixedscreen composes a string child and a cell child into one screen
-// with DrawChild and DrawView. See docs/cells.md.
+// with DrawChild and DrawView. See docs/rendering.md.
 package main
 
 import (

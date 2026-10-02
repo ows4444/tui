@@ -46,7 +46,7 @@ type Model struct {
 	running bool
 }
 
-// New returns an idle Model at a 100ms interval using theme.Dark.
+// New returns an idle Model at a 100ms interval using theme.DarkTheme().
 func New() Model {
 	return Model{Interval: 100 * time.Millisecond, Theme: theme.DarkTheme()}
 }

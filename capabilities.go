@@ -62,7 +62,8 @@ const (
 )
 
 // WithCapabilityProbe makes Run send, at startup, DECRQM for modes 2026 and
-// 2027, the kitty keyboard and kitty graphics queries and XTVERSION, followed
+// 2027, the kitty keyboard and kitty graphics queries, the OSC 99 desktop
+// notification query and XTVERSION, followed
 // by DA1 as a sentinel. The first DA1 reply ends the probe: Update receives
 // one CapabilitiesMsg and Program.Capabilities reports the result. If DA1 is
 // not answered within timeout (non-positive: DefaultCapabilityProbeTimeout)
