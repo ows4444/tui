@@ -1,0 +1,43 @@
+---
+// Replaces Starlight's Hero (see `components` in astro.config.mjs): copy and
+// actions on the left, a real example screen on the right.
+import { LinkButton } from '@astrojs/starlight/components';
+import Install from './Install.astro';
+import Screen from './Screen.astro';
+
+const { data } = Astro.locals.starlightRoute.entry;
+const { title = data.title, tagline, actions = [] } = data.hero || {};
+---
+
+<section class="hero not-content">
+	<div class="hero-copy">
+		<a class="eyebrow" href="https://github.com/ows4444/tui">
+			<span class="pulse" aria-hidden="true"></span>
+			Open source · MIT · Go 1.25+
+		</a>
+		<h1 id="_top" data-page-title set:html={title} />
+		{tagline && <p class="tagline" set:html={tagline} />}
+		{
+			actions.length > 0 && (
+				<div class="actions">
+					{actions.map(({ attrs: { class: className, ...attrs } = {}, icon, link: href, text, variant }) => (
+						<LinkButton {href} {variant} icon={icon?.name} class:list={[className]} {...attrs}>
+							{text}
+						</LinkButton>
+					))}
+				</div>
+			)
+		}
+		<Install />
+	</div>
+	<div class="hero-visual">
+		<Screen name="dashboard" caption={false} />
+	</div>
+</section>
+
+<ul class="stats not-content" aria-label="tui at a glance">
+	<li><strong>0</strong><span>module dependencies</span></li>
+	<li><strong>40+</strong><span>widget packages</span></li>
+	<li><strong>30</strong><span>runnable examples</span></li>
+	<li><strong>7</strong><span>supported OSes</span></li>
+</ul>

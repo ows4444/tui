@@ -1,0 +1,67 @@
+---
+// Starlight's footer (edit link, pagination) followed by a site footer.
+import DefaultFooter from '@astrojs/starlight/components/Footer.astro';
+
+const repo = 'https://github.com/ows4444/tui';
+const columns = [
+	{
+		title: 'Learn',
+		links: [
+			{ text: 'Overview', href: '/overview/' },
+			{ text: 'Cookbook', href: '/cookbook/' },
+			{ text: 'Examples', href: '/examples/' },
+			{ text: 'Widgets', href: '/widgets/' },
+		],
+	},
+	{
+		title: 'Reference',
+		links: [
+			{ text: 'pkg.go.dev', href: 'https://pkg.go.dev/github.com/ows4444/tui' },
+			{ text: 'Changelog', href: '/changelog/' },
+			{ text: 'Migrating to v1', href: '/migrating-to-v1/' },
+			{ text: 'Architecture', href: '/architecture/' },
+		],
+	},
+	{
+		title: 'Project',
+		links: [
+			{ text: 'GitHub', href: repo },
+			{ text: 'Contributing', href: '/contributing/' },
+			{ text: 'Issues', href: `${repo}/issues` },
+			{ text: 'License (MIT)', href: `${repo}/blob/code/LICENSE` },
+		],
+	},
+	{
+		title: 'For AI assistants',
+		links: [
+			{ text: 'llms.txt', href: '/llms.txt' },
+			{ text: 'llms-full.txt', href: '/llms-full.txt' },
+		],
+	},
+];
+---
+
+<DefaultFooter />
+
+<div class="site-footer not-content">
+	<div class="site-footer-brand">
+		<img src="/favicon.svg" alt="" width="28" height="28" />
+		<p><strong>tui</strong>: a terminal UI framework for Go.</p>
+	</div>
+	<nav aria-label="Footer">
+		{
+			columns.map((col) => (
+				<div>
+					<h2>{col.title}</h2>
+					<ul>
+						{col.links.map((l) => (
+							<li>
+								<a href={l.href}>{l.text}</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			))
+		}
+	</nav>
+</div>

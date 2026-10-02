@@ -1,6 +1,8 @@
 ---
 // A real screen from an example's golden file (examples/<name>/testdata/size-80x24.golden),
-// copied into src/generated/screens.json by scripts/sync-docs.mjs.
+// copied into src/generated/screens.json by scripts/sync-docs.mjs. The text is
+// shown as captured; only the box-drawing characters are dimmed, so the
+// content reads first.
 import screens from '../generated/screens.json';
 
 interface Props {
@@ -11,15 +13,21 @@ interface Props {
 const { name, caption = true } = Astro.props;
 const screen = screens[name];
 if (!screen) throw new Error(`Screen: no golden screen for examples/${name}`);
-const text = screen.text
-	.split('\n')
-	.map((line) => line.trimEnd())
-	.join('\n')
-	.replace(/\n+$/, '');
+
+const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const html = escape(
+	screen.text
+		.split('\n')
+		.map((line) => line.trimEnd())
+		.join('\n')
+		.replace(/\n+$/, '')
+).replace(/[─-╿]+/g, (run) => `<span class="b">${run}</span>`);
 ---
 
 <figure class="screen not-content">
-	<div class="screen-bar" aria-hidden="true"><i></i><i></i><i></i><span>go run ./examples/{name}</span></div>
-	<pre aria-label={`Screen of examples/${name}`}>{text}</pre>
-	{caption && <figcaption>examples/{name}, first frame at 80×24 (its test's golden file)</figcaption>}
+	<div class="screen-bar" aria-hidden="true">
+		<i></i><i></i><i></i><span>go run ./examples/{name}</span>
+	</div>
+	<pre aria-label={`Screen of examples/${name}`} set:html={html} />
+	{caption && <figcaption>examples/{name} · first frame at 80×24, from its test's golden file</figcaption>}
 </figure>

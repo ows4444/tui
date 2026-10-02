@@ -1,0 +1,62 @@
+---
+// The feature grid on the landing page. Every claim is a fact from the
+// repository's README, docs or tests.
+import { Icon } from '@astrojs/starlight/components';
+
+const features = [
+	{
+		icon: 'seti:go',
+		title: 'The Elm Architecture',
+		body: 'A Model has <code>Init</code>, <code>Update</code> and <code>View</code>. <code>Update</code> returns Cmds for side effects; the Program runs them and feeds the results back as Msgs.',
+	},
+	{
+		icon: 'approve-check',
+		title: 'Standard library only',
+		body: '<code>go.mod</code> has no <code>require</code> directive, and a test in <code>internal/archtest</code> fails if any package imports outside the standard library.',
+	},
+	{
+		icon: 'rocket',
+		title: 'Cell-diff rendering',
+		body: 'Each frame is parsed into a grid of cells and only the cells that changed are written, with relative cursor movement.',
+	},
+	{
+		icon: 'puzzle',
+		title: 'Widgets that compose',
+		body: 'Inputs, tables, trees, dialogs, menus, pickers, charts and more. Every widget has a <code>LayoutNode()</code> adapter and an accessible <code>Linearize</code> form.',
+	},
+	{
+		icon: 'pencil',
+		title: 'Layout and theming',
+		body: 'Flex, grid and overlay layout nodes. 16 preset themes, component tokens, and glyph sets with an ASCII fallback.',
+	},
+	{
+		icon: 'open-book',
+		title: 'Accessible output',
+		body: '<code>WithAccessible</code> switches to append-only, unstyled output for screen readers; reduced motion follows <code>NO_ANIMATION</code> and <code>REDUCE_MOTION</code>.',
+	},
+	{
+		icon: 'laptop',
+		title: 'Terminal-aware',
+		body: 'Colour depth from the environment (honours <code>NO_COLOR</code>), an opt-in capability probe, bracketed paste, mouse and kitty keyboard support.',
+	},
+	{
+		icon: 'list-format',
+		title: 'Testable',
+		body: 'The <code>tuitest</code> harness drives a Program headlessly. Every example checks its screens against golden files: the screens on this site.',
+	},
+] as const;
+---
+
+<ul class="features not-content">
+	{
+		features.map((f) => (
+			<li class="feature">
+				<span class="feature-icon">
+					<Icon name={f.icon} size="1.25rem" />
+				</span>
+				<h3>{f.title}</h3>
+				<p set:html={f.body} />
+			</li>
+		))
+	}
+</ul>

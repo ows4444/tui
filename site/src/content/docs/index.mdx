@@ -12,67 +12,52 @@ head:
     attrs: { type: application/ld+json }
     content: '{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is tui?","acceptedAnswer":{"@type":"Answer","text":"tui is a terminal UI (TUI) framework for Go, at github.com/ows4444/tui. An application is a Model with Init, Update and View (the Elm Architecture); tui.NewProgram runs it, reads keys, mouse events and resizes, and redraws View with a cell diff so only changed cells are written."}},{"@type":"Question","name":"How do I install tui?","acceptedAnswer":{"@type":"Answer","text":"Run go get github.com/ows4444/tui. It needs Go 1.25 or later. There is no tagged release yet, so this resolves to a pseudo-version of the latest commit."}},{"@type":"Question","name":"Does tui have any dependencies?","acceptedAnswer":{"@type":"Answer","text":"No. tui uses only the Go standard library: go.mod has no require directive, and a test in internal/archtest fails if any package imports outside the standard library and the module."}},{"@type":"Question","name":"Which platforms does tui support?","acceptedAnswer":{"@type":"Answer","text":"Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD and DragonFly BSD. CI runs the tests on Linux, macOS, Windows and FreeBSD; OpenBSD, NetBSD and DragonFly BSD are cross-compiled. Other operating systems, including Solaris and illumos, fail to build on purpose."}},{"@type":"Question","name":"Does tui work with screen readers?","acceptedAnswer":{"@type":"Answer","text":"tui.WithAccessible(true) switches a Program to an append-only, unstyled plain-text transcript that a screen reader can follow, and WithAccessibleAuto turns it on for ACCESSIBLE=1 or TERM=dumb. No run with VoiceOver, NVDA or Orca is recorded yet, so screen-reader support is unverified."}},{"@type":"Question","name":"How do I test a tui application?","acceptedAnswer":{"@type":"Answer","text":"The tuitest package runs a model in a real tui.Program against an in-memory terminal: keys, pastes, resizes and messages go in, and the emulated screen comes out as lines that can be compared against golden files."}},{"@type":"Question","name":"What license is tui under?","acceptedAnswer":{"@type":"Answer","text":"MIT."}}]}'
 hero:
-  title: tui
-  tagline: Build terminal apps in Go with Model, Update and View. Standard library only, 40+ widgets, a cell-diff renderer and a test harness included.
+  title: Build <span class="accent">terminal apps</span> in Go
+  tagline: <strong>tui</strong> is a terminal UI framework built on the Elm Architecture. Standard library only, with 40+ widgets, flex and grid layout, a cell-diff renderer and a headless test harness.
   actions:
     - text: Get started
       link: /overview/
       icon: right-arrow
-    - text: See the examples
+    - text: Browse examples
       link: /examples/
       variant: secondary
     - text: GitHub
       link: https://github.com/ows4444/tui
-      icon: github
+      icon: external
       variant: minimal
 ---
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 import Screen from '../../components/Screen.astro';
+import Features from '../../components/Features.astro';
 
-<div class="install"><code>go get github.com/ows4444/tui</code></div>
+<div class="section-head">
+	<p class="kicker">Why tui</p>
+	<h2>Everything a terminal app needs, nothing it doesn't</h2>
+	<p>One module, the Go standard library, and conventions enforced by tests.</p>
+</div>
 
-<Screen name="dashboard" />
+<Features />
 
-## Why tui
+<div class="section-head">
+	<p class="kicker">How it works</p>
+	<h2>Three methods and a Program</h2>
+</div>
 
-<CardGrid>
-	<Card title="The Elm Architecture" icon="seti:go">
-		A Model has `Init`, `Update` and `View`. `Update` returns Cmds for side
-		effects; the Program runs them and feeds the results back as Msgs.
-	</Card>
-	<Card title="Standard library only" icon="approve-check">
-		`go.mod` has no `require` directive, and a test in `internal/archtest`
-		fails if any package imports outside the standard library and this module.
-	</Card>
-	<Card title="Cell-diff rendering" icon="rocket">
-		Each frame is parsed into a grid of cells and only the cells that changed
-		are written, with relative cursor movement.
-	</Card>
-	<Card title="Widgets that compose" icon="puzzle">
-		Inputs, tables, trees, dialogs, menus, pickers, charts and more. Every
-		widget has a `LayoutNode()` adapter and an accessible `Linearize` form.
-	</Card>
-	<Card title="Layout and theming" icon="pencil">
-		Flex, grid and overlay layout nodes. 16 preset themes, component tokens,
-		and glyph sets with an ASCII fallback.
-	</Card>
-	<Card title="Accessible by design" icon="open-book">
-		`WithAccessible` switches to append-only, unstyled output for screen
-		readers; reduced motion follows `NO_ANIMATION` and `REDUCE_MOTION`.
-	</Card>
-	<Card title="Terminal-aware" icon="laptop">
-		Colour depth from the environment (honours `NO_COLOR`), an opt-in
-		capability probe, bracketed paste, mouse and kitty keyboard support.
-	</Card>
-	<Card title="Testable" icon="list-format">
-		The `tuitest` harness drives a Program headlessly. Every example checks
-		its screens against golden files, which is where the screens on this
-		site come from.
-	</Card>
-</CardGrid>
+<div class="split">
+<div class="split-steps">
 
-## A complete program
+<ol class="steps-list">
+	<li><strong>Model</strong> holds your state. Any value with <code>Init</code>, <code>Update</code> and <code>View</code> is one.</li>
+	<li><strong>Update</strong> gets every key, mouse event and resize as a Msg, and returns the next Model plus any Cmd to run.</li>
+	<li><strong>View</strong> returns a string. The Program diffs it cell by cell and writes only what changed.</li>
+	<li><strong>Run</strong> takes over the terminal and restores it on every way out.</li>
+</ol>
+
+<p class="split-note">This is <code>ExampleNewProgram</code> from <code>example_test.go</code>, which <code>go test</code> runs. <a href="/program/">Running a Program →</a></p>
+
+</div>
+<div class="split-code">
 
 ```go title="counter.go"
 type counter struct{ n int }
@@ -100,10 +85,14 @@ func main() {
 }
 ```
 
-The model is `ExampleNewProgram` from the repository's `example_test.go`, which
-`go test` runs. [Running a Program](/program/) covers the rest.
+</div>
+</div>
 
-## Built with tui
+<div class="section-head">
+	<p class="kicker">Built with tui</p>
+	<h2>Real screens, not mock-ups</h2>
+	<p>Each is the first frame an example's own test checks, at 80×24.</p>
+</div>
 
 <div class="gallery">
 	<Screen name="chat" />
@@ -112,56 +101,12 @@ The model is `ExampleNewProgram` from the repository's `example_test.go`, which
 	<Screen name="form" />
 </div>
 
-<p style="text-align:center"><a href="/examples/">All 30 example programs →</a></p>
+<p class="more"><a href="/examples/">All 30 example programs →</a></p>
 
-## Frequently asked questions
-
-### What is tui?
-
-tui is a terminal UI (TUI) framework for Go, at
-[github.com/ows4444/tui](https://github.com/ows4444/tui). An application is a
-Model with `Init`, `Update` and `View` (the Elm Architecture); `tui.NewProgram`
-runs it, reads keys, mouse events and resizes, and redraws `View` with a cell
-diff so only changed cells are written.
-
-### How do I install tui?
-
-Run `go get github.com/ows4444/tui`. It needs Go 1.25 or later. There is no
-tagged release yet, so this resolves to a pseudo-version of the latest commit.
-
-### Does tui have any dependencies?
-
-No. tui uses only the Go standard library: `go.mod` has no `require` directive,
-and a test in `internal/archtest` fails if any package imports outside the
-standard library and the module.
-
-### Which platforms does tui support?
-
-Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD and DragonFly BSD. CI runs the
-tests on Linux, macOS, Windows and FreeBSD; OpenBSD, NetBSD and DragonFly BSD
-are cross-compiled. Other operating systems, including Solaris and illumos,
-fail to build on purpose.
-
-### Does tui work with screen readers?
-
-`tui.WithAccessible(true)` switches a Program to an append-only, unstyled
-plain-text transcript that a screen reader can follow, and `WithAccessibleAuto`
-turns it on for `ACCESSIBLE=1` or `TERM=dumb`. No run with VoiceOver, NVDA or
-Orca is recorded yet, so screen-reader support is unverified. See
-[Accessibility](/accessibility/).
-
-### How do I test a tui application?
-
-The `tuitest` package runs a model in a real `tui.Program` against an in-memory
-terminal: keys, pastes, resizes and messages go in, and the emulated screen
-comes out as lines that can be compared against golden files. See
-[Testing](/testing/).
-
-### What license is tui under?
-
-MIT.
-
-## Learn
+<div class="section-head">
+	<p class="kicker">Learn</p>
+	<h2>Start where you are</h2>
+</div>
 
 <CardGrid>
 	<LinkCard title="Overview" description="Install, first program, packages and supported platforms." href="/overview/" />
@@ -169,3 +114,87 @@ MIT.
 	<LinkCard title="Widgets" description="The widget contracts and a catalog of every component package." href="/widgets/" />
 	<LinkCard title="Layout" description="Measure and render with Node trees: rows, columns, grids, overlays." href="/layout/" />
 </CardGrid>
+
+<div class="section-head">
+	<p class="kicker">FAQ</p>
+	<h2>Frequently asked questions</h2>
+</div>
+
+<div class="faq not-content">
+
+<details>
+<summary>What is tui?</summary>
+
+tui is a terminal UI (TUI) framework for Go, at
+[github.com/ows4444/tui](https://github.com/ows4444/tui). An application is a
+Model with `Init`, `Update` and `View` (the Elm Architecture); `tui.NewProgram`
+runs it, reads keys, mouse events and resizes, and redraws `View` with a cell
+diff so only changed cells are written.
+
+</details>
+
+<details>
+<summary>How do I install tui?</summary>
+
+Run `go get github.com/ows4444/tui`. It needs Go 1.25 or later. There is no
+tagged release yet, so this resolves to a pseudo-version of the latest commit.
+
+</details>
+
+<details>
+<summary>Does tui have any dependencies?</summary>
+
+No. tui uses only the Go standard library: `go.mod` has no `require` directive,
+and a test in `internal/archtest` fails if any package imports outside the
+standard library and the module.
+
+</details>
+
+<details>
+<summary>Which platforms does tui support?</summary>
+
+Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD and DragonFly BSD. CI runs the
+tests on Linux, macOS, Windows and FreeBSD; OpenBSD, NetBSD and DragonFly BSD
+are cross-compiled. Other operating systems, including Solaris and illumos,
+fail to build on purpose.
+
+</details>
+
+<details>
+<summary>Does tui work with screen readers?</summary>
+
+`tui.WithAccessible(true)` switches a Program to an append-only, unstyled
+plain-text transcript that a screen reader can follow, and `WithAccessibleAuto`
+turns it on for `ACCESSIBLE=1` or `TERM=dumb`. No run with VoiceOver, NVDA or
+Orca is recorded yet, so screen-reader support is unverified. See
+[Accessibility](/accessibility/).
+
+</details>
+
+<details>
+<summary>How do I test a tui application?</summary>
+
+The `tuitest` package runs a model in a real `tui.Program` against an in-memory
+terminal: keys, pastes, resizes and messages go in, and the emulated screen
+comes out as lines that can be compared against golden files. See
+[Testing](/testing/).
+
+</details>
+
+<details>
+<summary>What license is tui under?</summary>
+
+MIT.
+
+</details>
+
+</div>
+
+<div class="cta not-content">
+	<h2>Ready to build?</h2>
+	<p>Install the module and have a running program in a few minutes.</p>
+	<div class="cta-actions">
+		<a class="cta-primary" href="/overview/">Get started</a>
+		<a class="cta-secondary" href="/cookbook/">Read the cookbook</a>
+	</div>
+</div>

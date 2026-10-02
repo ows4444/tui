@@ -1,0 +1,32 @@
+---
+// The install command with a copy button.
+const command = 'go get github.com/ows4444/tui';
+---
+
+<div class="install not-content">
+	<code><span class="prompt" aria-hidden="true">$</span> {command}</code>
+	<button type="button" class="copy" data-copy={command} aria-label="Copy install command">
+		<svg class="i-copy" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>
+		<svg class="i-done" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+		<span class="sr-only" aria-live="polite"></span>
+	</button>
+</div>
+
+<script>
+	for (const button of document.querySelectorAll<HTMLButtonElement>('.install .copy')) {
+		button.addEventListener('click', async () => {
+			const status = button.querySelector('.sr-only');
+			try {
+				await navigator.clipboard.writeText(button.dataset.copy ?? '');
+				button.classList.add('copied');
+				if (status) status.textContent = 'Copied';
+				setTimeout(() => {
+					button.classList.remove('copied');
+					if (status) status.textContent = '';
+				}, 1600);
+			} catch {
+				if (status) status.textContent = 'Copy failed; select the command instead';
+			}
+		});
+	}
+</script>

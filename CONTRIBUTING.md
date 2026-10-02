@@ -95,7 +95,9 @@ Markdown should be copied from an Example so `go test` compiles it.
 The site at <https://tui.nizaami.com> is an [Astro Starlight](https://starlight.astro.build/)
 project in `site/`. Its npm packages are site tooling, not module dependencies.
 It has no pages of its own except the landing page
-(`site/src/content/docs/index.mdx`): `site/scripts/sync-docs.mjs` generates the
+(`site/src/content/docs/index.mdx`, with its components in `site/src/components/`;
+`Hero.astro` and `Footer.astro` replace Starlight's own, and the theme is
+`site/src/styles/custom.css`): `site/scripts/sync-docs.mjs` generates the
 rest from `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md` and `docs/`, and the
 Examples page from each `examples/*/testdata/size-80x24.golden`. Edit those
 sources, not the generated files, which are gitignored. A page added to `docs/`
