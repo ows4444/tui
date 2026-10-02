@@ -1,15 +1,18 @@
 ---
-// A real screen from an example's golden file (examples/<name>/testdata/size-80x24.golden),
-// copied into src/generated/screens.json by scripts/sync-docs.mjs.
+// A real screen from an example: the 80x24 frame its size-matrix test checks.
+// scripts/sync-docs.mjs puts it in src/generated/screens.json: `text` is the
+// golden file, and `ansi` (when the export ran) is the same frame with its
+// colours and attributes, verified to strip to exactly `text`.
 //
 // Web fonts don't reliably include box-drawing, block, braille or symbol
 // characters, and the fallback font differs per OS, so drawing them as text
-// breaks the lines and shifts columns. Like a terminal emulator, this draws
-// those characters itself: every non-ASCII character gets a cell exactly one
-// column wide; box lines, eighth blocks, shades and braille are painted with
-// CSS. The original character stays in the cell as transparent text, so
-// copying the screen and screen readers still get the real text.
+// breaks lines and shifts columns. Like a terminal emulator, this draws those
+// characters itself: every non-ASCII character gets a cell exactly one column
+// wide; box lines, eighth blocks, shades and braille are painted with CSS in
+// the cell's colour. The original character stays in the cell as transparent
+// text, so copying the screen and screen readers still get the real text.
 import screens from '../generated/screens.json';
+import { parseFrame, type Style } from '../lib/ansi';
 
 interface Props {
 	name: keyof typeof screens;
@@ -17,7 +20,7 @@ interface Props {
 }
 
 const { name, caption = true } = Astro.props;
-const screen = screens[name];
+const screen = screens[name] as { text: string; ansi?: string };
 if (!screen) throw new Error(`Screen: no golden screen for examples/${name}`);
 
 const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -39,52 +42,89 @@ const brailleDots: [number, number][] = [
 	[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [0, 3], [1, 3],
 ];
 
-function cell(ch: string): string {
+// Characters the web font has, drawn as ordinary text.
+const plain = (ch: string) => ch.codePointAt(0)! < 0x80 || '·—•…'.includes(ch);
+
+// colours resolves reverse video and dim into the colours a cell shows.
+function colours(s: Style): { fg?: string; bg?: string } {
+	let fg = s.fg;
+	let bg = s.bg;
+	if (s.reverse) {
+		[fg, bg] = [bg ?? 'var(--screen-bg)', fg ?? 'var(--screen-fg)'];
+	}
+	if (s.dim) fg = `color-mix(in srgb, ${fg ?? 'var(--screen-fg)'} 55%, transparent)`;
+	return { fg, bg };
+}
+
+// textCSS is the inline style for text drawn in style s.
+function textCSS(s: Style): string {
+	const { fg, bg } = colours(s);
+	let css = '';
+	if (fg) css += `color:${fg};`;
+	if (bg) css += `background-color:${bg};`;
+	if (s.bold) css += 'font-weight:700;';
+	if (s.italic) css += 'font-style:italic;';
+	const deco = [s.underline && 'underline', s.strike && 'line-through'].filter(Boolean).join(' ');
+	if (deco) css += `text-decoration:${deco};`;
+	return css;
+}
+
+// paintCSS is the inline style for a cell painted with CSS: its colour goes in
+// --fg (used by the strokes, bars and dots) and its background as usual.
+function paintCSS(s: Style): string {
+	const { fg, bg } = colours(s);
+	return (fg ? `--fg:${fg};` : '') + (bg ? `background-color:${bg};` : '');
+}
+
+function cell(ch: string, s: Style): string {
 	const cp = ch.codePointAt(0)!;
 	const t = escape(ch);
 	const arms = box[ch];
 	if (arms) {
 		const [u, r, d, l] = arms;
-		return `<span class="c bx" style="--u:${u};--r:${r};--d:${d};--l:${l}">${t}</span>`;
+		return `<span class="c bx" style="--u:${u};--r:${r};--d:${d};--l:${l};${paintCSS(s)}">${t}</span>`;
 	}
 	if (cp >= 0x2581 && cp <= 0x2588) {
-		return `<span class="c blk" style="--h:${cp - 0x2580}">${t}</span>`;
+		return `<span class="c blk" style="--h:${cp - 0x2580};${paintCSS(s)}">${t}</span>`;
 	}
 	if (cp >= 0x2591 && cp <= 0x2593) {
-		return `<span class="c shade" style="--o:${(cp - 0x2590) * 0.25}">${t}</span>`;
+		return `<span class="c shade" style="--o:${(cp - 0x2590) * 0.25};${paintCSS(s)}">${t}</span>`;
 	}
 	if (cp > 0x2800 && cp <= 0x28ff) {
 		const bits = cp - 0x2800;
 		const dots = brailleDots
 			.filter((_, i) => bits & (1 << i))
-			.map(([x, y]) => `radial-gradient(circle at ${x ? 70 : 30}% ${12.5 + y * 25}%,var(--screen-fg) 0.085em,transparent 0.1em)`);
-		return `<span class="c brl" style="background:${dots.join(',')}">${t}</span>`;
+			.map(([x, y]) => `radial-gradient(circle at ${x ? 70 : 30}% ${12.5 + y * 25}%,var(--fg,var(--screen-fg)) 0.085em,transparent 0.1em)`);
+		return `<span class="c brl" style="${paintCSS(s)}background-image:${dots.join(',')}">${t}</span>`;
 	}
-	if (cp === 0x2800) return `<span class="c">${t}</span>`;
-	return `<span class="c sym">${t}</span>`;
+	return `<span class="c sym" style="${textCSS(s)}">${t}</span>`;
 }
 
-const html = screen.text
-	.split('\n')
-	.map((line) => line.trimEnd())
-	.join('\n')
-	.replace(/\n+$/, '')
-	.split('\n')
+const lines = parseFrame(screen.ansi ?? screen.text);
+while (lines.length && lines[lines.length - 1].every((c) => c.ch === ' ' && !c.style.bg && !c.style.reverse)) lines.pop();
+
+const html = lines
 	.map((line) => {
-		// Plain text in runs, each in a box exactly as many columns wide as it
-		// has characters, so text and cells add up to the same positions.
+		// Drop trailing blanks that have no background.
+		let end = line.length;
+		while (end > 0 && line[end - 1].ch === ' ' && !line[end - 1].style.bg && !line[end - 1].style.reverse) end--;
+		// Plain text in runs of one style, each in a box exactly as many columns
+		// wide as it has characters, so text and cells add up to the same positions.
 		let out = '';
 		let run = '';
+		let runStyle: Style | undefined;
 		const flush = () => {
-			if (run) out += `<span class="t" style="--n:${[...run].length}">${escape(run)}</span>`;
+			if (run) out += `<span class="t" style="--n:${[...run].length};${textCSS(runStyle!)}">${escape(run)}</span>`;
 			run = '';
 		};
-		for (const ch of line) {
-			if (ch.codePointAt(0)! < 0x80 || '·—•…'.includes(ch)) {
+		for (const { ch, style } of line.slice(0, end)) {
+			if (plain(ch)) {
+				if (run && runStyle !== style) flush();
+				runStyle = style;
 				run += ch;
 			} else {
 				flush();
-				out += cell(ch);
+				out += cell(ch, style);
 			}
 		}
 		flush();
@@ -98,5 +138,5 @@ const html = screen.text
 		<i></i><i></i><i></i><span>go run ./examples/{name}</span>
 	</div>
 	<pre aria-label={`Screen of examples/${name}`} set:html={html} />
-	{caption && <figcaption>examples/{name} · first frame at 80×24, from its test's golden file</figcaption>}
+	{caption && <figcaption>examples/{name} · first frame at 80×24, from its size-matrix test</figcaption>}
 </figure>

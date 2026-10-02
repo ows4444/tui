@@ -54,12 +54,19 @@ func updatingSizes() bool {
 //
 // Regenerate goldens with `go test -update-sizes` (or -update, or
 // TUITEST_UPDATE=1).
+//
+// When TUI_SCREENS_DIR is set, the 80x24 frame is also written there unstripped
+// (colours and attributes kept) as <package directory name>.ansi, for the
+// website's example screens. Nothing is compared against it.
 func SizeMatrix(t *testing.T, build func() tui.Model, known ...string) {
 	t.Helper()
 	for _, sz := range MatrixSizes {
 		w, h := sz[0], sz[1]
 		name := fmt.Sprintf("%dx%d", w, h)
 		t.Run(name, func(t *testing.T) {
+			if dir := os.Getenv("TUI_SCREENS_DIR"); dir != "" && name == "80x24" {
+				exportScreen(t, dir, rawRenderAt(t, build, w, h))
+			}
 			got := renderAt(t, build, w, h)
 			widest := 0
 			lines := strings.Split(strings.TrimSuffix(got, "\n"), "\n")
@@ -108,11 +115,33 @@ func SizeMatrix(t *testing.T, build func() tui.Model, known ...string) {
 
 func renderAt(t *testing.T, build func() tui.Model, w, h int) (out string) {
 	t.Helper()
+	return ansi.StripANSI(rawRenderAt(t, build, w, h))
+}
+
+// rawRenderAt is renderAt without stripping colours and attributes.
+func rawRenderAt(t *testing.T, build func() tui.Model, w, h int) (out string) {
+	t.Helper()
 	defer func() {
 		if r := recover(); r != nil {
 			t.Fatalf("panic at %dx%d: %v", w, h, r)
 		}
 	}()
 	m, _ := build().Update(tui.ResizeMsg{Width: w, Height: h})
-	return ansi.StripANSI(m.View())
+	return m.View()
+}
+
+// exportScreen writes frame to dir/<calling package directory>.ansi.
+func exportScreen(t *testing.T, dir, frame string) {
+	t.Helper()
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil { // #nosec G301 -- an output directory the caller chose
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, filepath.Base(wd)+".ansi")
+	if err := os.WriteFile(path, []byte(frame), 0o644); err != nil { // #nosec G306 -- generated site input, not a secret
+		t.Fatal(err)
+	}
 }

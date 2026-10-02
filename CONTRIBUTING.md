@@ -99,7 +99,12 @@ It has no pages of its own except the landing page
 `Hero.astro` and `Footer.astro` replace Starlight's own, and the theme is
 `site/src/styles/custom.css`): `site/scripts/sync-docs.mjs` generates the
 rest from `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md` and `docs/`, and the
-Examples page from each `examples/*/testdata/size-80x24.golden`. Edit those
+Examples page from each example's 80×24 size-matrix screen. For colour the
+sync runs `go test -run 'TestSizeMatrix/^80x24$' ./examples/...` with
+`TUI_SCREENS_DIR` set, which makes `testutil.SizeMatrix` write each frame
+unstripped; a frame is used only if, stripped, it equals
+`testdata/size-80x24.golden`, and without Go the screens show without colour.
+Their categories are `EXAMPLE_CATEGORIES` in the sync script. Edit those
 sources, not the generated files, which are gitignored. A page added to `docs/`
 needs an entry in `pages` in the sync script and in the sidebar in
 `site/astro.config.mjs`. The sync fails on a relative link that points nowhere.

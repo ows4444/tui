@@ -13,6 +13,7 @@
 //
 // Run by `npm run dev` and `npm run build`. Its output is gitignored.
 
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -224,21 +225,85 @@ function firstSentence(text) {
 	return flat.match(/^.+?[.!?](\s|$)/)?.[0].trim() ?? flat;
 }
 
+// exportStyledScreens runs the examples' size-matrix tests with
+// TUI_SCREENS_DIR set, which makes testutil.SizeMatrix write each 80x24 frame
+// with its colours (see internal/testutil/sizematrix.go), and returns them by
+// example name. The environment is fixed so the frames don't depend on the
+// machine. Without Go, or if the run fails, it returns {} and the screens are
+// shown without colour.
+function exportStyledScreens() {
+	const dir = path.join(genDir, 'ansi');
+	fs.rmSync(dir, { recursive: true, force: true });
+	const env = { ...process.env, TUI_SCREENS_DIR: dir, TERM: 'xterm-256color', COLORTERM: 'truecolor', LANG: 'en_US.UTF-8' };
+	delete env.NO_COLOR;
+	delete env.LC_ALL;
+	delete env.LC_CTYPE;
+	const run = spawnSync('go', ['test', '-count=1', '-run', 'TestSizeMatrix/^80x24$', './examples/...'], {
+		cwd: repoDir,
+		env,
+		encoding: 'utf8',
+	});
+	if (run.error || run.status !== 0) {
+		console.warn(`sync-docs: could not export styled screens (${run.error?.message ?? (run.stdout + run.stderr).trim().split('\n').slice(-3).join(' | ')}); showing them without colour`);
+		return {};
+	}
+	const out = {};
+	for (const f of fs.existsSync(dir) ? fs.readdirSync(dir) : []) {
+		if (f.endsWith('.ansi')) out[f.slice(0, -5)] = fs.readFileSync(path.join(dir, f), 'utf8');
+	}
+	return out;
+}
+
+const stripEscapes = (s) =>
+	s.replace(/\x1b(?:\[[0-9;:?<=>]*[ -\/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[@-Z\\-_])/g, '');
+const normalise = (s) =>
+	s
+		.split('\n')
+		.map((l) => l.replace(/\r/g, '').trimEnd())
+		.join('\n')
+		.replace(/\s+$/, '');
+
+const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
+
+// Categories for the Examples page, most visual first. An example in none of
+// them is listed under "More", so a new example still appears.
+const EXAMPLE_CATEGORIES = [
+	{ id: 'showcase', title: 'Showcase', blurb: 'Full screens that show what a tui program can look like.', names: ['dashboard', 'canvas', 'chat', 'welcomescreen', 'splashscreen', 'probe', 'faces'] },
+	{ id: 'forms', title: 'Forms and input', blurb: 'Text fields, sign-in and multi-step flows, focus and the cursor.', names: ['loginflow', 'setupflow', 'login', 'signup', 'form', 'focus', 'cursorfield'] },
+	{ id: 'lists', title: 'Lists, tables and navigation', blurb: 'Selection, tabs, scrolling and switching screens.', names: ['inspector', 'table', 'list', 'settings', 'router', 'pager'] },
+	{ id: 'layout', title: 'Layout and rendering', blurb: 'Composing string and cell children, and the smallest program.', names: ['mixedscreen', 'counter'] },
+	{ id: 'async', title: 'Async and streaming', blurb: 'Commands that resolve later, child processes and committed output.', names: ['asyncload', 'procstream', 'buildlog', 'agentshell'] },
+	{ id: 'inline', title: 'Inline mode', blurb: 'Programs that draw in the normal scrollback instead of the alternate screen; their first frame is small by design.', names: ['inlinespinners', 'inlinebuild', 'inlinechat', 'inlinetall'] },
+];
+
 function syncExamples() {
 	const names = fs
 		.readdirSync(path.join(repoDir, 'examples'), { withFileTypes: true })
 		.filter((d) => d.isDirectory())
 		.map((d) => d.name)
 		.sort();
+	const styled = exportStyledScreens();
 	const screens = {};
 	const withScreen = [];
 	const without = [];
+	let coloured = 0;
 	for (const name of names) {
 		const golden = path.join(repoDir, 'examples', name, SCREEN);
 		const desc = firstSentence(packageDoc(name));
 		if (fs.existsSync(golden)) {
 			const text = fs.readFileSync(golden, 'utf8').replace(/\s+$/, '');
 			screens[name] = { text, description: desc };
+			// Use the styled frame only when it is the same screen the test
+			// checks: stripped of escapes, it must equal the golden text.
+			const ansi = styled[name];
+			if (ansi !== undefined) {
+				if (normalise(stripEscapes(ansi)) === normalise(text)) {
+					screens[name].ansi = ansi;
+					coloured++;
+				} else {
+					console.warn(`sync-docs: examples/${name}: styled frame differs from its golden; showing it without colour`);
+				}
+			}
 			withScreen.push(name);
 		} else {
 			without.push(name);
@@ -252,39 +317,49 @@ function syncExamples() {
 		description: 'Every program under examples/, with the 80×24 screen its test checks.',
 	};
 	const head = frontmatter({ title: meta.title, description: meta.description, editUrl: false, head: pageHead(meta) });
-	// The page is MDX so each screen is drawn by the Screen component; the
-	// Markdown copy for llms.txt gets the same text with plain-text screens.
-	const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
-	let page = `import Screen from '../../components/Screen.astro';\n\n`;
+	// The page is MDX: examples are grouped by category (EXAMPLE_CATEGORIES)
+	// and each is an ExampleCard drawing its real screen. The Markdown copy for
+	// llms.txt gets the same structure with plain-text screens.
+	const groups = EXAMPLE_CATEGORIES.map((c) => ({ ...c, names: c.names.filter((n) => withScreen.includes(n)) }));
+	const unlisted = withScreen.filter((n) => !EXAMPLE_CATEGORIES.some((c) => c.names.includes(n)));
+	if (unlisted.length) groups.push({ id: 'more', title: 'More', blurb: '', names: unlisted });
+	const shown = groups.filter((g) => g.names.length);
+
+	let page = `import ExampleCard from '../../components/ExampleCard.astro';\nimport ExampleFilter from '../../components/ExampleFilter.astro';\n\n`;
 	let copy = '';
-	const both = (s) => {
-		page += s;
-		copy += s;
-	};
-	both(`Every directory under [examples/](${GITHUB}/tree/${BRANCH}/examples) is a runnable program. `);
-	both(`Clone the repository and run one from its root, for example \`go run ./examples/dashboard\`.\n\n`);
-	both(`The screens below are not mock-ups: each is the example's \`${SCREEN}\` golden file, `);
-	both(`the first frame at 80×24 that its own test compares against, so they show text and layout without colour.\n\n`);
-	for (const name of withScreen) {
-		const { text, description } = screens[name];
-		page += `## ${name}\n\n` + (description ? `${mdx(description)}\n\n` : '');
-		copy += `## ${name}\n\n` + (description ? `${description}\n\n` : '');
-		page += `<Screen name="${name}" caption={false} />\n\n`;
-		copy += '````text\n' + text + '\n````\n\n';
-		both(`[Source](${GITHUB}/tree/${BRANCH}/examples/${name})\n\n`);
+	const intro =
+		`Every directory under [examples/](${GITHUB}/tree/${BRANCH}/examples) is a runnable program. ` +
+		`Clone the repository and run one from its root, for example \`go run ./examples/dashboard\`.\n\n` +
+		`The screens are not mock-ups: each is the first frame the example's own size-matrix test renders at 80×24, ` +
+		`shown with the colours its \`View\` produces. Only the 16 basic terminal colours depend on a palette, as in any terminal.\n\n`;
+	page += intro;
+	copy += intro;
+	page += `<ExampleFilter categories={${JSON.stringify(shown.map((g) => ({ id: g.id, title: g.title, count: g.names.length })))}} />\n\n`;
+	for (const g of shown) {
+		page += `<section class="ex-cat" data-cat="${g.id}">\n\n## ${g.title}\n\n` + (g.blurb ? `${g.blurb}\n\n` : '');
+		copy += `## ${g.title}\n\n` + (g.blurb ? `${g.blurb}\n\n` : '');
+		for (const name of g.names) {
+			const { text, description } = screens[name];
+			page += `<ExampleCard name="${name}" />\n\n`;
+			copy += `### ${name}\n\n` + (description ? `${description}\n\n` : '') + `Run: \`go run ./examples/${name}\`\n\n`;
+			copy += '````text\n' + text + '\n````\n\n';
+			copy += `[Source](${GITHUB}/tree/${BRANCH}/examples/${name})\n\n`;
+		}
+		page += `</section>\n\n`;
 	}
 	if (without.length) {
-		both(`## Without a screen capture\n\n`);
-		for (const name of without) {
+		const list = without.map((name) => {
 			const desc = firstSentence(packageDoc(name));
-			page += `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${mdx(desc)}` : '') + '\n';
-			copy += `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${desc}` : '') + '\n';
-		}
+			return { name, desc };
+		});
+		page += `## Without a screen capture\n\n` + list.map(({ name, desc }) => `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${mdx(desc)}` : '')).join('\n') + '\n';
+		copy += `## Without a screen capture\n\n` + list.map(({ name, desc }) => `- [${name}](${GITHUB}/tree/${BRANCH}/examples/${name})` + (desc ? `: ${desc}` : '')).join('\n') + '\n';
 	}
 	fs.writeFileSync(path.join(outDir, 'examples.mdx'), head + page);
 	addMarkdownCopy({ ...meta, body: copy });
 	fs.mkdirSync(genDir, { recursive: true });
 	fs.writeFileSync(path.join(genDir, 'screens.json'), JSON.stringify(screens, null, '\t') + '\n');
+	console.log(`sync-docs: ${coloured} of ${withScreen.length} example screens in colour`);
 	return withScreen.length;
 }
 

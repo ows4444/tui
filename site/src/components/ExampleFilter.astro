@@ -1,0 +1,32 @@
+---
+// Category chips for the Examples page: show one category, or all.
+interface Props {
+	categories: { id: string; title: string; count: number }[];
+}
+const { categories } = Astro.props;
+const total = categories.reduce((n, c) => n + c.count, 0);
+---
+
+<div class="ex-filter not-content" role="toolbar" aria-label="Filter examples by category">
+	<button type="button" data-cat="" aria-pressed="true">All <span>{total}</span></button>
+	{
+		categories.map((c) => (
+			<button type="button" data-cat={c.id} aria-pressed="false">
+				{c.title} <span>{c.count}</span>
+			</button>
+		))
+	}
+</div>
+
+<script>
+	const buttons = [...document.querySelectorAll<HTMLButtonElement>('.ex-filter button')];
+	for (const b of buttons) {
+		b.addEventListener('click', () => {
+			const cat = b.dataset.cat;
+			for (const o of buttons) o.setAttribute('aria-pressed', String(o === b));
+			for (const s of document.querySelectorAll<HTMLElement>('section.ex-cat')) {
+				s.hidden = Boolean(cat) && s.dataset.cat !== cat;
+			}
+		});
+	}
+</script>

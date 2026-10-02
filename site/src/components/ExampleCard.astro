@@ -1,0 +1,46 @@
+---
+// One example on the Examples page: name, description, run command, source
+// link and its real screen.
+import screens from '../generated/screens.json';
+import Screen from './Screen.astro';
+
+interface Props {
+	name: keyof typeof screens;
+}
+
+const { name } = Astro.props;
+const { description } = screens[name] as { description?: string };
+const command = `go run ./examples/${name}`;
+const source = `https://github.com/ows4444/tui/tree/code/examples/${name}`;
+// Descriptions are package comments: render `code` spans, escape the rest.
+const desc = (description ?? '')
+	.replace(/&/g, '&amp;')
+	.replace(/</g, '&lt;')
+	.replace(/`([^`]+)`/g, '<code>$1</code>');
+---
+
+<article class="ex-card not-content" id={name}>
+	<header>
+		<h3><a href={`#${name}`}>{name}</a></h3>
+		<div class="ex-actions">
+			<button type="button" class="ex-copy" data-copy={command} title="Copy the run command">
+				<span class="prompt" aria-hidden="true">$</span> {command}
+			</button>
+			<a class="ex-source" href={source}>Source</a>
+		</div>
+	</header>
+	{desc && <p set:html={desc} />}
+	<Screen name={name} caption={false} />
+</article>
+
+<script>
+	for (const b of document.querySelectorAll<HTMLButtonElement>('.ex-copy')) {
+		b.addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(b.dataset.copy ?? '');
+				b.classList.add('copied');
+				setTimeout(() => b.classList.remove('copied'), 1400);
+			} catch {}
+		});
+	}
+</script>

@@ -552,6 +552,26 @@ body {
 
 /* Terminal window used for real screen captures (src/components/Screen.astro) */
 .screen {
+	/* The 16 ANSI colours, as a terminal theme sets them: GitHub Dark's,
+	   with black, white and bright blue adjusted so the pairs the examples
+	   use (black or white text on bright backgrounds) stay readable.
+	   256-colour and RGB values are exact. */
+	--ansi-0: #161b22;
+	--ansi-1: #ff7b72;
+	--ansi-2: #3fb950;
+	--ansi-3: #d29922;
+	--ansi-4: #58a6ff;
+	--ansi-5: #bc8cff;
+	--ansi-6: #39c5cf;
+	--ansi-7: #e6edf3;
+	--ansi-8: #6e7681;
+	--ansi-9: #ffa198;
+	--ansi-10: #56d364;
+	--ansi-11: #e3b341;
+	--ansi-12: #2f81f7;
+	--ansi-13: #d2a8ff;
+	--ansi-14: #56d4dd;
+	--ansi-15: #f0f6fc;
 	margin: 2rem auto 0;
 	max-width: 52rem;
 	border-radius: var(--tui-radius);
@@ -650,7 +670,7 @@ body {
 .screen .bx::after {
 	content: '';
 	position: absolute;
-	background: var(--screen-dim);
+	background: var(--fg, var(--screen-dim));
 }
 .screen .bx::before {
 	top: calc(50% - 0.5px);
@@ -675,15 +695,15 @@ body {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	height: calc(88% * var(--h) / 8);
-	background: var(--screen-fg);
+	height: calc(100% * var(--h) / 8);
+	background: var(--fg, var(--screen-fg));
 }
 /* ░▒▓: the cell filled at a quarter, half or three-quarter strength. */
 .screen .shade::before {
 	content: '';
 	position: absolute;
-	inset: 12% 0 0 0;
-	background: var(--screen-fg);
+	inset: 0;
+	background: var(--fg, var(--screen-fg));
 	opacity: calc(var(--o) * 0.7);
 }
 .screen figcaption {
@@ -912,4 +932,139 @@ body {
 }
 .site-footer a:hover {
 	color: var(--sl-color-accent);
+}
+
+/* ---------- Examples page (ExampleFilter.astro, ExampleCard.astro) ---------- */
+
+.ex-filter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 1.5rem 0 0.5rem;
+}
+.ex-filter button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.4rem 0.8rem;
+	border: 1px solid var(--tui-border-strong);
+	border-radius: 999px;
+	background: var(--tui-surface);
+	color: var(--sl-color-gray-2);
+	font: inherit;
+	font-size: 0.85rem;
+	cursor: pointer;
+}
+.ex-filter button span {
+	font-family: var(--sl-font-mono);
+	font-size: 0.75rem;
+	color: var(--sl-color-gray-3);
+}
+.ex-filter button:hover {
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-white);
+}
+.ex-filter button[aria-pressed='true'] {
+	background: var(--sl-color-accent-low);
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-accent-high);
+}
+:root[data-theme='light'] .ex-filter button[aria-pressed='true'] {
+	color: var(--sl-color-accent);
+}
+section.ex-cat[hidden] {
+	display: none;
+}
+section.ex-cat > p {
+	color: var(--sl-color-gray-3);
+}
+
+.ex-card {
+	margin-top: 1.5rem !important;
+	padding: 1rem 1rem 1.1rem;
+	border: 1px solid var(--tui-border);
+	border-radius: var(--tui-radius);
+	background: var(--tui-surface);
+	scroll-margin-top: calc(var(--sl-nav-height) + 1rem);
+}
+.ex-card:target {
+	border-color: var(--sl-color-accent);
+}
+.ex-card header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem 1rem;
+}
+.ex-card h3 {
+	margin: 0;
+	font-family: var(--sl-font-mono);
+	font-size: 1.05rem;
+	font-weight: 700;
+}
+.ex-card h3 a {
+	color: var(--sl-color-white);
+	text-decoration: none;
+}
+.ex-card h3 a:hover {
+	color: var(--sl-color-accent-high);
+}
+.ex-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.ex-copy {
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--tui-border-strong);
+	border-radius: 8px;
+	background: var(--sl-color-black);
+	color: var(--sl-color-gray-1);
+	font-family: var(--sl-font-mono);
+	font-size: 0.78rem;
+	cursor: copy;
+}
+.ex-copy .prompt {
+	color: var(--sl-color-accent);
+}
+.ex-copy:hover {
+	border-color: var(--sl-color-accent);
+}
+.ex-copy.copied {
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-accent-high);
+}
+:root[data-theme='light'] .ex-copy.copied {
+	color: var(--sl-color-accent);
+}
+.ex-source {
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--tui-border-strong);
+	border-radius: 8px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--sl-color-gray-1);
+	text-decoration: none;
+}
+.ex-source:hover {
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-white);
+}
+.ex-card > p {
+	margin: 0.6rem 0 0;
+	font-size: 0.92rem;
+	line-height: 1.6;
+	color: var(--sl-color-gray-2);
+}
+.ex-card > p code {
+	font-family: var(--sl-font-mono);
+	font-size: 0.85em;
+	padding: 0.05em 0.3em;
+	border-radius: 5px;
+	background: var(--sl-color-gray-6);
+}
+.ex-card .screen {
+	margin: 0.9rem 0 0;
+	max-width: none;
 }
