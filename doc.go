@@ -65,4 +65,8 @@
 // wraps with Unwrapper.
 //
 // docs/architecture/overview.md describes how the packages layer.
+//
+// Guides, a cookbook and screens of every example are at [tui.nizaami.com].
+//
+// [tui.nizaami.com]: https://tui.nizaami.com
 package tui

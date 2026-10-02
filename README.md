@@ -10,6 +10,10 @@ options it wants, and calls `Run`. The Program reads keys, mouse events and
 resizes, calls `Update` on each Msg, runs the Cmds `Update` returns, and redraws
 `View` with a cell diff so only changed cells are written.
 
+Guides, a cookbook and screens of every example are at
+**[tui.nizaami.com](https://tui.nizaami.com)**; the API reference is on
+[pkg.go.dev](https://pkg.go.dev/github.com/ows4444/tui).
+
 ## Install
 
 Requires Go 1.25 or later.
