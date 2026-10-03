@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"io"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -148,5 +150,66 @@ func TestSuspendRepeatedly(t *testing.T) {
 	pw.WriteString("q")
 	if res := <-ch; res.err != nil {
 		t.Fatal(res.err)
+	}
+}
+
+// inflightReader counts the Read calls in progress on r and remembers the most
+// it has seen at once.
+type inflightReader struct {
+	r        io.Reader
+	now, max atomic.Int32
+}
+
+func (c *inflightReader) Read(b []byte) (int, error) {
+	n := c.now.Add(1)
+	for {
+		m := c.max.Load()
+		if n <= m || c.max.CompareAndSwap(m, n) {
+			break
+		}
+	}
+	defer c.now.Add(-1)
+	return c.r.Read(b)
+}
+
+// A WithInput source that is not a file cannot be cancelled, so its reader
+// keeps running across a Suspend. Resuming must not start a second one on the
+// same decoder: one reader, every key once and in order (run with -race).
+func TestSuspendWithPipeInputKeepsOneReader(t *testing.T) {
+	pr, pw := io.Pipe()
+	t.Cleanup(func() { pw.Close() })
+	in := &inflightReader{r: pr}
+	var mu sync.Mutex
+	var keys []rune
+	rec := suspendRec{mu: &mu, keys: &keys, fn: func() error { return nil }}
+	p := NewProgram(rec, WithInput(in), WithOutput(io.Discard))
+	errc := make(chan error, 1)
+	go func() {
+		_, err := p.Run()
+		errc <- err
+	}()
+
+	want := ""
+	for _, k := range "eabecdeq" {
+		if _, err := pw.Write([]byte(string(k))); err != nil {
+			t.Fatal(err)
+		}
+		want += string(k)
+		waitKeys(t, rec, want)
+		if k == 'e' {
+			// Give a second reader, if one was started, time to reach Read.
+			time.Sleep(20 * time.Millisecond)
+		}
+	}
+	select {
+	case err := <-errc:
+		if err != nil {
+			t.Fatalf("Run = %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run did not return")
+	}
+	if got := in.max.Load(); got != 1 {
+		t.Fatalf("%d goroutines were reading the input at once, want 1", got)
 	}
 }

@@ -15,7 +15,8 @@ import (
 // while the source underneath it is replaced each time Suspend restarts the
 // reader. Keeping the single input.Reader (and its bufio buffer) means bytes
 // already buffered survive a restart, and a new goroutine using it only ever
-// starts after the old one has exited, so the buffer is never shared.
+// starts after the old one has exited (readerSet.start does nothing while one
+// is still running), so the buffer is never shared.
 type swapReader struct {
 	mu  sync.Mutex
 	cur io.Reader
@@ -43,6 +44,7 @@ type readerSet struct {
 	sw   *swapReader
 	rd   *input.Reader
 
+	running  bool          // a generation was started and has not been stopped
 	cancelFn func()        // cancels the current generation's source
 	stopCh   chan struct{} // closed to ask the current generation to leave
 	focus    focusDedupe   // survives restarts, so a repeat across one is still dropped
@@ -62,8 +64,14 @@ func (p *Program) newReaderSet(done <-chan struct{}) *readerSet {
 
 func (rs *readerSet) cancel() { rs.cancelFn() }
 
-// start begins a new reader goroutine on a fresh source.
+// start begins a new reader goroutine on a fresh source. It does nothing
+// while the previous generation is still running, which is the case after
+// stop on a WithInput source.
 func (rs *readerSet) start() {
+	if rs.running {
+		return
+	}
+	rs.running = true
 	p := rs.p
 	var src io.Reader
 	var closeInput func()
@@ -105,6 +113,7 @@ func (rs *readerSet) stop() {
 	close(rs.stopCh)
 	rs.cancelFn()
 	<-rs.p.rdDone
+	rs.running = false
 }
 
 // read is the reader goroutine body. It returns when its source is
