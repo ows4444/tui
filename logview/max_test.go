@@ -91,6 +91,9 @@ func TestMaxKeepsScrolledBackContentInPlace(t *testing.T) {
 // append once the cap is reached. Count-based via a large cap, time-bounded
 // generously like TestAppendScalesLinearly.
 func TestMaxAppendScalesLinearly(t *testing.T) {
+	if raceEnabled {
+		t.Skip("the time bound does not hold under the race detector")
+	}
 	const n = 200000
 	m := New(120, 40)
 	m.Max = 50000
