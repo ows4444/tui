@@ -8,7 +8,6 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/input"
-	"github.com/ows4444/tui/internal/edit"
 )
 
 func send(m *Model, msgs ...tui.Msg) {
@@ -340,11 +339,56 @@ func TestMouseDragSelects(t *testing.T) {
 	}
 }
 
-func TestEditPackageClipShared(t *testing.T) {
-	edit.SetClip("zz")
+// Without ClipboardWrite the Model does no I/O and holds no copied text: Copy
+// and Paste return Cmds for the Program, and the paste arrives as a PasteEvent.
+func TestCopyAndPasteGoThroughTheProgram(t *testing.T) {
 	m := focused()
-	send(&m, ck('v'))
-	if m.Value() != "zz" {
-		t.Fatalf("%q", m.Value())
+	m.SetValue("hello")
+	m.SetCursor(0)
+	send(&m, shiftR, shiftR)
+	next, cmd := m.Update(ck('c'))
+	if cmd == nil {
+		t.Fatal("Copy returned no Cmd")
+	}
+	if next.Value() != "hello" {
+		t.Fatalf("copy changed the value: %q", next.Value())
+	}
+	next, cmd = next.Update(ck('v'))
+	if cmd == nil {
+		t.Fatal("Paste returned no Cmd")
+	}
+	if next.Value() != "hello" {
+		t.Fatalf("the paste key inserted %q before the Program answered", next.Value())
+	}
+	next.ed.ClearSelection()
+	next.SetCursor(5)
+	next, _ = next.Update(tui.PasteEvent{Text: "he"})
+	if next.Value() != "hellohe" {
+		t.Fatalf("after the PasteEvent: %q", next.Value())
+	}
+	// Nothing selected: nothing to copy, no Cmd.
+	if _, cmd := next.Update(ck('c')); cmd != nil {
+		t.Error("Copy with no selection returned a Cmd")
+	}
+}
+
+// Two Models with their own ClipboardWrite do not see each other's copies.
+func TestDeprecatedClipboardWriteIsPerModel(t *testing.T) {
+	a, b := focused(), focused()
+	wa, _ := clip()
+	wb, _ := clip()
+	a.ClipboardWrite, b.ClipboardWrite = wa, wb
+	a.SetValue("secret")
+	a.SetCursor(0)
+	send(&a, shiftR, shiftR, shiftR, shiftR, shiftR, shiftR, ck('c'))
+	send(&b, ck('v'))
+	if b.Value() != "" {
+		t.Fatalf("a second Model pasted %q, copied in the first", b.Value())
+	}
+	a.ed.ClearSelection()
+	a.SetCursor(6)
+	send(&a, ck('v'))
+	if a.Value() != "secretsecret" {
+		t.Fatalf("the copying Model pasted %q", a.Value())
 	}
 }

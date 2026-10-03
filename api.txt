@@ -157,6 +157,7 @@ func FromCtx(fn CtxCmd) Cmd
 func Go(fn func(ctx context.Context) Msg) Cmd
 func LogToFile(path, prefix string) (*os.File, error)
 func NewProgram(m Model, opts ...ProgramOption) *Program
+func PasteCopied() Cmd
 func Println(text string) Cmd
 func Quit() Cmd
 func ReadClipboard() Cmd
@@ -204,6 +205,7 @@ func WithResizePoll(d time.Duration) ProgramOption
 func WithSuspendOnCtrlZ(enabled bool) ProgramOption
 func WithTerminal(t Terminal) ProgramOption
 func WithTheme(auto theme.Auto) ProgramOption
+func WriteClipboard(text string) Cmd
 type AnnounceLevel int
 type BackgroundColorEvent = input.BackgroundColorEvent
 type BackgroundUnknownMsg = input.BackgroundUnknownMsg

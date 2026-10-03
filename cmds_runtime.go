@@ -197,6 +197,11 @@ func (p *Program) interceptCmdMsg(msg Msg, done <-chan struct{}) (out Msg, handl
 	case ctxMsg:
 		p.spawnFn(func() { p.dispatchCtx(m.fn, done) })
 		return nil, true
+	case pasteCopiedMsg:
+		if p.copied == "" {
+			return nil, true
+		}
+		return PasteEvent{Text: p.copied}, false
 	case restoreReqMsg:
 		p.restoreTerminal()
 		close(m.done)

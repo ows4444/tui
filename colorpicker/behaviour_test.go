@@ -94,3 +94,17 @@ func TestLinearizeEmptyPaletteSaysSo(t *testing.T) {
 		t.Fatalf("Linearize = %q", out)
 	}
 }
+
+// A paste reaches the hex field while it has focus, and is ignored otherwise.
+func TestPasteGoesToTheFocusedHexField(t *testing.T) {
+	m := New(nil)
+	next, _ := m.Update(tui.PasteEvent{Text: "#ff0000"})
+	if next.HexInput.Value() != "" {
+		t.Fatalf("a paste with the palette focused changed the hex field to %q", next.HexInput.Value())
+	}
+	m, _ = m.Update(tui.Key{Type: tui.KeyTab})
+	m, _ = m.Update(tui.PasteEvent{Text: "#ff0000"})
+	if m.HexInput.Value() != "#ff0000" {
+		t.Fatalf("hex field after a paste = %q, want #ff0000", m.HexInput.Value())
+	}
+}

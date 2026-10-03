@@ -51,13 +51,20 @@ type Model struct {
 	// one step. SetValue and Reset forget the history.
 	UndoLimit int
 
-	// ClipboardWrite receives the OSC 52 sequence that Copy and Cut send to set
-	// the system clipboard; nil writes to os.Stdout. Support depends on the
-	// terminal (see package clipboard).
+	// ClipboardWrite, when set, receives the OSC 52 sequence that Copy and
+	// Cut send, in place of the Program's output, and Paste inserts only what
+	// this Model copied. Leave it nil: Copy and Cut then return
+	// tui.WriteClipboard and Paste returns tui.PasteCopied, so the Program
+	// writes the sequence and holds the copied text.
+	//
+	// Deprecated: use tui.WithOutput to direct the Program's output.
 	ClipboardWrite func(string) (int, error)
 	// DisableCopy makes Copy and Cut do nothing, for fields whose value must
 	// not reach the clipboard (passwordinput sets it).
 	DisableCopy bool
+
+	// clip is the last text copied through the deprecated ClipboardWrite.
+	clip string
 
 	// Mouse, when true, makes Update handle tui.MouseEvent: a left click inside
 	// Bounds moves the cursor to the clicked cell and a drag selects. Off (the
@@ -270,23 +277,24 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.cursorVisible = !m.cursorVisible
 		return m, blinkCmd(m.blinkID)
 	case tui.Key:
-		m.handleKey(msg)
+		cmd := m.handleKey(msg)
 		m.cursorVisible = true
-		return m, nil
+		return m, cmd
 	case tui.PasteEvent:
 		// This is a single-line field, so newlines in a multi-line paste
 		// are dropped rather than inserted literally.
 		// Untrusted: tabs become one space, then escape sequences and
 		// controls are stripped before the text is stored.
-		txt := ansi.Sanitize(strings.ReplaceAll(msg.Text, "\t", " "))
-		m.insert(strings.NewReplacer("\r\n", "", "\n", "", "\r", "").Replace(txt))
+		m.insert(singleLine(msg.Text))
 		m.cursorVisible = true
 		return m, nil
 	}
 	return m, nil
 }
 
-func (m *Model) handleKey(k tui.Key) {
+// handleKey applies k and returns the Cmd a Copy, Cut or Paste needs the
+// Program to run, if any.
+func (m *Model) handleKey(k tui.Key) tui.Cmd {
 	km := m.keys()
 	m.ed.SetHistoryLimit(m.UndoLimit)
 	// Redo is tested before Undo and neither ignores Shift: ctrl+shift+z must
@@ -294,21 +302,25 @@ func (m *Model) handleKey(k tui.Key) {
 	switch {
 	case keymap.Matches(k, km.Redo):
 		m.ed.Redo()
-		return
+		return nil
 	case keymap.Matches(k, km.Undo):
 		m.ed.Undo()
-		return
+		return nil
 	case keymap.Matches(k, km.Copy):
-		m.copy()
-		return
+		_, cmd := m.copy()
+		return cmd
 	case keymap.Matches(k, km.Cut):
-		if m.copy() {
+		ok, cmd := m.copy()
+		if ok {
 			m.ed.DeleteSelection()
 		}
-		return
+		return cmd
 	case keymap.Matches(k, km.Paste):
-		m.insert(m.clipText())
-		return
+		if m.ClipboardWrite != nil {
+			m.insert(singleLine(m.clip))
+			return nil
+		}
+		return tui.PasteCopied()
 	}
 	move := func(f func()) {
 		if k.Mod.Shift() {
@@ -343,28 +355,35 @@ func (m *Model) handleKey(k tui.Key) {
 		m.ed.DeleteWordBack()
 	case k.Type == tui.KeyRunes:
 		if k.Mod.Alt() {
-			return
+			return nil
 		}
 		m.insert(k.Text)
 	case k.Type == tui.KeySpace:
 		m.insert(" ")
 	}
+	return nil
 }
 
-// copy sends the selection to the clipboard with OSC 52 and reports whether
-// there was one.
-func (m *Model) copy() bool {
+// copy copies the selection and reports whether there was one. The Cmd it
+// returns has the Program write the OSC 52 sequence and keep the text; with
+// the deprecated ClipboardWrite set it writes there and returns no Cmd.
+func (m *Model) copy() (bool, tui.Cmd) {
 	t := m.ed.SelectedText()
 	if t == "" || m.DisableCopy {
-		return false
+		return false, nil
 	}
-	edit.Copy(m.ClipboardWrite, t)
-	return true
+	if m.ClipboardWrite != nil {
+		_, _ = m.ClipboardWrite(ansi.OSC52Copy(t))
+		m.clip = t
+		return true, nil
+	}
+	return true, tui.WriteClipboard(t)
 }
 
-// clipText is the text a paste key inserts: the last copied text, single-line.
-func (m *Model) clipText() string {
-	t := ansi.Sanitize(strings.ReplaceAll(edit.Clip(), "\t", " "))
+// singleLine is text as this field stores it: untrusted, so tabs become one
+// space and escape sequences and controls are stripped, and newlines dropped.
+func singleLine(text string) string {
+	t := ansi.Sanitize(strings.ReplaceAll(text, "\t", " "))
 	return strings.NewReplacer("\r\n", "", "\n", "", "\r", "").Replace(t)
 }
 

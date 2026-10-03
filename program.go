@@ -173,6 +173,7 @@ type Program struct {
 	titleSaved       bool         // SetWindowTitle pushed the title (CSI 22;0t); guarded by outMu
 	cursorShaped     bool         // SetCursorShape changed the cursor shape; guarded by outMu
 	clipReads        atomic.Int32 // ReadClipboard queries not yet answered
+	copied           string       // text of the last WriteClipboard; loop goroutine only
 	capProbe         capProbe     // WithCapabilityProbe; see capabilities.go
 	chordDefs        []ChordDef
 	chordTimeout     time.Duration

@@ -252,6 +252,17 @@ fmt.Println(m.Copied(), strings.HasPrefix(sent, "\x1b]52;"))
 From `Example` in `clipboard/example_test.go`. `Write` defaults to
 `os.Stdout.WriteString`. The example replaces it to capture the bytes.
 
+`textinput` and `textarea` copy the selection with ctrl+c, cut it with ctrl+x
+and paste with ctrl+v (their `KeyMap` fields `Copy`, `Cut` and `Paste`). They
+do no I/O in `Update`: Copy and Cut return `tui.WriteClipboard`, and the
+Program writes the OSC 52 sequence to its own output and keeps the text. Paste
+returns `tui.PasteCopied`, and the Program delivers that text as a
+`tui.PasteEvent`, so route `PasteEvent` to the focused input as you do for a
+bracketed paste. The copied text belongs to the Program: copy in one input and
+paste in another works inside a Program, and two Programs in one process do
+not see each other's copies. The paste key pastes what this Program copied,
+not the system clipboard; `tui.ReadClipboard` asks the terminal for that.
+
 OSC 52 is write-only and best-effort, and the program cannot detect failure.
 The terminal must support it. Under tmux, `set-clipboard` must be `on` or
 `external`. If it is `off`, the button still shows "Copied!" but nothing reaches

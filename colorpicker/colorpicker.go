@@ -132,6 +132,13 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if ev, ok := msg.(tui.MouseEvent); ok {
 		return m.updateMouse(ev)
 	}
+	// A paste goes to the hex field: a bracketed paste, or the answer to its
+	// own paste key (tui.PasteCopied).
+	if pe, ok := msg.(tui.PasteEvent); ok && m.hexFocused {
+		var cmd tui.Cmd
+		m.HexInput, cmd = m.HexInput.Update(pe)
+		return m, cmd
+	}
 	key, ok := msg.(tui.Key)
 	if !ok {
 		return m, nil

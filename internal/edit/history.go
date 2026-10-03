@@ -1,12 +1,6 @@
 package edit
 
-import (
-	"os"
-	"sync"
-	"sync/atomic"
-
-	"github.com/ows4444/tui/ansi"
-)
+import "sync/atomic"
 
 // DefaultHistory is the number of undo steps kept when a widget does not
 // configure one.
@@ -179,29 +173,4 @@ func (h *History) PushUndo(s Step, max int) {
 		return
 	}
 	h.push(&h.undo, s, bound(max))
-}
-
-// clip is the process-wide clipboard the input widgets share: what the last
-// copy or cut put on the system clipboard through OSC 52. A terminal cannot be
-// read back synchronously, so a paste key pastes from here.
-var clip struct {
-	sync.Mutex
-	s string
-}
-
-// Clip returns the text of the last Copy.
-func Clip() string { clip.Lock(); defer clip.Unlock(); return clip.s }
-
-// SetClip sets the shared clipboard text without writing OSC 52.
-func SetClip(s string) { clip.Lock(); clip.s = s; clip.Unlock() }
-
-// Copy puts text on the shared clipboard and writes the OSC 52 sequence that
-// sets the system clipboard to it through w, or to os.Stdout when w is nil.
-// Support is the terminal's: see package clipboard.
-func Copy(w func(string) (int, error), text string) {
-	SetClip(text)
-	if w == nil {
-		w = os.Stdout.WriteString
-	}
-	_, _ = w(ansi.OSC52Copy(text))
 }

@@ -63,10 +63,17 @@ type Model struct {
 	// one step, as is a paste. SetValue and Reset forget the history.
 	UndoLimit int
 
-	// ClipboardWrite receives the OSC 52 sequence that Copy and Cut send to set
-	// the system clipboard; nil writes to os.Stdout. Support depends on the
-	// terminal (see package clipboard).
+	// ClipboardWrite, when set, receives the OSC 52 sequence that Copy and
+	// Cut send, in place of the Program's output, and Paste inserts only what
+	// this Model copied. Leave it nil: Copy and Cut then return
+	// tui.WriteClipboard and Paste returns tui.PasteCopied, so the Program
+	// writes the sequence and holds the copied text.
+	//
+	// Deprecated: use tui.WithOutput to direct the Program's output.
 	ClipboardWrite func(string) (int, error)
+
+	// clip is the last text copied through the deprecated ClipboardWrite.
+	clip string
 
 	// Mouse, when true, makes Update handle tui.MouseEvent: a left click inside
 	// Bounds moves the cursor to the clicked cell, a drag selects, and the wheel
@@ -297,10 +304,10 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.cursorVisible = !m.cursorVisible
 		return m, blinkCmd(m.blinkID)
 	case tui.Key:
-		m.handleKey(msg)
+		cmd := m.handleKey(msg)
 		m.scrollToCursor()
 		m.cursorVisible = true
-		return m, nil
+		return m, cmd
 	case tui.PasteEvent:
 		// Unlike textinput, a textarea keeps embedded newlines from a
 		// multi-line paste.
@@ -314,28 +321,34 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	return m, nil
 }
 
-func (m *Model) handleKey(k tui.Key) {
+// handleKey applies k and returns the Cmd a Copy, Cut or Paste needs the
+// Program to run, if any.
+func (m *Model) handleKey(k tui.Key) tui.Cmd {
 	km := m.keys()
 	// Redo is tested before Undo and neither ignores Shift: ctrl+shift+z must
 	// not be taken for ctrl+z.
 	switch {
 	case keymap.Matches(k, km.Redo):
 		m.redo()
-		return
+		return nil
 	case keymap.Matches(k, km.Undo):
 		m.undo()
-		return
+		return nil
 	case keymap.Matches(k, km.Copy):
-		m.copy()
-		return
+		_, cmd := m.copy()
+		return cmd
 	case keymap.Matches(k, km.Cut):
-		if m.copy() {
+		ok, cmd := m.copy()
+		if ok {
 			m.deleteSelection()
 		}
-		return
+		return cmd
 	case keymap.Matches(k, km.Paste):
-		m.insertRunes(pasteRunes(edit.Clip()), false)
-		return
+		if m.ClipboardWrite != nil {
+			m.insertRunes(pasteRunes(m.clip), false)
+			return nil
+		}
+		return tui.PasteCopied()
 	}
 	// Moving keeps or extends the selection with Shift held and drops it
 	// otherwise.
@@ -401,7 +414,7 @@ func (m *Model) handleKey(k tui.Key) {
 		}
 	case k.Type == tui.KeyRunes:
 		if k.Mod.Alt() {
-			return
+			return nil
 		}
 		if r := []rune(k.Text); len(r) == 1 {
 			m.typeRune(r[0])
@@ -411,6 +424,7 @@ func (m *Model) handleKey(k tui.Key) {
 	case k.Type == tui.KeySpace:
 		m.typeRune(' ')
 	}
+	return nil
 }
 
 // pasteRunes is untrusted text made safe to insert: tabs expanded, escape
@@ -516,15 +530,21 @@ func (m *Model) deleteSelection() bool {
 	return true
 }
 
-// copy sends the selection to the clipboard with OSC 52 and reports whether
-// there was one.
-func (m *Model) copy() bool {
+// copy copies the selection and reports whether there was one. The Cmd it
+// returns has the Program write the OSC 52 sequence and keep the text; with
+// the deprecated ClipboardWrite set it writes there and returns no Cmd.
+func (m *Model) copy() (bool, tui.Cmd) {
 	lo, hi, ok := m.selection()
 	if !ok {
-		return false
+		return false, nil
 	}
-	edit.Copy(m.ClipboardWrite, m.value.str(lo, hi))
-	return true
+	t := m.value.str(lo, hi)
+	if m.ClipboardWrite != nil {
+		_, _ = m.ClipboardWrite(ansi.OSC52Copy(t))
+		m.clip = t
+		return true, nil
+	}
+	return true, tui.WriteClipboard(t)
 }
 
 func (m *Model) undo() {

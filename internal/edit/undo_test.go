@@ -216,14 +216,6 @@ func TestInsertKeepsLimitWithSelection(t *testing.T) {
 	}
 }
 
-func TestCopyWritesOSC52(t *testing.T) {
-	var got string
-	Copy(func(s string) (int, error) { got += s; return len(s), nil }, "hi")
-	if got != "\x1b]52;c;aGk=\x07" || Clip() != "hi" {
-		t.Fatalf("got %q clip %q", got, Clip())
-	}
-}
-
 // Recording a typing keystroke stays within the allocation budget.
 func TestRecordAllocsAmortized(t *testing.T) {
 	var h History

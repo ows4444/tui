@@ -478,3 +478,44 @@ func TestWheelScrollsWindow(t *testing.T) {
 		t.Fatal("wheel outside Bounds scrolled")
 	}
 }
+
+// Without ClipboardWrite the Model does no I/O and holds no copied text: Copy
+// and Paste return Cmds for the Program, and the paste arrives as a PasteEvent.
+func TestCopyAndPasteGoThroughTheProgram(t *testing.T) {
+	m := focusedWith("hello\nworld")
+	m.SetCursor(3)
+	send(&m, shiftR, shiftR, shiftR, shiftR)
+	next, cmd := m.Update(ck('c'))
+	if cmd == nil {
+		t.Fatal("Copy returned no Cmd")
+	}
+	next, cmd = next.Update(ck('v'))
+	if cmd == nil {
+		t.Fatal("Paste returned no Cmd")
+	}
+	if next.Value() != "hello\nworld" {
+		t.Fatalf("the paste key changed the value to %q before the Program answered", next.Value())
+	}
+	next, cmd = next.Update(ck('x'))
+	if cmd == nil || next.Value() != "helorld" {
+		t.Fatalf("Cut: cmd nil = %v, value %q", cmd == nil, next.Value())
+	}
+	next, _ = next.Update(tui.PasteEvent{Text: "lo\nw"})
+	if next.Value() != "hello\nworld" {
+		t.Fatalf("after the PasteEvent: %q", next.Value())
+	}
+}
+
+// Two Models with their own ClipboardWrite do not see each other's copies.
+func TestDeprecatedClipboardWriteIsPerModel(t *testing.T) {
+	a, b := focusedWith("secret"), focusedWith("")
+	wa, _ := clip()
+	wb, _ := clip()
+	a.ClipboardWrite, b.ClipboardWrite = wa, wb
+	a.SetCursor(0)
+	send(&a, shiftR, shiftR, shiftR, shiftR, shiftR, shiftR, ck('c'))
+	send(&b, ck('v'))
+	if b.Value() != "" {
+		t.Fatalf("a second Model pasted %q, copied in the first", b.Value())
+	}
+}

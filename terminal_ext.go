@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"strings"
+
+	"github.com/ows4444/tui/ansi"
 )
 
 const (
@@ -107,6 +109,29 @@ func ReadClipboard() Cmd {
 		}}
 	}
 }
+
+// WriteClipboard returns a Cmd that copies text: the Program writes the OSC 52
+// sequence that sets the system clipboard to its own output, and keeps text
+// as its copy buffer for PasteCopied. The buffer belongs to the Program, so
+// two Programs in one process do not see each other's copies. Whether the
+// system clipboard changes is up to the terminal; see package clipboard.
+func WriteClipboard(text string) Cmd {
+	return func() Msg {
+		return modeMsg{apply: func(p *Program) {
+			p.copied = text
+			p.write(ansi.OSC52Copy(text))
+		}}
+	}
+}
+
+// pasteCopiedMsg asks the loop to deliver the Program's copy buffer.
+type pasteCopiedMsg struct{}
+
+// PasteCopied returns a Cmd that delivers the text of the Program's last
+// WriteClipboard to Update as a PasteEvent, the Msg a bracketed paste arrives
+// as. Nothing is delivered when nothing has been copied. It does not read the
+// system clipboard; ReadClipboard asks the terminal for that.
+func PasteCopied() Cmd { return func() Msg { return pasteCopiedMsg{} } }
 
 var errClipboardReply = errors.New("tui: malformed OSC 52 clipboard reply")
 

@@ -11,6 +11,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52
+  sequence to its own output and keeps the text. `tui.PasteCopied()` delivers
+  that text to `Update` as a `PasteEvent`.
 - `filepicker.Model.Err` reports why the current directory could not be
   listed, and `View` shows a line saying so. An unreadable directory used to
   look like an empty one.
@@ -20,6 +23,16 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Changed
 
+- BREAKING: `textinput.Model.ClipboardWrite` and
+  `textarea.Model.ClipboardWrite` no longer default to `os.Stdout` when nil.
+  With the field nil, Copy and Cut return `tui.WriteClipboard`, so the OSC 52
+  sequence goes to the Program's output, and Paste returns `tui.PasteCopied`,
+  so the pasted text arrives one `Update` later as a `PasteEvent`. A Model
+  whose `Update` is called outside a Program copies and pastes only if the
+  caller runs the returned Cmd.
+- The text the paste key inserts is no longer shared by every text input in
+  the process. It belongs to the Program, so two Programs in one process (two
+  SSH sessions) cannot paste each other's copies.
 - Cancelling the context given to `WithContext` now ends `Run`: it restores
   the terminal and returns the context's error. Before, only
   `Program.Context` was cancelled and `Run` kept going until `Quit`.
@@ -28,6 +41,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Deprecated
 
+- `textinput.Model.ClipboardWrite` and `textarea.Model.ClipboardWrite`: use
+  `tui.WithOutput` to direct the Program's output. While set, the field still
+  receives the OSC 52 sequence and Paste inserts only what that Model copied.
 - The chart functions in `widgets` (`BarChart`, `Gauge`, `HeatMap`,
   `LineChart`, `Sparkline`, `SparklineWith` and the `BarItem` alias) moved to
   `widgets/chart`; the `widgets` versions forward to them.
@@ -54,6 +70,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `colorpicker` passes a `PasteEvent` to its hex field while that field has
+  focus. It forwarded only keys, so a paste never reached the field.
 - `Run` waits for its resize watcher before returning, so nothing asks the
   `Terminal` for its size, or reads the output file's descriptor, after `Run`
   has returned and the caller has closed the output.
