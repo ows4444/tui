@@ -1,3 +1,5 @@
-# Golden files are compared byte for byte; keep LF on Windows checkouts.
+# Tests compare golden files, their inputs, generated files and docs byte for
+# byte; keep LF on Windows checkouts.
+* text=auto eol=lf
 *.golden text eol=lf
 api.txt text eol=lf
