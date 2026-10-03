@@ -198,6 +198,10 @@ func TestScriptedSessionExitGolden(t *testing.T) {
 		t.Fatal("program exited before the session ended")
 	}
 	s.Keys("ctrl+c")
+	// Keys returns once output is quiet, which can be before Run has returned.
+	for end := time.Now().Add(5 * time.Second); !s.Done() && time.Now().Before(end); {
+		time.Sleep(time.Millisecond)
+	}
 	if !s.Done() {
 		t.Fatal("ctrl+c did not exit the program")
 	}
