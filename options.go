@@ -267,7 +267,8 @@ func WithColorProfile(p ansi.Profile) ProgramOption {
 }
 
 // WithContext supplies the parent context.Context for the Program's run
-// (default context.Background(), also used for a nil ctx). Program derives
+// (default context.Background(), also used for a nil ctx). Cancelling ctx
+// ends Run, which restores the terminal and returns ctx.Err(). Program derives
 // its own cancelable context from it and cancels that derived context when Run returns — on a
 // normal quit, an error, a panic (via the same defer chain that restores
 // the terminal), or a SIGTERM/SIGHUP — so a Cmd built with the context

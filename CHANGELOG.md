@@ -9,6 +9,14 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+### Changed
+
+- Cancelling the context given to `WithContext` now ends `Run`: it restores
+  the terminal and returns the context's error. Before, only
+  `Program.Context` was cancelled and `Run` kept going until `Quit`.
+- `Run` returns an error wrapping the write error when a write to the output
+  fails. Before, write errors were ignored and the Program kept rendering.
+
 ### Deprecated
 
 - The chart functions in `widgets` (`BarChart`, `Gauge`, `HeatMap`,

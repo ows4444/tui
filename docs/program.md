@@ -194,6 +194,10 @@ Run restores the terminal on every return path: alternate screen, cursor,
 mouse, bracketed paste, keyboard and focus modes, the window title and cursor
 shape, and raw mode.
 
+When a write to the output fails, Run returns an error that wraps the write
+error. A Program does not go on rendering to a writer that is gone, such as a
+closed remote connection.
+
 SIGTERM and SIGHUP terminate a Go process without running deferred functions,
 so Run catches them. It restores the terminal and cancels `Program.Context`,
 then by default exits with status 1. With `WithExitOnSignal(false)`, Run
@@ -211,7 +215,10 @@ or an `Every` callback (`recover_test.go` covers each).
 
 `Program.Context` is valid as soon as `NewProgram` returns, so you can pass it
 to the model before Run. Run cancels it on every return path, as does
-cancelling the parent given to `WithContext`. Cmds made by `Tick`, `FromCtx`
+cancelling the parent given to `WithContext`. Cancelling that parent also ends
+Run: it restores the terminal and returns the parent's error
+(`context.Canceled` or `context.DeadlineExceeded`), so a host can stop a
+session without the model's help. Cmds made by `Tick`, `FromCtx`
 and `Go` receive this context. A Cmd that does I/O can use the context to stop
 early instead of outliving Run.
 

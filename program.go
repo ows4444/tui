@@ -30,6 +30,14 @@ var ErrInterrupted = errors.New("tui: interrupted by signal")
 // WithExitOnSignal(false) is set. It never reaches Update.
 type interruptMsg struct{}
 
+// ctxDoneMsg is sent to runLoop when the context given to WithContext is
+// done, and outputErrMsg wakes it after a failed write to the output. Each
+// ends Run.
+type (
+	ctxDoneMsg   struct{}
+	outputErrMsg struct{}
+)
+
 // panicMsg carries a recovered Cmd panic to runLoop, which returns it.
 type panicMsg struct{ err *PanicError }
 
@@ -92,8 +100,16 @@ func (p *Program) terminal() Terminal {
 	return termio.OS(p.input, p.output)
 }
 
-// write sends s to the output, ignoring errors like the rest of the renderer.
-func (p *Program) write(s string) { p.writeTo(p.output, s) }
+// write sends s to the output. A failed write ends Run; see noteOutErrLocked.
+func (p *Program) write(s string) {
+	p.outMu.Lock()
+	defer p.outMu.Unlock()
+	if p.outClosed {
+		return
+	}
+	_, err := io.WriteString(p.output, s)
+	p.noteOutErrLocked(err)
+}
 
 // Program drives a Model: it owns the terminal, the event loop, and the
 // renderer.
@@ -290,6 +306,7 @@ type Program struct {
 	// bytes. See program_restore.go.
 	outMu     sync.Mutex
 	outClosed bool
+	outErr    error // the first failed write to output; guarded by outMu
 
 	// loopMu guards loopDone: non-nil, and closed on exit, while runLoop is
 	// draining msgs. See Send.
@@ -470,7 +487,10 @@ var ErrProgramReused = errors.New("tui: Program.Run called more than once; build
 
 // Run puts the terminal in raw mode, starts the event loop, and blocks
 // until the model quits (via tui.Quit) or an unrecoverable error occurs.
-// The terminal is always restored before Run returns. A Program runs once:
+// It also returns when the context given to WithContext is done, with that
+// context's error, and when a write to the output fails, with an error
+// wrapping the write error. The terminal is always restored before Run
+// returns. A Program runs once:
 // a second call returns ErrProgramReused without touching the terminal.
 func (p *Program) Run() (Model, error) {
 	if !p.started.CompareAndSwap(false, true) {

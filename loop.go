@@ -58,6 +58,23 @@ func (p *Program) runLoop() (_ Model, err error) {
 		}
 	}()
 
+	// Cancelling the context given to WithContext ends Run.
+	if p.parentCtx != nil && p.parentCtx.Done() != nil {
+		parentDone := p.parentCtx.Done()
+		p.wg.Add(1)
+		go func() {
+			defer p.wg.Done()
+			select {
+			case <-parentDone:
+				select {
+				case p.msgs <- ctxDoneMsg{}:
+				case <-done:
+				}
+			case <-done:
+			}
+		}()
+	}
+
 	// watchResize is implemented per-OS (resize_unix.go / resize_windows.go)
 	// since there's no portable way to detect a terminal resize: unix has
 	// SIGWINCH; windows reads window-buffer-size events from the console
@@ -119,6 +136,10 @@ func (p *Program) runLoop() (_ Model, err error) {
 	p.announce.Done = done
 
 	for msg := range p.msgs {
+		if err := p.outputErr(); err != nil {
+			p.stopFlushTimer()
+			return p.model, fmt.Errorf("tui: write to the output: %w", err)
+		}
 		if p.handleAnnounce(msg) {
 			continue
 		}
@@ -230,6 +251,10 @@ func (p *Program) runLoop() (_ Model, err error) {
 		if _, ok := msg.(interruptMsg); ok {
 			p.stopFlushTimer()
 			return p.model, ErrInterrupted
+		}
+		if _, ok := msg.(ctxDoneMsg); ok {
+			p.stopFlushTimer()
+			return p.model, p.parentCtx.Err()
 		}
 		if _, ok := msg.(QuitMsg); ok {
 			p.stopFlushTimer()

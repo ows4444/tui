@@ -35,7 +35,29 @@ func (p *Program) writeBytes(b []byte) {
 	if p.outClosed {
 		return
 	}
-	_, _ = p.output.Write(b)
+	_, err := p.output.Write(b)
+	p.noteOutErrLocked(err)
+}
+
+// noteOutErrLocked keeps the first error of a write to the output and wakes
+// the loop, which returns it from Run: a Program does not go on rendering to
+// a writer that is gone. The caller holds outMu.
+func (p *Program) noteOutErrLocked(err error) {
+	if err == nil || p.outErr != nil {
+		return
+	}
+	p.outErr = err
+	select {
+	case p.msgs <- outputErrMsg{}:
+	default: // the loop is busy; it checks outputErr before each message
+	}
+}
+
+// outputErr returns the first error of a write to the output, if any.
+func (p *Program) outputErr() error {
+	p.outMu.Lock()
+	defer p.outMu.Unlock()
+	return p.outErr
 }
 
 // closeOutput marks the output finished; see writeTo.

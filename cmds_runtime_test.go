@@ -137,13 +137,22 @@ func TestGoPassesProgramContext(t *testing.T) {
 	var out bytes.Buffer
 	got := make(chan error, 1)
 	m := recModel{mu: &sync.Mutex{}, got: &[]Msg{}}
+	started := make(chan struct{})
 	m.init = Go(func(c context.Context) Msg {
+		close(started)
 		<-c.Done()
 		got <- c.Err()
 		return strMsg("done")
 	})
 	p := NewProgram(m, WithInput(pr), WithOutput(&out), WithContext(ctx))
 	go p.runLoop()
+	// Cancelling the parent ends the loop, so wait until fn is running: a Cmd
+	// the loop has not started yet is dropped, as it is on Quit.
+	select {
+	case <-started:
+	case <-time.After(2 * time.Second):
+		t.Fatal("fn never started")
+	}
 	cancel()
 	select {
 	case err := <-got:
