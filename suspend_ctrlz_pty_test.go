@@ -141,6 +141,10 @@ func TestCtrlZRealStopAndContinue(t *testing.T) {
 		t.Fatal(err)
 	}
 	ws := waitState(t, pid, false)
+	if ws.Continued() {
+		// Linux wait4 reports the SIGCONT above first; the exit follows.
+		ws = waitState(t, pid, false)
+	}
 	if !ws.Exited() || ws.ExitStatus() != 0 {
 		t.Fatalf("child exit: %v", ws)
 	}
