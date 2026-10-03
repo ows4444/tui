@@ -67,23 +67,35 @@ func TestConPTYHelper(t *testing.T) {
 	if os.Getenv(helperVar) == "" {
 		t.Skip("helper for TestProbeUnderConPTY; runs only inside the pseudo console")
 	}
-	in, out := syscall.Handle(os.Stdin.Fd()), syscall.Handle(os.Stdout.Fd())
+	// Open the attached console by name. The standard handles are not it when
+	// the parent's own are redirected, as they are in CI.
+	conin, err := os.OpenFile("CONIN$", os.O_RDWR, 0)
+	if err != nil {
+		t.Fatalf("open the console input: %v", err)
+	}
+	defer conin.Close()
+	conout, err := os.OpenFile("CONOUT$", os.O_RDWR, 0)
+	if err != nil {
+		t.Fatalf("open the console output: %v", err)
+	}
+	defer conout.Close()
+	in, out := syscall.Handle(conin.Fd()), syscall.Handle(conout.Fd())
 	inBefore, err := consoleMode(in)
 	if err != nil {
-		t.Fatalf("stdin is not a console: %v", err)
+		t.Fatalf("CONIN$ is not a console: %v", err)
 	}
 	outBefore, err := consoleMode(out)
 	if err != nil {
-		t.Fatalf("stdout is not a console: %v", err)
+		t.Fatalf("CONOUT$ is not a console: %v", err)
 	}
 	cmd := exec.Command(os.Getenv(probeExeVar))
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = conin, conout, conout
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("probe: %v", err)
 	}
 	inAfter, _ := consoleMode(in)
 	outAfter, _ := consoleMode(out)
-	fmt.Printf("\nCONMODE in_before=%08x in_after=%08x out_before=%08x out_after=%08x\n",
+	fmt.Fprintf(conout, "\nCONMODE in_before=%08x in_after=%08x out_before=%08x out_after=%08x\n",
 		inBefore, inAfter, outBefore, outAfter)
 }
 
