@@ -105,6 +105,7 @@ type Program struct {
 	resizePoll    time.Duration // >0 overrides the Windows resize polling interval
 	exitOnSignal  bool          // false: SIGTERM/SIGHUP makes Run return ErrInterrupted
 	model         Model
+	initModel     Model     // what NewProgram was given; model belongs to the loop once it runs
 	output        io.Writer // *os.File unless WithOutput was used
 	errOutput     io.Writer
 	input         *os.File
@@ -416,6 +417,7 @@ func (p *Program) restoreTerminal() {
 func NewProgram(m Model, opts ...ProgramOption) *Program {
 	p := &Program{
 		model:         m,
+		initModel:     m,
 		output:        os.Stdout,
 		errOutput:     os.Stderr,
 		input:         os.Stdin,
@@ -472,8 +474,18 @@ var ErrProgramReused = errors.New("tui: Program.Run called more than once; build
 // a second call returns ErrProgramReused without touching the terminal.
 func (p *Program) Run() (Model, error) {
 	if !p.started.CompareAndSwap(false, true) {
-		return p.model, ErrProgramReused
+		// The first Run may still be in its loop, which owns p.model.
+		if _, ended := p.loopState(); ended {
+			return p.model, ErrProgramReused
+		}
+		return p.initModel, ErrProgramReused
 	}
+	// Every return path, including the ones before the loop starts, cancels
+	// Context and releases a Send waiting for the loop.
+	defer func() {
+		p.cancel()
+		p.setLoopDone(nil)
+	}()
 	if p.inReader == nil {
 		if !p.terminal().IsTerminal() {
 			return p.model, errors.New("tui: input is not a terminal (stdin is piped or redirected); run from a terminal, or supply input with WithInput")

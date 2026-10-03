@@ -37,6 +37,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `Run` cancels `Context` and releases callers blocked in `Send` when it
+  returns before the loop starts (the input is not a terminal, or raw mode
+  cannot be entered). A `Run` called while the first is still running no
+  longer reads the running model; it returns the model given to `NewProgram`.
 - `SuspendMsg.Err` reports a failure to re-enter raw mode after a `Suspend`
   whose function succeeded. It was nil before, with the terminal left in its
   normal mode.
