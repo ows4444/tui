@@ -32,8 +32,9 @@ func TestAdvanceFiresEveryDeterministically(t *testing.T) {
 	defer s.Close()
 	start := time.Now()
 	s.Advance(time.Second)
-	if wall := time.Since(start); wall > 5*time.Millisecond {
-		t.Errorf("Advance took %v wall time, want < 5ms", wall)
+	// Far less than the simulated second, with room for a slow machine.
+	if wall := time.Since(start); wall > 500*time.Millisecond {
+		t.Errorf("Advance(1s) took %v of wall time; it must not wait on the wall clock", wall)
 	}
 	if n != 10 {
 		t.Errorf("ticks = %d, want 10", n)
