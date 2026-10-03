@@ -87,7 +87,11 @@ func record(t *testing.T) (cast, side string) {
 	nap()
 	term.Resize(30, 4)
 	nap()
-	_, _ = pw.Write([]byte("bc"))
+	// One key per write: Replay feeds a whole input read at once, so it cannot
+	// reproduce a tick that landed between two keys of the same read.
+	_, _ = pw.Write([]byte("b"))
+	nap()
+	_, _ = pw.Write([]byte("c"))
 	nap()
 	_ = pw.Close()
 	select {
