@@ -397,9 +397,9 @@ func WithMaxFPS(fps int) ProgramOption {
 
 // Terminal is the control plane of the terminal a Program runs on: its size,
 // raw mode and output virtual-terminal processing. Bytes still flow through the
-// reader and writer given with WithInput and WithOutput (or WithInput
-// and WithOutput), so a remote session supplies all three: a Terminal that
-// answers for the far end, plus the connection as reader and writer. A Terminal
+// reader and writer given with WithInput and WithOutput, so a remote session
+// supplies all three: a Terminal that answers for the far end, plus the
+// connection as reader and writer. A Terminal
 // that also implements ResizeNotifier reports resizes through the same port.
 //
 // Every restore func undoes exactly the change its call made, and is called at
