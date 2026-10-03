@@ -86,20 +86,18 @@ that points up.
 
 Stability levels:
 
-- **Core**: the primitives, codecs and `tuitest`.
-- **Stable-ish**: the render helpers and most components.
+- **Core**: the root package `tui`, the primitives, codecs and `tuitest`.
+- **Stable-ish**: `cellbuf`, the render helpers and most components.
 - **Experimental**: packages whose own package comment says
   `Stability: experimental.` `go run ./internal/tools/doccheck` fails if that
   list and the list in `doc.go` disagree.
-
-`doc.go` does not assign a level to the root package `tui` or to `cellbuf`.
 
 ### Runtime
 
 | Package | Purpose | Stability |
 |---|---|---|
-| `tui` | The Program and its event loop; owns terminal I/O through `term` and `internal/termio`. Re-exports 14 `input` types as aliases (`Key`, `MouseEvent`, `PasteEvent`, ...), each as stable as the type it names | not stated |
-| `cellbuf` | A retained grid of terminal cells, for widgets that draw straight into cells | not stated |
+| `tui` | The Program and its event loop; owns terminal I/O through `term` and `internal/termio`. Re-exports 14 `input` types as aliases (`Key`, `MouseEvent`, `PasteEvent`, ...), each as stable as the type it names | Core |
+| `cellbuf` | A retained grid of terminal cells, for widgets that draw straight into cells | Stable-ish |
 
 ### Primitives
 

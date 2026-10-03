@@ -17,8 +17,10 @@
 // its Cmds one at a time and delivers their messages in order.
 // WithMaxConcurrentCmds caps how many Cmds run at once.
 //
-// Package tui owns the event loop. Terminal I/O is performed by package term
-// and internal/termio, which tui drives. The other packages are building
+// Package tui owns the event loop (stability: core). Terminal I/O is performed
+// by package term and internal/termio, which tui drives. Package cellbuf, a
+// retained grid of terminal cells for widgets that draw straight into cells,
+// sits beside it (stability: stable-ish). The other packages are building
 // blocks that tui and applications share, in layers that each import only the ones above them in this list (an import
 // that points up is a test failure, see docs/architecture/overview.md):
 //
