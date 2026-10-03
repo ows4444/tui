@@ -137,11 +137,11 @@ func exportScreen(t *testing.T, dir, frame string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil { // #nosec G301 -- an output directory the caller chose
+	if err := os.MkdirAll(dir, 0o755); err != nil { // #nosec G301 G703 -- an output directory the caller chose
 		t.Fatal(err)
 	}
 	path := filepath.Join(dir, filepath.Base(wd)+".ansi")
-	if err := os.WriteFile(path, []byte(frame), 0o644); err != nil { // #nosec G306 -- generated site input, not a secret
+	if err := os.WriteFile(path, []byte(frame), 0o644); err != nil { // #nosec G306 G703 -- generated site input, not a secret, in that directory
 		t.Fatal(err)
 	}
 }
