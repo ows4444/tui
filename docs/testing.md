@@ -159,7 +159,7 @@ The allocation gate against `bench/baseline.txt` is described in
 ## CI
 
 [.github/workflows/ci.yml](../.github/workflows/ci.yml) runs on pushes to
-`main` and on pull requests. Beyond a local run, it adds:
+`code` and on pull requests. Beyond a local run, it adds:
 
 - `test` on `ubuntu-latest`, `macos-latest` and `windows-latest`, with
   `fail-fast: false`. Coverage, `doccheck` and the benchmark smoke run on Linux
