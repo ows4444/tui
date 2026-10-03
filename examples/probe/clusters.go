@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/cancelreader"
 	"github.com/ows4444/tui/term"
 )
 
@@ -102,13 +103,27 @@ func runClusterProbe() string {
 	if err != nil {
 		return "  clusters: not measured (" + err.Error() + ")\n"
 	}
+	// The reader must be gone before the Program starts: one left waiting in
+	// a plain os.Stdin.Read would take the keys typed afterwards. A
+	// cancelreader stops without consuming input.
+	in, err := cancelreader.New(os.Stdin)
+	if err != nil {
+		_ = term.Restore(fd, st)
+		return "  clusters: not measured (" + err.Error() + ")\n"
+	}
 	ch := make(chan string, 16)
-	go func() { // may outlive a timeout; it holds at most one pending read
+	stop, stopped := make(chan struct{}), make(chan struct{})
+	go func() {
+		defer close(stopped)
 		b := make([]byte, 64)
 		for {
-			n, err := os.Stdin.Read(b)
+			n, err := in.Read(b)
 			if n > 0 {
-				ch <- string(b[:n])
+				select {
+				case ch <- string(b[:n]):
+				case <-stop:
+					return
+				}
 			}
 			if err != nil {
 				return
@@ -124,6 +139,10 @@ func runClusterProbe() string {
 		}
 	}
 	res := measureClusters(os.Stdout, read, dsrTimeout)
+	close(stop)
+	in.Cancel()
+	<-stopped
+	in.Close()
 	_ = term.Restore(fd, st)
 	return formatClusters(res)
 }
