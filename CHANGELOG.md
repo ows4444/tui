@@ -11,6 +11,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `filepicker.Model.Err` reports why the current directory could not be
+  listed, and `View` shows a line saying so. An unreadable directory used to
+  look like an empty one.
 - `filepicker.Model.Reload` lists the directory again. `Extensions` and
   `DirsOnly` set after `New` had no effect on the starting directory; set
   them and call `Reload`.
@@ -51,6 +54,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `filepicker` treats a symlink to a directory as a directory: Enter descends
+  into it instead of selecting it as a file.
 - `Go` behaves as `FromCtx` does: `Sequence` waits for a `Go` Cmd before
   starting the next one, and `RunCmd` runs it and returns its Msg. Before,
   `Sequence` moved on at once and `RunCmd` returned an internal value.

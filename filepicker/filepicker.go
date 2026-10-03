@@ -62,6 +62,7 @@ type Model struct {
 	cursor  int
 	offset  int // first entry shown when Height is set; kept by Update
 	entries []fsutil.Entry
+	err     error // why Dir could not be listed, or nil
 }
 
 // KeyMap is the set of keys a file picker reacts to.
@@ -123,10 +124,11 @@ func (m Model) Reload() Model {
 }
 
 func (m *Model) reload() {
-	all, err := fsutil.ListDir(m.Dir)
+	all, err := fsutil.ListDirFollow(m.Dir) // a symlink to a directory can be entered
+	m.err = err
 	if err != nil {
 		m.entries = nil
-		m.cursor = 0
+		m.cursor, m.offset = 0, 0
 		return
 	}
 
@@ -172,6 +174,11 @@ func (m Model) Cursor() int { return m.cursor }
 
 // Entries returns the currently listed entries of Dir.
 func (m Model) Entries() []fsutil.Entry { return m.entries }
+
+// Err returns the error of the last listing of Dir (it does not exist, or
+// cannot be read), or nil. Entries is empty while it is non-nil, and View
+// shows a line saying the directory cannot be read.
+func (m Model) Err() error { return m.err }
 
 // SelectedMsg is delivered (via the Cmd Update returns) when a file is
 // confirmed with Enter, or a directory is confirmed with Enter in
@@ -279,10 +286,21 @@ func (m *Model) ascend() {
 }
 
 // View renders the current directory's entries, directories marked with
-// a trailing "/", with the entry under the cursor highlighted.
+// a trailing "/", with the entry under the cursor highlighted. An empty
+// directory renders "". One that could not be listed (see Err) renders a
+// single line that says so.
 func (m Model) View() string {
+	if m.err != nil {
+		return m.errLine()
+	}
 	start, end := m.window()
 	return m.render(start, end)
+}
+
+// errLine is what View shows in place of the entries when Dir could not be
+// listed.
+func (m Model) errLine() string {
+	return "cannot read this directory: " + ansi.Clean(m.Raw, m.err.Error())
 }
 
 // render draws entries [start, end).

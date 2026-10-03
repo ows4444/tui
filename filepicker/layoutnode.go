@@ -15,6 +15,9 @@ func (m Model) LayoutNode() layout.Node { return dirNode{m} }
 type dirNode struct{ m Model }
 
 func (n dirNode) Measure(c layout.Constraints) layout.Size {
+	if n.m.err != nil {
+		return c.Constrain(layout.Size{W: ansi.Width(n.m.errLine()), H: 1})
+	}
 	w := 0
 	for _, e := range n.m.entries {
 		lw := 2 + ansi.Width(ansi.Clean(n.m.Raw, e.Name))
@@ -31,6 +34,9 @@ func (n dirNode) Measure(c layout.Constraints) layout.Size {
 func (n dirNode) Render(s layout.Size) string {
 	if s.W <= 0 || s.H <= 0 {
 		return ""
+	}
+	if n.m.err != nil {
+		return layout.Block(n.m.errLine()).Render(s)
 	}
 	start, end := layout.WindowRange(len(n.m.entries), n.m.cursor, s.H)
 	return layout.Block(n.m.render(start, end)).Render(s)

@@ -3,6 +3,7 @@ package filepicker
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ows4444/tui"
@@ -25,8 +26,8 @@ func TestUnreadableDirListsNothing(t *testing.T) {
 	if _, cmd := m.Update(tui.Key{Type: tui.KeyEnter}); cmd != nil {
 		t.Error("Enter on an empty listing returned a Cmd")
 	}
-	if got := m.View(); got != "" {
-		t.Errorf("View = %q, want empty", got)
+	if got := m.View(); !strings.HasPrefix(got, "cannot read this directory: ") || m.Err() == nil {
+		t.Errorf("View = %q, Err = %v; want the directory reported as unreadable", got, m.Err())
 	}
 	m, _ = m.Update(tui.Key{Type: tui.KeyRight}) // descend with no entries
 	if m.Dir == "" {

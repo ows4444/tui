@@ -3,6 +3,7 @@ package filepicker
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ows4444/tui"
@@ -122,8 +123,8 @@ func TestUnreadableDirDoesNotPanic(t *testing.T) {
 	if len(m.Entries()) != 0 {
 		t.Fatalf("Entries() = %v, want empty for an unreadable dir", m.Entries())
 	}
-	if view := m.View(); view != "" {
-		t.Errorf("View() = %q, want empty", view)
+	if view := m.View(); !strings.HasPrefix(view, "cannot read this directory: ") || strings.Contains(view, "\n") {
+		t.Errorf("View() = %q, want one line saying the directory cannot be read", view)
 	}
 }
 

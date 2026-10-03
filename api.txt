@@ -1247,6 +1247,7 @@ type Size int
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) Entries() []fsutil.Entry
+func (m Model) Err() error
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) Reload() Model
