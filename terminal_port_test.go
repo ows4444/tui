@@ -63,3 +63,76 @@ func TestRunReturnsRawModeError(t *testing.T) {
 		t.Fatalf("Run = %v, want %v", err, boom)
 	}
 }
+
+// suspendErrModel suspends on 'e' and quits once the SuspendMsg arrives,
+// keeping its Err.
+type suspendErrModel struct {
+	fn  func() error
+	got *error
+}
+
+func (suspendErrModel) Init() Cmd { return nil }
+func (m suspendErrModel) Update(msg Msg) (Model, Cmd) {
+	switch msg := msg.(type) {
+	case Key:
+		if msg.Code == 'e' {
+			return m, Suspend(m.fn)
+		}
+	case SuspendMsg:
+		*m.got = msg.Err
+		return m, Quit()
+	}
+	return m, nil
+}
+func (suspendErrModel) View() string { return "x" }
+
+// runSuspend runs a Program on a fake terminal whose MakeRaw starts failing
+// with rawErr during the Suspend, and returns the SuspendMsg's Err.
+func runSuspend(t *testing.T, rawErr, fnErr error) error {
+	t.Helper()
+	pr, pw := mustPipe(t)
+	defer pr.Close()
+	defer pw.Close()
+	ft := &termio.Fake{Interactive: true}
+	var got error
+	m := suspendErrModel{got: &got, fn: func() error {
+		ft.RawErr = rawErr // read next by suspend, on this goroutine
+		return fnErr
+	}}
+	p := NewProgram(m, WithInput(pr), WithOutput(&strings.Builder{}), WithTerminal(ft))
+	errc := make(chan error, 1)
+	go func() {
+		_, err := p.Run()
+		errc <- err
+	}()
+	if _, err := pw.Write([]byte("e")); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err := <-errc:
+		if err != nil {
+			t.Fatalf("Run = %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run did not return")
+	}
+	return got
+}
+
+// When raw mode cannot be re-entered after a Suspend whose fn succeeded, the
+// SuspendMsg says so; fn's own error is never replaced.
+func TestSuspendReportsRawModeError(t *testing.T) {
+	boom, fnErr := errors.New("no raw"), errors.New("editor failed")
+	if err := runSuspend(t, boom, nil); !errors.Is(err, boom) {
+		t.Errorf("fn ok, raw mode failed: SuspendMsg.Err = %v, want %v", err, boom)
+	}
+	if err := runSuspend(t, boom, fnErr); !errors.Is(err, fnErr) {
+		t.Errorf("fn and raw mode failed: SuspendMsg.Err = %v, want %v", err, fnErr)
+	}
+	if err := runSuspend(t, nil, fnErr); !errors.Is(err, fnErr) {
+		t.Errorf("fn failed: SuspendMsg.Err = %v, want %v", err, fnErr)
+	}
+	if err := runSuspend(t, nil, nil); err != nil {
+		t.Errorf("nothing failed: SuspendMsg.Err = %v, want nil", err)
+	}
+}

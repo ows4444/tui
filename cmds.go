@@ -82,7 +82,9 @@ func Suspend(fn func() error) Cmd {
 }
 
 // SuspendMsg is delivered to Update once a Suspend's fn has returned and
-// the terminal has been restored, carrying fn's error, if any.
+// the terminal has been restored, carrying fn's error, if any. When fn
+// succeeded but raw mode could not be re-entered, Err is that error and the
+// terminal is still in its normal mode.
 type SuspendMsg struct{ Err error }
 
 // TickCtx is Tick as a CtxCmd, for composing inside a FromCtx Cmd of your own. The

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"runtime/debug"
@@ -480,6 +481,9 @@ func (p *Program) suspend(fn func() error) error {
 	if p.termRestore != nil && !gone {
 		if restore, rawErr := p.terminal().MakeRaw(p.mouseMode != MouseOff); rawErr == nil {
 			p.termRestore = restore
+		} else if err == nil {
+			// The Program is left in cooked mode; fn's own error wins.
+			err = fmt.Errorf("tui: cannot re-enter raw mode after Suspend: %w", rawErr)
 		}
 	}
 	p.termMu.Unlock()
