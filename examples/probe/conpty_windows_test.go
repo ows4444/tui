@@ -49,7 +49,42 @@ var (
 	procDeleteProcThreadAttrList    = modKernel32.NewProc("DeleteProcThreadAttributeList")
 	procCreateProcessW              = modKernel32.NewProc("CreateProcessW")
 	procGetConsoleModeT             = modKernel32.NewProc("GetConsoleMode")
+	procGetNumberOfConsoleInputEvts = modKernel32.NewProc("GetNumberOfConsoleInputEvents")
+	procPeekConsoleInputT           = modKernel32.NewProc("PeekConsoleInputW")
 )
+
+// inputRec is the Win32 INPUT_RECORD, laid out for a KEY_EVENT_RECORD.
+type inputRec struct {
+	eventType uint16
+	_         uint16
+	keyDown   int32
+	repeat    uint16
+	vk        uint16
+	scan      uint16
+	char      uint16
+	control   uint32
+}
+
+// describeInput reports the console input mode and the events still queued on
+// h, for a failure message: it tells whether keys reached the console and were
+// left unread, or never arrived.
+func describeInput(h syscall.Handle) string {
+	mode, _ := consoleMode(h)
+	var queued uint32
+	_, _, _ = procGetNumberOfConsoleInputEvts.Call(uintptr(h), uintptr(unsafe.Pointer(&queued)))
+	var recs [16]inputRec
+	var got uint32
+	_, _, _ = procPeekConsoleInputT.Call(uintptr(h), uintptr(unsafe.Pointer(&recs[0])), uintptr(len(recs)), uintptr(unsafe.Pointer(&got)))
+	var evs []string
+	for _, r := range recs[:min(int(got), len(recs))] {
+		if r.eventType == 1 {
+			evs = append(evs, fmt.Sprintf("key(down=%d vk=%#x char=%#x ctl=%#x)", r.keyDown, r.vk, r.char, r.control))
+		} else {
+			evs = append(evs, fmt.Sprintf("type=%#x", r.eventType))
+		}
+	}
+	return fmt.Sprintf("in_mode=%08x queued=%d events=[%s]", mode, queued, strings.Join(evs, " "))
+}
 
 func consoleMode(h syscall.Handle) (uint32, error) {
 	var mode uint32
@@ -90,6 +125,13 @@ func TestConPTYHelper(t *testing.T) {
 	}
 	cmd := exec.Command(os.Getenv(probeExeVar))
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = conin, conout, conout
+	// A run takes about three seconds. If the probe is still going well after
+	// that, say what the console input looks like, for the parent's failure
+	// message.
+	stuck := time.AfterFunc(12*time.Second, func() {
+		fmt.Fprintf(conout, "\r\nCONDIAG %s\r\n", describeInput(in))
+	})
+	defer stuck.Stop()
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("probe: %v", err)
 	}
@@ -108,6 +150,23 @@ type lockedBuf struct {
 }
 
 func (l *lockedBuf) write(p []byte) { l.mu.Lock(); l.b.Write(p); l.mu.Unlock() }
+
+// rawHead returns the first n bytes as written, escape sequences included.
+func (l *lockedBuf) rawHead(n int) string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	b := l.b.Bytes()
+	return string(b[:min(n, len(b))])
+}
+
+// rawTail returns the last n bytes as written, escape sequences included.
+func (l *lockedBuf) rawTail(n int) string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	b := l.b.Bytes()
+	return string(b[max(0, len(b)-n):])
+}
+
 func (l *lockedBuf) text() string {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -220,7 +279,7 @@ func TestProbeUnderConPTY(t *testing.T) {
 	send("\x03") // Ctrl+C
 	ev, _ := syscall.WaitForSingleObject(pi.Process, 30000)
 	if ev != syscall.WAIT_OBJECT_0 {
-		t.Fatalf("probe did not exit after Ctrl+C (wait=%d); output:\n%s", ev, buf.text())
+		t.Fatalf("probe did not exit after Ctrl+C (wait=%d); output:\n%s\nfirst bytes: %q\nlast bytes: %q", ev, buf.text(), buf.rawHead(600), buf.rawTail(1200))
 	}
 	var code uint32
 	_ = syscall.GetExitCodeProcess(pi.Process, &code)
