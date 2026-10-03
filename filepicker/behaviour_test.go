@@ -39,7 +39,7 @@ func TestFilterThatHidesEverythingResetsCursor(t *testing.T) {
 	must(t, os.WriteFile(filepath.Join(dir, "a.txt"), nil, 0o644))
 	m := New(dir)
 	m.Extensions = []string{".go"}
-	m.reload()
+	m = m.Reload()
 	if len(m.Entries()) != 0 || m.Cursor() != 0 {
 		t.Fatalf("entries=%v cursor=%d, want none at 0", m.Entries(), m.Cursor())
 	}
@@ -55,7 +55,7 @@ func TestReloadClampsCursorWhenListShrinks(t *testing.T) {
 	m, _ = m.Update(tui.Key{Type: tui.KeyDown})
 	must(t, os.Remove(filepath.Join(dir, "b")))
 	must(t, os.Remove(filepath.Join(dir, "c")))
-	m.reload()
+	m = m.Reload()
 	if m.Cursor() != 0 {
 		t.Fatalf("Cursor = %d, want clamped to 0", m.Cursor())
 	}

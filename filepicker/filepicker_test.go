@@ -22,7 +22,7 @@ func TestExtensionFilter(t *testing.T) {
 	dir := setupTree(t)
 	m := New(dir)
 	m.Extensions = []string{".go"}
-	m.reload()
+	m = m.Reload()
 
 	var names []string
 	for _, e := range m.Entries() {
@@ -44,7 +44,7 @@ func TestDirsOnlyExcludesFiles(t *testing.T) {
 	dir := setupTree(t)
 	m := New(dir)
 	m.DirsOnly = true
-	m.reload()
+	m = m.Reload()
 
 	if len(m.Entries()) != 1 || m.Entries()[0].Name != "sub" {
 		t.Fatalf("Entries() = %v, want just [sub]", m.Entries())
@@ -89,7 +89,7 @@ func TestEnterOnDirInDirsOnlyModeSelects(t *testing.T) {
 	dir := setupTree(t)
 	m := New(dir)
 	m.DirsOnly = true
-	m.reload()
+	m = m.Reload()
 	m.cursor = 0 // only "sub" is listed
 
 	_, cmd := m.Update(tui.Key{Type: tui.KeyEnter})

@@ -30,3 +30,28 @@ func Example() {
 	// a.txt
 	// b.txt
 }
+
+// Extensions and DirsOnly take effect at the next listing, so set them and
+// call Reload.
+func ExampleModel_Reload() {
+	dir, err := os.MkdirTemp("", "filepicker")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer os.RemoveAll(dir)
+	for _, name := range []string{"main.go", "notes.txt"} {
+		if err := os.WriteFile(filepath.Join(dir, name), nil, 0o600); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	m := filepicker.New(dir)
+	m.Extensions = []string{".go"}
+	m = m.Reload()
+	for _, e := range m.Entries() {
+		fmt.Println(e.Name)
+	}
+	// Output:
+	// main.go
+}

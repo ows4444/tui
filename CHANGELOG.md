@@ -9,6 +9,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+### Added
+
+- `filepicker.Model.Reload` lists the directory again. `Extensions` and
+  `DirsOnly` set after `New` had no effect on the starting directory; set
+  them and call `Reload`.
+
 ### Changed
 
 - Cancelling the context given to `WithContext` now ends `Run`: it restores

@@ -1249,6 +1249,7 @@ func (m Model) Cursor() int
 func (m Model) Entries() []fsutil.Entry
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) Reload() Model
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)

@@ -20,7 +20,12 @@ import (
 // parent. Enter on a file confirms it via SelectedMsg. Extensions, when
 // non-empty, restricts which files are listed (directories are always
 // listed, for navigation); DirsOnly excludes files entirely and makes
-// Enter on a directory confirm it instead of descending into it.
+// Enter on a directory confirm it instead of descending into it. New lists
+// Dir before either can be set, so call Reload after changing them:
+//
+//	m := filepicker.New(dir)
+//	m.Extensions = []string{".go"}
+//	m = m.Reload()
 type Model struct {
 	Dir        string
 	Extensions []string // e.g. []string{".go", ".md"}; empty means no filter
@@ -104,6 +109,15 @@ func (m Model) Bindings() []keymap.Binding { return m.keys().all() }
 // New builds a Model rooted at dir, listing its entries immediately.
 func New(dir string) Model {
 	m := Model{Dir: dir, Theme: theme.DarkTheme(), KeyMap: DefaultKeyMap()}
+	m.reload()
+	return m
+}
+
+// Reload lists Dir again and returns the Model with the new entries. Call it
+// after setting Extensions, DirsOnly or Dir, on a Model built as a struct
+// literal, or to pick up a change on disk. The cursor keeps its index, clamped
+// to the new listing.
+func (m Model) Reload() Model {
 	m.reload()
 	return m
 }
