@@ -70,6 +70,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `tuitest.Replay` says why it fails on a recording it cannot reproduce: one
+  in which a tick or resize was handled between two keys that arrived in one
+  input read. Before, the failure was only a frame diff.
 - `colorpicker` passes a `PasteEvent` to its hex field while that field has
   focus. It forwarded only keys, so a paste never reached the field.
 - `Run` waits for its resize watcher before returning, so nothing asks the

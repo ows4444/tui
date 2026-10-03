@@ -98,6 +98,9 @@ type step struct {
 // (alt screen, colour profile, accessibility, and so on), except for the
 // recorder options; the harness sets a true-colour profile, which opts may
 // override. newModel must return a model in the state the recording began with.
+// Replay feeds each recorded input read whole, so it cannot reproduce a
+// recording in which a tick or resize was handled between two keys that
+// arrived in one read; such a recording fails with a note saying so.
 // Messages from Program.Send and Cmd results that depend on the outside world
 // are not recorded, so a model that relies on them does not replay.
 func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tui.ProgramOption) {
@@ -165,6 +168,15 @@ func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tu
 		return true
 	}
 
+	// Replay feeds each recorded read whole. A recording in which a tick or a
+	// resize was handled between two messages of one read cannot be driven in
+	// that order, so a failure of such a recording says so.
+	hint := ""
+	if i := interleavedRead(steps); i >= 0 {
+		hint = fmt.Sprintf("\n  note: at step %d the recording handled a tick or resize between two messages that came from one input read. "+
+			"Replay feeds a read whole and cannot reproduce that order; record again, or send those keys in separate writes", i)
+	}
+
 	var pending [][]byte // chunks read in the recording, not yet fed
 	skipUpd := false     // the next upd belongs to a tick or size just driven
 	flush := func(i int) bool {
@@ -182,8 +194,8 @@ func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tu
 		case <-done:
 			fail("the program exited at step %d (%s) before the recording did", i, st.line.K)
 		default:
-			fail("stalled before step %d (%s): the model made %d updates and %d writes, the recording %d and %d",
-				i, st.line.K, obs.upd.Load(), obs.out.Load(), wantUpd, st.out)
+			fail("stalled before step %d (%s): the model made %d updates and %d writes, the recording %d and %d%s",
+				i, st.line.K, obs.upd.Load(), obs.out.Load(), wantUpd, st.out, hint)
 		}
 	}
 	for i, st := range steps {
@@ -252,17 +264,44 @@ func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tu
 			if wantFrames != nil {
 				want = fmt.Sprintf("%q", clip(wantFrames[i]))
 			}
-			t.Errorf("tuitest: replay: write %d differs from the recording:\n  want %s\n  got  %q", i, want, clip(got[i]))
+			t.Errorf("tuitest: replay: write %d differs from the recording:\n  want %s\n  got  %q%s", i, want, clip(got[i]), hint)
 			return
 		}
 		if wantFrames != nil && string([]rune(got[i])) != wantFrames[i] {
-			t.Errorf("tuitest: replay: write %d differs from the cast:\n  want %q\n  got  %q", i, clip(wantFrames[i]), clip(got[i]))
+			t.Errorf("tuitest: replay: write %d differs from the cast:\n  want %q\n  got  %q%s", i, clip(wantFrames[i]), clip(got[i]), hint)
 			return
 		}
 	}
 	if len(got) != len(wantShas) {
-		t.Errorf("tuitest: replay: the replay made %d writes to the terminal, the recording %d", len(got), len(wantShas))
+		t.Errorf("tuitest: replay: the replay made %d writes to the terminal, the recording %d%s", len(got), len(wantShas), hint)
 	}
+}
+
+// interleavedRead returns the index of the first step where the recording
+// handled a message that came from input already read, after a tick or resize
+// that followed that read, or -1. It mirrors the driver loop: an "upd" that is
+// not the tick's or resize's own, with no new input recorded since the last
+// one, comes from the read fed before the tick.
+func interleavedRead(steps []step) int {
+	fed, ticked, skip, pending := false, false, false, 0
+	for i, st := range steps {
+		switch st.line.K {
+		case "in":
+			pending++
+		case "upd":
+			switch {
+			case skip:
+				skip = false
+			case pending > 0:
+				pending, fed, ticked = 0, true, false
+			case fed && ticked:
+				return i
+			}
+		case "size", "tick":
+			skip, ticked = true, true
+		}
+	}
+	return -1
 }
 
 func totalUpd(steps []step) int64 {

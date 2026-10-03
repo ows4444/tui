@@ -2,6 +2,7 @@ package tuitest_test
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -168,5 +169,53 @@ func TestRecordingIsAsciicastV2(t *testing.T) {
 	}
 	if outs == 0 {
 		t.Fatal("no output events")
+	}
+}
+
+// mergeReads rewrites a sidecar so the reads of "b" and "c" are one read of
+// "bc" recorded where "b" was: the ticks handled between the two keys now sit
+// between two messages of one read.
+func mergeReads(t *testing.T, side string) string {
+	t.Helper()
+	b64 := func(s string) string { return base64.StdEncoding.EncodeToString([]byte(s)) }
+	var out []string
+	merged, dropped := false, false
+	for _, line := range strings.Split(strings.TrimRight(side, "\n"), "\n") {
+		var l map[string]any
+		if err := json.Unmarshal([]byte(line), &l); err != nil {
+			t.Fatalf("sidecar line %q: %v", line, err)
+		}
+		if l["k"] == "in" && l["b"] == b64("b") {
+			line = strings.Replace(line, `"`+b64("b")+`"`, `"`+b64("bc")+`"`, 1)
+			merged = true
+		} else if l["k"] == "in" && l["b"] == b64("c") {
+			dropped = true
+			continue
+		}
+		out = append(out, line)
+	}
+	if !merged || !dropped {
+		t.Fatalf("the recording does not read b and c separately:\n%s", side)
+	}
+	return strings.Join(out, "\n") + "\n"
+}
+
+// A recording with a tick between two keys of one read cannot be replayed in
+// that order. Replay fails, and says why instead of leaving only a frame diff.
+func TestReplayExplainsATickBetweenTwoKeysOfOneRead(t *testing.T) {
+	_, side := record(t)
+	ftb := &replayTB{}
+	tuitest.Replay(ftb, func() tui.Model { return replayModel{} }, nil, strings.NewReader(mergeReads(t, side)))
+	if len(ftb.errs) == 0 {
+		t.Fatal("the replay passed; the recording was meant to be one it cannot reproduce")
+	}
+	if !strings.Contains(strings.Join(ftb.errs, "\n"), "between two messages that came from one input read") {
+		t.Fatalf("the failure does not explain the cause:\n%s", strings.Join(ftb.errs, "\n"))
+	}
+	// A recording Replay can reproduce carries no such note.
+	ok := &replayTB{}
+	tuitest.Replay(ok, func() tui.Model { return replayModel{skew: true} }, nil, strings.NewReader(side))
+	if len(ok.errs) == 0 || strings.Contains(strings.Join(ok.errs, "\n"), "one input read") {
+		t.Fatalf("a plain mismatch: errs = %v", ok.errs)
 	}
 }
