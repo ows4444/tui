@@ -92,6 +92,8 @@ func TestCellRowCacheEquivalence(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		// Windows cannot remove an open file, and TempDir's cleanup runs after this one.
+		t.Cleanup(func() { f.Close() })
 		p := NewProgram(staticModel{}, WithOutput(f), WithCellRenderer(true))
 		p.width, p.height = 80, 24
 		p.cells = render.New()
