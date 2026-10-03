@@ -63,6 +63,11 @@ func TestDetectColorProfileFor(t *testing.T) {
 func env(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
 
 func TestDetectColorProfile(t *testing.T) {
+	// An empty TERM is ANSI16 on Windows and NoColor elsewhere.
+	unset := NoColor
+	if runtime.GOOS == "windows" {
+		unset = ANSI16
+	}
 	cases := []struct {
 		name string
 		env  map[string]string
@@ -75,7 +80,7 @@ func TestDetectColorProfile(t *testing.T) {
 		{"TERM 256color", map[string]string{"TERM": "xterm-256color"}, ANSI256},
 		{"TERM plain xterm", map[string]string{"TERM": "xterm"}, ANSI16},
 		{"TERM dumb", map[string]string{"TERM": "dumb"}, NoColor},
-		{"TERM unset", map[string]string{}, NoColor},
+		{"TERM unset", map[string]string{}, unset},
 	}
 	for _, c := range cases {
 		if got := DetectColorProfileEnv(env(c.env)); got != c.want {
