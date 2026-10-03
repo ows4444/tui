@@ -93,7 +93,7 @@ Windows, since goldens are compared byte for byte.
 | Variable | Effect |
 |---|---|
 | `TUITEST_UPDATE=1` | Rewrite goldens, as above |
-| `TUI_TIMING_TESTS=1` | Run the wall-clock tests (`frame_budget_test.go`, `e2e_bench_test.go`); they also skip under `-race` and `-short` |
+| `TUI_TIMING_TESTS=1` | Run the wall-clock tests (`frame_budget_test.go`, `e2e_bench_test.go`, `TestClockDriftFree` in `motion`, `TestStreamLinear` in `markdown`); most also skip under `-race` and `-short` |
 | `ARCHTEST_UPDATE=1` | Regenerate `.golangci.yml` from the `internal/archtest` rules: `ARCHTEST_UPDATE=1 go test ./internal/archtest -run TestGolangciMirror` |
 | `BIDICHARACTERTEST=<file>` | Run the full Unicode `BidiCharacterTest.txt` in `internal/bidi` instead of the built-in cases |
 

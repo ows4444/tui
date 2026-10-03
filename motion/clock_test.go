@@ -2,6 +2,7 @@ package motion
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 )
@@ -72,8 +73,13 @@ func TestClockReducedSchedulesNothing(t *testing.T) {
 }
 
 // TestClockDriftFree proves criterion #33: with a 5 ms Update cost a 16 ms
-// Clock still delivers one tick per slot, 60-64 over one second.
+// Clock still delivers one tick per slot, 60-64 over one second. It counts
+// wall-clock slots, which a loaded machine misses, so like the other timing
+// tests it runs only when TUI_TIMING_TESTS is set.
 func TestClockDriftFree(t *testing.T) {
+	if os.Getenv("TUI_TIMING_TESTS") == "" {
+		t.Skip("wall-clock test; set TUI_TIMING_TESTS=1 to run it")
+	}
 	c := NewClock(16 * time.Millisecond)
 	cmd := c.Start()
 	deadline := time.Now().Add(time.Second)

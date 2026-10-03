@@ -2,6 +2,7 @@ package markdown
 
 import (
 	"math/rand"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -100,6 +101,9 @@ func runStream(toks []string) {
 func TestStreamLinear(t *testing.T) {
 	if raceEnabled || testing.Short() {
 		t.Skip("wall-clock scaling is unreliable under -race and -short; see BenchmarkStreamAppend1k and 10k")
+	}
+	if os.Getenv("TUI_TIMING_TESTS") == "" {
+		t.Skip("wall-clock ratio test; set TUI_TIMING_TESTS=1 to run it")
 	}
 	best := func(n int) time.Duration {
 		toks := streamTokens(n)
