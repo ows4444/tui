@@ -37,6 +37,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `imageview`: a Model from `New` encodes its image once and reuses the
+  result until the image, size, mode, id or cell size changes. It used to
+  decode and encode on every `View`. Bytes of `PNG` overwritten in place are
+  not noticed; assign a new slice.
 - `tuitest.Session.Keys` sends every key name `Key.String` produces
   (function keys, `insert`, modified keys such as `ctrl+left` and
   `ctrl+shift+a`, media keys) as that key. Before, names it did not know were

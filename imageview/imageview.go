@@ -8,8 +8,10 @@ package imageview
 import (
 	"encoding/base64"
 	"hash/fnv"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/theme"
@@ -23,7 +25,9 @@ const MaxChunk = 4096
 // tui.Capabilities.KittyGraphics (the startup probe's answer); leave it false
 // when the probe is off or the terminal did not confirm support.
 type Model struct {
-	// PNG is the encoded image, transmitted as is.
+	// PNG is the encoded image, transmitted as is. A Model from New encodes
+	// it once and reuses the result while PNG is the same slice: assign a new
+	// slice to show another image; bytes overwritten in place are not seen.
 	PNG []byte
 	// Width and Height are the size in terminal cells.
 	Width, Height int
@@ -55,6 +59,47 @@ type Model struct {
 
 	// tokens is the per-instance colour override set by WithTokens.
 	tokens theme.Tokens
+	// cache holds the last graphics View; nil on a struct literal.
+	cache *viewCache
+}
+
+// viewCache memoises the graphics View of a Model, so a frame that shows the
+// same image does not decode, quantise, hash or base64-encode it again. It is
+// keyed on the identity (first-byte address and length) of PNG and on every
+// field the output depends on, so replacing PNG or changing a field
+// invalidates it; overwriting the bytes of PNG in place does not. A Model
+// built as a struct literal has no cache and encodes each time; use New.
+type viewCache struct {
+	mu   sync.Mutex
+	key  viewKey
+	view string
+	ok   bool
+}
+
+type viewKey struct {
+	png                            *byte
+	n, width, height, cellW, cellH int
+	kitty                          bool
+	id                             uint32
+	tmux, sty                      string
+}
+
+// encodeHook, when non-nil, is called each time View encodes an image. Tests
+// use it to prove the cache; it is nil in production.
+var encodeHook func()
+
+func (m Model) viewKey() viewKey {
+	getenv := m.Getenv
+	if getenv == nil {
+		getenv = os.Getenv
+	}
+	k := viewKey{png: &m.PNG[0], n: len(m.PNG), width: m.Width, height: m.Height, kitty: m.Kitty}
+	if m.Kitty {
+		k.id, k.tmux, k.sty = m.ID, getenv("TMUX"), getenv("STY")
+	} else {
+		k.cellW, k.cellH = m.CellWidth, m.CellHeight
+	}
+	return k
 }
 
 // imageID returns the kitty id of m: ID, or a nonzero FNV-1a hash of the PNG
@@ -74,7 +119,7 @@ func (m Model) imageID() uint32 {
 
 // New returns a Model for png at width by height cells, using theme.DarkTheme().
 func New(png []byte, width, height int, alt string) Model {
-	return Model{PNG: png, Width: width, Height: height, Alt: alt, Theme: theme.DarkTheme()}
+	return Model{PNG: png, Width: width, Height: height, Alt: alt, Theme: theme.DarkTheme(), cache: &viewCache{}}
 }
 
 // View renders Height rows, each exactly Width cells wide. With Kitty or Sixel
@@ -88,6 +133,23 @@ func (m Model) View() string {
 	}
 	if len(m.PNG) == 0 || !m.Kitty && !m.Sixel {
 		return m.placeholder()
+	}
+	if c := m.cache; c != nil {
+		key := m.viewKey()
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		if !c.ok || c.key != key {
+			c.key, c.view, c.ok = key, m.graphicsView(), true
+		}
+		return c.view
+	}
+	return m.graphicsView()
+}
+
+// graphicsView encodes the image and builds the View around it.
+func (m Model) graphicsView() string {
+	if encodeHook != nil {
+		encodeHook()
 	}
 	var graphics string
 	if m.Kitty {
