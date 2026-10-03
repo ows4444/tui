@@ -142,3 +142,18 @@ func TestSecondRunLeavesTheRunningProgramAlone(t *testing.T) {
 		t.Fatal("first Run did not return")
 	}
 }
+
+// WithContext(nil) is the default parent, context.Background(): NewProgram
+// does not panic and the Program's context is live until Run returns.
+func TestWithContextNilIsBackground(t *testing.T) {
+	p := NewProgram(keyLogger{}, WithContext(nil), WithInput(strings.NewReader("q")), WithOutput(io.Discard)) //nolint:staticcheck // nil is the case under test
+	if err := p.Context().Err(); err != nil {
+		t.Fatalf("Context before Run: %v", err)
+	}
+	if _, err := p.Run(); err != nil {
+		t.Fatalf("Run = %v", err)
+	}
+	if p.Context().Err() == nil {
+		t.Fatal("Context is not done after Run returned")
+	}
+}
