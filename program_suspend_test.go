@@ -63,7 +63,9 @@ func TestSuspendStopsReaderBeforeFn(t *testing.T) {
 	var p *Program
 	var stoppedAtFn bool
 	var fnGot string
+	fnDone := make(chan struct{})
 	fn := func() error {
+		defer close(fnDone)
 		select {
 		case <-p.rdDone:
 			stoppedAtFn = true
@@ -86,6 +88,13 @@ func TestSuspendStopsReaderBeforeFn(t *testing.T) {
 
 	pw.WriteString("e")
 	waitKeys(t, m, "e")
+	// Update has seen "e" but fn may not have run yet: a "q" written now could
+	// land in front of fn's own bytes and be read by fn instead of the app.
+	select {
+	case <-fnDone:
+	case <-time.After(5 * time.Second):
+		t.Fatal("fn never finished")
+	}
 	pw.WriteString("q")
 	waitKeys(t, m, "eq")
 	if res := <-ch; res.err != nil {
