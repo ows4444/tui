@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/ows4444/tui/ansi"
 )
 
 // styledScreen builds a cols x rows view of SGR-styled rows; tick changes one
@@ -35,7 +37,10 @@ func benchCellProgram(b *testing.B, cols, rows int, v string) *Program {
 		b.Fatalf("open %s: %v", os.DevNull, err)
 	}
 	b.Cleanup(func() { out.Close() })
-	p := NewProgram(staticModel{view: v}, WithOutput(out), WithCellRenderer(true))
+	// Pin the profile: a lower one detected from the environment (no COLORTERM)
+	// downgrades every styled run and allocates per run, which the budgets do
+	// not cover.
+	p := NewProgram(staticModel{view: v}, WithOutput(out), WithCellRenderer(true), WithColorProfile(ansi.TrueColor))
 	p.width, p.height = cols, rows
 	p.render()
 	return p
