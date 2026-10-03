@@ -37,6 +37,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `tuitest.Session.Keys` sends every key name `Key.String` produces
+  (function keys, `insert`, modified keys such as `ctrl+left` and
+  `ctrl+shift+a`, media keys) as that key. Before, names it did not know were
+  typed one character at a time. An argument that is exactly a key name can
+  no longer be typed as text with `Keys`.
 - `Run` cancels `Context` and releases callers blocked in `Send` when it
   returns before the loop starts (the input is not a terminal, or raw mode
   cannot be entered). A `Run` called while the first is still running no

@@ -7,6 +7,7 @@ package tuitest
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -232,6 +233,29 @@ var keyBytes = map[string]string{
 	"delete": "\x1b[3~", "shift+tab": "\x1b[Z",
 }
 
+// csiLetterKeys and tildeKeys are the xterm sequences of the named keys that
+// take a modifier parameter: ESC [ 1 ; mod LETTER and ESC [ code ; mod ~.
+var (
+	csiLetterKeys = map[string]byte{"up": 'A', "down": 'B', "right": 'C', "left": 'D', "home": 'H', "end": 'F'}
+	tildeKeys     = map[string]int{
+		"insert": 2, "delete": 3, "pgup": 5, "pgdown": 6,
+		"f1": 11, "f2": 12, "f3": 13, "f4": 14, "f5": 15, "f6": 17, "f7": 18, "f8": 19, "f9": 20, "f10": 21,
+		"f11": 23, "f12": 24, "f13": 25, "f14": 26, "f15": 28, "f16": 29, "f17": 31, "f18": 32, "f19": 33, "f20": 34,
+	}
+	// kittyKeys are the keys only the kitty protocol's ESC [ code ; mod u names.
+	kittyKeys = map[string]int{
+		"enter": 13, "tab": 9, "backspace": 127, "esc": 27, "space": 32,
+		"f21": 57384, "f22": 57385, "f23": 57386, "f24": 57387,
+		"media-play": 57428, "media-pause": 57429, "media-play-pause": 57430, "media-reverse": 57431,
+		"media-stop": 57432, "media-fast-forward": 57433, "media-rewind": 57434, "media-next": 57435,
+		"media-previous": 57436, "media-record": 57437, "volume-down": 57438, "volume-up": 57439, "mute": 57440,
+	}
+	modBits = map[string]int{"shift": 1, "alt": 2, "ctrl": 4, "super": 8}
+)
+
+// encodeKey returns the bytes a terminal sends for the key named k, in the
+// spelling input.Key.String uses ("f5", "ctrl+left", "ctrl+shift+a"). A k
+// that names no key is returned unchanged, as literal text.
 func encodeKey(k string) string {
 	if b, ok := keyBytes[k]; ok {
 		return b
@@ -239,17 +263,48 @@ func encodeKey(k string) string {
 	if rest, ok := strings.CutPrefix(k, "ctrl+"); ok && len(rest) == 1 && rest[0] >= 'a' && rest[0] <= 'z' {
 		return string(rest[0] - 'a' + 1)
 	}
-	if rest, ok := strings.CutPrefix(k, "alt+"); ok {
-		return "\x1b" + encodeKey(rest)
+	// Leading modifier names, then the key. "ctrl++" is ctrl and "+".
+	mods, base := 0, k
+	for {
+		name, rest, ok := strings.Cut(base, "+")
+		bit, isMod := modBits[name]
+		if !ok || !isMod || rest == "" || mods&bit != 0 {
+			break
+		}
+		mods, base = mods|bit, rest
+	}
+	if mods == 2 && base != "space" { // alt alone: the legacy ESC prefix (ESC SP decodes as "alt+ ")
+		if enc := encodeKey(base); enc != base || len([]rune(base)) == 1 {
+			return "\x1b" + enc
+		}
+		return k
+	}
+	// The xterm sequences have no super bit; only the kitty form carries it.
+	if c, ok := csiLetterKeys[base]; ok && mods&8 == 0 {
+		return fmt.Sprintf("\x1b[1;%d%c", mods+1, c)
+	}
+	if n, ok := tildeKeys[base]; ok && mods&8 == 0 {
+		if mods == 0 {
+			return fmt.Sprintf("\x1b[%d~", n)
+		}
+		return fmt.Sprintf("\x1b[%d;%d~", n, mods+1)
+	}
+	if n, ok := kittyKeys[base]; ok {
+		return fmt.Sprintf("\x1b[%d;%du", n, mods+1)
+	}
+	if r := []rune(base); len(r) == 1 && mods != 0 {
+		return fmt.Sprintf("\x1b[%d;%du", r[0], mods+1)
 	}
 	return k // literal text
 }
 
-// Keys sends key presses, one argument each. An argument is a named key
-// ("enter", "tab", "esc", "backspace", "space", "up", "down", "left",
-// "right", "home", "end", "pgup", "pgdown", "delete", "shift+tab",
-// "ctrl+<letter>", "alt+<key>") or literal text, which is sent as one key
-// press per character. Keys returns once the frame has settled.
+// Keys sends key presses, one argument each. An argument is a key named the
+// way tui.Key.String names it ("enter", "tab", "esc", "up", "pgdown", "f5",
+// "insert", "ctrl+c", "alt+x", "shift+tab", "ctrl+left", "ctrl+shift+a",
+// "volume-up") or literal text, which is sent as one key press per character.
+// The one group of names it cannot send is super+ with a navigation or
+// function key (up to f20), which the xterm sequences have no bit for; such an
+// argument is typed as text. Keys returns once the frame has settled.
 func (s *Session) Keys(keys ...string) {
 	var seqs []string
 	for _, k := range keys {

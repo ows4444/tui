@@ -159,3 +159,28 @@ func runFake(fn func(tuitest.TB)) bool {
 	fn(f)
 	return f.failed
 }
+
+// lastKey shows the name of the last key it received.
+type lastKey struct{ name string }
+
+func (lastKey) Init() tui.Cmd { return nil }
+func (m lastKey) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
+	if k, ok := msg.(tui.Key); ok {
+		m.name = k.String()
+	}
+	return m, nil
+}
+func (m lastKey) View() string { return "key=" + m.name + "." }
+
+// A key named the way Key.String names it reaches the model as that key, not
+// as its letters.
+func TestKeysDeliversNamedKeysAsKeys(t *testing.T) {
+	s := tuitest.New(lastKey{}, 40, 3)
+	defer s.Close()
+	for _, name := range []string{"f1", "f12", "ctrl+left", "shift+up", "insert", "ctrl+shift+a", "volume-up"} {
+		s.Keys(name)
+		if got := strings.Join(s.Screen(), "\n"); !strings.Contains(got, "key="+name+".") {
+			t.Errorf("Keys(%q): screen shows %q", name, got)
+		}
+	}
+}
