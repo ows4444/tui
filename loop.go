@@ -38,6 +38,10 @@ func (p *Program) runLoop() (_ Model, err error) {
 	// other reader of the terminal) for keystrokes.
 	done := make(chan struct{})
 	p.setLoopDone(done)
+	// Closed when the resize watcher has exited. It asks the Terminal for its
+	// size, so it is waited for like the reader: once runLoop has returned the
+	// caller may close the output.
+	resizeStopped := make(chan struct{})
 	rs := p.newReaderSet(done)
 	rs.start()
 	p.stopInput, p.startInput = rs.stop, rs.start
@@ -55,6 +59,10 @@ func (p *Program) runLoop() (_ Model, err error) {
 		select {
 		case <-p.rdDone:
 		case <-time.After(readerStopTimeout):
+		}
+		select {
+		case <-resizeStopped:
+		case <-time.After(readerStopTimeout): // a Terminal whose Size never returns
 		}
 	}()
 
@@ -85,6 +93,7 @@ func (p *Program) runLoop() (_ Model, err error) {
 	p.wg.Add(1)
 	go func() {
 		defer p.wg.Done()
+		defer close(resizeStopped)
 		if rn, ok := p.terminal().(ResizeNotifier); ok {
 			forwardResizeSignals(p, rn.Resizes(), p.termSize, done)
 			return

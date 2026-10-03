@@ -54,6 +54,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `Run` waits for its resize watcher before returning, so nothing asks the
+  `Terminal` for its size, or reads the output file's descriptor, after `Run`
+  has returned and the caller has closed the output.
 - `filepicker` treats a symlink to a directory as a directory: Enter descends
   into it instead of selecting it as a file.
 - `Go` behaves as `FromCtx` does: `Sequence` waits for a `Go` Cmd before
