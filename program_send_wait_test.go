@@ -92,8 +92,12 @@ func TestSendBlockedBeforeRunReturnsWhenRunEndsFirst(t *testing.T) {
 	sent := make(chan struct{})
 	go func() { p.Send("x"); close(sent) }()
 	time.Sleep(10 * time.Millisecond)
-	p.setLoopDone(make(chan struct{}))
-	p.setLoopDone(nil) // Run started and returned
+	// Run started and returned. Like runLoop, close the done channel: a sender
+	// that woke between the two calls is waiting on it.
+	done := make(chan struct{})
+	p.setLoopDone(done)
+	p.setLoopDone(nil)
+	close(done)
 	select {
 	case <-sent:
 	case <-time.After(2 * time.Second):
