@@ -65,17 +65,15 @@ func Every(d time.Duration, fn func(time.Time) Msg) (Cmd, func()) {
 	return cmd, cancel
 }
 
-// goMsg asks the event loop to run fn with the Program's context.
-type goMsg struct{ fn func(context.Context) Msg }
-
 // Go returns a Cmd that runs fn with Program.Context and delivers its
 // result. The context is cancelled when Run returns or the context given to
-// WithContext is cancelled, so fn can stop early.
+// WithContext is cancelled, so fn can stop early. It is FromCtx for a plain
+// function: Sequence waits for it and RunCmd runs it the same way.
 func Go(fn func(ctx context.Context) Msg) Cmd {
 	if fn == nil {
 		return nil
 	}
-	return func() Msg { return goMsg{fn: fn} }
+	return FromCtx(fn)
 }
 
 // modeMsg asks the event loop to change a terminal mode.
@@ -196,9 +194,6 @@ func (p *Program) interceptCmdMsg(msg Msg, done <-chan struct{}) (out Msg, handl
 		}
 		m.rec.tick(m.id, m.d) // at handling, so the log has the loop's order
 		return m.msg, false
-	case goMsg:
-		p.spawn(func() Msg { return m.fn(p.ctx) }, done)
-		return nil, true
 	case ctxMsg:
 		p.spawnFn(func() { p.dispatchCtx(m.fn, done) })
 		return nil, true
@@ -219,7 +214,7 @@ func (p *Program) runSequence(cmds []Cmd, done <-chan struct{}) {
 	for _, c := range cmds {
 		msg := c()
 		if cm, ok := msg.(ctxMsg); ok {
-			// A context-carrying Cmd (FromCtx, Tick) runs here, in order, with the
+			// A context-carrying Cmd (FromCtx, Go, Tick) runs here, in order, with the
 			// Program's context, so the next Cmd waits for it as it would for any other.
 			msg = cm.fn(p.ctx)
 		}

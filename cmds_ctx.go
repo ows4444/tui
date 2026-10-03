@@ -11,7 +11,7 @@ type ctxMsg struct{ fn CtxCmd }
 // String makes a ctxMsg that escaped the Program (a Cmd called directly, or
 // its result wrapped in another Msg) explain itself in logs and test output.
 func (ctxMsg) String() string {
-	return "tui: unrun context Cmd (FromCtx, Tick or a motion wait); return it to the Program or run it with tui.RunCmd"
+	return "tui: unrun context Cmd (FromCtx, Go, Tick or a motion wait); return it to the Program or run it with tui.RunCmd"
 }
 
 // FromCtx adapts fn to a Cmd. The Program runs fn on its own goroutine and
@@ -40,7 +40,7 @@ func (p *Program) dispatchCtx(fn CtxCmd, done <-chan struct{}) {
 }
 
 // RunCmd runs cmd the way a Program does and returns the Msg it produces, for
-// tests that call a Cmd directly. A Cmd made by FromCtx, Tick or the motion
+// tests that call a Cmd directly. A Cmd made by FromCtx, Go, Tick or the motion
 // package waits on a context, which a plain cmd() call cannot supply: RunCmd
 // runs it with ctx, so cancelling ctx ends the wait and gives a nil Msg. A nil
 // cmd gives a nil Msg. Batch and Sequence are not expanded; they are the

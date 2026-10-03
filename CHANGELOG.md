@@ -37,6 +37,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `Go` behaves as `FromCtx` does: `Sequence` waits for a `Go` Cmd before
+  starting the next one, and `RunCmd` runs it and returns its Msg. Before,
+  `Sequence` moved on at once and `RunCmd` returned an internal value.
 - `imageview`: a Model from `New` encodes its image once and reuses the
   result until the image, size, mode, id or cell size changes. It used to
   decode and encode on every `View`. Bytes of `PNG` overwritten in place are
