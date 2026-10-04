@@ -2,6 +2,26 @@
 // terminal supports it, else with iTerm2's inline images, else with Sixel, and
 // with a bordered text placeholder when it supports none of them.
 //
+// The three protocols are tried in that order, and the Model is told which
+// the terminal has by its Kitty, Inline and Sixel fields: set them from
+// tui.Capabilities (KittyGraphics, InlineImages, Sixel), which the startup
+// probe of tui.WithCapabilityProbe fills in. They differ in what they cost:
+//
+//   - Kitty graphics sends the PNG as it is, once, under an id; the terminal
+//     keeps it and the renderer deletes the placement when the image leaves
+//     the View. The terminal answers a query, so support is known.
+//   - Inline images (OSC 1337) also send the PNG as it is, with its full
+//     colour and its transparency, and the terminal scales it to the cells.
+//     There is no query: support is inferred from the terminal's name, and
+//     is reported for iTerm2 and WezTerm.
+//   - Sixel is decoded, scaled to the cells and reduced to at most 256
+//     colours here, each time the image changes, and has no partial
+//     transparency. It is the slowest of the three and the last resort.
+//
+// A Model from New encodes an image once and reuses the result while PNG is
+// the same slice, whichever protocol it draws with, so an image that does not
+// change costs nothing after its first frame.
+//
 // Stability: experimental. Its API may change in any minor release.
 package imageview
 

@@ -18,7 +18,13 @@
 //	a           ASCII glyphs on / off
 //	g           draw real images in place of cells, on a terminal that can:
 //	            kitty graphics, else iTerm2's inline images, else Sixel;
-//	            cells otherwise
+//	            cells otherwise. The status line names the one in use.
+//
+// Images are drawn through imageview, which tries those three protocols in
+// that order; its package comment says what each costs. Sixel is the slow
+// one: every changed picture is reduced to 256 colours before it is sent.
+// A terminal that reports none of them keeps the cells, and g says so.
+//
 //	q, esc      quit
 package main
 

@@ -75,7 +75,7 @@ in `examples/` that imports the package.
 | [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes | |
 | [form](../form) | A validating column of labelled fields with Submit | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
-| [imageview](../imageview) | A PNG drawn with the kitty graphics protocol or Sixel, or a text placeholder. Experimental | | |
+| [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
 | [logview](../logview) | An append-only scrolling log | | `examples/procstream` |
 | [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/agentshell` |
