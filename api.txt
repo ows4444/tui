@@ -223,6 +223,8 @@ type Capabilities struct {
 
 	Sixel	bool
 
+	InlineImages	bool
+
 	StyledUnderline	bool
 
 	Notifications	bool
@@ -1633,6 +1635,7 @@ func (m Model) Tokens() theme.Tokens
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func Delete(id uint32) string
+func Inline(png []byte, cols, rows int) string
 func New(png []byte, width, height int, alt string) Model
 func Sixel(pngData []byte, cols, rows, cellW, cellH int) string
 func Transmit(png []byte, cols, rows int) string
@@ -1645,6 +1648,8 @@ type Model struct {
 	Alt	string
 
 	Kitty	bool
+
+	Inline	bool
 
 	Sixel	bool
 

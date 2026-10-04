@@ -11,6 +11,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `imageview` draws through iTerm2's inline-image protocol (OSC 1337) when
+  `Model.Inline` is set: it sends the PNG as it is, and is preferred over
+  Sixel. `imageview.Inline` builds the sequence, and
+  `tui.Capabilities.InlineImages` reports a terminal known to draw it
+  (iTerm2, WezTerm), inferred from its XTVERSION reply.
 - `faces.For(name)` and `faces.IndexFor(name)` pick a catalog face for any
   string, the same one every time, so a name can have a character of its
   own. `faces.Model.Color` draws the face in a colour other than the theme's

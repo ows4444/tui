@@ -20,6 +20,7 @@ type Result struct {
 	KittyKeyboard    bool
 	KittyGraphics    bool
 	Sixel            bool
+	InlineImages     bool
 	StyledUnderline  bool
 	Notifications    bool
 	XTVersion        string
@@ -104,6 +105,7 @@ func (p *Parser) Observe(kind byte, data string) (consumed, done bool, res Resul
 	if done {
 		res = *acc
 		res.StyledUnderline = InferStyledUnderline(res)
+		res.InlineImages = InferInlineImages(res)
 	}
 	return consumed, done, res
 }
@@ -130,6 +132,21 @@ func parseDECRPM(d string) (mode, val int, ok bool) {
 	mode, err1 := strconv.Atoi(m)
 	val, err2 := strconv.Atoi(v)
 	return mode, val, err1 == nil && err2 == nil
+}
+
+var inlineImageTerminals = []string{"iterm2", "wezterm"}
+
+// InferInlineImages reports whether the terminal is believed to draw
+// iTerm2's inline images (OSC 1337 File): true when its XTVERSION names a
+// terminal known to. It is inferred, not queried: the protocol has no query.
+func InferInlineImages(r Result) bool {
+	name := strings.ToLower(r.XTVersion)
+	for _, t := range inlineImageTerminals {
+		if strings.HasPrefix(name, t) {
+			return true
+		}
+	}
+	return false
 }
 
 var styledUnderlineTerminals = []string{"kitty", "wezterm", "foot", "ghostty", "iterm2", "contour", "mintty", "alacritty", "vte", "konsole"}

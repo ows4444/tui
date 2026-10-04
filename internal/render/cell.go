@@ -87,7 +87,8 @@ type rowInfo struct {
 	reason string      // why, when raw
 }
 
-// opaqueSeg is an APC, DCS, PM or SOS string kept verbatim. It occupies no
+// opaqueSeg is an APC, DCS, PM or SOS string, or an inline image (OSC 1337
+// File), kept verbatim. It occupies no
 // column: col is the index of the cell it sits in front of. seq is a
 // substring of the view line, so it costs no copy. kid is the kitty image id
 // when seq places a kitty graphic (a=T or a=p with i=), else 0.
@@ -452,6 +453,17 @@ func (c *Cells) parseRow(line string, row []cell) ([]cell, bool) {
 				i = end
 				continue
 			}
+			if strings.HasPrefix(line[i:], inlineImageOSC) {
+				end, ok := c.parseInlineImage(line, i)
+				if !ok {
+					return nil, false // parseInlineImage recorded the reason
+				}
+				opq = append(opq, opaqueSeg{col: int32(len(row)), seq: line[i:end]}) // #nosec G115 -- a row is far shorter than 2 GiB cells
+				sawOSC = true
+				simple = false
+				i = end
+				continue
+			}
 			if i+1 < len(line) && line[i+1] == ']' {
 				end, ok := c.parseLink(line, i, &pen)
 				if !ok {
@@ -612,6 +624,26 @@ const tmuxDCS = "\x1bPtmux;"
 //
 // A "DCS tmux;" string, which wraps another sequence with its ESC bytes
 // doubled, ends at the first ESC \ that is not part of such a pair.
+// inlineImageOSC opens an iTerm2 inline image: OSC 1337 with a File argument.
+const inlineImageOSC = "\x1b]1337;File="
+
+// parseInlineImage returns the end of the inline image that starts at
+// line[i]: past its BEL or ST terminator. Like an APC or DCS string it is
+// kept verbatim as an opaque segment.
+func (c *Cells) parseInlineImage(line string, i int) (int, bool) {
+	for j := i + len(inlineImageOSC); j < len(line); j++ {
+		switch {
+		case line[j] == 0x07:
+			return j + 1, true
+		case line[j] == 0x1b && j+1 < len(line) && line[j+1] == '\\':
+			return j + 2, true
+		case line[j] == 0x1b:
+			return 0, c.fail("malformed_string_sequence")
+		}
+	}
+	return 0, c.fail("unterminated_OSC")
+}
+
 func (c *Cells) parseString(line string, i int) (int, bool) {
 	if strings.HasPrefix(line[i:], tmuxDCS) {
 		for j := i + len(tmuxDCS); j < len(line); j++ {
