@@ -233,3 +233,24 @@ func rgb(c ansi.RGB) string {
 
 // containsCode reports whether view sets the SGR parameters code.
 func containsCode(view, code string) bool { return strings.Contains(view, code) }
+
+// A name written with combining marks is the avatar of its precomposed
+// spelling; Raw keeps the two apart.
+func TestCombiningMarksAreNormalized(t *testing.T) {
+	for decomposed, composed := range map[string]string{
+		"café":        "café",
+		"Zoë":         "zoë",
+		"한":          "한",
+		"  Ångström": "ångström",
+	} {
+		a, b := avatar.New(decomposed), avatar.New(composed)
+		if a.View() != b.View() || a.SVG() != b.SVG() || a.Shape() != b.Shape() {
+			t.Errorf("%+q and %+q are different avatars", decomposed, composed)
+		}
+	}
+	a, b := avatar.New("café"), avatar.New("café")
+	a.Raw, b.Raw = true, true
+	if a.SVG() == b.SVG() {
+		t.Error("Raw normalized the name")
+	}
+}

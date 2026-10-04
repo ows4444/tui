@@ -145,9 +145,10 @@ Don't edit these by hand. Regenerate, then commit the result.
 | `ansi/runewidth_tables.go` | `go run ./internal/tools/genwidth -o ansi/runewidth_tables.go` | `widthtables` job |
 | `ansi/graphemebreak_tables.go` | `go run ./internal/tools/gengrapheme -o ansi/graphemebreak_tables.go` | `widthtables` job |
 | `internal/bidi/tables.go` | `go run ./internal/tools/genbidi -o internal/bidi/tables.go` | `widthtables` job |
+| `avatar/nfc_tables.go` and `avatar/testdata/nfc_vectors.txt` | `go run ./internal/tools/gennorm` | `widthtables` job |
 | `testdata/*.golden` | `TUITEST_UPDATE=1` or `-update`, depending on the helper; see [docs/testing.md](docs/testing.md#golden-files) | the package's tests |
 
-The three Unicode generators fetch pinned Unicode 17.0.0 files from
+The four Unicode generators fetch pinned Unicode 17.0.0 files from
 unicode.org and verify each against a SHA-256 pin, so they need network access;
 `-dir` reads local copies instead. To move to a newer Unicode version, change
 `unicodeVersion` in the generator and run it with `-print-hashes` to get the

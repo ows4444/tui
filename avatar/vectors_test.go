@@ -53,28 +53,13 @@ func loadVectors(t *testing.T) vectors {
 	return v
 }
 
-// nfcOnly lists the vector seeds this package cannot match because they are
-// not in NFC and the standard library has no normalizer. The test asserts
-// they differ, so that adding a normalizer shows up here.
-var nfcOnly = map[string]bool{
-	"cafe\u0301": true,
-}
-
 func TestHashMatchesVectors(t *testing.T) {
 	v := loadVectors(t)
 	if len(v.Hash) < 30 {
 		t.Fatalf("only %d hash vectors", len(v.Hash))
 	}
-	skipped := 0
 	for _, h := range v.Hash {
 		got := normalize(h.Seed)
-		if nfcOnly[h.Seed] {
-			skipped++
-			if got == h.Normalized {
-				t.Errorf("%q now normalizes as the vectors expect; remove it from nfcOnly", h.Seed)
-			}
-			continue
-		}
 		if got != h.Normalized {
 			t.Errorf("normalize(%q) = %q, want %q", h.Seed, got, h.Normalized)
 			continue
@@ -88,9 +73,6 @@ func TestHashMatchesVectors(t *testing.T) {
 				t.Errorf("stream(%q, %q) = %v, want %v", h.Seed, key, got, want)
 			}
 		}
-	}
-	if skipped != len(nfcOnly) {
-		t.Errorf("%d of %d nfcOnly seeds are in the vectors", skipped, len(nfcOnly))
 	}
 }
 

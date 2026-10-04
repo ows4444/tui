@@ -55,11 +55,11 @@ func stream(state uint32, key string) float64 {
 	return float64(finalize(feedString(feed(state, sep), key))) / 4294967296
 }
 
-// normalize trims and lowercases a name, so "Alain" and " alain " are one
-// avatar. It does not apply Unicode NFC: the standard library has no
-// normalizer, so a name spelled with combining marks is hashed as written.
+// normalize puts a name in Unicode Normalization Form C, trims it and
+// lowercases it, so "Alain" and " alain " are one avatar, as are the two
+// spellings of an accented letter.
 func normalize(s string) string {
-	return lower(strings.TrimFunc(s, trimmed))
+	return lower(strings.TrimFunc(nfc(s), trimmed))
 }
 
 // trimmed reports whether r is trimmed from the ends of a name: the ASCII

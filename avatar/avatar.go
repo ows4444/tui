@@ -20,10 +20,10 @@
 // glancing aside, both driven by Update, and LookAt turns the eyes toward a
 // target such as the mouse pointer.
 //
-// A name is trimmed and lowercased before it is hashed, so "Alain" and
-// " alain " are one avatar. It is not Unicode-normalized, because the standard
-// library has no normalizer: a name written with combining marks ("e" followed
-// by U+0301) is a different avatar from its precomposed spelling.
+// A name is put in Unicode Normalization Form C, trimmed and lowercased
+// before it is hashed, so "Alain" and " alain " are one avatar, and so are a
+// name written with combining marks ("e" followed by U+0301) and its
+// precomposed spelling. Set Raw to hash the name as written.
 //
 // Stability: experimental. Its API may change in any minor release.
 package avatar

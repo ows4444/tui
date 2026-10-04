@@ -14,8 +14,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `avatar`: a new experimental package that draws a deterministic avatar
   for a name: one of ten silhouettes with two eyes, in a colour the name
   chose. `Model.View` draws it in terminal cells and `Model.SVG` returns it
-  as markup. Names are trimmed and lowercased but not NFC-normalised, so a
-  name written with combining marks differs from its precomposed spelling.
+  as markup. Names are NFC-normalised, trimmed and lowercased before
+  hashing, so the spellings of a name a reader cannot tell apart are one
+  avatar.
   `Model.Blink` plays one blink, driven by `Model.Update`, and
   `Model.LookAt` turns the eyes toward a target such as the mouse pointer.
   A Model from `New` caches its `View` until a field it depends on changes.
