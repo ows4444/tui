@@ -138,8 +138,8 @@ func caseIgnorable(r rune) bool {
 // string key, so the keys are an append-only namespace.
 type traits struct {
 	state uint32
-	// fixed pins a key to a position in [0, 1) in place of the hash. Only the
-	// tests set it, to force each silhouette.
+	// fixed pins a key to a position in [0, 1) in place of the hash. A
+	// Model's Silhouette and Tone set it; nil pins nothing.
 	fixed map[string]float64
 }
 

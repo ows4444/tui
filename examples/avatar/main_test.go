@@ -7,6 +7,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/avatar"
 )
 
 func send(m model, msgs ...tui.Msg) (model, tui.Cmd) {
@@ -235,5 +236,36 @@ func TestIdleKeyTogglesTheWholeWall(t *testing.T) {
 		if a.Idling() {
 			t.Fatalf("avatar %d is still idling", i)
 		}
+	}
+}
+
+// c, t and s pin the hue, the tone and the silhouette for the whole wall and
+// step back to each name's own.
+func TestOverrideKeysPinTheWall(t *testing.T) {
+	m := initialModel()
+	own := m.View()
+	for _, k := range []string{"c", "t", "s"} {
+		n, _ := send(m, key(k))
+		if n.View() == own {
+			t.Errorf("%s did not change the wall", k)
+		}
+	}
+	m, _ = send(m, key("s"))
+	if !strings.HasPrefix(status(m), names[0]+": round,") {
+		t.Errorf("after s the selected avatar is not round: %s", status(m))
+	}
+	for range avatar.SilhouetteTriangle {
+		m, _ = send(m, key("s"))
+	}
+	for range len(hues) {
+		m, _ = send(m, key("c"))
+	}
+	for range avatar.ToneInk + 1 {
+		m, _ = send(m, key("t"))
+	}
+	// Each key press also blinks the selected avatar, so compare what is
+	// pinned, not the frame.
+	if m.hue != 0 || m.tone != avatar.ToneAuto || m.silhouette != avatar.SilhouetteAuto {
+		t.Errorf("a full round of each key left hue %d, tone %v, silhouette %v", m.hue, m.tone, m.silhouette)
 	}
 }

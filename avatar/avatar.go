@@ -11,6 +11,9 @@
 // mapping from a name to its figure and colours is frozen: the tests pin it
 // against the reference vectors in testdata.
 //
+// Hue, Tone and Silhouette pin the colour or the shape, for an app with a
+// house style, while the name still decides everything else.
+//
 // The figure can react. Expression sets a pose the eyes hold, Blink closes
 // and reopens them once, StartIdle keeps the avatar breathing, blinking and
 // glancing aside, both driven by Update, and LookAt turns the eyes toward a
@@ -67,6 +70,17 @@ type Model struct {
 	// Raw hashes Name as written. Set it for case-sensitive ids, which
 	// normalization would otherwise collide.
 	Raw bool
+	// Hue pins the colour's hue, an angle in degrees in the OKLCh colour
+	// space: about 30 is red-orange, 90 yellow, 140 green, 250 blue and 320
+	// magenta. Zero lets the name choose; use 360 for the hue at 0. The name
+	// still chooses the tone and the figure.
+	Hue float64
+	// Tone pins how light and saturated the body is. The zero value,
+	// ToneAuto, lets the name choose.
+	Tone Tone
+	// Silhouette pins the shape. The zero value, SilhouetteAuto, lets the
+	// name choose; the name still sizes and places it.
+	Silhouette Silhouette
 	// Expression is the pose the eyes hold. The zero value, ExpressionNone,
 	// is the figure at rest.
 	Expression Expression
@@ -109,6 +123,9 @@ type viewKey struct {
 	raw           bool
 	width, height int
 	bg            Background
+	hue           float64
+	tone          Tone
+	silhouette    Silhouette
 	lookX, lookY  float64
 	zoom          float64
 	expression    Expression
@@ -127,21 +144,30 @@ func New(name string) Model {
 	return Model{Name: name, Width: DefaultWidth, Height: DefaultHeight, Theme: theme.DarkTheme(), cache: &viewCache{}}
 }
 
-func (m Model) traits() traits { return newTraits(m.Name, m.Raw) }
+func (m Model) traits() traits {
+	t := newTraits(m.Name, m.Raw)
+	t.fixed = m.pins()
+	return t
+}
 
 func (m Model) palette(t traits) palette {
-	return paletteFor(t.num("hue", 0, 360), t.at("tone"))
+	hue, pinned := m.hue()
+	if !pinned {
+		hue = t.num("hue", 0, 360)
+	}
+	return paletteFor(hue, t.at("tone"))
 }
 
 // Shape returns the name of the avatar's silhouette: round, organic, boxy,
-// capsule, nub, cloud, droplet, hexagon, sun or triangle.
+// capsule, nub, cloud, droplet, hexagon, sun or triangle. It is the pinned
+// Silhouette when one is set.
 func (m Model) Shape() string {
 	return shapes[pickShape(m.traits().at("shape"))].name
 }
 
 // Colors returns the avatar's colours: the body, the eyes, and the plate
 // drawn when Background is set. The eyes contrast with the body at 4.5:1 or
-// better.
+// better, whatever Hue and Tone are pinned.
 func (m Model) Colors() (body, eyes, background ansi.RGB) {
 	p := m.palette(m.traits())
 	return p.head, p.eye, p.bg
@@ -167,7 +193,8 @@ func (m Model) plate() path {
 }
 
 // SVG returns the avatar as SVG markup on a 100 by 100 view box, with no
-// width or height, so the page sizes it. It is the figure at rest:
+// width or height, so the page sizes it. Hue, Tone and Silhouette are part
+// of the figure and are drawn. It is the figure at rest:
 // Expression, LookX, LookY, a blink in progress and the idle loop do not
 // change it.
 func (m Model) SVG() string {
@@ -217,6 +244,7 @@ func (m Model) View() string {
 	lookX, zoom := m.moved()
 	key := viewKey{
 		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
+		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette,
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
 		expression: m.Expression, blink: m.blink,
 		ascii: glyphs.ASCII(), shades: glyphs.Shades,

@@ -225,3 +225,11 @@ func TestLayoutNodeDrawsAtTheAllottedSize(t *testing.T) {
 		t.Errorf("Measure of a negative size = %+v", got)
 	}
 }
+
+// rgb formats c as the parameters of an SGR colour, "r;g;b".
+func rgb(c ansi.RGB) string {
+	return strings.TrimSuffix(strings.SplitN(strings.SplitN(ansi.NewStyle().Foreground(c).Render("x"), "38;2;", 2)[1], "x", 2)[0], "m")
+}
+
+// containsCode reports whether view sets the SGR parameters code.
+func containsCode(view, code string) bool { return strings.Contains(view, code) }

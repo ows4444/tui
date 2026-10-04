@@ -22,7 +22,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   `Model.Expression` sets a pose the eyes hold: happy, sad, mad, surprised,
   wink, sleepy or thinking. `Model.StartIdle` keeps the avatar breathing,
   blinking and glancing aside, at a rhythm drawn from its name, until
-  `Model.StopIdle`.
+  `Model.StopIdle`. `Model.Hue`, `Model.Tone` and `Model.Silhouette` pin the
+  colour or the shape while the name decides the rest.
 - `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52
   sequence to its own output and keeps the text. `tui.PasteCopied()` delivers
   that text to `Update` as a `PasteEvent`.

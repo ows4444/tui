@@ -25,4 +25,4 @@ Avatars: every name draws its own
  leslie      adele     butler      anita     andrew      carol     martin  
 
 ada: nub, body #ad96f4, eyes #100e17  [8x4, none, blocks, none]
-←/→ name  +/- size  b background  e expression  i idle  a ascii  space blink  q quit
+←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  a ascii  q quit

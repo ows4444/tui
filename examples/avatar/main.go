@@ -9,6 +9,9 @@
 //	b           cycle the background: none, squircle, circle, square
 //	e           cycle the expression: none, happy, sad, mad, ...
 //	i           idle on / off: every avatar breathes, blinks and glances
+//	c           pin the hue: name's own, 30, 90, 140, 250, 320
+//	t           pin the tone: name's own, pastel, pale, mid, deep, bright, ink
+//	s           pin the silhouette: name's own, round, organic, ...
 //	a           ASCII glyphs on / off
 //	q, esc      quit
 package main
@@ -47,6 +50,9 @@ var backgrounds = []struct {
 	{avatar.BackgroundSquare, "square"},
 }
 
+// hues are the hues c steps through; 0 is each name's own.
+var hues = []float64{0, 30, 90, 140, 250, 320}
+
 const (
 	tileGap    = 2 // columns between tiles
 	minTile    = 9 // a tile is at least this wide, so a name fits under it
@@ -61,6 +67,9 @@ type model struct {
 	bg            int // index into backgrounds
 	ascii         bool
 	expression    avatar.Expression
+	hue           int // index into hues
+	tone          avatar.Tone
+	silhouette    avatar.Silhouette
 	width, height int
 	// wall holds one avatar per name, built once, so each keeps its cached
 	// View and its own animation from frame to frame.
@@ -117,6 +126,12 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				m.ascii = !m.ascii
 			case "e":
 				m.expression = (m.expression + 1) % (avatar.ExpressionThinking + 1)
+			case "c":
+				m.hue = (m.hue + 1) % len(hues)
+			case "t":
+				m.tone = (m.tone + 1) % (avatar.ToneInk + 1)
+			case "s":
+				m.silhouette = (m.silhouette + 1) % (avatar.SilhouetteTriangle + 1)
 			case "i":
 				return m, m.toggleIdle()
 			}
@@ -171,6 +186,7 @@ func (m model) avatar(i, x, y int) avatar.Model {
 	a.Width, a.Height = sizes[m.size][0], sizes[m.size][1]
 	a.Background = backgrounds[m.bg].bg
 	a.Expression = m.expression
+	a.Hue, a.Tone, a.Silhouette = hues[m.hue], m.tone, m.silhouette
 	if m.mouse {
 		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
 	}
@@ -262,7 +278,7 @@ func (m model) View() string {
 		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression)
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
-	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b background  e expression  i idle  a ascii  space blink  q quit", w)))
+	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  a ascii  q quit", w)))
 	return b.String()
 }
 

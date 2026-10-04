@@ -664,6 +664,28 @@ const (
 
 	ExpressionThinking
 )
+const (
+	SilhouetteAuto	Silhouette	= iota
+	SilhouetteRound
+	SilhouetteOrganic
+	SilhouetteBoxy
+	SilhouetteCapsule
+	SilhouetteNub
+	SilhouetteCloud
+	SilhouetteDroplet
+	SilhouetteHexagon
+	SilhouetteSun
+	SilhouetteTriangle
+)
+const (
+	ToneAuto	Tone	= iota
+	TonePastel
+	TonePale
+	ToneMid
+	ToneDeep
+	ToneBright
+	ToneInk
+)
 func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
 func (m *Model) LookAt(dx, dy int)
@@ -679,6 +701,8 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Shape() string
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
+func (s Silhouette) String() string
+func (t Tone) String() string
 func New(name string) Model
 type Background int
 type Expression int
@@ -691,6 +715,12 @@ type Model struct {
 
 	Raw	bool
 
+	Hue	float64
+
+	Tone	Tone
+
+	Silhouette	Silhouette
+
 	Expression	Expression
 
 	LookX, LookY	float64
@@ -700,6 +730,8 @@ type Model struct {
 	Theme	theme.Theme
 	// contains filtered or unexported fields
 }
+type Silhouette int
+type Tone int
 
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 
