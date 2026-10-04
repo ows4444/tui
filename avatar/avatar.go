@@ -131,17 +131,45 @@ type Model struct {
 	cache *viewCache
 }
 
-// viewCache memoises the View of a Model, so a frame that shows the same
-// avatar does not lay it out and rasterise it again. It is keyed on every
-// field the output depends on, so changing one invalidates it. Copies of a
-// Model share the cache, which holds one View: give each avatar on screen its
-// own Model from New. A Model built as a struct literal has no cache and
-// draws each time.
+// viewCache memoises the Views and the PNGs of a Model, so a frame that
+// shows the same avatar does not lay it out and rasterise it again. Each is
+// keyed on every field the output depends on, so changing one draws a new
+// picture; the last frameMemory of each are kept, so an animation that comes
+// back to a frame it has shown, as a blink, a tremble and a rock all do, does
+// not draw it twice. Copies of a Model share the cache. A Model built as a
+// struct literal has no cache and draws each time.
 type viewCache struct {
-	mu   sync.Mutex
-	key  viewKey
-	view string
-	ok   bool
+	mu    sync.Mutex
+	views frames[string]
+	pngs  frames[[]byte]
+}
+
+// frameMemory is how many pictures of each kind a Model keeps: enough for
+// every frame of its longest loop, the rock, at two sizes.
+const frameMemory = 24
+
+// frames is a small store of pictures by what they were drawn from. When it
+// is full the picture stored longest ago is dropped.
+type frames[V any] struct {
+	at    map[viewKey]V
+	order []viewKey
+}
+
+func (f *frames[V]) get(k viewKey) (V, bool) {
+	v, ok := f.at[k]
+	return v, ok
+}
+
+func (f *frames[V]) put(k viewKey, v V) {
+	if f.at == nil {
+		f.at = map[viewKey]V{}
+	}
+	if len(f.order) == frameMemory {
+		delete(f.at, f.order[0])
+		f.order = append(f.order[:0], f.order[1:]...)
+	}
+	f.at[k] = v
+	f.order = append(f.order, k)
 }
 
 type viewKey struct {
@@ -169,7 +197,8 @@ type viewKey struct {
 var drawHook func()
 
 // New returns a Model for name at DefaultWidth by DefaultHeight cells, using
-// theme.DarkTheme(). Its View is cached until a field it depends on changes.
+// theme.DarkTheme(). It remembers the pictures it has drawn lately, so a
+// frame it has shown before is not drawn again.
 func New(name string) Model {
 	return Model{Name: name, Width: DefaultWidth, Height: DefaultHeight, Theme: theme.DarkTheme(), cache: &viewCache{}}
 }
@@ -294,20 +323,34 @@ func (m Model) View() string {
 	if c == nil {
 		return m.draw(glyphs)
 	}
-	lookX, zoom := m.moved()
-	key := viewKey{
-		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
-		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
-		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
-		expression: m.shown(), from: m.easing(), tween: m.tween, wobble: m.wobble, blink: m.blink,
-		ascii: glyphs.ASCII(), shades: glyphs.Shades,
-	}
+	key := m.key(m.Width, m.Height)
+	key.ascii, key.shades = glyphs.ASCII(), glyphs.Shades
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if !c.ok || c.key != key {
-		c.key, c.view, c.ok = key, m.draw(glyphs), true
+	view, ok := c.views.get(key)
+	if !ok {
+		view = m.draw(glyphs)
+		c.views.put(key, view)
 	}
-	return c.view
+	return view
+}
+
+// key is everything a drawing of the avatar at width by height depends on,
+// apart from the glyph set.
+func (m Model) key(width, height int) viewKey {
+	lookX, zoom := m.moved()
+	// A tremble has two pictures, one for each side, however many frames it
+	// has run for: frames on the same side share a key.
+	wobble := m.wobble
+	if wobble > 0 && m.tween == 0 && !m.shown().pose().rock {
+		wobble = 2 - wobble%2
+	}
+	return viewKey{
+		name: m.Name, raw: m.Raw, width: width, height: height, bg: m.Background,
+		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
+		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
+		expression: m.shown(), from: m.easing(), tween: m.tween, wobble: wobble, blink: m.blink,
+	}
 }
 
 // draw lays the figure out, rasterises it and renders the cells.

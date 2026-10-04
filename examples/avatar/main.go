@@ -16,17 +16,21 @@
 //	s           pin the silhouette: name's own, round, organic, ...
 //	p           pin traits: none, big eyes, small wide-set eyes, big square bodies
 //	a           ASCII glyphs on / off
+//	g           draw real images in place of cells, on a terminal that can
+//	            (kitty graphics, or Sixel as in iTerm2); cells otherwise
 //	q, esc      quit
 package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/avatar"
+	"github.com/ows4444/tui/imageview"
 	"github.com/ows4444/tui/theme"
 )
 
@@ -71,6 +75,7 @@ const (
 	tileGap    = 2 // columns between tiles
 	minTile    = 9 // a tile is at least this wide, so a name fits under it
 	chromeRows = 4 // title, blank, status, help
+	lookSteps  = 3 // steps each way the eyes turn through in image mode
 	wallTop    = 2 // the row the wall starts on, under the title
 	defaultW   = 80
 	defaultH   = 24
@@ -90,16 +95,24 @@ type model struct {
 	// wall holds one avatar per name, built once, so each keeps its cached
 	// View and its own animation from frame to frame.
 	wall []avatar.Model
-	idle int // index into idleModes
+	// images holds one image view per name, built once, so each keeps its
+	// encoded picture until the avatar's PNG changes.
+	images []imageview.Model
+	// kitty and sixel are what the terminal said it can draw, and graphics
+	// whether g has asked for images.
+	kitty, sixel, graphics bool
+	idle                   int // index into idleModes
 	// mouseX and mouseY are the pointer's cell, once it has moved.
 	mouseX, mouseY int
 	mouse          bool
 }
 
 func initialModel() model {
-	m := model{size: 2, wall: make([]avatar.Model, len(names))}
+	m := model{size: 2, wall: make([]avatar.Model, len(names)), images: make([]imageview.Model, len(names))}
 	for i, name := range names {
 		m.wall[i] = avatar.New(name)
+		m.images[i] = imageview.New(nil, 0, 0, "")
+		m.images[i].ID = uint32(i + 1) // #nosec G115 -- a few dozen names
 	}
 	return m
 }
@@ -110,6 +123,9 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	switch msg := msg.(type) {
 	case tui.ResizeMsg:
 		m.width, m.height = msg.Width, msg.Height
+	case tui.CapabilitiesMsg:
+		m.kitty, m.sixel = msg.Capabilities.KittyGraphics, msg.Capabilities.Sixel
+		return m, nil
 	case tui.MouseEvent:
 		m.mouseX, m.mouseY, m.mouse = msg.X, msg.Y, true
 		if msg.Action == tui.MouseActionPress && msg.Button == tui.MouseButtonLeft {
@@ -145,6 +161,8 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				m.resize(-1)
 			case "b":
 				m.bg = (m.bg + 1) % len(backgrounds)
+			case "g":
+				m.graphics = !m.graphics
 			case "a":
 				m.ascii = !m.ascii
 			case "e":
@@ -182,6 +200,44 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 		}
 	}
 	return m, batch(cmds)
+}
+
+// drawing names how the wall is drawn: as images through a graphics protocol
+// when g asked for them and the terminal has one, and as cells otherwise.
+func (m model) drawing() string {
+	switch {
+	case m.graphics && m.kitty:
+		return "kitty"
+	case m.graphics && m.sixel:
+		return "sixel"
+	case m.graphics:
+		return "no images"
+	case m.ascii:
+		return "ascii"
+	}
+	return "blocks"
+}
+
+// picture returns avatar a of name i as rows of cells: its View, or, when
+// the wall is drawn as images, an image view of its PNG that fills the same
+// cells.
+func (m model) picture(i int, a avatar.Model) string {
+	if !m.graphics || !m.kitty && !m.sixel {
+		return a.View()
+	}
+	img := m.images[i]
+	// A Sixel image is scaled to its cells at imageview's cell size, so it
+	// is drawn at exactly that many pixels; kitty scales the image itself,
+	// and gets a sharper one. A Model from New returns the same slice until
+	// the avatar changes, so the image is encoded again only then.
+	px := imageview.DefaultCellWidth * a.Width
+	if m.kitty {
+		px = min(256, 12*a.Width)
+	}
+	img.PNG = a.PNG(px)
+	img.Width, img.Height, img.Alt = a.Width, a.Height, a.Linearize()
+	img.Kitty, img.Sixel = m.kitty, m.sixel
+	return img.View()
 }
 
 // tileAt returns the index of the name whose tile, avatar and label, holds
@@ -280,6 +336,12 @@ func (m model) avatar(i, x, y int) avatar.Model {
 	if m.mouse {
 		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
 	}
+	if m.graphics && (m.kitty || m.sixel) {
+		// An image is costly to redraw, and every pointer move turns every
+		// avatar's eyes a little: turn them in steps, so an avatar is drawn
+		// again only when its eyes have somewhere new to be.
+		a.LookX, a.LookY = math.Round(a.LookX*lookSteps)/lookSteps, math.Round(a.LookY*lookSteps)/lookSteps
+	}
 	return a
 }
 
@@ -338,7 +400,7 @@ func (m model) View() string {
 			// The wall starts on row 2; a tile's avatar is centred in it.
 			x0 := c*(tileW+tileGap) + max((tileW-aw)/2, 0)
 			y0 := wallTop + r*(ah+2)
-			for y, row := range strings.Split(m.avatar(i, x0, y0).View(), "\n") {
+			for y, row := range strings.Split(m.picture(i, m.avatar(i, x0, y0)), "\n") {
 				lines[y].WriteString(gap + centre(row, aw, tileW))
 			}
 			label := ansi.Truncate(names[i], tileW)
@@ -360,20 +422,17 @@ func (m model) View() string {
 
 	sel := m.avatar(m.selected, 0, 0)
 	body, eyes, _ := sel.Colors()
-	glyphs := "blocks"
-	if m.ascii {
-		glyphs = "ascii"
-	}
+	glyphs := m.drawing()
 	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s, %s, %s, %s]",
 		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression, presets[m.preset].name, idleModes[m.idle])
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
-	b.WriteString(faintStyle.Render(ansi.Truncate("click or r react  ←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  p pins  a ascii  q quit", w)))
+	b.WriteString(faintStyle.Render(ansi.Truncate("click or r react  ←/→ name  +/- size  g images  b bg  e expression  i idle  c hue  t tone  s shape  p pins  a ascii  q quit", w)))
 	return b.String()
 }
 
 func main() {
-	if _, err := tui.NewProgram(initialModel(), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := tui.NewProgram(initialModel(), tui.WithMouse(tui.MouseAllMotion), tui.WithCapabilityProbe(0)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

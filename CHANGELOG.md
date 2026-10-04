@@ -31,7 +31,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   avatar. `Model.Hue`, `Model.Tone` and `Model.Silhouette` pin the
   colour or the shape, and `Model.Pins` any single trait such as the size of
   the eyes or the number of a sun's petals, while the name decides the rest. `Model.PNG` returns
-  the avatar as a PNG, for `imageview` on a terminal that shows images.
+  the avatar as a PNG, for `imageview` on a terminal that shows images, and
+  the same slice until the avatar changes.
   `Model.React` pulls a face for `ReactHold` and lets it go, for a click;
   it eases in and out, as does `Model.SetExpression`. Eased into, the mad,
   scared and sick poses tremble and the thinking pose rocks. A pose also

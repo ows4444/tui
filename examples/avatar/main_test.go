@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"math"
 	"strings"
 	"testing"
 
@@ -384,5 +385,111 @@ func TestPinsKeyStepsThroughPresets(t *testing.T) {
 			t.Errorf("%s draws a wall already seen", want)
 		}
 		seen[wall] = true
+	}
+}
+
+// g draws the wall as images when the terminal reported a graphics protocol,
+// through that protocol, in the same cells; with none it keeps the cells and
+// says so.
+func TestImageModeFollowsTheTerminal(t *testing.T) {
+	// Each case gets a model of its own: copies of one share their avatars.
+	fresh := func() model {
+		m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24})
+		return m
+	}
+	cells := fresh().View()
+	for name, c := range map[string]struct {
+		caps   tui.Capabilities
+		escape string
+	}{
+		"kitty":     {tui.Capabilities{KittyGraphics: true}, "\x1b_G"},
+		"sixel":     {tui.Capabilities{Sixel: true}, "\x1bP"},
+		"no images": {tui.Capabilities{}, ""},
+	} {
+		m, cmd := send(fresh(), tui.CapabilitiesMsg{Capabilities: c.caps})
+		if cmd != nil || m.View() != cells {
+			t.Errorf("%s: the probe's answer alone changed the wall", name)
+		}
+		m, _ = send(m, key("g"))
+		// The selected avatar blinks at the key; put it back at rest.
+		m.wall[0].StopIdle()
+		view := m.View()
+		if !strings.Contains(status(m), ", "+name+", ") {
+			t.Errorf("%s: status is %s", name, status(m))
+		}
+		if c.escape == "" {
+			if strings.Contains(view, "\x1b_G") || strings.Contains(view, "\x1bP") {
+				t.Errorf("%s: an image was sent to a terminal that cannot draw one", name)
+			}
+			continue
+		}
+		cols, rows, _ := m.grid()
+		if n := strings.Count(view, c.escape); n != cols*rows {
+			t.Errorf("%s: %d images sent for %d tiles", name, n, cols*rows)
+		}
+		for _, l := range strings.Split(view, "\n") {
+			if w := ansi.Width(l); w > 80 {
+				t.Errorf("%s: a line is %d cells wide", name, w)
+			}
+		}
+		// A second frame of the same wall sends the same bytes.
+		if m.View() != view {
+			t.Errorf("%s: an unchanged wall drew differently", name)
+		}
+		off, _ := send(m, key("g"))
+		if strings.Contains(off.View(), c.escape) {
+			t.Errorf("%s: g did not switch back to cells", name)
+		}
+	}
+	// Kitty wins when a terminal has both.
+	both, _ := send(fresh(), tui.CapabilitiesMsg{Capabilities: tui.Capabilities{KittyGraphics: true, Sixel: true}}, key("g"))
+	if !strings.Contains(status(both), ", kitty, ") {
+		t.Errorf("with both protocols: %s", status(both))
+	}
+}
+
+// In image mode the eyes turn in steps, so a small move of the pointer
+// redraws few avatars, where in cells it may redraw them all.
+func TestImageModeRedrawsFewAvatarsOnASmallMove(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24}, tui.CapabilitiesMsg{Capabilities: tui.Capabilities{Sixel: true}})
+	m.graphics = true
+	looks := func(m model) [][2]float64 {
+		cols, rows, tileW := m.grid()
+		var out [][2]float64
+		for i := 0; i < cols*rows; i++ {
+			a := m.avatar(i, i%cols*(tileW+tileGap), wallTop+i/cols*(sizes[m.size][1]+2))
+			out = append(out, [2]float64{a.LookX, a.LookY})
+		}
+		return out
+	}
+	at := func(x, y int) [][2]float64 {
+		n, _ := send(m, tui.MouseEvent{X: x, Y: y, Action: tui.MouseActionMotion})
+		return looks(n)
+	}
+	before, after := at(40, 10), at(41, 10)
+	moved := 0
+	for i := range before {
+		if before[i] != after[i] {
+			moved++
+		}
+		for _, v := range before[i] {
+			if r := v * lookSteps; math.Abs(r-math.Round(r)) > 1e-9 {
+				t.Fatalf("avatar %d looks %v, not on a step", i, before[i])
+			}
+		}
+	}
+	if moved > len(before)/3 {
+		t.Errorf("a one-cell move of the pointer redrew %d of %d avatars", moved, len(before))
+	}
+	// Across the screen the eyes do follow.
+	far := at(0, 10)
+	turned := 0
+	for i := range before {
+		if far[i] != before[i] {
+			turned++
+		}
+	}
+	if turned < len(before)/2 {
+		t.Errorf("a move across the screen turned only %d of %d avatars", turned, len(before))
 	}
 }
