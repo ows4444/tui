@@ -31,6 +31,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   colour or the shape while the name decides the rest. `Model.PNG` returns
   the avatar as a PNG, for `imageview` on a terminal that shows images.
   `Model.React` pulls a face for `ReactHold` and lets it go, for a click.
+  `ExpressionMad` flushes the body toward red; `Colors` reports the tinted
+  colours.
 - `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52
   sequence to its own output and keeps the text. `tui.PasteCopied()` delivers
   that text to `Update` as a `PasteEvent`.

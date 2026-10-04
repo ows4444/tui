@@ -159,12 +159,23 @@ func (m Model) traits() traits {
 	return t
 }
 
-func (m Model) palette(t traits) palette {
+// restPalette is the avatar's own colours, before any expression tints them.
+func (m Model) restPalette(t traits) palette {
 	hue, pinned := m.hue()
 	if !pinned {
 		hue = t.num("hue", 0, 360)
 	}
 	return paletteFor(hue, t.at("tone"))
+}
+
+// palette is the colours the avatar is drawn in now: its own, tinted by the
+// expression showing if that one tints.
+func (m Model) palette(t traits) palette {
+	p := m.restPalette(t)
+	if pose := m.shown().pose(); pose.tint != nil {
+		p = p.tinted(pose.tint, pose.heat)
+	}
+	return p
 }
 
 // Shape returns the name of the avatar's silhouette: round, organic, boxy,
@@ -174,9 +185,11 @@ func (m Model) Shape() string {
 	return shapes[pickShape(m.traits().at("shape"))].name
 }
 
-// Colors returns the avatar's colours: the body, the eyes, and the plate
-// drawn when Background is set. The eyes contrast with the body at 4.5:1 or
-// better, whatever Hue and Tone are pinned.
+// Colors returns the colours the avatar is drawn in now: the body, the eyes,
+// and the plate drawn when Background is set. An expression that tints, such
+// as ExpressionMad, changes the body and may change the eyes. The eyes
+// contrast with the body at 4.5:1 or better, whatever Hue and Tone are pinned
+// and whatever expression shows.
 func (m Model) Colors() (body, eyes, background ansi.RGB) {
 	p := m.palette(m.traits())
 	return p.head, p.eye, p.bg
@@ -208,7 +221,7 @@ func (m Model) plate() path {
 // loop do not change it.
 func (m Model) SVG() string {
 	t := m.traits()
-	return svg(layoutFigure(t), m.palette(t), m.plate())
+	return svg(layoutFigure(t), m.restPalette(t), m.plate())
 }
 
 func svg(f figure, p palette, plate path) string {

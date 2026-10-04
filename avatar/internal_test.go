@@ -1,6 +1,12 @@
 package avatar
 
-import "testing"
+import (
+	"strconv"
+	"strings"
+	"testing"
+
+	"github.com/ows4444/tui/ansi"
+)
 
 // Names are trimmed and lowercased by the Unicode default rules.
 func TestNormalizeTrimsAndLowercases(t *testing.T) {
@@ -106,3 +112,11 @@ func TestCellKeepsTwoLayers(t *testing.T) {
 		t.Errorf("an eye over the plate = %+v", c)
 	}
 }
+
+// sgr formats c as the parameters of an SGR colour, "r;g;b".
+func sgr(c ansi.RGB) string {
+	return strconv.Itoa(int(c.R)) + ";" + strconv.Itoa(int(c.G)) + ";" + strconv.Itoa(int(c.B))
+}
+
+// containsSGR reports whether view sets the SGR parameters code.
+func containsSGR(view, code string) bool { return strings.Contains(view, code) }

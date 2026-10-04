@@ -1,7 +1,9 @@
 package avatar
 
 // Expression is a pose the avatar holds until it is changed. A pose reshapes
-// and moves the two eyes; it never adds a mark, so no avatar grows a mouth.
+// and moves the two eyes, and may tint the body; it never adds a mark, so no
+// avatar grows a mouth. No two poses differ by tint alone, so they stay
+// apart with colour stripped.
 type Expression int
 
 // The expressions. ExpressionNone, the zero value, is the figure at rest.
@@ -11,7 +13,8 @@ const (
 	ExpressionHappy
 	// ExpressionSad is flat eyes dropped low, their outer ends down.
 	ExpressionSad
-	// ExpressionMad is wide flat bars, their inner ends down.
+	// ExpressionMad is wide flat bars, their inner ends down, and the body
+	// flushed toward red.
 	ExpressionMad
 	// ExpressionSurprised is the only pose that grows the eyes: wide, tall
 	// and round.
@@ -37,13 +40,16 @@ type eyePose struct {
 }
 
 // pose is one expression: its name, what it does to the left and the right
-// eye, the squareness it gives them (0 keeps each eye's own), and whether
-// they are drawn as domes, flat side down.
+// eye, the squareness it gives them (0 keeps each eye's own), whether they
+// are drawn as domes, flat side down, and the tint it gives the body with how
+// far it goes toward it (nil leaves the colours alone).
 type pose struct {
 	name string
 	eye  [2]eyePose
 	n    float64
 	dome bool
+	tint *tint
+	heat float64
 }
 
 var still = eyePose{sx: 1, sy: 1}
@@ -55,7 +61,7 @@ var poses = [...]pose{
 	ExpressionNone:      {name: "none", eye: [2]eyePose{still, still}},
 	ExpressionHappy:     {name: "happy", eye: [2]eyePose{{sx: 2.1, sy: 1.05, dy: 0.14, turn: true}, {sx: 2.1, sy: 1.05, dy: 0.14, turn: true}}, dome: true},
 	ExpressionSad:       {name: "sad", eye: [2]eyePose{{sx: 1.6, sy: 0.36, dy: 0.3, rot: -24, turn: true}, {sx: 1.6, sy: 0.36, dy: 0.3, rot: 24, turn: true}}},
-	ExpressionMad:       {name: "mad", eye: [2]eyePose{{sx: 2.1, sy: 0.34, dx: 0.04, rot: 26, turn: true}, {sx: 2.1, sy: 0.34, dx: -0.04, rot: -26, turn: true}}},
+	ExpressionMad:       {name: "mad", eye: [2]eyePose{{sx: 2.1, sy: 0.34, dx: 0.04, rot: 26, turn: true}, {sx: 2.1, sy: 0.34, dx: -0.04, rot: -26, turn: true}}, tint: tintHot, heat: 0.62},
 	ExpressionSurprised: {name: "surprised", eye: [2]eyePose{{sx: 1.9, sy: 1.3, dy: -0.08}, {sx: 1.9, sy: 1.3, dy: -0.08}}, n: 2},
 	ExpressionWink:      {name: "wink", eye: [2]eyePose{{sx: 1.9, sy: 0.2, turn: true}, still}},
 	ExpressionSleepy:    {name: "sleepy", eye: [2]eyePose{{sx: 1.9, sy: 0.2, dy: 0.2, turn: true}, {sx: 1.9, sy: 0.2, dy: 0.2, turn: true}}},
