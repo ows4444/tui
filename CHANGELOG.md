@@ -13,7 +13,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 - `faces.For(name)` and `faces.IndexFor(name)` pick a catalog face for any
   string, the same one every time, so a name can have a character of its
-  own.
+  own. `faces.Model.Color` draws the face in a colour other than the theme's
+  primary, and `faces.ColorFor(name)` derives one from a name.
 - `avatar`: a new experimental package that draws a deterministic avatar
   for a name: one of ten silhouettes with two eyes, in a colour the name
   chose. `Model.View` draws it in terminal cells and `Model.SVG` returns it

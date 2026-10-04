@@ -1322,6 +1322,7 @@ func (s Size) Cells() (w, h int)
 func (s Size) HeadCells() (w, h int)
 func All() []Face
 func ByName(name string) (Face, bool)
+func ColorFor(name string) ansi.RGB
 func Count() int
 func For(name string) Face
 func Get(i int) Face
@@ -1338,6 +1339,8 @@ type Model struct {
 
 	Interval	time.Duration
 	Theme		theme.Theme
+
+	Color	ansi.Color
 
 	ShowLabel	bool
 

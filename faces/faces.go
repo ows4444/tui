@@ -5,7 +5,8 @@
 // the same block of cells, so swapping faces never moves the layout.
 //
 // The characters are ready-made and picked by index or name; For and
-// IndexFor pick one for any string, the same one every time. To give any
+// IndexFor pick one for any string, the same one every time, and ColorFor
+// picks it a colour. To give any
 // string a picture of its own, with a figure and a colour derived from it,
 // use package avatar.
 //
@@ -34,6 +35,10 @@ type Model struct {
 	// Interval overrides the face's own pace when non-zero.
 	Interval time.Duration
 	Theme    theme.Theme
+	// Color draws the face in this colour in place of the theme's primary
+	// colour; nil uses the theme. ColorFor derives one from a name. An Accent
+	// set through WithTokens still wins.
+	Color ansi.Color
 
 	// tokens is the per-instance colour override set by WithTokens.
 	tokens theme.Tokens
@@ -135,7 +140,8 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	return m, m.tick()
 }
 
-// View renders the current frame in the theme's primary colour. Under an ASCII
+// View renders the current frame in Color, or in the theme's primary colour
+// when Color is nil. Under an ASCII
 // glyph set (theme.DarkTheme().ASCII()) the braille dots are drawn as a density ramp of
 // ASCII characters instead, one per 2x4 cell, so the face keeps its shape and
 // size on a terminal that cannot show braille.
@@ -145,7 +151,7 @@ func (m Model) View() string {
 	if g := m.themed().GlyphSet(); g.ASCII() {
 		frame = asciiFrame(frame, g.Shades)
 	}
-	body := ansi.NewStyle().Foreground(m.themed().Primary).Render(frame)
+	body := ansi.NewStyle().Foreground(m.colour()).Render(frame)
 	if !m.ShowLabel {
 		return body
 	}
