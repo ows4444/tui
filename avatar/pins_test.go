@@ -91,6 +91,9 @@ func TestAPinnedTraitIsTheSameForEveryName(t *testing.T) {
 	if got := fmt.Sprint(allTraits); got != "[body size body proportion body squareness eye size eye roundness eye squareness eye separation eye lean gaze x gaze y]" {
 		t.Errorf("trait names: %s", got)
 	}
+	if got := fmt.Sprint(decorations); got != "[tilt squat corner rounding petals petal distance petal size petal rotation lobes nubs nub angle nub size tip length]" {
+		t.Errorf("decoration trait names: %s", got)
+	}
 }
 
 // A position outside 0 to 1 is clamped to the nearer end, and one that is

@@ -29,7 +29,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   blinking and glancing aside, at a rhythm drawn from its name, until
   `Model.StopIdle`. `Model.Hue`, `Model.Tone` and `Model.Silhouette` pin the
   colour or the shape, and `Model.Pins` any single trait such as the size of
-  the eyes, while the name decides the rest. `Model.PNG` returns
+  the eyes or the number of a sun's petals, while the name decides the rest. `Model.PNG` returns
   the avatar as a PNG, for `imageview` on a terminal that shows images.
   `Model.React` pulls a face for `ReactHold` and lets it go, for a click;
   it eases in and out, as does `Model.SetExpression`. Eased into, the mad,

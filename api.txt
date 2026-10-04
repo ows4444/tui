@@ -718,6 +718,30 @@ const (
 	TraitGazeX
 
 	TraitGazeY
+
+	TraitTilt
+
+	TraitSquat
+
+	TraitCornerRounding
+
+	TraitPetals
+
+	TraitPetalDistance
+
+	TraitPetalSize
+
+	TraitPetalRotation
+
+	TraitLobes
+
+	TraitNubs
+
+	TraitNubAngle
+
+	TraitNubSize
+
+	TraitTipLength
 )
 const MaxPNGSize = 512
 const ReactHold = 1500 * time.Millisecond

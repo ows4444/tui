@@ -72,8 +72,9 @@ func (t Tone) String() string {
 type Trait int
 
 // The traits that can be pinned. Each is a position from 0 to 1 across the
-// range the name would have chosen from, so 0 is the smallest, roundest or
-// leftmost an avatar ever is and 1 the largest, squarest or rightmost.
+// range the name would have chosen from, so 0 is the smallest, roundest,
+// fewest or leftmost an avatar ever is and 1 the largest, squarest, most or
+// rightmost.
 const (
 	// TraitBodySize is how much of the frame the body takes.
 	TraitBodySize Trait = iota
@@ -96,21 +97,67 @@ const (
 	// TraitGazeY is where the eyes rest, from high to low.
 	TraitGazeY
 
+	// The traits below belong to one or a few silhouettes; on any other
+	// they pin nothing.
+
+	// TraitTilt is how far a boxy, hexagon or triangle body is turned, from
+	// one way, through level, to the other.
+	TraitTilt
+	// TraitSquat is how flat a capsule is.
+	TraitSquat
+	// TraitCornerRounding runs from sharp corners to none at all, on a
+	// hexagon or a triangle.
+	TraitCornerRounding
+	// TraitPetals is how many petals a sun has.
+	TraitPetals
+	// TraitPetalDistance is how far a sun's petals sit from its centre.
+	TraitPetalDistance
+	// TraitPetalSize is the size of a sun's petals.
+	TraitPetalSize
+	// TraitPetalRotation turns a sun's ring of petals.
+	TraitPetalRotation
+	// TraitLobes is how many lobes a cloud has.
+	TraitLobes
+	// TraitNubs is how many nubs a nub body has.
+	TraitNubs
+	// TraitNubAngle is where the first nub sits around the body.
+	TraitNubAngle
+	// TraitNubSize is the size of the nubs.
+	TraitNubSize
+	// TraitTipLength is how tall a droplet's point is.
+	TraitTipLength
+
 	traitCount
 )
 
-// traitKeys holds, per Trait, its name and the key it is hashed under.
-var traitKeys = [traitCount]struct{ name, key string }{
-	TraitBodySize:       {"body size", "body.r"},
-	TraitBodyProportion: {"body proportion", "body.ratio"},
-	TraitBodySquareness: {"body squareness", "body.n"},
-	TraitEyeSize:        {"eye size", "eye.rx"},
-	TraitEyeRoundness:   {"eye roundness", "eye.ratio"},
-	TraitEyeSquareness:  {"eye squareness", "eye.n"},
-	TraitEyeSeparation:  {"eye separation", "eye.gap"},
-	TraitEyeLean:        {"eye lean", "eye.lean"},
-	TraitGazeX:          {"gaze x", "gaze.x"},
-	TraitGazeY:          {"gaze y", "gaze.y"},
+// traitKeys holds, per Trait, its name and the keys it is hashed under: one,
+// except that the size of the nubs is a key for each nub.
+var traitKeys = [traitCount]struct {
+	name string
+	keys []string
+}{
+	TraitBodySize:       {"body size", []string{"body.r"}},
+	TraitBodyProportion: {"body proportion", []string{"body.ratio"}},
+	TraitBodySquareness: {"body squareness", []string{"body.n"}},
+	TraitEyeSize:        {"eye size", []string{"eye.rx"}},
+	TraitEyeRoundness:   {"eye roundness", []string{"eye.ratio"}},
+	TraitEyeSquareness:  {"eye squareness", []string{"eye.n"}},
+	TraitEyeSeparation:  {"eye separation", []string{"eye.gap"}},
+	TraitEyeLean:        {"eye lean", []string{"eye.lean"}},
+	TraitGazeX:          {"gaze x", []string{"gaze.x"}},
+	TraitGazeY:          {"gaze y", []string{"gaze.y"}},
+	TraitTilt:           {"tilt", []string{"body.rot"}},
+	TraitSquat:          {"squat", []string{"capsule.squat"}},
+	TraitCornerRounding: {"corner rounding", []string{"poly.round"}},
+	TraitPetals:         {"petals", []string{"sun.n"}},
+	TraitPetalDistance:  {"petal distance", []string{"sun.dist"}},
+	TraitPetalSize:      {"petal size", []string{"sun.r"}},
+	TraitPetalRotation:  {"petal rotation", []string{"sun.rot"}},
+	TraitLobes:          {"lobes", []string{"cloud.n"}},
+	TraitNubs:           {"nubs", []string{"nub.n"}},
+	TraitNubAngle:       {"nub angle", []string{"nub.a0"}},
+	TraitNubSize:        {"nub size", []string{"nub.r0", "nub.r1"}},
+	TraitTipLength:      {"tip length", []string{"droplet.tip"}},
 }
 
 // String returns the trait's name, such as "eye size"; a value that is not
@@ -136,7 +183,9 @@ func (m Model) pins() map[string]float64 {
 	pin := func(key string, lo, hi float64) { set(key, (lo+hi)/2) }
 	for t, at := range m.Pins {
 		if t >= 0 && t < traitCount {
-			set(traitKeys[t].key, at)
+			for _, key := range traitKeys[t].keys {
+				set(key, at)
+			}
 		}
 	}
 	if k, ok := m.Silhouette.kind(); ok {
