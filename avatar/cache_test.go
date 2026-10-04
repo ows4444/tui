@@ -116,7 +116,9 @@ func TestCopiesShareTheCacheSafely(t *testing.T) {
 	<-done
 }
 
-func BenchmarkView(b *testing.B) {
+// BenchmarkAvatarView measures View at the default and a large size, with
+// and without the cache. CI runs it in the benchmark smoke pass.
+func BenchmarkAvatarView(b *testing.B) {
 	for _, size := range [][2]int{{DefaultWidth, DefaultHeight}, {24, 12}} {
 		m := New("alain00")
 		m.Width, m.Height = size[0], size[1]
