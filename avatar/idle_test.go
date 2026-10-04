@@ -217,3 +217,46 @@ func TestIdleLeavesThePlateAndSVGAlone(t *testing.T) {
 		t.Error("idling changed the SVG")
 	}
 }
+
+// Hover runs the idle loop only while the pointer is over the avatar: it
+// starts on arrival, restarts nothing while the pointer stays, and stops,
+// back at rest, when it leaves.
+func TestHoverIdlesOnlyUnderThePointer(t *testing.T) {
+	m := idling("ada")
+	rest := m.View()
+	if cmd := m.Hover(false); cmd != nil || m.Idling() {
+		t.Error("a pointer that is elsewhere started the loop")
+	}
+	cmd := m.Hover(true)
+	if cmd == nil || !m.Idling() {
+		t.Fatal("the pointer arriving did not start the loop")
+	}
+	for range 5 {
+		m, _ = beat(t, m)
+	}
+	at, owner := m.beat, m.owner
+	if cmd := m.Hover(true); cmd != nil || m.beat != at || m.owner != owner {
+		t.Error("the pointer staying restarted the loop")
+	}
+	pending := tickMsg{owner: m.owner}
+	if cmd := m.Hover(false); cmd != nil || m.Idling() || m.View() != rest {
+		t.Error("the pointer leaving did not stop the loop and return the avatar to rest")
+	}
+	if n, cmd := m.Update(pending); cmd != nil || n.View() != rest {
+		t.Error("a tick that arrived after the pointer left moved the avatar")
+	}
+	if cmd := m.Hover(false); cmd != nil || m.Idling() {
+		t.Error("the pointer staying away did something")
+	}
+}
+
+func TestHoverUnderReducedMotionSchedulesNothing(t *testing.T) {
+	m := idling("ada")
+	rest := m.View()
+	m.Motion = motion.Reduced
+	for range 3 {
+		if cmd := m.Hover(true); cmd != nil || m.Idling() || m.View() != rest {
+			t.Fatal("Hover under reduced motion should schedule nothing and leave the avatar at rest")
+		}
+	}
+}

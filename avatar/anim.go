@@ -101,6 +101,21 @@ func (m *Model) StopIdle() {
 	m.idling, m.blink, m.beat = false, 0, 0
 }
 
+// Hover runs the idle loop only while the pointer is over the avatar: pass
+// whether it is, on every mouse move, and return the Cmd from your Update.
+// The loop starts when the pointer arrives and stops, returning the avatar
+// to rest, when it leaves; while the pointer stays, or stays away, nothing
+// changes and the Cmd is nil. Under motion.Reduced it never starts.
+func (m *Model) Hover(over bool) tui.Cmd {
+	switch {
+	case over && !m.idling:
+		return m.StartIdle()
+	case !over && m.idling:
+		m.StopIdle()
+	}
+	return nil
+}
+
 // Idling reports whether the idle loop is running.
 func (m Model) Idling() bool { return m.idling }
 

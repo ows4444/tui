@@ -75,12 +75,12 @@ func TestBackgroundAndGlyphKeys(t *testing.T) {
 	m := initialModel()
 	for _, want := range []string{"squircle", "circle", "square", "none"} {
 		m, _ = send(m, key("b"))
-		if !strings.Contains(status(m), ", "+want+", blocks, none, own]") {
+		if !strings.Contains(status(m), ", "+want+", blocks, none, own, still]") {
 			t.Errorf("after b: %s, want %s", status(m), want)
 		}
 	}
 	m, _ = send(m, key("a"))
-	if !strings.Contains(status(m), ", ascii, none, own]") {
+	if !strings.Contains(status(m), ", ascii, none, own, still]") {
 		t.Errorf("after a: %s", status(m))
 	}
 	// The help line names keys with arrows; the wall above it must be ASCII.
@@ -93,7 +93,7 @@ func TestBackgroundAndGlyphKeys(t *testing.T) {
 		}
 	}
 	m, _ = send(m, key("a"))
-	if !strings.Contains(status(m), ", blocks, none, own]") {
+	if !strings.Contains(status(m), ", blocks, none, own, still]") {
 		t.Errorf("a did not toggle back: %s", status(m))
 	}
 }
@@ -206,7 +206,7 @@ func TestExpressionKeyCyclesThePoses(t *testing.T) {
 	for _, want := range []string{"happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking",
 		"smug", "unsure", "scared", "love", "shy", "sick", "none"} {
 		m, _ = send(m, key("e"))
-		if !strings.HasSuffix(status(m), ", "+want+", own]") {
+		if !strings.HasSuffix(status(m), ", "+want+", own, still]") {
 			t.Errorf("after e: %s, want %s", status(m), want)
 		}
 		wall := m.View()
@@ -217,26 +217,62 @@ func TestExpressionKeyCyclesThePoses(t *testing.T) {
 	}
 }
 
-// i starts every avatar idling and a second i stops them all; the Cmd it
-// returns carries a tick for each.
-func TestIdleKeyTogglesTheWholeWall(t *testing.T) {
-	m, cmd := send(initialModel(), key("i"))
-	if cmd == nil {
-		t.Fatal("i returned no Cmd")
-	}
-	for i, a := range m.wall {
-		if !a.Idling() {
-			t.Fatalf("avatar %d is not idling", i)
+// i steps through the idle modes: on hover only the avatar under the
+// pointer idles, then all of them, then none.
+func TestIdleKeyStepsThroughTheModes(t *testing.T) {
+	idling := func(m model) (n int, which int) {
+		which = -1
+		for i, a := range m.wall {
+			if a.Idling() {
+				n, which = n+1, i
+			}
 		}
+		return n, which
 	}
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24})
+	_, _, tileW := m.grid()
+	over := func(tile int) tui.MouseEvent {
+		return tui.MouseEvent{X: tile*(tileW+tileGap) + tileW/2, Y: wallTop + 1, Action: tui.MouseActionMotion}
+	}
+
+	// Hover mode with the pointer nowhere: nothing idles and no Cmd.
+	m, cmd := send(m, key("i"))
+	if n, _ := idling(m); n != 0 || cmd != nil || !strings.HasSuffix(status(m), ", hover]") {
+		t.Fatalf("hover mode before the pointer moved: %d idling, Cmd %v, %s", n, cmd != nil, status(m))
+	}
+	// The pointer reaches the second tile: that avatar idles, alone.
+	m, cmd = send(m, over(1))
+	if n, which := idling(m); n != 1 || which != 1 || cmd == nil {
+		t.Fatalf("pointer over tile 1: %d idling (avatar %d), Cmd %v", n, which, cmd != nil)
+	}
+	// Moving within the tile restarts nothing.
+	still, cmd := send(m, tui.MouseEvent{X: over(1).X + 1, Y: wallTop + 2, Action: tui.MouseActionMotion})
+	if n, which := idling(still); n != 1 || which != 1 || cmd != nil {
+		t.Errorf("a move inside the tile: %d idling, Cmd %v", n, cmd != nil)
+	}
+	// On to the third tile: the second stops and the third starts.
+	m, cmd = send(m, over(2))
+	if n, which := idling(m); n != 1 || which != 2 || cmd == nil {
+		t.Errorf("pointer over tile 2: %d idling (avatar %d), Cmd %v", n, which, cmd != nil)
+	}
+	// Off the wall: everything rests.
+	off, cmd := send(m, tui.MouseEvent{X: 3, Y: 0, Action: tui.MouseActionMotion})
+	if n, _ := idling(off); n != 0 || cmd != nil {
+		t.Errorf("pointer off the wall: %d idling, Cmd %v", n, cmd != nil)
+	}
+
+	// Always: every avatar idles, wherever the pointer is.
 	m, cmd = send(m, key("i"))
-	if cmd != nil {
-		t.Error("stopping returned a Cmd")
+	if n, _ := idling(m); n != len(names) || cmd == nil || !strings.HasSuffix(status(m), ", idle]") {
+		t.Errorf("always: %d idling, Cmd %v, %s", n, cmd != nil, status(m))
 	}
-	for i, a := range m.wall {
-		if a.Idling() {
-			t.Fatalf("avatar %d is still idling", i)
-		}
+	if moved, _ := send(m, over(0)); func() int { n, _ := idling(moved); return n }() != len(names) {
+		t.Error("a mouse move in the always mode stopped an avatar")
+	}
+	// Off: none.
+	m, cmd = send(m, key("i"))
+	if n, _ := idling(m); n != 0 || cmd != nil || !strings.HasSuffix(status(m), ", still]") {
+		t.Errorf("off: %d idling, Cmd %v, %s", n, cmd != nil, status(m))
 	}
 }
 
@@ -338,7 +374,7 @@ func TestPinsKeyStepsThroughPresets(t *testing.T) {
 	seen := map[string]bool{}
 	for _, want := range []string{"big eyes", "wide-set", "square", "own"} {
 		m, _ = send(m, key("p"))
-		if !strings.HasSuffix(status(m), ", "+want+"]") {
+		if !strings.HasSuffix(status(m), ", "+want+", still]") {
 			t.Errorf("after p: %s, want %s", status(m), want)
 		}
 		// Compare the unselected part of the wall: the selected avatar

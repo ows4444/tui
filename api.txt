@@ -747,6 +747,7 @@ const MaxPNGSize = 512
 const ReactHold = 1500 * time.Millisecond
 func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
+func (m *Model) Hover(over bool) tui.Cmd
 func (m *Model) LookAt(dx, dy int)
 func (m *Model) React() tui.Cmd
 func (m *Model) SetExpression(e Expression) tui.Cmd

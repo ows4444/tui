@@ -10,7 +10,7 @@
 //	+/- or ↑/↓  larger / smaller avatars
 //	b           cycle the background: none, squircle, circle, square
 //	e           ease every avatar into the next expression: happy, sad, mad, ...
-//	i           idle on / off: every avatar breathes, blinks and glances
+//	i           idle: off, on hover (only the avatar under the pointer), always
 //	c           pin the hue: name's own, 30, 90, 140, 250, 320
 //	t           pin the tone: name's own, pastel, pale, mid, deep, bright, ink
 //	s           pin the silhouette: name's own, round, organic, ...
@@ -90,7 +90,7 @@ type model struct {
 	// wall holds one avatar per name, built once, so each keeps its cached
 	// View and its own animation from frame to frame.
 	wall []avatar.Model
-	idle bool
+	idle int // index into idleModes
 	// mouseX and mouseY are the pointer's cell, once it has moved.
 	mouseX, mouseY int
 	mouse          bool
@@ -118,7 +118,7 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				return m, m.wall[i].React()
 			}
 		}
-		return m, nil
+		return m, m.hover()
 	case tui.Key:
 		switch msg.Type {
 		case tui.KeyCtrlC, tui.KeyEsc:
@@ -181,10 +181,7 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 	}
-	if len(cmds) == 1 {
-		return m, cmds[0] // the usual case: one avatar's next tick
-	}
-	return m, tui.Batch(cmds...)
+	return m, batch(cmds)
 }
 
 // tileAt returns the index of the name whose tile, avatar and label, holds
@@ -201,16 +198,62 @@ func (m model) tileAt(x, y int) (int, bool) {
 	return i, i < len(names)
 }
 
-// toggleIdle starts or stops the idle loop of every avatar on the wall.
+// The idle modes i steps through.
+const (
+	idleOff = iota
+	idleHover
+	idleAlways
+)
+
+var idleModes = [...]string{idleOff: "still", idleHover: "hover", idleAlways: "idle"}
+
+// toggleIdle steps to the next idle mode: every avatar at rest, only the one
+// under the pointer idling, or all of them.
 func (m *model) toggleIdle() tui.Cmd {
-	m.idle = !m.idle
+	m.idle = (m.idle + 1) % len(idleModes)
 	var cmds []tui.Cmd
 	for i := range m.wall {
-		if m.idle {
+		if m.idle == idleAlways {
 			cmds = append(cmds, m.wall[i].StartIdle())
 		} else {
 			m.wall[i].StopIdle()
 		}
+	}
+	return batch(append(cmds, m.hover()))
+}
+
+// hover, in the hover mode, tells every avatar whether the pointer is over
+// its tile: the one it has reached starts to idle and the one it left stops.
+func (m *model) hover() tui.Cmd {
+	if m.idle != idleHover {
+		return nil
+	}
+	at, ok := -1, false
+	if m.mouse {
+		if at, ok = m.tileAt(m.mouseX, m.mouseY); !ok {
+			at = -1
+		}
+	}
+	var cmds []tui.Cmd
+	for i := range m.wall {
+		cmds = append(cmds, m.wall[i].Hover(i == at))
+	}
+	return batch(cmds)
+}
+
+// batch returns the one Cmd of cmds that is not nil when there is exactly
+// one, the usual case of a single avatar's next tick, and else a Batch.
+func batch(cmds []tui.Cmd) tui.Cmd {
+	var only tui.Cmd
+	n := 0
+	for _, c := range cmds {
+		if c != nil {
+			only = c
+			n++
+		}
+	}
+	if n == 1 {
+		return only
 	}
 	return tui.Batch(cmds...)
 }
@@ -321,8 +364,8 @@ func (m model) View() string {
 	if m.ascii {
 		glyphs = "ascii"
 	}
-	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s, %s, %s]",
-		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression, presets[m.preset].name)
+	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s, %s, %s, %s]",
+		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression, presets[m.preset].name, idleModes[m.idle])
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
 	b.WriteString(faintStyle.Render(ansi.Truncate("click or r react  ←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  p pins  a ascii  q quit", w)))
