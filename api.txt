@@ -686,6 +686,7 @@ const (
 	ToneBright
 	ToneInk
 )
+const MaxPNGSize = 512
 func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
 func (m *Model) LookAt(dx, dy int)
@@ -696,6 +697,7 @@ func (m Model) Colors() (body, eyes, background ansi.RGB)
 func (m Model) Idling() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) PNG(size int) []byte
 func (m Model) SVG() string
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Shape() string

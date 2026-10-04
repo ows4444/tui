@@ -7,7 +7,8 @@
 // characters, picked by index or name to show a mood or a status, use
 // package faces.
 //
-// View draws the figure in terminal cells and SVG returns it as markup. The
+// View draws the figure in terminal cells, PNG returns it as an image for a
+// terminal that shows images, and SVG returns it as markup. The
 // mapping from a name to its figure and colours is frozen: the tests pin it
 // against the reference vectors in testdata.
 //
