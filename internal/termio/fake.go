@@ -50,6 +50,14 @@ func (f *Fake) Resize(w, h int) {
 	}
 }
 
+// SetSize changes the size Size reports to w x h without notifying anyone:
+// for a caller that delivers the tui.ResizeMsg itself.
+func (f *Fake) SetSize(w, h int) {
+	f.mu.Lock()
+	f.W, f.H, f.SizeKnown = w, h, true
+	f.mu.Unlock()
+}
+
 func (f *Fake) MakeRaw(mouse bool) (func() error, error) {
 	if f.RawErr != nil {
 		return nil, f.RawErr

@@ -18,6 +18,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/termio"
 	"github.com/ows4444/tui/internal/vtscreen"
 )
 
@@ -50,6 +51,7 @@ type TB interface {
 type Session struct {
 	w, h    int
 	prog    *tui.Program
+	term    *termio.Fake // the size the Program asks for; see New
 	inW     *io.PipeWriter
 	inR     *io.PipeReader
 	inbox   chan tui.Msg
@@ -66,8 +68,11 @@ type Session struct {
 
 // New starts model in a w x h terminal and returns once its first frame is
 // drawn. opts are extra tui.ProgramOptions, applied after the harness's own
-// (which set the alternate screen, an in-memory input and output). Call Close
-// when finished.
+// (which set the alternate screen, an in-memory input and output, and a
+// terminal that reports the size w x h, so the Program draws frames of that
+// size and not of the 80x24 a plain writer gets). A test that passes its own
+// tui.WithTerminal replaces that terminal, and the Program then follows the
+// size that one reports. Call Close when finished.
 func New(model tui.Model, w, h int, opts ...tui.ProgramOption) *Session {
 	pr, pw := io.Pipe()
 	s := &Session{
@@ -76,12 +81,14 @@ func New(model tui.Model, w, h int, opts ...tui.ProgramOption) *Session {
 		quit:   make(chan struct{}),
 		done:   make(chan struct{}),
 		screen: vtscreen.NewScreen(w, h),
+		term:   &termio.Fake{W: w, H: h, SizeKnown: true},
 	}
 	all := append([]tui.ProgramOption{
 		tui.WithAltScreen(true),
 		tui.WithInput(pr),
 		tui.WithOutput(screenWriter{s}),
 		tui.WithErrOutput(io.Discard),
+		tui.WithTerminal(s.term),
 		// The emulator reads SGR, so keep colours whatever the environment
 		// (NO_COLOR, a dumb TERM) says; a test can override with its own
 		// tui.WithColorProfile.
@@ -388,13 +395,20 @@ func (s *Session) Paste(text string) {
 	s.settle(start + 1)
 }
 
-// Resize changes the terminal to w x h and delivers a tui.ResizeMsg.
+// Resize changes the terminal to w x h: the emulated screen, the size the
+// Program draws its frames at, and the tui.ResizeMsg the model receives.
 func (s *Session) Resize(w, h int) {
 	s.mu.Lock()
 	s.screen.Resize(w, h)
 	s.w, s.h = w, h
 	s.mu.Unlock()
-	s.inject(tui.ResizeMsg{Width: w, Height: h})
+	// The Program reads its size from the terminal when a ResizeMsg passes
+	// through its loop, so the message goes through the Program, not through
+	// the inbox that reaches only the model.
+	s.term.SetSize(w, h)
+	start := s.updates.Load()
+	s.prog.Send(tui.ResizeMsg{Width: w, Height: h})
+	s.settle(start + 1)
 }
 
 // Send delivers an arbitrary Msg to the model's Update.

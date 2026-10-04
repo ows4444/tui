@@ -110,6 +110,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `tuitest`: a session larger than 80x24 drew clipped frames. The Program
+  under test kept the 80x24 size of a plain writer whatever size `New` or
+  `Resize` was given, so only the model was told the new size. The session
+  now gives the Program a terminal of its own size, and `Resize` changes
+  that size too. A test that passes its own `tui.WithTerminal` keeps
+  control of the size.
 - `tuitest.Replay` says why it fails on a recording it cannot reproduce: one
   in which a tick or resize was handled between two keys that arrived in one
   input read. Before, the failure was only a frame diff.
