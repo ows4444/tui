@@ -3,6 +3,10 @@
 // The same name always draws the same avatar, so whoever a user learns in one
 // list is who they recognise in the next. Nothing is stored or fetched.
 //
+// The avatar stands for somebody. For a catalog of ready-made animated
+// characters, picked by index or name to show a mood or a status, use
+// package faces.
+//
 // View draws the figure in terminal cells and SVG returns it as markup. The
 // mapping from a name to its figure and colours is frozen: the tests pin it
 // against the reference vectors in testdata.
