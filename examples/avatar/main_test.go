@@ -203,7 +203,8 @@ func TestAvatarsLookAtThePointer(t *testing.T) {
 func TestExpressionKeyCyclesThePoses(t *testing.T) {
 	m, _ := send(initialModel(), tui.ResizeMsg{Width: 120, Height: 40}, key("+"))
 	seen := map[string]bool{}
-	for _, want := range []string{"happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking", "none"} {
+	for _, want := range []string{"happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking",
+		"smug", "unsure", "scared", "love", "shy", "sick", "none"} {
 		m, _ = send(m, key("e"))
 		if !strings.HasSuffix(status(m), ", "+want+"]") {
 			t.Errorf("after e: %s, want %s", status(m), want)

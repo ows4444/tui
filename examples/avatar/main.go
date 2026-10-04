@@ -135,7 +135,7 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 			case "a":
 				m.ascii = !m.ascii
 			case "e":
-				m.expression = (m.expression + 1) % (avatar.ExpressionThinking + 1)
+				m.expression = (m.expression + 1) % (avatar.ExpressionSick + 1)
 			case "c":
 				m.hue = (m.hue + 1) % len(hues)
 			case "t":

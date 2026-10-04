@@ -1,6 +1,8 @@
 package avatar_test
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -11,6 +13,8 @@ import (
 var expressions = []avatar.Expression{
 	avatar.ExpressionNone, avatar.ExpressionHappy, avatar.ExpressionSad, avatar.ExpressionMad,
 	avatar.ExpressionSurprised, avatar.ExpressionWink, avatar.ExpressionSleepy, avatar.ExpressionThinking,
+	avatar.ExpressionSmug, avatar.ExpressionUnsure, avatar.ExpressionScared, avatar.ExpressionLove,
+	avatar.ExpressionShy, avatar.ExpressionSick,
 }
 
 // With no expression set the avatar is the figure at rest, and a value that
@@ -57,7 +61,8 @@ func TestExpressionsAreDistinct(t *testing.T) {
 }
 
 func TestExpressionNames(t *testing.T) {
-	want := []string{"none", "happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking"}
+	want := []string{"none", "happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking",
+		"smug", "unsure", "scared", "love", "shy", "sick"}
 	for i, e := range expressions {
 		if e.String() != want[i] {
 			t.Errorf("expression %d is %q, want %q", i, e, want[i])
@@ -103,6 +108,61 @@ func TestExpressionComposesWithLookAndBlink(t *testing.T) {
 			if w := ansi.Width(row); w != avatar.DefaultWidth {
 				t.Errorf("%v: a row is %d cells wide", e, w)
 			}
+		}
+	}
+}
+
+// The seven expressions that came first draw exactly what they drew before
+// the roster grew: these are digests of their Views at 16x8, taken then.
+func TestTheFirstSevenExpressionsAreUnchanged(t *testing.T) {
+	byName := map[string]avatar.Expression{}
+	for _, e := range expressions {
+		byName[e.String()] = e
+	}
+	for _, pin := range [][3]string{
+		{"alain00", "happy", "d54c97fe0939"},
+		{"alain00", "sad", "34a38c343c41"},
+		{"alain00", "mad", "95e8e3157e85"},
+		{"alain00", "surprised", "2dec66737185"},
+		{"alain00", "wink", "d70b9d276bc4"},
+		{"alain00", "sleepy", "504d8b8d6192"},
+		{"alain00", "thinking", "fa524b31aedd"},
+		{"kasper", "happy", "77a23151e2e0"},
+		{"kasper", "sad", "e485e3de43c6"},
+		{"kasper", "mad", "3a10743f16bb"},
+		{"kasper", "surprised", "c7afa3eefa70"},
+		{"kasper", "wink", "d03acc1937cd"},
+		{"kasper", "sleepy", "84243ad685cd"},
+		{"kasper", "thinking", "1f4daf9a117e"},
+	} {
+		m := avatar.New(pin[0])
+		m.Width, m.Height, m.Expression = 16, 8, byName[pin[1]]
+		sum := sha256.Sum256([]byte(m.View()))
+		if got := fmt.Sprintf("%x", sum[:6]); got != pin[2] {
+			t.Errorf("%s %s: View digest %s, was %s", pin[0], pin[1], got, pin[2])
+		}
+	}
+}
+
+// The three poses that tint besides mad each colour the body their own way.
+func TestTheNewTintedExpressions(t *testing.T) {
+	rest := avatar.New("ada")
+	body, _, _ := rest.Colors()
+	seen := map[ansi.RGB]avatar.Expression{body: avatar.ExpressionNone}
+	for _, e := range []avatar.Expression{avatar.ExpressionMad, avatar.ExpressionLove, avatar.ExpressionShy, avatar.ExpressionSick} {
+		m := avatar.New("ada")
+		m.Expression = e
+		b, _, _ := m.Colors()
+		if prev, dup := seen[b]; dup {
+			t.Errorf("%v and %v colour the body alike", prev, e)
+		}
+		seen[b] = e
+	}
+	for _, e := range []avatar.Expression{avatar.ExpressionSmug, avatar.ExpressionUnsure, avatar.ExpressionScared} {
+		m := avatar.New("ada")
+		m.Expression = e
+		if b, _, _ := m.Colors(); b != body {
+			t.Errorf("%v tints the body", e)
 		}
 	}
 }

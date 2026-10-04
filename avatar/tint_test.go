@@ -51,8 +51,8 @@ func TestTintsMatchVectors(t *testing.T) {
 
 func wcag(a, b ansi.RGB) float64 { return contrast(oklchOf(a), oklchOf(b)) }
 
-// The mad expression flushes the body toward red; the untinted ones leave
-// the colours alone; SVG stays in the avatar's own colours.
+// The mad expression flushes the body toward red; the poses with no tint
+// leave the colours alone; SVG stays in the avatar's own colours.
 func TestMadTintsTheBodyAndOthersDoNot(t *testing.T) {
 	for _, name := range []string{"alain00", "tove", "kasper", "mdawais", "user-1", "ada", "linus"} {
 		m := New(name)
@@ -61,7 +61,7 @@ func TestMadTintsTheBodyAndOthersDoNot(t *testing.T) {
 		for e := ExpressionNone; int(e) < len(poses); e++ {
 			m.Expression = e
 			b, ey, pl := m.Colors()
-			if e == ExpressionMad {
+			if e.pose().tint != nil {
 				continue
 			}
 			if b != body || ey != eyes || pl != plate {

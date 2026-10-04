@@ -663,6 +663,18 @@ const (
 	ExpressionSleepy
 
 	ExpressionThinking
+
+	ExpressionSmug
+
+	ExpressionUnsure
+
+	ExpressionScared
+
+	ExpressionLove
+
+	ExpressionShy
+
+	ExpressionSick
 )
 const (
 	SilhouetteAuto	Silhouette	= iota

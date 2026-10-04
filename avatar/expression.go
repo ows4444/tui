@@ -25,6 +25,21 @@ const (
 	ExpressionSleepy
 	// ExpressionThinking is the eyes at two heights, looking aside.
 	ExpressionThinking
+	// ExpressionSmug is both eyes half shut and tilted the same way, one
+	// held higher than the other.
+	ExpressionSmug
+	// ExpressionUnsure is one eye open and the other squeezed and tilted.
+	ExpressionUnsure
+	// ExpressionScared is small eyes, lifted and drawn together.
+	ExpressionScared
+	// ExpressionLove is tall eyes leaning together, and the body flushed
+	// rose.
+	ExpressionLove
+	// ExpressionShy is small eyes, low and drawn together, and a pale blush.
+	ExpressionShy
+	// ExpressionSick is two slumped bars at different heights, and the body
+	// turned green.
+	ExpressionSick
 )
 
 // String returns the expression's name, such as "happy"; ExpressionNone and
@@ -66,6 +81,12 @@ var poses = [...]pose{
 	ExpressionWink:      {name: "wink", eye: [2]eyePose{{sx: 1.9, sy: 0.2, turn: true}, still}},
 	ExpressionSleepy:    {name: "sleepy", eye: [2]eyePose{{sx: 1.9, sy: 0.2, dy: 0.2, turn: true}, {sx: 1.9, sy: 0.2, dy: 0.2, turn: true}}},
 	ExpressionThinking:  {name: "thinking", eye: [2]eyePose{{sx: 1, sy: 0.7, dx: 0.2, dy: -0.26}, {sx: 1, sy: 0.7, dx: 0.2, dy: 0.14}}},
+	ExpressionSmug:      {name: "smug", eye: [2]eyePose{{sx: 1.6, sy: 0.5, dy: -0.16, rot: 20, turn: true}, {sx: 1.6, sy: 0.5, dy: 0.04, rot: 20, turn: true}}},
+	ExpressionUnsure:    {name: "unsure", eye: [2]eyePose{still, {sx: 1.5, sy: 0.4, dy: 0.12, rot: -24, turn: true}}},
+	ExpressionScared:    {name: "scared", eye: [2]eyePose{{sx: 0.8, sy: 0.5, dx: 0.16, dy: -0.22}, {sx: 0.8, sy: 0.5, dx: -0.16, dy: -0.22}}, n: 2},
+	ExpressionLove:      {name: "love", eye: [2]eyePose{{sx: 1.2, sy: 1.25, dx: 0.1, rot: -16, turn: true}, {sx: 1.2, sy: 1.25, dx: -0.1, rot: 16, turn: true}}, tint: tintRose, heat: 0.6},
+	ExpressionShy:       {name: "shy", eye: [2]eyePose{{sx: 0.85, sy: 0.5, dx: 0.14, dy: 0.26}, {sx: 0.85, sy: 0.5, dx: -0.14, dy: 0.26}}, tint: tintBlush, heat: 0.55},
+	ExpressionSick:      {name: "sick", eye: [2]eyePose{{sx: 2, sy: 0.3, dy: -0.04, rot: -20, turn: true}, {sx: 1.5, sy: 0.3, dy: 0.22, rot: 20, turn: true}}, tint: tintBile, heat: 0.6},
 }
 
 func (e Expression) pose() pose {
