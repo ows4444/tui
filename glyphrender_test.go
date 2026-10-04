@@ -11,6 +11,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
+	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/clockview"
 	"github.com/ows4444/tui/colorpicker"
@@ -175,6 +176,7 @@ func everyWidget(t *testing.T, th theme.Theme) []rendered {
 	addAll(model("accordion", acc))
 	addAll(model("appshell", themed(appshell.New("App", 40, 6), th)))
 	addAll(model("autocomplete", themed(autocomplete.New("alpha", "beta"), th)))
+	addAll(model("avatar", themed(avatar.New("alain"), th)))
 	addAll(model("clipboard", themed(clipboard.New("text", "label"), th)))
 	addAll(model("clock", themed(clockview.New(clockview.ModeClock), th)))
 	addAll(model("colorpicker", themed(colorpicker.New(ansi.Red, ansi.Green), th)))

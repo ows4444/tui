@@ -635,6 +635,48 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/avatar (package avatar)
+
+const (
+	BackgroundNone	Background	= iota
+	BackgroundSquircle
+	BackgroundCircle
+	BackgroundSquare
+)
+const (
+	DefaultWidth	= 8
+	DefaultHeight	= 4
+)
+func (m *Model) Blink() tui.Cmd
+func (m *Model) LookAt(dx, dy int)
+func (m Model) Blinking() bool
+func (m Model) Colors() (body, eyes, background ansi.RGB)
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SVG() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Shape() string
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func New(name string) Model
+type Background int
+type Model struct {
+	Name	string
+
+	Width, Height	int
+
+	Background	Background
+
+	Raw	bool
+
+	LookX, LookY	float64
+
+	Motion	motion.Preference
+
+	Theme	theme.Theme
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 
 const (

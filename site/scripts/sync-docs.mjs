@@ -268,7 +268,7 @@ const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
 // Categories for the Examples page, most visual first. An example in none of
 // them is listed under "More", so a new example still appears.
 const EXAMPLE_CATEGORIES = [
-	{ id: 'showcase', title: 'Showcase', blurb: 'Full screens that show what a tui program can look like.', names: ['dashboard', 'canvas', 'chat', 'welcomescreen', 'splashscreen', 'probe', 'faces'] },
+	{ id: 'showcase', title: 'Showcase', blurb: 'Full screens that show what a tui program can look like.', names: ['dashboard', 'canvas', 'chat', 'welcomescreen', 'splashscreen', 'probe', 'faces', 'avatar'] },
 	{ id: 'forms', title: 'Forms and input', blurb: 'Text fields, sign-in and multi-step flows, focus and the cursor.', names: ['loginflow', 'setupflow', 'login', 'signup', 'form', 'focus', 'cursorfield'] },
 	{ id: 'lists', title: 'Lists, tables and navigation', blurb: 'Selection, tabs, scrolling and switching screens.', names: ['inspector', 'table', 'list', 'settings', 'router', 'pager'] },
 	{ id: 'layout', title: 'Layout and rendering', blurb: 'Composing string and cell children, and the smallest program.', names: ['mixedscreen', 'counter'] },

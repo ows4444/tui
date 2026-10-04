@@ -68,7 +68,8 @@ animate or which parts of a View are decoration. Your app reads it and passes
 it on:
 
 - The animated widgets (`spinner`, `skeleton`, `loadingbar`, `faces`,
-  `streamtext`, `textinput`, `textarea`, `drawer`) have a `Motion` field of
+  `avatar`, `streamtext`, `textinput`, `textarea`, `drawer`) have a `Motion`
+  field of
   type `motion.Preference`. Its zero value is `motion.Normal`, so the
   environment alone doesn't change them. Set it to `motion.Reduced` and the
   widget is at its final frame as soon as it starts, and schedules no tick

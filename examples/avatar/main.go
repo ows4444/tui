@@ -1,0 +1,249 @@
+// Command avatar is a gallery for the avatar package: a wall of names, each
+// drawn as its avatar, at a size you can change. Every avatar watches the
+// mouse pointer, and the selected one blinks whenever a key is pressed.
+//
+//	mouse       the avatars look at the pointer
+//	space       blink (so does every other key)
+//	←/→ or h/l  previous / next name
+//	+/- or ↑/↓  larger / smaller avatars
+//	b           cycle the background: none, squircle, circle, square
+//	a           ASCII glyphs on / off
+//	q, esc      quit
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/avatar"
+	"github.com/ows4444/tui/theme"
+)
+
+// names is the wall. Any string draws an avatar; these are ordinary handles.
+var names = []string{
+	"ada", "linus", "grace", "ken", "margaret", "dennis", "barbara", "alan",
+	"hedy", "edsger", "radia", "donald", "frances", "bjarne", "katherine", "guido",
+	"sophie", "tim", "annie", "rob", "joan", "brian", "karen", "niklaus",
+	"evelyn", "john", "jean", "claude", "mary", "vint", "lynn", "whitfield",
+	"shafi", "leslie", "adele", "butler", "anita", "andrew", "carol", "martin",
+}
+
+// sizes are the avatar sizes, in cells, that + and - step through. A cell is
+// about twice as tall as it is wide, so each is square on screen.
+var sizes = [][2]int{{4, 2}, {6, 3}, {8, 4}, {12, 6}, {16, 8}, {24, 12}}
+
+var backgrounds = []struct {
+	bg   avatar.Background
+	name string
+}{
+	{avatar.BackgroundNone, "none"},
+	{avatar.BackgroundSquircle, "squircle"},
+	{avatar.BackgroundCircle, "circle"},
+	{avatar.BackgroundSquare, "square"},
+}
+
+const (
+	tileGap    = 2 // columns between tiles
+	minTile    = 9 // a tile is at least this wide, so a name fits under it
+	chromeRows = 4 // title, blank, status, help
+	defaultW   = 80
+	defaultH   = 24
+)
+
+type model struct {
+	selected      int
+	size          int // index into sizes
+	bg            int // index into backgrounds
+	ascii         bool
+	width, height int
+	// wall holds one avatar per name, built once, so each keeps its cached
+	// View from frame to frame.
+	wall []avatar.Model
+	// sel is the selected avatar; it holds the blink being played.
+	sel avatar.Model
+	// mouseX and mouseY are the pointer's cell, once it has moved.
+	mouseX, mouseY int
+	mouse          bool
+}
+
+func initialModel() model {
+	m := model{size: 2, sel: avatar.New(names[0]), wall: make([]avatar.Model, len(names))}
+	for i, name := range names {
+		m.wall[i] = avatar.New(name)
+	}
+	return m
+}
+
+func (m model) Init() tui.Cmd { return nil }
+
+func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
+	switch msg := msg.(type) {
+	case tui.ResizeMsg:
+		m.width, m.height = msg.Width, msg.Height
+	case tui.MouseEvent:
+		m.mouseX, m.mouseY, m.mouse = msg.X, msg.Y, true
+	case tui.Key:
+		switch msg.Type {
+		case tui.KeyCtrlC, tui.KeyEsc:
+			return m, tui.Quit()
+		case tui.KeyLeft:
+			m.move(-1)
+		case tui.KeyRight:
+			m.move(1)
+		case tui.KeyUp:
+			m.resize(1)
+		case tui.KeyDown:
+			m.resize(-1)
+		case tui.KeyRunes:
+			switch msg.Text {
+			case "q":
+				return m, tui.Quit()
+			case "h":
+				m.move(-1)
+			case "l":
+				m.move(1)
+			case "+", "=":
+				m.resize(1)
+			case "-":
+				m.resize(-1)
+			case "b":
+				m.bg = (m.bg + 1) % len(backgrounds)
+			case "a":
+				m.ascii = !m.ascii
+			}
+		}
+		// Whatever the key did, the selected avatar blinks at it.
+		m.sel.Name = names[m.selected]
+		return m, m.sel.Blink()
+	}
+	var cmd tui.Cmd
+	m.sel, cmd = m.sel.Update(msg)
+	return m, cmd
+}
+
+func (m *model) move(d int) { m.selected = (m.selected + d + len(names)) % len(names) }
+
+func (m *model) resize(d int) { m.size = min(max(m.size+d, 0), len(sizes)-1) }
+
+func (m model) theme() theme.Theme {
+	if m.ascii {
+		return theme.DarkTheme().ASCII()
+	}
+	return theme.DarkTheme()
+}
+
+// avatar returns the avatar for names[i], whose tile's top-left cell is at
+// (x, y), looking at the pointer.
+func (m model) avatar(i, x, y int) avatar.Model {
+	a := m.wall[i]
+	if i == m.selected {
+		a = m.sel
+		a.Name = names[i]
+	}
+	a = a.SetTheme(m.theme())
+	a.Width, a.Height = sizes[m.size][0], sizes[m.size][1]
+	a.Background = backgrounds[m.bg].bg
+	if m.mouse {
+		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
+	}
+	return a
+}
+
+// grid returns how many tiles fit across and down, and a tile's width. At
+// least one tile is always drawn, clipped by the terminal if it must be.
+func (m model) grid() (cols, rows, tileW int) {
+	w, h := m.width, m.height
+	if w <= 0 || h <= 0 {
+		w, h = defaultW, defaultH
+	}
+	tileW = max(sizes[m.size][0], minTile)
+	cols = max((w+tileGap)/(tileW+tileGap), 1)
+	tileH := sizes[m.size][1] + 2 // the name, and a blank row below it
+	rows = max((h-chromeRows)/tileH, 1)
+	return cols, rows, tileW
+}
+
+var (
+	titleStyle    = ansi.NewStyle().Bold().Foreground(ansi.BrightCyan)
+	selectedStyle = ansi.NewStyle().Bold().Reverse()
+	faintStyle    = ansi.NewStyle().Faint()
+)
+
+// centre pads s, which is w cells wide, to width cells.
+func centre(s string, w, width int) string {
+	left := max((width-w)/2, 0)
+	return strings.Repeat(" ", left) + s + strings.Repeat(" ", max(width-w-left, 0))
+}
+
+func hex(c ansi.RGB) string { return fmt.Sprintf("#%02x%02x%02x", c.R, c.G, c.B) }
+
+func (m model) View() string {
+	w := m.width
+	if w <= 0 {
+		w = defaultW
+	}
+	cols, rows, tileW := m.grid()
+	perPage := cols * rows
+	first := m.selected / perPage * perPage
+	aw, ah := sizes[m.size][0], sizes[m.size][1]
+
+	var b strings.Builder
+	b.WriteString(titleStyle.Render(ansi.Truncate("Avatars: every name draws its own", w)))
+	b.WriteString("\n\n")
+	for r := 0; r < rows; r++ {
+		lines := make([]strings.Builder, ah+1)
+		for c := 0; c < cols; c++ {
+			i := first + r*cols + c
+			if i >= len(names) {
+				break
+			}
+			gap := ""
+			if c > 0 {
+				gap = strings.Repeat(" ", tileGap)
+			}
+			// The wall starts on row 2; a tile's avatar is centred in it.
+			x0 := c*(tileW+tileGap) + max((tileW-aw)/2, 0)
+			y0 := 2 + r*(ah+2)
+			for y, row := range strings.Split(m.avatar(i, x0, y0).View(), "\n") {
+				lines[y].WriteString(gap + centre(row, aw, tileW))
+			}
+			label := ansi.Truncate(names[i], tileW)
+			lw := ansi.Width(label)
+			if i == m.selected {
+				label = selectedStyle.Render(label)
+			}
+			lines[ah].WriteString(gap + centre(label, lw, tileW))
+		}
+		if lines[0].Len() == 0 {
+			break
+		}
+		for i := range lines {
+			b.WriteString(ansi.Truncate(lines[i].String(), w))
+			b.WriteByte('\n')
+		}
+		b.WriteByte('\n')
+	}
+
+	sel := m.avatar(m.selected, 0, 0)
+	body, eyes, _ := sel.Colors()
+	glyphs := "blocks"
+	if m.ascii {
+		glyphs = "ascii"
+	}
+	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s]",
+		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs)
+	b.WriteString(ansi.Truncate(status, w))
+	b.WriteByte('\n')
+	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b background  a ascii  space blink  q quit", w)))
+	return b.String()
+}
+
+func main() {
+	if _, err := tui.NewProgram(initialModel(), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+}

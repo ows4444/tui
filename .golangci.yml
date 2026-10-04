@@ -22,6 +22,7 @@ linters:
             - "!**/ansi/**"
             - "!**/appshell/**"
             - "!**/autocomplete/**"
+            - "!**/avatar/**"
             - "!**/cellbuf/**"
             - "!**/clipboard/**"
             - "!**/clockview/**"
@@ -109,6 +110,7 @@ linters:
           list-mode: strict
           files:
             - "**/accordion/*.go"
+            - "**/avatar/*.go"
             - "**/clipboard/*.go"
             - "**/clockview/*.go"
             - "**/confirm/*.go"

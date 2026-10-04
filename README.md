@@ -182,6 +182,7 @@ every widget implements `Linearize` for accessible mode; tests in
 | `faces` | 50 animated Braille characters and a widget that plays them | Experimental |
 | `imageview` | PNG through the kitty graphics protocol or Sixel, with a text placeholder otherwise | Experimental |
 | `clipboard` | A "copy to clipboard" button that writes OSC 52 | Experimental |
+| `avatar` | A deterministic avatar drawn from a name | Experimental |
 
 Packages under `internal/` are not public API.
 

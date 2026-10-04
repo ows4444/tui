@@ -59,7 +59,7 @@
 // in their own package comment. The README lists every package by level.
 //
 // Experimental: appshell, streamtext, toolapproval, notificationcenter,
-// commandpalette, errorretry, faces, imageview, clipboard.
+// commandpalette, errorretry, faces, imageview, clipboard, avatar.
 //
 // Terminals other than the local one (an SSH session, a test) plug in through
 // the Terminal and Clock ports (WithTerminal, WithClock), plus ResizeNotifier

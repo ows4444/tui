@@ -1,0 +1,198 @@
+package main
+
+import (
+	"context"
+	"strings"
+	"testing"
+
+	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/ansi"
+)
+
+func send(m model, msgs ...tui.Msg) (model, tui.Cmd) {
+	var cmd tui.Cmd
+	for _, msg := range msgs {
+		var next tui.Model
+		next, cmd = m.Update(msg)
+		m = next.(model)
+	}
+	return m, cmd
+}
+
+func key(s string) tui.Key { return tui.Key{Type: tui.KeyRunes, Text: s} }
+
+func isQuit(cmd tui.Cmd) bool {
+	if cmd == nil {
+		return false
+	}
+	_, ok := cmd().(tui.QuitMsg)
+	return ok
+}
+
+func status(m model) string {
+	lines := strings.Split(ansi.StripANSI(m.View()), "\n")
+	return lines[len(lines)-2]
+}
+
+func TestArrowsAndLettersMoveTheSelection(t *testing.T) {
+	m := initialModel()
+	if m.Init() != nil {
+		t.Error("Init returned a Cmd")
+	}
+	m, _ = send(m, tui.Key{Type: tui.KeyRight}, key("l"))
+	if !strings.HasPrefix(status(m), names[2]+":") {
+		t.Errorf("after two steps right: %s", status(m))
+	}
+	m, _ = send(m, tui.Key{Type: tui.KeyLeft}, key("h"), key("h"))
+	if !strings.HasPrefix(status(m), names[len(names)-1]+":") {
+		t.Errorf("stepping left of the first name should wrap: %s", status(m))
+	}
+}
+
+func TestSizeKeysStepAndStopAtTheEnds(t *testing.T) {
+	m := initialModel()
+	for range len(sizes) + 2 {
+		m, _ = send(m, key("+"))
+	}
+	if !strings.Contains(status(m), "[24x12,") {
+		t.Errorf("largest size: %s", status(m))
+	}
+	m, _ = send(m, key("-"), tui.Key{Type: tui.KeyDown})
+	if !strings.Contains(status(m), "[12x6,") {
+		t.Errorf("two steps down: %s", status(m))
+	}
+	for range len(sizes) + 2 {
+		m, _ = send(m, key("-"))
+	}
+	m, _ = send(m, tui.Key{Type: tui.KeyUp}, key("="))
+	if !strings.Contains(status(m), "[8x4,") {
+		t.Errorf("two steps up from the smallest: %s", status(m))
+	}
+}
+
+func TestBackgroundAndGlyphKeys(t *testing.T) {
+	m := initialModel()
+	for _, want := range []string{"squircle", "circle", "square", "none"} {
+		m, _ = send(m, key("b"))
+		if !strings.Contains(status(m), ", "+want+", blocks]") {
+			t.Errorf("after b: %s, want %s", status(m), want)
+		}
+	}
+	m, _ = send(m, key("a"))
+	if !strings.Contains(status(m), ", ascii]") {
+		t.Errorf("after a: %s", status(m))
+	}
+	// The help line names keys with arrows; the wall above it must be ASCII.
+	lines := strings.Split(ansi.StripANSI(m.View()), "\n")
+	for _, l := range lines[:len(lines)-1] {
+		for _, r := range l {
+			if r > 127 {
+				t.Fatalf("non-ASCII rune %q in the ASCII wall: %s", r, l)
+			}
+		}
+	}
+	m, _ = send(m, key("a"))
+	if !strings.Contains(status(m), ", blocks]") {
+		t.Errorf("a did not toggle back: %s", status(m))
+	}
+}
+
+func TestQuitKeys(t *testing.T) {
+	for name, k := range map[string]tui.Key{"q": key("q"), "esc": {Type: tui.KeyEsc}, "ctrl+c": {Type: tui.KeyCtrlC}} {
+		if _, cmd := send(initialModel(), k); !isQuit(cmd) {
+			t.Errorf("%s did not quit", name)
+		}
+	}
+	if _, cmd := send(initialModel(), key("x")); cmd == nil || isQuit(cmd) {
+		t.Error("an unbound key should blink, not quit")
+	}
+}
+
+// The wall shows the page that holds the selection, and marks only that name.
+func TestWallPagesWithTheSelection(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 40, Height: 10})
+	cols, rows, _ := m.grid()
+	if cols != 3 || rows != 1 {
+		t.Fatalf("40x10 grid is %dx%d", cols, rows)
+	}
+	view := ansi.StripANSI(m.View())
+	if !strings.Contains(view, names[0]) || strings.Contains(view, names[3]) {
+		t.Errorf("first page should hold the first three names:\n%s", view)
+	}
+	m, _ = send(m, key("l"), key("l"), key("l"))
+	view = ansi.StripANSI(m.View())
+	if strings.Contains(view, " "+names[0]+" ") || !strings.Contains(view, names[3]) {
+		t.Errorf("after three steps the second page should show:\n%s", view)
+	}
+	if n := strings.Count(m.View(), selectedStyle.Render(names[3])); n != 1 {
+		t.Errorf("the selected name is marked %d times", n)
+	}
+	// The last page is short; the wall stops at the last name.
+	m.selected = len(names) - 1
+	if view = ansi.StripANSI(m.View()); !strings.Contains(view, names[len(names)-1]) {
+		t.Errorf("last page:\n%s", view)
+	}
+}
+
+// A terminal too small for one tile still draws one, clipped to its width.
+func TestTinyTerminalStillDrawsOneTile(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 5, Height: 3})
+	if cols, rows, _ := m.grid(); cols != 1 || rows != 1 {
+		t.Fatalf("grid is %dx%d", cols, rows)
+	}
+	for _, l := range strings.Split(m.View(), "\n") {
+		if w := ansi.Width(l); w > 5 {
+			t.Errorf("line is %d wide: %q", w, l)
+		}
+	}
+}
+
+// Every key press blinks the selected avatar: the Cmd it returns is the
+// blink's tick, and feeding the ticks back plays it to rest.
+func TestAKeyPressBlinksTheSelectedAvatar(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24})
+	rest := m.View()
+	m, cmd := send(m, key(" "))
+	if cmd == nil || !m.sel.Blinking() {
+		t.Fatal("space did not start a blink")
+	}
+	if m.View() == rest {
+		t.Error("the wall did not change when the blink started")
+	}
+	for steps := 0; cmd != nil; steps++ {
+		if steps > 10 {
+			t.Fatal("the blink does not end")
+		}
+		m, cmd = send(m, tui.RunCmd(context.Background(), cmd))
+	}
+	if m.sel.Blinking() || m.View() != rest {
+		t.Error("the wall did not return to rest after the blink")
+	}
+	// Moving the selection blinks the newly selected avatar, by name.
+	m, cmd = send(m, key("l"))
+	if cmd == nil || m.sel.Name != names[1] {
+		t.Errorf("after moving, the blinking avatar is %q", m.sel.Name)
+	}
+}
+
+// The avatars look at the pointer: moving it from one side of the wall to
+// the other redraws them, and before it moves they are at rest.
+func TestAvatarsLookAtThePointer(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24})
+	rest := m.View()
+	left, cmd := send(m, tui.MouseEvent{X: 0, Y: 4, Action: tui.MouseActionMotion})
+	if cmd != nil {
+		t.Error("a mouse move returned a Cmd")
+	}
+	right, _ := send(m, tui.MouseEvent{X: 79, Y: 4, Action: tui.MouseActionMotion})
+	if left.View() == rest || right.View() == rest || left.View() == right.View() {
+		t.Error("the wall does not follow the pointer")
+	}
+	for _, v := range []model{left, right} {
+		for _, l := range strings.Split(v.View(), "\n") {
+			if w := ansi.Width(l); w > 80 {
+				t.Errorf("a line is %d wide while looking", w)
+			}
+		}
+	}
+}
