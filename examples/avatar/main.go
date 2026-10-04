@@ -8,6 +8,7 @@
 //	+/- or ↑/↓  larger / smaller avatars
 //	b           cycle the background: none, squircle, circle, square
 //	e           cycle the expression: none, happy, sad, mad, ...
+//	i           idle on / off: every avatar breathes, blinks and glances
 //	a           ASCII glyphs on / off
 //	q, esc      quit
 package main
@@ -62,17 +63,16 @@ type model struct {
 	expression    avatar.Expression
 	width, height int
 	// wall holds one avatar per name, built once, so each keeps its cached
-	// View from frame to frame.
+	// View and its own animation from frame to frame.
 	wall []avatar.Model
-	// sel is the selected avatar; it holds the blink being played.
-	sel avatar.Model
+	idle bool
 	// mouseX and mouseY are the pointer's cell, once it has moved.
 	mouseX, mouseY int
 	mouse          bool
 }
 
 func initialModel() model {
-	m := model{size: 2, sel: avatar.New(names[0]), wall: make([]avatar.Model, len(names))}
+	m := model{size: 2, wall: make([]avatar.Model, len(names))}
 	for i, name := range names {
 		m.wall[i] = avatar.New(name)
 	}
@@ -117,15 +117,40 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				m.ascii = !m.ascii
 			case "e":
 				m.expression = (m.expression + 1) % (avatar.ExpressionThinking + 1)
+			case "i":
+				return m, m.toggleIdle()
 			}
 		}
 		// Whatever the key did, the selected avatar blinks at it.
-		m.sel.Name = names[m.selected]
-		return m, m.sel.Blink()
+		return m, m.wall[m.selected].Blink()
 	}
-	var cmd tui.Cmd
-	m.sel, cmd = m.sel.Update(msg)
-	return m, cmd
+	// Every avatar sees every other Msg; a tick moves only the one that
+	// scheduled it.
+	var cmds []tui.Cmd
+	for i := range m.wall {
+		var cmd tui.Cmd
+		if m.wall[i], cmd = m.wall[i].Update(msg); cmd != nil {
+			cmds = append(cmds, cmd)
+		}
+	}
+	if len(cmds) == 1 {
+		return m, cmds[0] // the usual case: one avatar's next tick
+	}
+	return m, tui.Batch(cmds...)
+}
+
+// toggleIdle starts or stops the idle loop of every avatar on the wall.
+func (m *model) toggleIdle() tui.Cmd {
+	m.idle = !m.idle
+	var cmds []tui.Cmd
+	for i := range m.wall {
+		if m.idle {
+			cmds = append(cmds, m.wall[i].StartIdle())
+		} else {
+			m.wall[i].StopIdle()
+		}
+	}
+	return tui.Batch(cmds...)
 }
 
 func (m *model) move(d int) { m.selected = (m.selected + d + len(names)) % len(names) }
@@ -142,12 +167,7 @@ func (m model) theme() theme.Theme {
 // avatar returns the avatar for names[i], whose tile's top-left cell is at
 // (x, y), looking at the pointer.
 func (m model) avatar(i, x, y int) avatar.Model {
-	a := m.wall[i]
-	if i == m.selected {
-		a = m.sel
-		a.Name = names[i]
-	}
-	a = a.SetTheme(m.theme())
+	a := m.wall[i].SetTheme(m.theme())
 	a.Width, a.Height = sizes[m.size][0], sizes[m.size][1]
 	a.Background = backgrounds[m.bg].bg
 	a.Expression = m.expression
@@ -242,7 +262,7 @@ func (m model) View() string {
 		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression)
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
-	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b background  e expression  a ascii  space blink  q quit", w)))
+	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b background  e expression  i idle  a ascii  space blink  q quit", w)))
 	return b.String()
 }
 

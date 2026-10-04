@@ -58,6 +58,9 @@ type scene struct {
 	petals []circle
 	eyes   [2]region
 	eyeAt  [2]point
+	// zoom draws the body this many times its size at rest; 0 is 1. It is
+	// how the idle loop breathes, and has no effect over a plate.
+	zoom float64
 }
 
 func (s scene) inBody(x, y float64) bool {
@@ -117,7 +120,11 @@ func (s scene) bounds() (cx, cy, side float64) {
 		minX, maxX = math.Min(minX, c.cx-c.r), math.Max(maxX, c.cx+c.r)
 		minY, maxY = math.Min(minY, c.cy-c.r), math.Max(maxY, c.cy+c.r)
 	}
-	return (minX + maxX) / 2, (minY + maxY) / 2, math.Max(maxX-minX, maxY-minY) * bodyAir
+	side = math.Max(maxX-minX, maxY-minY) * bodyAir
+	if s.zoom > 0 {
+		side /= s.zoom
+	}
+	return (minX + maxX) / 2, (minY + maxY) / 2, side
 }
 
 // bodyAir is the side of the drawn square as a multiple of the body's larger

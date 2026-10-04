@@ -8,7 +8,8 @@
 // against the reference vectors in testdata.
 //
 // The figure can react. Expression sets a pose the eyes hold, Blink closes
-// and reopens them once, driven by Update, and LookAt turns them toward a
+// and reopens them once, StartIdle keeps the avatar breathing, blinking and
+// glancing aside, both driven by Update, and LookAt turns the eyes toward a
 // target such as the mouse pointer.
 //
 // A name is trimmed and lowercased before it is hashed, so "Alain" and
@@ -70,14 +71,18 @@ type Model struct {
 	// resting gaze. LookAt sets both from where a target is.
 	LookX, LookY float64
 	// Motion is the reduced-motion preference. The zero value is
-	// motion.Normal. With motion.Reduced, Blink plays nothing.
+	// motion.Normal. With motion.Reduced, Blink and StartIdle play nothing.
 	Motion motion.Preference
 	// Theme supplies the glyph set: under an ASCII one the avatar is drawn
 	// with its Shades. The colours come from Name, not from the theme.
 	Theme theme.Theme
 
-	blink int // frame of the blink being played; 0 is at rest
-	gen   int // bumped by Blink so a tick from an earlier blink is ignored
+	blink  int  // frame of the blink being played; 0 is at rest
+	idling bool // the idle loop is running
+	beat   int  // beats of the idle loop played so far
+	// owner is the token of the animation in progress; its ticks carry it,
+	// and a tick with another token is ignored.
+	owner *int
 	// cache holds the last View; nil on a struct literal.
 	cache *viewCache
 }
@@ -101,6 +106,7 @@ type viewKey struct {
 	width, height int
 	bg            Background
 	lookX, lookY  float64
+	zoom          float64
 	expression    Expression
 	blink         int
 	ascii         bool
@@ -158,7 +164,8 @@ func (m Model) plate() path {
 
 // SVG returns the avatar as SVG markup on a 100 by 100 view box, with no
 // width or height, so the page sizes it. It is the figure at rest:
-// Expression, LookX, LookY and a blink in progress do not change it.
+// Expression, LookX, LookY, a blink in progress and the idle loop do not
+// change it.
 func (m Model) SVG() string {
 	t := m.traits()
 	return svg(layoutFigure(t), m.palette(t), m.plate())
@@ -203,9 +210,11 @@ func (m Model) View() string {
 	if c == nil {
 		return m.draw(glyphs)
 	}
+	lookX, zoom := m.moved()
 	key := viewKey{
 		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
-		lookX: unit(m.LookX), lookY: unit(m.LookY), expression: m.Expression, blink: m.blink,
+		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
+		expression: m.Expression, blink: m.blink,
 		ascii: glyphs.ASCII(), shades: glyphs.Shades,
 	}
 	c.mu.Lock()
@@ -223,9 +232,11 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	}
 	t := m.traits()
 	open := blinkOpen[m.blink%len(blinkOpen)]
+	lookX, zoom := m.moved()
 	f := layoutFigure(t)
 	s := newScene(f, m.plate())
-	s.setEyes(f.posed(m.Expression.pose(), unit(m.LookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
+	s.setEyes(f.posed(m.Expression.pose(), unit(unit(m.LookX)+lookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
+	s.zoom = zoom
 	g := s.rasterize(m.Width, m.Height, open == 1)
 	return g.render(m.palette(t), glyphs)
 }

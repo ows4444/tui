@@ -153,7 +153,7 @@ func TestAKeyPressBlinksTheSelectedAvatar(t *testing.T) {
 	m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24})
 	rest := m.View()
 	m, cmd := send(m, key(" "))
-	if cmd == nil || !m.sel.Blinking() {
+	if cmd == nil || !m.wall[0].Blinking() {
 		t.Fatal("space did not start a blink")
 	}
 	if m.View() == rest {
@@ -165,13 +165,13 @@ func TestAKeyPressBlinksTheSelectedAvatar(t *testing.T) {
 		}
 		m, cmd = send(m, tui.RunCmd(context.Background(), cmd))
 	}
-	if m.sel.Blinking() || m.View() != rest {
+	if m.wall[0].Blinking() || m.View() != rest {
 		t.Error("the wall did not return to rest after the blink")
 	}
-	// Moving the selection blinks the newly selected avatar, by name.
+	// Moving the selection blinks the newly selected avatar.
 	m, cmd = send(m, key("l"))
-	if cmd == nil || m.sel.Name != names[1] {
-		t.Errorf("after moving, the blinking avatar is %q", m.sel.Name)
+	if cmd == nil || !m.wall[1].Blinking() || m.wall[0].Blinking() {
+		t.Error("after moving, the newly selected avatar is not the one blinking")
 	}
 }
 
@@ -212,5 +212,28 @@ func TestExpressionKeyCyclesThePoses(t *testing.T) {
 			t.Errorf("%s draws a wall already seen", want)
 		}
 		seen[wall] = true
+	}
+}
+
+// i starts every avatar idling and a second i stops them all; the Cmd it
+// returns carries a tick for each.
+func TestIdleKeyTogglesTheWholeWall(t *testing.T) {
+	m, cmd := send(initialModel(), key("i"))
+	if cmd == nil {
+		t.Fatal("i returned no Cmd")
+	}
+	for i, a := range m.wall {
+		if !a.Idling() {
+			t.Fatalf("avatar %d is not idling", i)
+		}
+	}
+	m, cmd = send(m, key("i"))
+	if cmd != nil {
+		t.Error("stopping returned a Cmd")
+	}
+	for i, a := range m.wall {
+		if a.Idling() {
+			t.Fatalf("avatar %d is still idling", i)
+		}
 	}
 }
