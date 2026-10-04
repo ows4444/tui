@@ -1323,7 +1323,9 @@ func (s Size) HeadCells() (w, h int)
 func All() []Face
 func ByName(name string) (Face, bool)
 func Count() int
+func For(name string) Face
 func Get(i int) Face
+func IndexFor(name string) int
 func New() Model
 type Face struct {
 	Name		string

@@ -4,7 +4,8 @@
 // cell head) or Large (10x5 cell head) Size. All frames at one Size are
 // the same block of cells, so swapping faces never moves the layout.
 //
-// The characters are ready-made and picked by index or name. To give any
+// The characters are ready-made and picked by index or name; For and
+// IndexFor pick one for any string, the same one every time. To give any
 // string a picture of its own, with a figure and a colour derived from it,
 // use package avatar.
 //
