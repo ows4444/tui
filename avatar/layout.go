@@ -80,14 +80,31 @@ type eyeSpec struct{ cx, cy, rx, ry, n, rot float64 }
 // face's radius on each axis.
 const gazeTravel = 0.3
 
-// posed returns f with its eyes moved by (lx, ly), each in [-1, 1], and
-// closed to open of their height. The body is unchanged, and the renderer
-// draws an eye only where it is over the body.
-func (f figure) posed(lx, ly, open float64) figure {
+// posed returns f with its eyes in pose p, moved by (lx, ly), each in
+// [-1, 1], closed to open of their height, and enlarged boost times about
+// their centres. The body is unchanged, and the renderer draws an eye only
+// where it is over the body.
+func (f figure) posed(p pose, lx, ly, open, boost float64) figure {
 	dx, dy := lx*gazeTravel*f.face.rx, ly*gazeTravel*f.face.ry
 	for i, e := range f.eye {
-		f.eyeAt[i] = point{e.cx + dx, e.cy + dy}
-		f.eyes[i] = superellipse(e.cx+dx, e.cy+dy, e.rx, e.ry*open, e.n, e.rot)
+		q := p.eye[i]
+		cx, cy := e.cx+dx+q.dx*f.face.rx, e.cy+dy+q.dy*f.face.ry
+		n, rot := e.n, e.rot
+		if p.n > 0 {
+			n = p.n
+		}
+		if q.turn {
+			rot = q.rot
+		}
+		rx, ry := e.rx*q.sx*boost, e.ry*q.sy*open*boost
+		f.eyeAt[i] = point{cx, cy}
+		f.eyes[i] = superellipse(cx, cy, rx, ry, n, rot)
+		if p.dome {
+			// The centre of a dome is on its flat edge; a third of the
+			// way up is inside it.
+			f.eyeAt[i] = point{cx, cy - ry/3}
+			f.eyes[i] = dome(cx, cy+ry/2, rx, ry, rot)
+		}
 	}
 	return f
 }

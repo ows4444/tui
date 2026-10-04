@@ -38,6 +38,7 @@ func TestViewIsCachedUntilAFieldChanges(t *testing.T) {
 		"LookX":      func(m *Model) { m.LookX = 1 },
 		"LookY":      func(m *Model) { m.Width, m.Height, m.LookY = 24, 12, -1 },
 		"blink":      func(m *Model) { m.Blink() },
+		"Expression": func(m *Model) { m.Width, m.Height, m.Expression = 12, 6, ExpressionSurprised },
 		"Theme":      func(m *Model) { m.Theme = theme.DarkTheme().ASCII() },
 	}
 	for field, change := range changes {

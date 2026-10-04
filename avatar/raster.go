@@ -124,12 +124,10 @@ func (s scene) bounds() (cx, cy, side float64) {
 // extent.
 const bodyAir = 1.04
 
-// rasterize samples the figure into a w by h cell grid. The drawn square (see
-// bounds) is fitted, centred, into the cell area, taking a cell as twice as
-// tall as it is wide. With keepEyes, each eye takes the pixel under its centre even
-// when it is too small to win one.
-func rasterize(f figure, plate path, w, h int, keepEyes bool) grid {
-	s := scene{petals: f.petals, eyeAt: f.eyeAt}
+// newScene prepares f's body, and the plate if there is one, for sampling.
+// The eyes are set afterwards, by setEyes, once their pose is known.
+func newScene(f figure, plate path) scene {
+	s := scene{petals: f.petals}
 	if plate != nil {
 		r := newRegion(plate)
 		s.plate = &r
@@ -138,11 +136,44 @@ func rasterize(f figure, plate path, w, h int, keepEyes bool) grid {
 		s.body = append(s.body, newRegion(e))
 	}
 	s.body = append(s.body, newRegion(f.core))
+	return s
+}
+
+func (s *scene) setEyes(f figure) {
+	s.eyeAt = f.eyeAt
 	for i, e := range f.eyes {
 		s.eyes[i] = newRegion(e)
 	}
+}
 
-	// Physical units are cell widths: a pixel is half a unit wide, one tall.
+// pixelWidth is the width, in frame units, of one pixel of a w by h cell
+// grid. Physical units are cell widths: a pixel is half a unit wide and one
+// tall.
+func (s scene) pixelWidth(w, h int) float64 {
+	_, _, side := s.bounds()
+	return side / math.Min(float64(w), float64(2*h)) / 2
+}
+
+// Eyes narrower than legibleEye pixels are enlarged to that width, up to
+// maxBoost times: in a few cells a true-size eye is less than a pixel, and
+// every expression would collapse into the same dot.
+const (
+	legibleEye = 3.0
+	maxBoost   = 2.4
+)
+
+// eyeBoost is how much to enlarge f's eyes so they stay legible in a w by h
+// cell grid; 1 when they already are.
+func (s scene) eyeBoost(f figure, w, h int) float64 {
+	width := f.eye[0].rx + f.eye[1].rx // the mean of the two eyes' widths
+	return math.Max(1, math.Min(maxBoost, legibleEye*s.pixelWidth(w, h)/width))
+}
+
+// rasterize samples the scene into a w by h cell grid. The drawn square (see
+// bounds) is fitted, centred, into the cell area, taking a cell as twice as
+// tall as it is wide. With keepEyes, each eye takes the pixel under its centre even
+// when it is too small to win one.
+func (s scene) rasterize(w, h int, keepEyes bool) grid {
 	pw, ph := float64(w), float64(2*h)
 	bx, by, bside := s.bounds()
 	unit := bside / math.Min(pw, ph)

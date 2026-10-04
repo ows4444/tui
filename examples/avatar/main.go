@@ -7,6 +7,7 @@
 //	←/→ or h/l  previous / next name
 //	+/- or ↑/↓  larger / smaller avatars
 //	b           cycle the background: none, squircle, circle, square
+//	e           cycle the expression: none, happy, sad, mad, ...
 //	a           ASCII glyphs on / off
 //	q, esc      quit
 package main
@@ -58,6 +59,7 @@ type model struct {
 	size          int // index into sizes
 	bg            int // index into backgrounds
 	ascii         bool
+	expression    avatar.Expression
 	width, height int
 	// wall holds one avatar per name, built once, so each keeps its cached
 	// View from frame to frame.
@@ -113,6 +115,8 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				m.bg = (m.bg + 1) % len(backgrounds)
 			case "a":
 				m.ascii = !m.ascii
+			case "e":
+				m.expression = (m.expression + 1) % (avatar.ExpressionThinking + 1)
 			}
 		}
 		// Whatever the key did, the selected avatar blinks at it.
@@ -146,6 +150,7 @@ func (m model) avatar(i, x, y int) avatar.Model {
 	a = a.SetTheme(m.theme())
 	a.Width, a.Height = sizes[m.size][0], sizes[m.size][1]
 	a.Background = backgrounds[m.bg].bg
+	a.Expression = m.expression
 	if m.mouse {
 		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
 	}
@@ -233,11 +238,11 @@ func (m model) View() string {
 	if m.ascii {
 		glyphs = "ascii"
 	}
-	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s]",
-		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs)
+	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s, %s]",
+		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression)
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
-	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b background  a ascii  space blink  q quit", w)))
+	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b background  e expression  a ascii  space blink  q quit", w)))
 	return b.String()
 }
 

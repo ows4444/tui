@@ -74,12 +74,12 @@ func TestBackgroundAndGlyphKeys(t *testing.T) {
 	m := initialModel()
 	for _, want := range []string{"squircle", "circle", "square", "none"} {
 		m, _ = send(m, key("b"))
-		if !strings.Contains(status(m), ", "+want+", blocks]") {
+		if !strings.Contains(status(m), ", "+want+", blocks, none]") {
 			t.Errorf("after b: %s, want %s", status(m), want)
 		}
 	}
 	m, _ = send(m, key("a"))
-	if !strings.Contains(status(m), ", ascii]") {
+	if !strings.Contains(status(m), ", ascii, none]") {
 		t.Errorf("after a: %s", status(m))
 	}
 	// The help line names keys with arrows; the wall above it must be ASCII.
@@ -92,7 +92,7 @@ func TestBackgroundAndGlyphKeys(t *testing.T) {
 		}
 	}
 	m, _ = send(m, key("a"))
-	if !strings.Contains(status(m), ", blocks]") {
+	if !strings.Contains(status(m), ", blocks, none]") {
 		t.Errorf("a did not toggle back: %s", status(m))
 	}
 }
@@ -194,5 +194,23 @@ func TestAvatarsLookAtThePointer(t *testing.T) {
 				t.Errorf("a line is %d wide while looking", w)
 			}
 		}
+	}
+}
+
+// e steps through every expression and back to none, and each one redraws
+// the wall.
+func TestExpressionKeyCyclesThePoses(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 120, Height: 40}, key("+"))
+	seen := map[string]bool{}
+	for _, want := range []string{"happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking", "none"} {
+		m, _ = send(m, key("e"))
+		if !strings.HasSuffix(status(m), ", "+want+"]") {
+			t.Errorf("after e: %s, want %s", status(m), want)
+		}
+		wall := m.View()
+		if seen[wall] {
+			t.Errorf("%s draws a wall already seen", want)
+		}
+		seen[wall] = true
 	}
 }

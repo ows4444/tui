@@ -147,6 +147,30 @@ func superellipse(cx, cy, rx, ry, n, rot float64) path {
 	return p
 }
 
+// dome is the upper half of an ellipse with its flat side down, turned rot
+// degrees clockwise: the shape of an eye closed in a smile.
+func dome(cx, cy, rx, ry, rot float64) path {
+	k := (8*math.Pow(2, -0.5) - 4) / 3
+	ak, bk := rx*k, ry*k
+	pts := [7]point{{-rx, 0}, {-rx, -bk}, {-ak, -ry}, {0, -ry}, {ak, -ry}, {rx, -bk}, {rx, 0}}
+	sin, cos := math.Sin(rad(rot)), math.Cos(rad(rot))
+	at := func(i int) (float64, float64) {
+		q := pts[i]
+		return cx + q.x*cos - q.y*sin, cy + q.x*sin + q.y*cos
+	}
+	var p path
+	x, y := at(0)
+	p.add('M', x, y)
+	for i := 1; i < 7; i += 3 {
+		x1, y1 := at(i)
+		x2, y2 := at(i + 1)
+		x3, y3 := at(i + 2)
+		p.add('C', x1, y1, x2, y2, x3, y3)
+	}
+	p.add('Z')
+	return p
+}
+
 // splinePath is an organic closed curve: radii, as multiples of the base
 // radius, sampled around a circle and joined by a closed Catmull-Rom spline.
 // The spline passes through every point, so the radii mean what they say.

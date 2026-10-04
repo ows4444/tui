@@ -19,6 +19,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   `Model.Blink` plays one blink, driven by `Model.Update`, and
   `Model.LookAt` turns the eyes toward a target such as the mouse pointer.
   A Model from `New` caches its `View` until a field it depends on changes.
+  `Model.Expression` sets a pose the eyes hold: happy, sad, mad, surprised,
+  wink, sleepy or thinking.
 - `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52
   sequence to its own output and keeps the text. `tui.PasteCopied()` delivers
   that text to `Update` as a `PasteEvent`.

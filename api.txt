@@ -647,6 +647,24 @@ const (
 	DefaultWidth	= 8
 	DefaultHeight	= 4
 )
+const (
+	ExpressionNone	Expression	= iota
+
+	ExpressionHappy
+
+	ExpressionSad
+
+	ExpressionMad
+
+	ExpressionSurprised
+
+	ExpressionWink
+
+	ExpressionSleepy
+
+	ExpressionThinking
+)
+func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
 func (m *Model) LookAt(dx, dy int)
 func (m Model) Blinking() bool
@@ -660,6 +678,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
 func New(name string) Model
 type Background int
+type Expression int
 type Model struct {
 	Name	string
 
@@ -668,6 +687,8 @@ type Model struct {
 	Background	Background
 
 	Raw	bool
+
+	Expression	Expression
 
 	LookX, LookY	float64
 
