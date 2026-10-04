@@ -12,8 +12,9 @@
 // mapping from a name to its figure and colours is frozen: the tests pin it
 // against the reference vectors in testdata.
 //
-// Hue, Tone and Silhouette pin the colour or the shape, for an app with a
-// house style, while the name still decides everything else.
+// Hue, Tone and Silhouette pin the colour or the shape, and Pins any single
+// trait such as the size of the eyes, for an app with a house style, while
+// the name still decides everything else.
 //
 // The figure can react. Expression sets a pose the eyes hold (SetExpression
 // eases into it), React pulls a face for a moment and lets it go, Blink closes and reopens the eyes once
@@ -83,6 +84,12 @@ type Model struct {
 	// Silhouette pins the shape. The zero value, SilhouetteAuto, lets the
 	// name choose; the name still sizes and places it.
 	Silhouette Silhouette
+	// Pins fixes individual traits of the figure, each at a position from 0
+	// to 1 across the range a name would choose from; a value outside that
+	// is clamped. A trait not in the map, and every trait when it is nil,
+	// comes from the name. Copies of a Model share the map: assign a new one
+	// to change the pins of one copy.
+	Pins map[Trait]float64
 	// Expression is the pose the eyes hold. The zero value, ExpressionNone,
 	// is the figure at rest. Assigning it changes the pose at once;
 	// SetExpression eases into it.
@@ -140,6 +147,7 @@ type viewKey struct {
 	hue           float64
 	tone          Tone
 	silhouette    Silhouette
+	pins          string
 	lookX, lookY  float64
 	zoom          float64
 	expression    Expression
@@ -232,8 +240,8 @@ func (m Model) plate() path {
 }
 
 // SVG returns the avatar as SVG markup on a 100 by 100 view box, with no
-// width or height, so the page sizes it. Hue, Tone and Silhouette are part
-// of the figure and are drawn. It is the figure at rest:
+// width or height, so the page sizes it. Hue, Tone, Silhouette and Pins are
+// part of the figure and are drawn. It is the figure at rest:
 // Expression, a reaction, LookX, LookY, a blink in progress and the idle
 // loop do not change it.
 func (m Model) SVG() string {
@@ -283,7 +291,7 @@ func (m Model) View() string {
 	lookX, zoom := m.moved()
 	key := viewKey{
 		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
-		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette,
+		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
 		expression: m.shown(), from: m.easing(), tween: m.tween, blink: m.blink,
 		ascii: glyphs.ASCII(), shades: glyphs.Shades,

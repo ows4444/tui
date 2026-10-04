@@ -698,6 +698,27 @@ const (
 	ToneBright
 	ToneInk
 )
+const (
+	TraitBodySize	Trait	= iota
+
+	TraitBodyProportion
+
+	TraitBodySquareness
+
+	TraitEyeSize
+
+	TraitEyeRoundness
+
+	TraitEyeSquareness
+
+	TraitEyeSeparation
+
+	TraitEyeLean
+
+	TraitGazeX
+
+	TraitGazeY
+)
 const MaxPNGSize = 512
 const ReactHold = 1500 * time.Millisecond
 func (e Expression) String() string
@@ -721,6 +742,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
 func (s Silhouette) String() string
 func (t Tone) String() string
+func (t Trait) String() string
 func New(name string) Model
 type Background int
 type Expression int
@@ -739,6 +761,8 @@ type Model struct {
 
 	Silhouette	Silhouette
 
+	Pins	map[Trait]float64
+
 	Expression	Expression
 
 	LookX, LookY	float64
@@ -750,6 +774,7 @@ type Model struct {
 }
 type Silhouette int
 type Tone int
+type Trait int
 
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 

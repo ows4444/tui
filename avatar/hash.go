@@ -139,7 +139,7 @@ func caseIgnorable(r rune) bool {
 type traits struct {
 	state uint32
 	// fixed pins a key to a position in [0, 1) in place of the hash. A
-	// Model's Silhouette and Tone set it; nil pins nothing.
+	// Model's Silhouette, Tone and Pins set it; nil pins nothing.
 	fixed map[string]float64
 }
 

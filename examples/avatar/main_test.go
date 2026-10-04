@@ -75,12 +75,12 @@ func TestBackgroundAndGlyphKeys(t *testing.T) {
 	m := initialModel()
 	for _, want := range []string{"squircle", "circle", "square", "none"} {
 		m, _ = send(m, key("b"))
-		if !strings.Contains(status(m), ", "+want+", blocks, none]") {
+		if !strings.Contains(status(m), ", "+want+", blocks, none, own]") {
 			t.Errorf("after b: %s, want %s", status(m), want)
 		}
 	}
 	m, _ = send(m, key("a"))
-	if !strings.Contains(status(m), ", ascii, none]") {
+	if !strings.Contains(status(m), ", ascii, none, own]") {
 		t.Errorf("after a: %s", status(m))
 	}
 	// The help line names keys with arrows; the wall above it must be ASCII.
@@ -93,7 +93,7 @@ func TestBackgroundAndGlyphKeys(t *testing.T) {
 		}
 	}
 	m, _ = send(m, key("a"))
-	if !strings.Contains(status(m), ", blocks, none]") {
+	if !strings.Contains(status(m), ", blocks, none, own]") {
 		t.Errorf("a did not toggle back: %s", status(m))
 	}
 }
@@ -206,7 +206,7 @@ func TestExpressionKeyCyclesThePoses(t *testing.T) {
 	for _, want := range []string{"happy", "sad", "mad", "surprised", "wink", "sleepy", "thinking",
 		"smug", "unsure", "scared", "love", "shy", "sick", "none"} {
 		m, _ = send(m, key("e"))
-		if !strings.HasSuffix(status(m), ", "+want+"]") {
+		if !strings.HasSuffix(status(m), ", "+want+", own]") {
 			t.Errorf("after e: %s, want %s", status(m), want)
 		}
 		wall := m.View()
@@ -328,5 +328,25 @@ func TestReactKey(t *testing.T) {
 	m, cmd := send(initialModel(), key("r"))
 	if cmd == nil || !m.wall[0].Reacting() {
 		t.Error("r did not make the selected avatar react")
+	}
+}
+
+// p steps through the trait presets, each redrawing the wall, and back to
+// each name's own avatar.
+func TestPinsKeyStepsThroughPresets(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 120, Height: 40}, key("+"), key("+"))
+	seen := map[string]bool{}
+	for _, want := range []string{"big eyes", "wide-set", "square", "own"} {
+		m, _ = send(m, key("p"))
+		if !strings.HasSuffix(status(m), ", "+want+"]") {
+			t.Errorf("after p: %s, want %s", status(m), want)
+		}
+		// Compare the unselected part of the wall: the selected avatar
+		// blinks at every key.
+		wall := strings.Join(strings.Split(m.View(), "\n")[wallTop+sizes[m.size][1]+2:], "\n")
+		if seen[wall] {
+			t.Errorf("%s draws a wall already seen", want)
+		}
+		seen[wall] = true
 	}
 }

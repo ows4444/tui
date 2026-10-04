@@ -14,6 +14,7 @@
 //	c           pin the hue: name's own, 30, 90, 140, 250, 320
 //	t           pin the tone: name's own, pastel, pale, mid, deep, bright, ink
 //	s           pin the silhouette: name's own, round, organic, ...
+//	p           pin traits: none, big eyes, small wide-set eyes, big square bodies
 //	a           ASCII glyphs on / off
 //	q, esc      quit
 package main
@@ -52,6 +53,17 @@ var backgrounds = []struct {
 	{avatar.BackgroundSquare, "square"},
 }
 
+// presets are the trait pins p steps through.
+var presets = []struct {
+	name string
+	pins map[avatar.Trait]float64
+}{
+	{"own", nil},
+	{"big eyes", map[avatar.Trait]float64{avatar.TraitEyeSize: 1, avatar.TraitEyeRoundness: 0}},
+	{"wide-set", map[avatar.Trait]float64{avatar.TraitEyeSize: 0, avatar.TraitEyeSeparation: 1}},
+	{"square", map[avatar.Trait]float64{avatar.TraitBodySize: 1, avatar.TraitBodySquareness: 1}},
+}
+
 // hues are the hues c steps through; 0 is each name's own.
 var hues = []float64{0, 30, 90, 140, 250, 320}
 
@@ -73,6 +85,7 @@ type model struct {
 	hue           int // index into hues
 	tone          avatar.Tone
 	silhouette    avatar.Silhouette
+	preset        int // index into presets
 	width, height int
 	// wall holds one avatar per name, built once, so each keeps its cached
 	// View and its own animation from frame to frame.
@@ -148,6 +161,8 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				m.tone = (m.tone + 1) % (avatar.ToneInk + 1)
 			case "s":
 				m.silhouette = (m.silhouette + 1) % (avatar.SilhouetteTriangle + 1)
+			case "p":
+				m.preset = (m.preset + 1) % len(presets)
 			case "r":
 				return m, m.wall[m.selected].React()
 			case "i":
@@ -218,6 +233,7 @@ func (m model) avatar(i, x, y int) avatar.Model {
 	a.Width, a.Height = sizes[m.size][0], sizes[m.size][1]
 	a.Background = backgrounds[m.bg].bg
 	a.Hue, a.Tone, a.Silhouette = hues[m.hue], m.tone, m.silhouette
+	a.Pins = presets[m.preset].pins
 	if m.mouse {
 		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
 	}
@@ -305,11 +321,11 @@ func (m model) View() string {
 	if m.ascii {
 		glyphs = "ascii"
 	}
-	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s, %s]",
-		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression)
+	status := fmt.Sprintf("%s: %s, body %s, eyes %s  [%dx%d, %s, %s, %s, %s]",
+		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression, presets[m.preset].name)
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
-	b.WriteString(faintStyle.Render(ansi.Truncate("click or r react  ←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  a ascii  q quit", w)))
+	b.WriteString(faintStyle.Render(ansi.Truncate("click or r react  ←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  p pins  a ascii  q quit", w)))
 	return b.String()
 }
 
