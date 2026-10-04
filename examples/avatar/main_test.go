@@ -269,3 +269,63 @@ func TestOverrideKeysPinTheWall(t *testing.T) {
 		t.Errorf("a full round of each key left hue %d, tone %v, silhouette %v", m.hue, m.tone, m.silhouette)
 	}
 }
+
+func click(x, y int) tui.MouseEvent {
+	return tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress}
+}
+
+// A click on an avatar selects it and makes it pull a face; the Cmd releases
+// it. A click between tiles, or outside the wall, does nothing.
+func TestClickingAnAvatarMakesItReact(t *testing.T) {
+	m, _ := send(initialModel(), tui.ResizeMsg{Width: 80, Height: 24})
+	_, _, tileW := m.grid()
+	// The second tile of the second row: name index cols+1.
+	cols, _, _ := m.grid()
+	x, y := (tileW+tileGap)+tileW/2, wallTop+(sizes[m.size][1]+2)+1
+	n, cmd := send(m, click(x, y))
+	want := cols + 1
+	if cmd == nil || n.selected != want || !n.wall[want].Reacting() {
+		t.Fatalf("a click at (%d, %d) selected %d (reacting %v), want %d", x, y, n.selected, n.wall[want].Reacting(), want)
+	}
+	for i, a := range n.wall {
+		if i != want && a.Reacting() {
+			t.Errorf("avatar %d reacted to a click on %d", i, want)
+		}
+	}
+	if !strings.HasPrefix(status(n), names[want]+":") {
+		t.Errorf("the clicked avatar is not the selected one: %s", status(n))
+	}
+	for where, at := range map[string][2]int{
+		"the gap between tiles":  {tileW, wallTop + 1},
+		"the title":              {3, 0},
+		"the row between tiles":  {3, wallTop + sizes[m.size][1] + 1},
+		"right of the last tile": {79, wallTop + 1},
+		"below the wall":         {3, 23},
+	} {
+		if o, cmd := send(m, click(at[0], at[1])); cmd != nil || o.selected != m.selected {
+			t.Errorf("a click on %s did something", where)
+		}
+	}
+	// Other buttons and a release do not react.
+	if _, cmd := send(m, tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonRight, Action: tui.MouseActionPress}); cmd != nil {
+		t.Error("a right click reacted")
+	}
+	if _, cmd := send(m, tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonLeft, Action: tui.MouseActionMotion}); cmd != nil {
+		t.Error("a drag reacted")
+	}
+	// On the last page a click past the last name does nothing.
+	last, _ := send(m, tui.ResizeMsg{Width: 40, Height: 10})
+	last.selected = len(names) - 1
+	c, _, w := last.grid()
+	if o, cmd := send(last, click((c-1)*(w+tileGap)+1, wallTop+1)); cmd != nil || o.selected != len(names)-1 {
+		t.Error("a click on an empty tile of the last page did something")
+	}
+}
+
+// r makes the selected avatar react.
+func TestReactKey(t *testing.T) {
+	m, cmd := send(initialModel(), key("r"))
+	if cmd == nil || !m.wall[0].Reacting() {
+		t.Error("r did not make the selected avatar react")
+	}
+}

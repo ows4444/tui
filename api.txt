@@ -687,9 +687,11 @@ const (
 	ToneInk
 )
 const MaxPNGSize = 512
+const ReactHold = 1500 * time.Millisecond
 func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
 func (m *Model) LookAt(dx, dy int)
+func (m *Model) React() tui.Cmd
 func (m *Model) StartIdle() tui.Cmd
 func (m *Model) StopIdle()
 func (m Model) Blinking() bool
@@ -698,6 +700,7 @@ func (m Model) Idling() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) PNG(size int) []byte
+func (m Model) Reacting() bool
 func (m Model) SVG() string
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Shape() string

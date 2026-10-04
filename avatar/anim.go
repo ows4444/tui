@@ -104,11 +104,14 @@ func (m *Model) StopIdle() {
 // Idling reports whether the idle loop is running.
 func (m Model) Idling() bool { return m.idling }
 
-// Update advances a blink one frame, or the idle loop one beat, per tick. A
-// blink rests when it is done unless the avatar idles. It ignores a tick
-// that another avatar, or an animation since replaced, scheduled, and every
-// other Msg.
+// Update advances a blink one frame, or the idle loop one beat, per tick, and
+// ends a reaction when its hold is over. A blink rests when it is done unless
+// the avatar idles. It ignores a tick or a release that another avatar, or
+// an animation since replaced, scheduled, and every other Msg.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
+	if m.release(msg) {
+		return m, nil
+	}
 	if t, ok := msg.(tickMsg); !ok || m.owner == nil || t.owner != m.owner || m.blink == 0 && !m.idling {
 		return m, nil
 	}

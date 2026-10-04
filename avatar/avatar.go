@@ -15,10 +15,11 @@
 // Hue, Tone and Silhouette pin the colour or the shape, for an app with a
 // house style, while the name still decides everything else.
 //
-// The figure can react. Expression sets a pose the eyes hold, Blink closes
-// and reopens them once, StartIdle keeps the avatar breathing, blinking and
-// glancing aside, both driven by Update, and LookAt turns the eyes toward a
-// target such as the mouse pointer.
+// The figure can react. Expression sets a pose the eyes hold, React pulls a
+// face for a moment and lets it go, Blink closes and reopens the eyes once
+// and StartIdle keeps the avatar breathing, blinking and glancing aside, all
+// three driven by Update, and LookAt turns the eyes toward a target such as
+// the mouse pointer.
 //
 // A name is put in Unicode Normalization Form C, trimmed and lowercased
 // before it is hashed, so "Alain" and " alain " are one avatar, and so are a
@@ -90,7 +91,8 @@ type Model struct {
 	// resting gaze. LookAt sets both from where a target is.
 	LookX, LookY float64
 	// Motion is the reduced-motion preference. The zero value is
-	// motion.Normal. With motion.Reduced, Blink and StartIdle play nothing.
+	// motion.Normal. With motion.Reduced, Blink, StartIdle and React play
+	// nothing.
 	Motion motion.Preference
 	// Theme supplies the glyph set: under an ASCII one the avatar is drawn
 	// with its Shades. The colours come from Name, not from the theme.
@@ -102,6 +104,12 @@ type Model struct {
 	// owner is the token of the animation in progress; its ticks carry it,
 	// and a tick with another token is ignored.
 	owner *int
+	// reaction is the expression React is holding, or ExpressionNone;
+	// reactOwner is the token its release carries, and reacts counts the
+	// reactions so far.
+	reaction   Expression
+	reactOwner *int
+	reacts     int
 	// cache holds the last View; nil on a struct literal.
 	cache *viewCache
 }
@@ -196,8 +204,8 @@ func (m Model) plate() path {
 // SVG returns the avatar as SVG markup on a 100 by 100 view box, with no
 // width or height, so the page sizes it. Hue, Tone and Silhouette are part
 // of the figure and are drawn. It is the figure at rest:
-// Expression, LookX, LookY, a blink in progress and the idle loop do not
-// change it.
+// Expression, a reaction, LookX, LookY, a blink in progress and the idle
+// loop do not change it.
 func (m Model) SVG() string {
 	t := m.traits()
 	return svg(layoutFigure(t), m.palette(t), m.plate())
@@ -247,7 +255,7 @@ func (m Model) View() string {
 		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
 		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette,
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
-		expression: m.Expression, blink: m.blink,
+		expression: m.shown(), blink: m.blink,
 		ascii: glyphs.ASCII(), shades: glyphs.Shades,
 	}
 	c.mu.Lock()
@@ -268,7 +276,7 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	lookX, zoom := m.moved()
 	f := layoutFigure(t)
 	s := newScene(f, m.plate())
-	s.setEyes(f.posed(m.Expression.pose(), unit(unit(m.LookX)+lookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
+	s.setEyes(f.posed(m.shown().pose(), unit(unit(m.LookX)+lookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
 	s.zoom = zoom
 	g := s.rasterize(m.Width, m.Height, open == 1)
 	return g.render(m.palette(t), glyphs)

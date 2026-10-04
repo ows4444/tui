@@ -3,6 +3,8 @@
 // mouse pointer, and the selected one blinks whenever a key is pressed.
 //
 //	mouse       the avatars look at the pointer
+//	click       the avatar under the pointer pulls a face, and is selected
+//	r           the selected avatar pulls a face
 //	space       blink (so does every other key)
 //	←/→ or h/l  previous / next name
 //	+/- or ↑/↓  larger / smaller avatars
@@ -57,6 +59,7 @@ const (
 	tileGap    = 2 // columns between tiles
 	minTile    = 9 // a tile is at least this wide, so a name fits under it
 	chromeRows = 4 // title, blank, status, help
+	wallTop    = 2 // the row the wall starts on, under the title
 	defaultW   = 80
 	defaultH   = 24
 )
@@ -96,6 +99,13 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 	case tui.MouseEvent:
 		m.mouseX, m.mouseY, m.mouse = msg.X, msg.Y, true
+		if msg.Action == tui.MouseActionPress && msg.Button == tui.MouseButtonLeft {
+			if i, ok := m.tileAt(msg.X, msg.Y); ok {
+				m.selected = i
+				return m, m.wall[i].React()
+			}
+		}
+		return m, nil
 	case tui.Key:
 		switch msg.Type {
 		case tui.KeyCtrlC, tui.KeyEsc:
@@ -132,6 +142,8 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 				m.tone = (m.tone + 1) % (avatar.ToneInk + 1)
 			case "s":
 				m.silhouette = (m.silhouette + 1) % (avatar.SilhouetteTriangle + 1)
+			case "r":
+				return m, m.wall[m.selected].React()
 			case "i":
 				return m, m.toggleIdle()
 			}
@@ -152,6 +164,20 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 		return m, cmds[0] // the usual case: one avatar's next tick
 	}
 	return m, tui.Batch(cmds...)
+}
+
+// tileAt returns the index of the name whose tile, avatar and label, holds
+// cell (x, y) on the page that is showing.
+func (m model) tileAt(x, y int) (int, bool) {
+	cols, rows, tileW := m.grid()
+	tileH := sizes[m.size][1] + 2
+	c, r := x/(tileW+tileGap), (y-wallTop)/tileH
+	if x < 0 || y < wallTop || c >= cols || r >= rows || x%(tileW+tileGap) >= tileW || (y-wallTop)%tileH == tileH-1 {
+		return 0, false
+	}
+	perPage := cols * rows
+	i := m.selected/perPage*perPage + r*cols + c
+	return i, i < len(names)
 }
 
 // toggleIdle starts or stops the idle loop of every avatar on the wall.
@@ -247,7 +273,7 @@ func (m model) View() string {
 			}
 			// The wall starts on row 2; a tile's avatar is centred in it.
 			x0 := c*(tileW+tileGap) + max((tileW-aw)/2, 0)
-			y0 := 2 + r*(ah+2)
+			y0 := wallTop + r*(ah+2)
 			for y, row := range strings.Split(m.avatar(i, x0, y0).View(), "\n") {
 				lines[y].WriteString(gap + centre(row, aw, tileW))
 			}
@@ -278,7 +304,7 @@ func (m model) View() string {
 		names[m.selected], sel.Shape(), hex(body), hex(eyes), aw, ah, backgrounds[m.bg].name, glyphs, m.expression)
 	b.WriteString(ansi.Truncate(status, w))
 	b.WriteByte('\n')
-	b.WriteString(faintStyle.Render(ansi.Truncate("←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  a ascii  q quit", w)))
+	b.WriteString(faintStyle.Render(ansi.Truncate("click or r react  ←/→ name  +/- size  b bg  e expression  i idle  c hue  t tone  s shape  a ascii  q quit", w)))
 	return b.String()
 }
 
