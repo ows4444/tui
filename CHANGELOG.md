@@ -32,7 +32,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   the eyes, while the name decides the rest. `Model.PNG` returns
   the avatar as a PNG, for `imageview` on a terminal that shows images.
   `Model.React` pulls a face for `ReactHold` and lets it go, for a click;
-  it eases in and out, as does `Model.SetExpression`.
+  it eases in and out, as does `Model.SetExpression`. Eased into, the mad,
+  scared and sick poses tremble and the thinking pose rocks.
   `ExpressionMad`, `ExpressionLove`, `ExpressionShy` and `ExpressionSick`
   tint the body; `Colors` reports the tinted colours.
 - `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52

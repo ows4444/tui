@@ -122,6 +122,11 @@ type Model struct {
 	from      Expression
 	tween     int
 	poseOwner *int
+	// wobble is the frame of the held pose's own motion, its tremble or its
+	// rock; 0 is still. holdLeft counts the frames a moving reaction has
+	// left before it is released.
+	wobble   int
+	holdLeft int
 	// cache holds the last View; nil on a struct literal.
 	cache *viewCache
 }
@@ -153,6 +158,7 @@ type viewKey struct {
 	expression    Expression
 	from          Expression
 	tween         int
+	wobble        int
 	blink         int
 	ascii         bool
 	shades        string
@@ -293,7 +299,7 @@ func (m Model) View() string {
 		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
 		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
-		expression: m.shown(), from: m.easing(), tween: m.tween, blink: m.blink,
+		expression: m.shown(), from: m.easing(), tween: m.tween, wobble: m.wobble, blink: m.blink,
 		ascii: glyphs.ASCII(), shades: glyphs.Shades,
 	}
 	c.mu.Lock()
@@ -315,7 +321,9 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	f := layoutFigure(t)
 	s := newScene(f, m.plate())
 	from, to, at := m.poses()
-	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
+	// A tremble is at least half a pixel wide, or it would not show.
+	shift := m.tremble(to, f, 0.5*s.pixelWidth(m.Width, m.Height))
+	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), shift, open, s.eyeBoost(f, m.Width, m.Height)))
 	s.zoom = zoom
 	g := s.rasterize(m.Width, m.Height, open == 1)
 	return g.render(m.palette(t), glyphs)

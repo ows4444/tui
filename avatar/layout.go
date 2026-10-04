@@ -97,11 +97,12 @@ func (p pose) in(f figure, i int) eyeSpec {
 }
 
 // posed returns f with its eyes at the fraction at of the way from pose a to
-// pose b (1 is b itself), moved by (lx, ly), each in [-1, 1], closed to open
-// of their height, and enlarged boost times about their centres. The body is
-// unchanged, and the renderer draws an eye only where it is over the body.
-func (f figure) posed(a, b pose, at, lx, ly, open, boost float64) figure {
-	dx, dy := lx*gazeTravel*f.face.rx, ly*gazeTravel*f.face.ry
+// pose b (1 is b itself), moved by (lx, ly), each in [-1, 1], and sideways
+// by shift frame units, closed to open of their height, and enlarged boost
+// times about their centres. The body is unchanged, and the renderer draws an
+// eye only where it is over the body.
+func (f figure) posed(a, b pose, at, lx, ly, shift, open, boost float64) figure {
+	dx, dy := lx*gazeTravel*f.face.rx+shift, ly*gazeTravel*f.face.ry
 	mix := func(x, y float64) float64 { return x + (y-x)*at }
 	// A dome and a capsule have no shape between them: the eye changes
 	// kind half way.
