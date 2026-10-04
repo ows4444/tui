@@ -5,6 +5,11 @@
 // motion-driven, id-guarded auto-timeout to auto-deny if the caller never
 // answers.
 //
+// A caller can narrow and rename the options (Model.Choices, Model.Labels),
+// bind a key that answers at once (KeyMap.Approve, Deny, Always), and put
+// text of its own, such as the command and where it runs, between the header
+// and the options (Model.Body).
+//
 // Stability: experimental. Its API may change in any minor release.
 package toolapproval
 
@@ -77,7 +82,10 @@ const (
 	ChoiceAlwaysAllow
 )
 
-// label is a Choice's display text in View.
+// allChoices is the option set, in display order, of a Model with no Choices.
+var allChoices = [...]Choice{ChoiceApprove, ChoiceDeny, ChoiceAlwaysAllow}
+
+// label is a Choice's default display text in View.
 func (c Choice) label() string {
 	switch c {
 	case ChoiceDeny:
@@ -97,6 +105,18 @@ type Model struct {
 	ToolName    string
 	Description string
 	Risk        Risk
+	// Body, if set, is drawn between the header (tool name, badge and
+	// Description) and the options: the command and the folder it runs in,
+	// for example. Like ToolName and Description it is drawn as given, so a
+	// caller may style it and must clean text it does not trust.
+	Body string
+	// Choices is which options are shown, in this order. Nil or empty shows
+	// all three (Approve, Deny, Always Allow). A value that is not a Choice,
+	// or one given twice, is skipped.
+	Choices []Choice
+	// Labels replaces the display text of an option: Labels[ChoiceApprove] =
+	// "Allow". An option with no entry, or an empty one, keeps its default.
+	Labels map[Choice]string
 	// Timeout, if non-zero, is how long Start waits before auto-resolving
 	// as ChoiceDeny if no manual choice has been made yet.
 	Timeout time.Duration
@@ -111,7 +131,9 @@ type Model struct {
 
 	// Mouse, when true, makes Update handle tui.MouseEvent: a left click on an
 	// option label resolves the prompt with that choice. Off (the default)
-	// ignores the mouse.
+	// ignores the mouse. The options are looked for on the row after ToolName,
+	// Description and Body as they are held, so a Body or Description that
+	// wraps when drawn should be wrapped before it is set.
 	Mouse bool
 	// Bounds is the screen rectangle where the app draws the prompt (its first
 	// row is the tool name line); clicks outside it are ignored.
@@ -144,35 +166,107 @@ type KeyMap struct {
 	Next   keymap.Binding // highlight the next option, wrapping
 	Prev   keymap.Binding // highlight the previous option, wrapping
 	Accept keymap.Binding // resolve with the highlighted option
+
+	// Approve, Deny and Always resolve the prompt at once with that option,
+	// whichever one is highlighted. They have no keys by default; a caller
+	// binds them ("y", "n", "a"). A key for an option that Choices leaves out
+	// does nothing.
+	Approve keymap.Binding
+	Deny    keymap.Binding
+	Always  keymap.Binding
 }
 
-// DefaultKeyMap returns the keys a Model used before KeyMap existed.
+// DefaultKeyMap returns the keys a Model used before KeyMap existed. The
+// direct bindings (Approve, Deny, Always) carry a description and no keys.
 func DefaultKeyMap() KeyMap {
 	return KeyMap{
-		Next:   keymap.NewBinding("next option", "right", "tab"),
-		Prev:   keymap.NewBinding("previous option", "left"),
-		Accept: keymap.NewBinding("confirm", "enter"),
+		Next:    keymap.NewBinding("next option", "right", "tab"),
+		Prev:    keymap.NewBinding("previous option", "left"),
+		Accept:  keymap.NewBinding("confirm", "enter"),
+		Approve: keymap.NewBinding("approve"),
+		Deny:    keymap.NewBinding("deny"),
+		Always:  keymap.NewBinding("always allow"),
 	}
 }
 
+// keys is the KeyMap in force: with no navigation key set at all, the
+// default navigation keys, keeping any direct binding the caller did set.
 func (m Model) keys() KeyMap {
 	km := m.KeyMap
 	if len(km.Next.Keys)+len(km.Prev.Keys)+len(km.Accept.Keys) == 0 {
-		return DefaultKeyMap()
+		d := DefaultKeyMap()
+		km.Next, km.Prev, km.Accept = d.Next, d.Prev, d.Accept
 	}
 	return km
 }
 
+// direct pairs each option with the binding that resolves it at once.
+func (km KeyMap) direct() [len(allChoices)]keymap.Binding {
+	return [...]keymap.Binding{ChoiceApprove: km.Approve, ChoiceDeny: km.Deny, ChoiceAlwaysAllow: km.Always}
+}
+
 // Bindings returns the actions the prompt currently honours, with
-// descriptions, for help text.
+// descriptions, for help text: the three navigation actions, then the direct
+// binding of each shown option that has a key.
 func (m Model) Bindings() []keymap.Binding {
 	km := m.keys()
-	return []keymap.Binding{km.Next, km.Prev, km.Accept}
+	out := []keymap.Binding{km.Next, km.Prev, km.Accept}
+	direct := km.direct()
+	for _, c := range m.choices() {
+		if b := direct[c]; len(b.Keys) > 0 {
+			if b.Desc == "" {
+				b.Desc = strings.ToLower(m.label(c))
+			}
+			out = append(out, b)
+		}
+	}
+	return out
+}
+
+// choices is the options shown, in order: Choices with unknown and repeated
+// values dropped, or all three when that leaves none.
+func (m Model) choices() []Choice {
+	var seen [len(allChoices)]bool
+	out := make([]Choice, 0, len(allChoices))
+	for _, c := range m.Choices {
+		if c < 0 || int(c) >= len(allChoices) || seen[c] {
+			continue
+		}
+		seen[c] = true
+		out = append(out, c)
+	}
+	if len(out) == 0 {
+		return allChoices[:]
+	}
+	return out
+}
+
+// label is an option's display text: its entry in Labels, or its default.
+func (m Model) label(c Choice) string {
+	if l := m.Labels[c]; l != "" {
+		return l
+	}
+	return c.label()
+}
+
+// at is the position of the highlighted option among shown, or 0 when the
+// highlighted option is not shown.
+func (m Model) at(shown []Choice) int {
+	for i, c := range shown {
+		if c == m.highlighted {
+			return i
+		}
+	}
+	return 0
 }
 
 // Highlighted reports which option the cursor is currently on — not which
-// was chosen; that only happens via ResolvedMsg.
-func (m Model) Highlighted() Choice { return m.highlighted }
+// was chosen; that only happens via ResolvedMsg. When Choices leaves out the
+// option the cursor started on, it is on the first one shown.
+func (m Model) Highlighted() Choice {
+	shown := m.choices()
+	return shown[m.at(shown)]
+}
 
 // ResolvedMsg is delivered (via the Cmd Update returns) once the prompt is
 // answered, by Enter or by Timeout elapsing.
@@ -199,8 +293,9 @@ func (m *Model) Start() tui.Cmd {
 // or by timeout) and so should ignore any further timeoutMsg.
 func (m Model) resolved() bool { return m.id == 0 }
 
-// Update moves the highlight on Left/Right/Tab (wrapping across the three
-// choices), confirms the highlighted option on Enter, and auto-resolves as
+// Update moves the highlight on Left/Right/Tab (wrapping across the shown
+// choices), confirms the highlighted option on Enter, resolves at once on a
+// direct key (KeyMap.Approve, Deny, Always) of a shown option, and auto-resolves as
 // ChoiceDeny when a timeoutMsg whose id matches the current generation
 // arrives (and, with Mouse on, resolves with the option a left click lands on);
 // a stale timeoutMsg (superseded by a later Start, or arriving
@@ -211,15 +306,21 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		return m.updateMouse(msg)
 	case tui.Key:
 		km := m.keys()
+		shown := m.choices()
+		direct := km.direct()
+		for _, c := range shown {
+			if keymap.Matches(msg, direct[c]) {
+				return m.resolve(c)
+			}
+		}
+		at := m.at(shown)
 		switch {
 		case keymap.Matches(msg, km.Next):
-			m.highlighted = (m.highlighted + 1) % 3
+			m.highlighted = shown[(at+1)%len(shown)]
 		case keymap.Matches(msg, km.Prev):
-			m.highlighted = (m.highlighted + 3 - 1) % 3
+			m.highlighted = shown[(at+len(shown)-1)%len(shown)]
 		case keymap.Matches(msg, km.Accept):
-			choice := m.highlighted
-			m.id = 0 // mark resolved so a later stale timeoutMsg is ignored
-			return m, func() tui.Msg { return ResolvedMsg{Choice: choice} }
+			return m.resolve(shown[at])
 		}
 	case timeoutMsg:
 		if m.resolved() || msg.id != m.id {
@@ -229,6 +330,15 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		return m, func() tui.Msg { return ResolvedMsg{Choice: ChoiceDeny} }
 	}
 	return m, nil
+}
+
+// resolve answers the prompt with c: it moves the highlight there, marks the
+// Model resolved so a later stale timeoutMsg is ignored, and returns the Cmd
+// that delivers the ResolvedMsg.
+func (m Model) resolve(c Choice) (Model, tui.Cmd) {
+	m.highlighted = c
+	m.id = 0
+	return m, func() tui.Msg { return ResolvedMsg{Choice: c} }
 }
 
 // updateMouse resolves the prompt when a left press lands on an option label
@@ -243,16 +353,17 @@ func (m Model) updateMouse(ev tui.MouseEvent) (Model, tui.Cmd) {
 	if m.Description != "" {
 		rows += 1 + strings.Count(m.Description, "\n")
 	}
+	if m.Body != "" {
+		rows += 1 + strings.Count(m.Body, "\n")
+	}
 	if ly != rows {
 		return m, nil
 	}
 	start := 0
-	for _, c := range []Choice{ChoiceApprove, ChoiceDeny, ChoiceAlwaysAllow} {
-		end := start + ansi.Width(c.label()) + 2
+	for _, c := range m.choices() {
+		end := start + ansi.Width(m.label(c)) + 2
 		if lx >= start && lx < end {
-			m.highlighted = c
-			m.id = 0 // mark resolved so a later stale timeoutMsg is ignored
-			return m, func() tui.Msg { return ResolvedMsg{Choice: c} }
+			return m.resolve(c)
 		}
 		start = end + 2
 	}
@@ -260,17 +371,20 @@ func (m Model) updateMouse(ev tui.MouseEvent) (Model, tui.Cmd) {
 }
 
 // View renders the tool name/description, a risk badge colored per Risk,
-// and the three options with the highlighted one shown in reverse video.
+// the Body if there is one, and the shown options with the highlighted one
+// in reverse video.
 func (m Model) View() string {
 	badge := widgets.Badge(m.Risk.label(), m.Risk.variant(), m.themed())
 
 	highlight := m.themed().ResolvedStates().Selected.Bold()
-	options := make([]string, 3)
-	for i, c := range []Choice{ChoiceApprove, ChoiceDeny, ChoiceAlwaysAllow} {
-		label := " " + c.label() + " "
-		if c == m.highlighted {
+	shown := m.choices()
+	cur := shown[m.at(shown)]
+	options := make([]string, len(shown))
+	for i, c := range shown {
+		label := " " + m.label(c) + " "
+		if c == cur {
 			// Brackets replace the padding: visible without colour, same width.
-			label = highlight.Render("[" + c.label() + "]")
+			label = highlight.Render("[" + m.label(c) + "]")
 		}
 		options[i] = label
 	}
@@ -279,7 +393,10 @@ func (m Model) View() string {
 	if m.Description != "" {
 		header += "\n" + m.Description
 	}
-	return header + "\n" + options[0] + "  " + options[1] + "  " + options[2]
+	if m.Body != "" {
+		header += "\n" + m.Body
+	}
+	return header + "\n" + strings.Join(options, "  ")
 }
 
 // Compile-time proof that Model satisfies tui.Component[Model] — see
@@ -288,18 +405,24 @@ var _ tui.Component[Model] = Model{}
 
 // Linearize renders the prompt as plain text for accessible output (see
 // tui.Linearizer): "Approval needed: <tool>, <low|medium|high> risk", the
-// description if there is one, then one line per option with its position and
-// ", selected" on the highlighted one, and, if Timeout is set, a final line
-// saying it denies automatically when unanswered.
+// description and the Body (without its styling) if there are any, then one
+// line per shown option with its position and ", selected" on the highlighted
+// one, and, if Timeout is set, a final line saying it denies automatically
+// when unanswered.
 func (m Model) Linearize() string {
 	risk := map[Risk]string{RiskLow: "low", RiskMedium: "medium", RiskHigh: "high"}[m.Risk]
 	out := []string{"Approval needed: " + m.ToolName + ", " + risk + " risk"}
 	if m.Description != "" {
 		out = append(out, m.Description)
 	}
-	for i, c := range []Choice{ChoiceApprove, ChoiceDeny, ChoiceAlwaysAllow} {
-		line := c.label() + ", option " + strconv.Itoa(i+1) + " of 3"
-		if c == m.highlighted {
+	if m.Body != "" {
+		out = append(out, ansi.StripANSI(m.Body))
+	}
+	shown := m.choices()
+	cur := shown[m.at(shown)]
+	for i, c := range shown {
+		line := m.label(c) + ", option " + strconv.Itoa(i+1) + " of " + strconv.Itoa(len(shown))
+		if c == cur {
 			line += ", selected"
 		}
 		out = append(out, line)

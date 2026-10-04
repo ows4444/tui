@@ -3295,11 +3295,21 @@ type KeyMap struct {
 	Next	keymap.Binding
 	Prev	keymap.Binding
 	Accept	keymap.Binding
+
+	Approve	keymap.Binding
+	Deny	keymap.Binding
+	Always	keymap.Binding
 }
 type Model struct {
 	ToolName	string
 	Description	string
 	Risk		Risk
+
+	Body	string
+
+	Choices	[]Choice
+
+	Labels	map[Choice]string
 
 	Timeout	time.Duration
 	Theme	theme.Theme

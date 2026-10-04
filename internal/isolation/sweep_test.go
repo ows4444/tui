@@ -209,6 +209,13 @@ func TestCopyIsolationSweep(t *testing.T) {
 	sweep(t, "toolapproval", func() toolapproval.Model {
 		return toolapproval.New("rm", "delete files", toolapproval.RiskMedium)
 	})
+	sweep(t, "toolapproval choices", func() toolapproval.Model {
+		m := toolapproval.New("rm", "delete files", toolapproval.RiskMedium)
+		m.Choices = []toolapproval.Choice{toolapproval.ChoiceDeny, toolapproval.ChoiceApprove}
+		m.Labels = map[toolapproval.Choice]string{toolapproval.ChoiceApprove: "Allow"}
+		m.Body = "$ rm -rf build"
+		return m
+	})
 	sweep(t, "clipboard", func() clipboard.Model { return clipboard.New("some text", "label") })
 
 	// Overlays.

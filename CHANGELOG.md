@@ -11,6 +11,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `toolapproval`: a prompt can show fewer options and name them itself.
+  `Model.Choices` lists which options are shown and in what order (empty
+  shows all three), `Model.Labels` replaces an option's text, and
+  `Model.Body` is drawn between the header and the options, for the command
+  and where it runs. `KeyMap.Approve`, `KeyMap.Deny` and `KeyMap.Always`
+  resolve the prompt at once with that option; they have no keys until a
+  caller binds them. A prompt that sets none of these behaves as before.
 - `imageview` draws through iTerm2's inline-image protocol (OSC 1337) when
   `Model.Inline` is set: it sends the PNG as it is, and is preferred over
   Sixel. `imageview.Inline` builds the sequence, and

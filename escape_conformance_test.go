@@ -253,7 +253,7 @@ var knownUnsanitised = map[string]string{
 	"taginput":     "tags",
 	"textarea":     "Placeholder",
 	"textinput":    "Placeholder and Prompt",
-	"toolapproval": "ToolName and Description, often supplied by a model",
+	"toolapproval": "ToolName, Description, Body and Labels; the first three are often supplied by a model",
 	"wizard":       "step titles",
 }
 
