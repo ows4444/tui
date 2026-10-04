@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/internal/render"
 )
 
@@ -30,7 +31,10 @@ func benchKeystroke(b *testing.B, opts ...ProgramOption) {
 		b.Fatal(err)
 	}
 	defer out.Close()
-	p := NewProgram(keystrokeModel{}, append([]ProgramOption{WithOutput(out)}, opts...)...)
+	// The profile is pinned: detected from TERM and friends it is NoColor on
+	// a CI runner and a colour depth on a desktop, and NoColor adds a
+	// downgrade pass, so the allocation gate would compare different work.
+	p := NewProgram(keystrokeModel{}, append([]ProgramOption{WithOutput(out), WithColorProfile(ansi.TrueColor)}, opts...)...)
 	p.width, p.height = 80, 24
 	p.render()
 	b.ReportAllocs()

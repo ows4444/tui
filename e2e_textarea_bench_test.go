@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/cellbuf"
 	"github.com/ows4444/tui/textarea"
 )
@@ -37,7 +38,8 @@ func BenchmarkE2EKeystrokeCellTextarea(b *testing.B) {
 	ta := textarea.New()
 	ta.SetValue(strings.Repeat("the quick brown fox jumps over the lazy dog\n", 8))
 	ta.Focus()
-	p := tui.NewBenchProgram(taRoot{ta}, 80, 24, tui.WithOutput(out), tui.WithCellRenderer(true))
+	// Pinned like benchKeystroke's, so CI measures what a desktop does.
+	p := tui.NewBenchProgram(taRoot{ta}, 80, 24, tui.WithOutput(out), tui.WithCellRenderer(true), tui.WithColorProfile(ansi.TrueColor))
 	// Typing and Backspace alternate so the buffer stays the same size however
 	// long the benchmark runs.
 	keys := [2]tui.Key{{Type: tui.KeyRunes, Text: "x", Code: 'x'}, {Type: tui.KeyBackspace}}
