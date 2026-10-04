@@ -442,7 +442,7 @@ func (m model) View() string {
 	b.WriteString(titleStyle.Render(ansi.Truncate("Avatars: every name draws its own", w)))
 	b.WriteString("\n\n")
 	for r := 0; r < rows; r++ {
-		lines := make([]strings.Builder, ah+1)
+		lines := make([]string, ah+1)
 		for c := 0; c < cols; c++ {
 			i := first + r*cols + c
 			if i >= len(names) {
@@ -453,20 +453,20 @@ func (m model) View() string {
 				gap = strings.Repeat(" ", tileGap)
 			}
 			for y, row := range strings.Split(drawn[i-first], "\n") {
-				lines[y].WriteString(gap + centre(row, aw, tileW))
+				lines[y] += gap + centre(row, aw, tileW)
 			}
 			label := ansi.Truncate(names[i], tileW)
 			lw := ansi.Width(label)
 			if i == m.selected {
 				label = selectedStyle.Render(label)
 			}
-			lines[ah].WriteString(gap + centre(label, lw, tileW))
+			lines[ah] += gap + centre(label, lw, tileW)
 		}
-		if lines[0].Len() == 0 {
+		if lines[0] == "" {
 			break
 		}
 		for i := range lines {
-			b.WriteString(ansi.Truncate(lines[i].String(), w))
+			b.WriteString(ansi.Truncate(lines[i], w))
 			b.WriteByte('\n')
 		}
 		b.WriteByte('\n')
