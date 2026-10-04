@@ -16,8 +16,9 @@
 //	s           pin the silhouette: name's own, round, organic, ...
 //	p           pin traits: none, big eyes, small wide-set eyes, big square bodies
 //	a           ASCII glyphs on / off
-//	g           draw real images in place of cells, on a terminal that can
-//	            (kitty graphics, or Sixel as in iTerm2); cells otherwise
+//	g           draw real images in place of cells, on a terminal that can:
+//	            kitty graphics, else iTerm2's inline images, else Sixel;
+//	            cells otherwise
 //	q, esc      quit
 package main
 
@@ -26,6 +27,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
@@ -98,10 +100,10 @@ type model struct {
 	// images holds one image view per name, built once, so each keeps its
 	// encoded picture until the avatar's PNG changes.
 	images []imageview.Model
-	// kitty and sixel are what the terminal said it can draw, and graphics
-	// whether g has asked for images.
-	kitty, sixel, graphics bool
-	idle                   int // index into idleModes
+	// kitty, inline and sixel are what the terminal said it can draw, and
+	// graphics whether g has asked for images.
+	kitty, inline, sixel, graphics bool
+	idle                           int // index into idleModes
 	// mouseX and mouseY are the pointer's cell, once it has moved.
 	mouseX, mouseY int
 	mouse          bool
@@ -124,7 +126,7 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	case tui.ResizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 	case tui.CapabilitiesMsg:
-		m.kitty, m.sixel = msg.Capabilities.KittyGraphics, msg.Capabilities.Sixel
+		m.kitty, m.inline, m.sixel = msg.Capabilities.KittyGraphics, msg.Capabilities.InlineImages, msg.Capabilities.Sixel
 		return m, nil
 	case tui.MouseEvent:
 		m.mouseX, m.mouseY, m.mouse = msg.X, msg.Y, true
@@ -208,6 +210,8 @@ func (m model) drawing() string {
 	switch {
 	case m.graphics && m.kitty:
 		return "kitty"
+	case m.graphics && m.inline:
+		return "inline"
 	case m.graphics && m.sixel:
 		return "sixel"
 	case m.graphics:
@@ -222,22 +226,54 @@ func (m model) drawing() string {
 // the wall is drawn as images, an image view of its PNG that fills the same
 // cells.
 func (m model) picture(i int, a avatar.Model) string {
-	if !m.graphics || !m.kitty && !m.sixel {
+	if !m.pictures() {
 		return a.View()
 	}
 	img := m.images[i]
 	// A Sixel image is scaled to its cells at imageview's cell size, so it
-	// is drawn at exactly that many pixels; kitty scales the image itself,
-	// and gets a sharper one. A Model from New returns the same slice until
-	// the avatar changes, so the image is encoded again only then.
+	// is drawn at exactly that many pixels; with kitty graphics and inline
+	// images the terminal scales the PNG itself, and gets a sharper one. A
+	// Model from New returns the same slice for the same picture, so the
+	// image is encoded again only when the avatar changes.
 	px := imageview.DefaultCellWidth * a.Width
-	if m.kitty {
+	if m.kitty || m.inline {
 		px = min(256, 12*a.Width)
 	}
 	img.PNG = a.PNG(px)
 	img.Width, img.Height, img.Alt = a.Width, a.Height, a.Linearize()
-	img.Kitty, img.Sixel = m.kitty, m.sixel
+	img.Kitty, img.Inline, img.Sixel = m.kitty, m.inline, m.sixel
 	return img.View()
+}
+
+// pictures reports whether the wall is drawn as images: g asked for them and
+// the terminal has a way to draw one.
+func (m model) pictures() bool { return m.graphics && (m.kitty || m.inline || m.sixel) }
+
+// tile is where one name's avatar goes on the page.
+type tile struct{ name, x, y int }
+
+// draw returns the picture of each tile. Every avatar has a Model and an
+// image view of its own, so with parallel set they are drawn at once, one
+// goroutine each: a wall of images is redrawn on every core.
+func (m model) draw(tiles []tile, parallel bool) []string {
+	out := make([]string, len(tiles))
+	one := func(k int) { out[k] = m.picture(tiles[k].name, m.avatar(tiles[k].name, tiles[k].x, tiles[k].y)) }
+	if !parallel || len(tiles) < 2 {
+		for k := range tiles {
+			one(k)
+		}
+		return out
+	}
+	var wg sync.WaitGroup
+	for k := range tiles {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			one(k)
+		}()
+	}
+	wg.Wait()
+	return out
 }
 
 // tileAt returns the index of the name whose tile, avatar and label, holds
@@ -336,7 +372,7 @@ func (m model) avatar(i, x, y int) avatar.Model {
 	if m.mouse {
 		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
 	}
-	if m.graphics && (m.kitty || m.sixel) {
+	if m.pictures() {
 		// An image is costly to redraw, and every pointer move turns every
 		// avatar's eyes a little: turn them in steps, so an avatar is drawn
 		// again only when its eyes have somewhere new to be.
@@ -383,6 +419,19 @@ func (m model) View() string {
 	first := m.selected / perPage * perPage
 	aw, ah := sizes[m.size][0], sizes[m.size][1]
 
+	// Lay the page out, draw every tile's picture, then put them in place.
+	var tiles []tile
+	for r := 0; r < rows; r++ {
+		for c := 0; c < cols; c++ {
+			if i := first + r*cols + c; i < len(names) {
+				// The wall starts on row wallTop; a tile's avatar is
+				// centred in it.
+				tiles = append(tiles, tile{i, c*(tileW+tileGap) + max((tileW-aw)/2, 0), wallTop + r*(ah+2)})
+			}
+		}
+	}
+	drawn := m.draw(tiles, true)
+
 	var b strings.Builder
 	b.WriteString(titleStyle.Render(ansi.Truncate("Avatars: every name draws its own", w)))
 	b.WriteString("\n\n")
@@ -397,10 +446,7 @@ func (m model) View() string {
 			if c > 0 {
 				gap = strings.Repeat(" ", tileGap)
 			}
-			// The wall starts on row 2; a tile's avatar is centred in it.
-			x0 := c*(tileW+tileGap) + max((tileW-aw)/2, 0)
-			y0 := wallTop + r*(ah+2)
-			for y, row := range strings.Split(m.picture(i, m.avatar(i, x0, y0)), "\n") {
+			for y, row := range strings.Split(drawn[i-first], "\n") {
 				lines[y].WriteString(gap + centre(row, aw, tileW))
 			}
 			label := ansi.Truncate(names[i], tileW)

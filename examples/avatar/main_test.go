@@ -403,6 +403,7 @@ func TestImageModeFollowsTheTerminal(t *testing.T) {
 		escape string
 	}{
 		"kitty":     {tui.Capabilities{KittyGraphics: true}, "\x1b_G"},
+		"inline":    {tui.Capabilities{InlineImages: true, Sixel: true}, "\x1b]1337;File="},
 		"sixel":     {tui.Capabilities{Sixel: true}, "\x1bP"},
 		"no images": {tui.Capabilities{}, ""},
 	} {
@@ -418,7 +419,7 @@ func TestImageModeFollowsTheTerminal(t *testing.T) {
 			t.Errorf("%s: status is %s", name, status(m))
 		}
 		if c.escape == "" {
-			if strings.Contains(view, "\x1b_G") || strings.Contains(view, "\x1bP") {
+			if strings.Contains(view, "\x1b_G") || strings.Contains(view, "\x1bP") || strings.Contains(view, "\x1b]1337") {
 				t.Errorf("%s: an image was sent to a terminal that cannot draw one", name)
 			}
 			continue
@@ -441,8 +442,8 @@ func TestImageModeFollowsTheTerminal(t *testing.T) {
 			t.Errorf("%s: g did not switch back to cells", name)
 		}
 	}
-	// Kitty wins when a terminal has both.
-	both, _ := send(fresh(), tui.CapabilitiesMsg{Capabilities: tui.Capabilities{KittyGraphics: true, Sixel: true}}, key("g"))
+	// Kitty wins when a terminal has all three.
+	both, _ := send(fresh(), tui.CapabilitiesMsg{Capabilities: tui.Capabilities{KittyGraphics: true, InlineImages: true, Sixel: true}}, key("g"))
 	if !strings.Contains(status(both), ", kitty, ") {
 		t.Errorf("with both protocols: %s", status(both))
 	}
@@ -491,5 +492,44 @@ func TestImageModeRedrawsFewAvatarsOnASmallMove(t *testing.T) {
 	}
 	if turned < len(before)/2 {
 		t.Errorf("a move across the screen turned only %d of %d avatars", turned, len(before))
+	}
+}
+
+// Drawing the tiles of a frame at once gives the pictures drawing them one
+// after another gives, in cells and through every image protocol.
+func TestParallelDrawingMatchesSerial(t *testing.T) {
+	for name, caps := range map[string]tui.Capabilities{
+		"cells":  {},
+		"kitty":  {KittyGraphics: true},
+		"inline": {InlineImages: true},
+		"sixel":  {Sixel: true},
+	} {
+		m, _ := send(initialModel(), tui.ResizeMsg{Width: 120, Height: 40}, tui.CapabilitiesMsg{Capabilities: caps},
+			tui.MouseEvent{X: 17, Y: 9, Action: tui.MouseActionMotion})
+		m.graphics = name != "cells"
+		cols, rows, tileW := m.grid()
+		var tiles []tile
+		for i := 0; i < cols*rows && i < len(names); i++ {
+			tiles = append(tiles, tile{i, i % cols * (tileW + tileGap), wallTop + i/cols*(sizes[m.size][1]+2)})
+		}
+		if len(tiles) < 8 {
+			t.Fatalf("%s: only %d tiles", name, len(tiles))
+		}
+		serial, parallel := m.draw(tiles, false), m.draw(tiles, true)
+		for k := range tiles {
+			if serial[k] != parallel[k] {
+				t.Errorf("%s: tile %d differs when drawn in parallel", name, k)
+			}
+			if serial[k] == "" {
+				t.Errorf("%s: tile %d is empty", name, k)
+			}
+		}
+		// A single tile, and none, are drawn without a goroutine.
+		if got := m.draw(tiles[:1], true); len(got) != 1 || got[0] != serial[0] {
+			t.Errorf("%s: one tile drawn alone differs", name)
+		}
+		if got := m.draw(nil, true); len(got) != 0 {
+			t.Errorf("%s: no tiles drew %d pictures", name, len(got))
+		}
 	}
 }
