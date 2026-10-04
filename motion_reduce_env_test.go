@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/drawer"
 	"github.com/ows4444/tui/faces"
 	"github.com/ows4444/tui/loadingbar"
@@ -33,6 +34,8 @@ func TestReduceMotionEnvEveryAnimatedWidget(t *testing.T) {
 	lb.Motion = pref
 	fc := faces.New()
 	fc.Motion = pref
+	av := avatar.New("alain")
+	av.Motion = pref
 	st := streamtext.NewTypewriter()
 	st.Motion = pref
 	ti := textinput.New()
@@ -52,6 +55,7 @@ func TestReduceMotionEnvEveryAnimatedWidget(t *testing.T) {
 		{"skeleton", func() bool { return sk.Start() != nil }, func() bool { return true }},
 		{"loadingbar", func() bool { return lb.Start() != nil }, func() bool { return true }},
 		{"faces", func() bool { return fc.PlayOnce() != nil }, func() bool { return !fc.Running() && fc.Frame() == 0 }},
+		{"avatar", func() bool { return av.Blink() != nil }, func() bool { return !av.Blinking() }},
 		{"streamtext", func() bool { return st.SetText("hello world") != nil || st.Start() != nil },
 			func() bool { return st.Done() && strings.Contains(st.View(), "hello world") }},
 		{"textinput", func() bool { return ti.Focus() != nil }, func() bool { return true }},

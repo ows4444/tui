@@ -11,6 +11,39 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `imageview` draws through iTerm2's inline-image protocol (OSC 1337) when
+  `Model.Inline` is set: it sends the PNG as it is, and is preferred over
+  Sixel. `imageview.Inline` builds the sequence, and
+  `tui.Capabilities.InlineImages` reports a terminal known to draw it
+  (iTerm2, WezTerm), inferred from its XTVERSION reply.
+- `faces.For(name)` and `faces.IndexFor(name)` pick a catalog face for any
+  string, the same one every time, so a name can have a character of its
+  own. `faces.Model.Color` draws the face in a colour other than the theme's
+  primary, and `faces.ColorFor(name)` derives one from a name.
+- `avatar`: a new experimental package that draws a deterministic avatar
+  for a name: one of ten silhouettes with two eyes, in a colour the name
+  chose. `Model.View` draws it in terminal cells and `Model.SVG` returns it
+  as markup. Names are NFC-normalised, trimmed and lowercased before
+  hashing, so the spellings of a name a reader cannot tell apart are one
+  avatar.
+  `Model.Blink` plays one blink, driven by `Model.Update`, and
+  `Model.LookAt` turns the eyes toward a target such as the mouse pointer.
+  A Model from `New` caches its `View` until a field it depends on changes.
+  `Model.Expression` sets a pose the eyes hold: happy, sad, mad, surprised,
+  wink, sleepy, thinking, smug, unsure, scared, love, shy or sick. `Model.StartIdle` keeps the avatar breathing,
+  blinking and glancing aside, at a rhythm drawn from its name, until
+  `Model.StopIdle`; `Model.Hover` runs it only while the pointer is over the
+  avatar. `Model.Hue`, `Model.Tone` and `Model.Silhouette` pin the
+  colour or the shape, and `Model.Pins` any single trait such as the size of
+  the eyes or the number of a sun's petals, while the name decides the rest. `Model.PNG` returns
+  the avatar as a PNG, for `imageview` on a terminal that shows images, and
+  the same slice until the avatar changes.
+  `Model.React` pulls a face for `ReactHold` and lets it go, for a click;
+  it eases in and out, as does `Model.SetExpression`. Eased into, the mad,
+  scared and sick poses tremble and the thinking pose rocks. A pose also
+  lifts or sinks the body a little; in cells that shows only at large sizes.
+  `ExpressionMad`, `ExpressionLove`, `ExpressionShy` and `ExpressionSick`
+  tint the body; `Colors` reports the tinted colours.
 - `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52
   sequence to its own output and keeps the text. `tui.PasteCopied()` delivers
   that text to `Update` as a `PasteEvent`.

@@ -26,6 +26,11 @@ type Capabilities struct {
 	// Sixel: the terminal's DA1 reply listed feature 4, Sixel graphics. Prefer
 	// KittyGraphics when both are set.
 	Sixel bool
+	// InlineImages: the terminal is believed to draw iTerm2's inline images
+	// (OSC 1337 File), which take a PNG as it is. It is inferred, not
+	// queried: true when its XTVERSION names iTerm2 or WezTerm. Prefer
+	// KittyGraphics when both are set, and this over Sixel.
+	InlineImages bool
 	// StyledUnderline: extended underlines (SGR 4:n) are believed to render.
 	// It is inferred, not queried: true when the terminal spoke a kitty
 	// protocol or its XTVERSION names a terminal known to support them.

@@ -223,6 +223,8 @@ type Capabilities struct {
 
 	Sixel	bool
 
+	InlineImages	bool
+
 	StyledUnderline	bool
 
 	Notifications	bool
@@ -634,6 +636,172 @@ type Model struct {
 	Bounds	hittest.Rect
 	// contains filtered or unexported fields
 }
+
+## github.com/ows4444/tui/avatar (package avatar)
+
+const (
+	BackgroundNone	Background	= iota
+	BackgroundSquircle
+	BackgroundCircle
+	BackgroundSquare
+)
+const (
+	DefaultWidth	= 8
+	DefaultHeight	= 4
+)
+const (
+	ExpressionNone	Expression	= iota
+
+	ExpressionHappy
+
+	ExpressionSad
+
+	ExpressionMad
+
+	ExpressionSurprised
+
+	ExpressionWink
+
+	ExpressionSleepy
+
+	ExpressionThinking
+
+	ExpressionSmug
+
+	ExpressionUnsure
+
+	ExpressionScared
+
+	ExpressionLove
+
+	ExpressionShy
+
+	ExpressionSick
+)
+const (
+	SilhouetteAuto	Silhouette	= iota
+	SilhouetteRound
+	SilhouetteOrganic
+	SilhouetteBoxy
+	SilhouetteCapsule
+	SilhouetteNub
+	SilhouetteCloud
+	SilhouetteDroplet
+	SilhouetteHexagon
+	SilhouetteSun
+	SilhouetteTriangle
+)
+const (
+	ToneAuto	Tone	= iota
+	TonePastel
+	TonePale
+	ToneMid
+	ToneDeep
+	ToneBright
+	ToneInk
+)
+const (
+	TraitBodySize	Trait	= iota
+
+	TraitBodyProportion
+
+	TraitBodySquareness
+
+	TraitEyeSize
+
+	TraitEyeRoundness
+
+	TraitEyeSquareness
+
+	TraitEyeSeparation
+
+	TraitEyeLean
+
+	TraitGazeX
+
+	TraitGazeY
+
+	TraitTilt
+
+	TraitSquat
+
+	TraitCornerRounding
+
+	TraitPetals
+
+	TraitPetalDistance
+
+	TraitPetalSize
+
+	TraitPetalRotation
+
+	TraitLobes
+
+	TraitNubs
+
+	TraitNubAngle
+
+	TraitNubSize
+
+	TraitTipLength
+)
+const MaxPNGSize = 512
+const ReactHold = 1500 * time.Millisecond
+func (e Expression) String() string
+func (m *Model) Blink() tui.Cmd
+func (m *Model) Hover(over bool) tui.Cmd
+func (m *Model) LookAt(dx, dy int)
+func (m *Model) React() tui.Cmd
+func (m *Model) SetExpression(e Expression) tui.Cmd
+func (m *Model) StartIdle() tui.Cmd
+func (m *Model) StopIdle()
+func (m Model) Blinking() bool
+func (m Model) Colors() (body, eyes, background ansi.RGB)
+func (m Model) Idling() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) PNG(size int) []byte
+func (m Model) Reacting() bool
+func (m Model) SVG() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Shape() string
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (s Silhouette) String() string
+func (t Tone) String() string
+func (t Trait) String() string
+func New(name string) Model
+type Background int
+type Expression int
+type Model struct {
+	Name	string
+
+	Width, Height	int
+
+	Background	Background
+
+	Raw	bool
+
+	Hue	float64
+
+	Tone	Tone
+
+	Silhouette	Silhouette
+
+	Pins	map[Trait]float64
+
+	Expression	Expression
+
+	LookX, LookY	float64
+
+	Motion	motion.Preference
+
+	Theme	theme.Theme
+	// contains filtered or unexported fields
+}
+type Silhouette int
+type Tone int
+type Trait int
 
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 
@@ -1222,8 +1390,11 @@ func (s Size) Cells() (w, h int)
 func (s Size) HeadCells() (w, h int)
 func All() []Face
 func ByName(name string) (Face, bool)
+func ColorFor(name string) ansi.RGB
 func Count() int
+func For(name string) Face
 func Get(i int) Face
+func IndexFor(name string) int
 func New() Model
 type Face struct {
 	Name		string
@@ -1236,6 +1407,8 @@ type Model struct {
 
 	Interval	time.Duration
 	Theme		theme.Theme
+
+	Color	ansi.Color
 
 	ShowLabel	bool
 
@@ -1462,6 +1635,7 @@ func (m Model) Tokens() theme.Tokens
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func Delete(id uint32) string
+func Inline(png []byte, cols, rows int) string
 func New(png []byte, width, height int, alt string) Model
 func Sixel(pngData []byte, cols, rows, cellW, cellH int) string
 func Transmit(png []byte, cols, rows int) string
@@ -1474,6 +1648,8 @@ type Model struct {
 	Alt	string
 
 	Kitty	bool
+
+	Inline	bool
 
 	Sixel	bool
 

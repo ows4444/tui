@@ -175,7 +175,7 @@ the theme with the ASCII glyphs and `layout.ASCIIBorder()`.
 
 Code that reads glyphs from the theme:
 
-- Component packages: accordion, commandpalette, contextmenu, datatable,
+- Component packages: accordion, avatar, commandpalette, contextmenu, datatable,
   errorretry, faces, loadingbar, markdown, maskedinput, passwordinput,
   scrollbar, skeleton, spinner, splitpane, streamtext, toast, treeview.
 - layout: the `Text` ellipsis.

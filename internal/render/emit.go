@@ -2,6 +2,7 @@ package render
 
 import (
 	"strconv"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/ows4444/tui/ansi"
@@ -241,9 +242,10 @@ func (e *cellEmitter) writeOpaque(opq []opaqueSeg) {
 			col = e.width - 1
 		}
 		e.moveCol(col)
-		if isSixel(sg.seq) {
-			// A Sixel image moves the cursor as it draws; save and restore it so
-			// the segment stays zero-width like every other opaque string.
+		if isSixel(sg.seq) || strings.HasPrefix(sg.seq, inlineImageOSC) {
+			// A Sixel or an inline image moves the cursor as it draws; save and
+			// restore it so the segment stays zero-width like every other
+			// opaque string.
 			e.out = append(e.out, "\x1b7"...)
 			e.out = append(e.out, sg.seq...)
 			e.out = append(e.out, "\x1b8"...)

@@ -1,6 +1,26 @@
 // Package imageview draws a PNG with the kitty graphics protocol when the
-// terminal supports it, with Sixel when it supports only that, and a bordered
-// text placeholder otherwise.
+// terminal supports it, else with iTerm2's inline images, else with Sixel, and
+// with a bordered text placeholder when it supports none of them.
+//
+// The three protocols are tried in that order, and the Model is told which
+// the terminal has by its Kitty, Inline and Sixel fields: set them from
+// tui.Capabilities (KittyGraphics, InlineImages, Sixel), which the startup
+// probe of tui.WithCapabilityProbe fills in. They differ in what they cost:
+//
+//   - Kitty graphics sends the PNG as it is, once, under an id; the terminal
+//     keeps it and the renderer deletes the placement when the image leaves
+//     the View. The terminal answers a query, so support is known.
+//   - Inline images (OSC 1337) also send the PNG as it is, with its full
+//     colour and its transparency, and the terminal scales it to the cells.
+//     There is no query: support is inferred from the terminal's name, and
+//     is reported for iTerm2 and WezTerm.
+//   - Sixel is decoded, scaled to the cells and reduced to at most 256
+//     colours here, each time the image changes, and has no partial
+//     transparency. It is the slowest of the three and the last resort.
+//
+// A Model from New encodes an image once and reuses the result while PNG is
+// the same slice, whichever protocol it draws with, so an image that does not
+// change costs nothing after its first frame.
 //
 // Stability: experimental. Its API may change in any minor release.
 package imageview
@@ -35,9 +55,14 @@ type Model struct {
 	Alt string
 	// Kitty reports that the terminal supports kitty graphics.
 	Kitty bool
+	// Inline reports that the terminal draws iTerm2's inline images (set it
+	// from tui.Capabilities.InlineImages). It is used only when Kitty is
+	// false, and is preferred over Sixel: it sends the PNG as it is, with its
+	// full colour and transparency.
+	Inline bool
 	// Sixel reports that the terminal supports Sixel graphics (set it from
-	// tui.Capabilities.Sixel). It is used only when Kitty is false, so kitty
-	// stays preferred when a terminal has both.
+	// tui.Capabilities.Sixel). It is used only when Kitty and Inline are
+	// false, so they stay preferred when a terminal has more than one.
 	Sixel bool
 	// CellWidth and CellHeight are the pixel size of a terminal cell, used to
 	// scale a Sixel image to Width by Height cells. Zero means
@@ -79,7 +104,7 @@ type viewCache struct {
 type viewKey struct {
 	png                            *byte
 	n, width, height, cellW, cellH int
-	kitty                          bool
+	kitty, inline                  bool
 	id                             uint32
 	tmux, sty                      string
 }
@@ -94,12 +119,29 @@ func (m Model) viewKey() viewKey {
 		getenv = os.Getenv
 	}
 	k := viewKey{png: &m.PNG[0], n: len(m.PNG), width: m.Width, height: m.Height, kitty: m.Kitty}
-	if m.Kitty {
+	switch {
+	case m.Kitty:
 		k.id, k.tmux, k.sty = m.ID, getenv("TMUX"), getenv("STY")
-	} else {
+	case m.Inline:
+		k.inline = true
+	default:
 		k.cellW, k.cellH = m.CellWidth, m.CellHeight
 	}
 	return k
+}
+
+// Inline returns the iTerm2 inline-image sequence (OSC 1337 File) that draws
+// png stretched over cols by rows cells from the cursor, or "" when png is
+// empty or the size is not positive. The terminal decodes the PNG itself, so
+// nothing is resampled here. The sequence moves the cursor, so the renderer
+// saves and restores the cursor around it, as it does for Sixel.
+func Inline(png []byte, cols, rows int) string {
+	if len(png) == 0 || cols <= 0 || rows <= 0 {
+		return ""
+	}
+	return "\x1b]1337;File=inline=1;size=" + strconv.Itoa(len(png)) +
+		";width=" + strconv.Itoa(cols) + ";height=" + strconv.Itoa(rows) +
+		";preserveAspectRatio=0:" + base64.StdEncoding.EncodeToString(png) + "\a"
 }
 
 // imageID returns the kitty id of m: ID, or a nonzero FNV-1a hash of the PNG
@@ -122,8 +164,8 @@ func New(png []byte, width, height int, alt string) Model {
 	return Model{PNG: png, Width: width, Height: height, Alt: alt, Theme: theme.DarkTheme(), cache: &viewCache{}}
 }
 
-// View renders Height rows, each exactly Width cells wide. With Kitty or Sixel
-// set (Kitty wins) and a non-empty PNG, the first row carries the graphics
+// View renders Height rows, each exactly Width cells wide. With Kitty, Inline
+// or Sixel set (the first of them that is) and a non-empty PNG, the first row carries the graphics
 // escape sequences (zero width) that display the image, followed by blank
 // cells; the other rows are blank and reserve the image's area. Otherwise, or
 // when a Sixel PNG does not decode, it draws the placeholder. Width <= 0 or Height <= 0 renders "".
@@ -131,7 +173,7 @@ func (m Model) View() string {
 	if m.Width <= 0 || m.Height <= 0 {
 		return ""
 	}
-	if len(m.PNG) == 0 || !m.Kitty && !m.Sixel {
+	if len(m.PNG) == 0 || !m.Kitty && !m.Inline && !m.Sixel {
 		return m.placeholder()
 	}
 	if c := m.cache; c != nil {
@@ -152,10 +194,15 @@ func (m Model) graphicsView() string {
 		encodeHook()
 	}
 	var graphics string
-	if m.Kitty {
+	switch {
+	case m.Kitty:
 		graphics = ansi.Passthrough(TransmitID(m.imageID(), m.PNG, m.Width, m.Height), m.Getenv)
-	} else if graphics = Sixel(m.PNG, m.Width, m.Height, m.CellWidth, m.CellHeight); graphics == "" {
-		return m.placeholder() // the PNG does not decode
+	case m.Inline:
+		graphics = Inline(m.PNG, m.Width, m.Height)
+	default:
+		if graphics = Sixel(m.PNG, m.Width, m.Height, m.CellWidth, m.CellHeight); graphics == "" {
+			return m.placeholder() // the PNG does not decode
+		}
 	}
 	blank := strings.Repeat(" ", m.Width)
 	rows := make([]string, m.Height)

@@ -53,22 +53,22 @@ func TestAppendSGRColorFallback(t *testing.T) {
 func TestParseColonColor(t *testing.T) {
 	for _, tc := range []struct {
 		in   string
-		want Color
+		want sgrColor
 		ok   bool
 	}{
-		{"5:200", Color256(200), true},
-		{"5:0", Color256(0), true},
-		{"5:255", Color256(255), true},
-		{"5:256", nil, false},
-		{"5:-1", nil, false},
-		{"5:x", nil, false},
-		{"2::1:2:3", RGB{1, 2, 3}, true},
-		{"2:1:2:3", RGB{1, 2, 3}, true},
-		{"2:1:2:300", nil, false},
-		{"2:1:2:x", nil, false},
-		{"2:1:2", nil, false},
-		{"7:1", nil, false},
-		{"", nil, false},
+		{"5:200", sgrColor{idx: 200}, true},
+		{"5:0", sgrColor{idx: 0}, true},
+		{"5:255", sgrColor{idx: 255}, true},
+		{"5:256", sgrColor{}, false},
+		{"5:-1", sgrColor{}, false},
+		{"5:x", sgrColor{}, false},
+		{"2::1:2:3", sgrColor{rgb: RGB{1, 2, 3}, isRGB: true}, true},
+		{"2:1:2:3", sgrColor{rgb: RGB{1, 2, 3}, isRGB: true}, true},
+		{"2:1:2:300", sgrColor{}, false},
+		{"2:1:2:x", sgrColor{}, false},
+		{"2:1:2", sgrColor{}, false},
+		{"7:1", sgrColor{}, false},
+		{"", sgrColor{}, false},
 	} {
 		got, ok := parseColonColor(tc.in)
 		if ok != tc.ok || got != tc.want {

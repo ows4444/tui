@@ -11,6 +11,9 @@ func Example() {
 	f := faces.Get(0)
 	same, ok := faces.ByName(f.Name)
 	fmt.Println(f.Name, f.Anim, ok, same.Name == f.Name)
+	// Any string picks a face of its own, the same one every time.
+	fmt.Println(faces.For("ada").Name, faces.For(" ADA ").Name, faces.IndexFor("ada"))
 	// Output:
 	// Pip blink true true
+	// Chip Chip 28
 }

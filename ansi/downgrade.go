@@ -35,8 +35,9 @@ func DowngradeString(s string, p Profile) string {
 			break
 		}
 		if s[j] == 'm' {
-			seq := rewriteSGR(s[i+2:j], p)
-			if seq == "" {
+			n := len(b)
+			b = rewriteSGR(b, s[i+2:j], p)
+			if len(b) == n {
 				// Stray ESCs right before a sequence we are removing would
 				// otherwise fuse with whatever follows (ESC + "[" is a new
 				// CSI). They did nothing on their own, so drop them.
@@ -44,7 +45,6 @@ func DowngradeString(s string, p Profile) string {
 					b = b[:len(b)-1]
 				}
 			}
-			b = append(b, seq...)
 		} else {
 			b = append(b, s[i:j+1]...)
 		}
@@ -53,160 +53,222 @@ func DowngradeString(s string, p Profile) string {
 	return string(b)
 }
 
-// rewriteSGR returns the full escape sequence (or "" if every code was
-// removed) for the SGR parameter string params, downgraded to p.
-func rewriteSGR(params string, p Profile) string {
-	if params == "" { // ESC[m is a reset
-		return "\x1b[m"
-	}
-	toks := strings.Split(params, ";")
-	out := make([]string, 0, len(toks))
-	for i := 0; i < len(toks); i++ {
-		t := toks[i]
+// sgrParams walks the ';'-separated parameters of an SGR sequence the way
+// strings.Split would, without allocating: "" yields one empty parameter
+// and a trailing ';' yields a final empty one.
+type sgrParams struct {
+	s   string
+	pos int // past the last parameter when pos > len(s)
+}
 
+func (t *sgrParams) next() (string, bool) {
+	if t.pos > len(t.s) {
+		return "", false
+	}
+	rest := t.s[t.pos:]
+	if k := strings.IndexByte(rest, ';'); k >= 0 {
+		t.pos += k + 1
+		return rest[:k], true
+	}
+	t.pos = len(t.s) + 1
+	return rest, true
+}
+
+// sgrWriter appends the parameters of one SGR sequence to b, opening the
+// sequence at the first parameter, so a sequence that keeps none adds
+// nothing.
+type sgrWriter struct {
+	b []byte
+	n int
+}
+
+func (w *sgrWriter) sep() {
+	if w.n == 0 {
+		w.b = append(w.b, "\x1b["...)
+	} else {
+		w.b = append(w.b, ';')
+	}
+	w.n++
+}
+
+func (w *sgrWriter) param(s string) {
+	w.sep()
+	w.b = append(w.b, s...)
+}
+
+func (w *sgrWriter) int(n int) {
+	w.sep()
+	w.b = strconv.AppendInt(w.b, int64(n), 10)
+}
+
+// rewriteSGR appends to dst the full escape sequence for the SGR parameter
+// string params, downgraded to p, or nothing if every code was removed. It
+// writes straight into dst: it runs on every SGR of every frame under a
+// downgraded profile, NO_COLOR included.
+func rewriteSGR(dst []byte, params string, p Profile) []byte {
+	if params == "" { // ESC[m is a reset
+		return append(dst, "\x1b[m"...)
+	}
+	w := sgrWriter{b: dst}
+	toks := sgrParams{s: params}
+	for t, ok := toks.next(); ok; t, ok = toks.next() {
 		// Colon form: 38:2::r:g:b / 38:5:n (and 48, 58). Other colon
 		// parameters (4:3 curly underline) pass through.
 		if k := strings.IndexByte(t, ':'); k > 0 {
 			if base := t[:k]; base == "38" || base == "48" || base == "58" {
 				if c, ok := parseColonColor(t[k+1:]); ok {
-					out = appendColor(out, base, c, p)
+					w.color(base, c, p)
 				}
 				continue
 			}
-			out = append(out, t)
+			w.param(t)
 			continue
 		}
 
 		n, err := strconv.Atoi(t)
 		if err != nil {
-			out = append(out, t)
+			w.param(t)
 			continue
 		}
 		switch {
 		case n == 38 || n == 48 || n == 58:
-			c, used, ok := parseSemiColor(toks[i+1:])
-			i += used
-			if ok {
-				out = appendColor(out, t, c, p)
+			if c, ok := parseSemiColor(&toks); ok {
+				w.color(t, c, p)
 			}
 		case isBasicColorCode(n):
 			if p == NoColor {
 				continue
 			}
-			out = append(out, t)
+			w.param(t)
 		case n == 39 || n == 49 || n == 59: // default fg/bg/underline colour
 			if p == NoColor {
 				continue
 			}
-			out = append(out, t)
+			w.param(t)
 		default:
-			out = append(out, t)
+			w.param(t)
 		}
 	}
-	if len(out) == 0 {
-		return ""
+	if w.n > 0 {
+		w.b = append(w.b, 'm')
 	}
-	return "\x1b[" + strings.Join(out, ";") + "m"
+	return w.b
 }
 
 func isBasicColorCode(n int) bool {
 	return (n >= 30 && n <= 37) || (n >= 40 && n <= 47) || (n >= 90 && n <= 97) || (n >= 100 && n <= 107)
 }
 
+// sgrColor is a colour read from an SGR sequence: an RGB triple when isRGB,
+// else a 256-colour index. It is a struct rather than a Color so that
+// reading one does not box it.
+type sgrColor struct {
+	rgb   RGB
+	idx   Color256
+	isRGB bool
+}
+
 // parseSemiColor reads the arguments after 38/48/58 in ';' form ("5;n" or
-// "2;r;g;b"), returning the colour and how many tokens it consumed. A
-// truncated or invalid spec consumes what is there and reports !ok.
-func parseSemiColor(rest []string) (c Color, used int, ok bool) {
-	if len(rest) == 0 {
-		return nil, 0, false
-	}
-	switch rest[0] {
-	case "5":
-		if len(rest) < 2 {
-			return nil, len(rest), false
+// "2;r;g;b") from toks. A truncated or invalid spec consumes what is there
+// and reports !ok; an unknown colour space consumes nothing.
+func parseSemiColor(toks *sgrParams) (c sgrColor, ok bool) {
+	pos := toks.pos
+	space, ok := toks.next()
+	switch {
+	case !ok:
+		return sgrColor{}, false
+	case space == "5":
+		t, ok := toks.next()
+		if !ok {
+			return sgrColor{}, false
 		}
-		n, err := strconv.Atoi(rest[1])
+		n, err := strconv.Atoi(t)
 		if err != nil || n < 0 || n > 255 {
-			return nil, 2, false
+			return sgrColor{}, false
 		}
-		return Color256(n), 2, true
-	case "2":
-		if len(rest) < 4 {
-			return nil, len(rest), false
-		}
-		var v [3]int
-		for k := 0; k < 3; k++ {
-			n, err := strconv.Atoi(rest[1+k])
-			if err != nil || n < 0 || n > 255 {
-				return nil, 4, false
+		return sgrColor{idx: Color256(n)}, true
+	case space == "2":
+		var f [3]string
+		for k := range f {
+			if f[k], ok = toks.next(); !ok {
+				return sgrColor{}, false
 			}
-			v[k] = n
 		}
-		return RGB{uint8(v[0]), uint8(v[1]), uint8(v[2])}, 4, true // #nosec G115 -- range-checked above
+		var v [3]uint8
+		for k, t := range f {
+			n, err := strconv.Atoi(t)
+			if err != nil || n < 0 || n > 255 {
+				return sgrColor{}, false
+			}
+			v[k] = uint8(n) // #nosec G115 -- range-checked above
+		}
+		return sgrColor{rgb: RGB{v[0], v[1], v[2]}, isRGB: true}, true
 	}
-	return nil, 0, false
+	toks.pos = pos
+	return sgrColor{}, false
 }
 
 // parseColonColor reads the part after "38:" in colon form: "5:n",
 // "2::r:g:b" (empty colour-space id) or "2:r:g:b".
-func parseColonColor(s string) (Color, bool) {
-	f := strings.Split(s, ":")
-	switch {
-	case len(f) == 2 && f[0] == "5":
-		n, err := strconv.Atoi(f[1])
+func parseColonColor(s string) (sgrColor, bool) {
+	space, rest, _ := strings.Cut(s, ":")
+	switch fields := strings.Count(s, ":") + 1; {
+	case fields == 2 && space == "5":
+		n, err := strconv.Atoi(rest)
 		if err != nil || n < 0 || n > 255 {
-			return nil, false
+			return sgrColor{}, false
 		}
-		return Color256(n), true
-	case len(f) >= 4 && f[0] == "2":
-		v := f[len(f)-3:]
-		var c [3]int
-		for k, x := range v {
-			n, err := strconv.Atoi(x)
+		return sgrColor{idx: Color256(n)}, true
+	case fields >= 4 && space == "2":
+		// The last three fields are r, g and b.
+		var v [3]uint8
+		for k := 2; k >= 0; k-- {
+			i := strings.LastIndexByte(rest, ':')
+			n, err := strconv.Atoi(rest[i+1:])
 			if err != nil || n < 0 || n > 255 {
-				return nil, false
+				return sgrColor{}, false
 			}
-			c[k] = n
+			v[k] = uint8(n) // #nosec G115 -- range-checked above
+			rest = rest[:max(i, 0)]
 		}
-		return RGB{uint8(c[0]), uint8(c[1]), uint8(c[2])}, true // #nosec G115 -- range-checked above
+		return sgrColor{rgb: RGB{v[0], v[1], v[2]}, isRGB: true}, true
 	}
-	return nil, false
+	return sgrColor{}, false
 }
 
-// appendColor appends the code(s) for colour c in the slot named by base
-// ("38" foreground, "48" background, "58" underline) at profile p.
-func appendColor(out []string, base string, c Color, p Profile) []string {
+// color writes the code(s) for colour c in the slot named by base ("38"
+// foreground, "48" background, "58" underline) at profile p.
+func (w *sgrWriter) color(base string, c sgrColor, p Profile) {
 	if p == NoColor {
-		return out
+		return
 	}
-	switch v := c.(type) {
-	case RGB:
-		switch p {
-		case ANSI256:
-			return append(out, base, "5", strconv.Itoa(int(rgbTo256(v))))
-		case ANSI16:
-			return appendBasic(out, base, rgbTo16(v))
-		}
-	case Color256:
-		if p == ANSI16 {
-			if v < 16 {
-				return appendBasic(out, base, BasicColor(v))
-			}
-			return appendBasic(out, base, rgbTo16(color256RGB(v)))
-		}
-		return append(out, base, "5", strconv.Itoa(int(v)))
+	switch v := c.idx; {
+	case c.isRGB && p == ANSI16:
+		w.basic(base, rgbTo16(c.rgb))
+	case c.isRGB:
+		w.param(base)
+		w.param("5")
+		w.int(int(rgbTo256(c.rgb)))
+	case p != ANSI16:
+		w.param(base)
+		w.param("5")
+		w.int(int(v))
+	case v < 16:
+		w.basic(base, BasicColor(v))
+	default:
+		w.basic(base, rgbTo16(color256RGB(v)))
 	}
-	return out
 }
 
-// appendBasic appends the 16-colour code for c in the given slot. The
-// underline slot has no 16-colour form, so it is dropped.
-func appendBasic(out []string, base string, c BasicColor) []string {
+// basic writes the 16-colour code for c in the given slot. The underline
+// slot has no 16-colour form, so it is dropped.
+func (w *sgrWriter) basic(base string, c BasicColor) {
 	switch base {
 	case "38":
-		return append(out, c.fgCode())
+		w.sep()
+		w.b = c.appendSGR(w.b, slotFg)
 	case "48":
-		return append(out, c.bgCode())
+		w.sep()
+		w.b = c.appendSGR(w.b, slotBg)
 	}
-	return out
 }

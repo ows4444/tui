@@ -150,7 +150,7 @@ No workflow runs fuzzing.
 CI's `test` job runs a smoke pass on Linux:
 
 ```sh
-go test -run '^$' -bench 'VirtualList10k|RenderDiff|Frame|Repaint' -benchtime=100x ./...
+go test -run '^$' -bench 'VirtualList10k|RenderDiff|Frame|Repaint|AvatarView|FacesView' -benchtime=100x ./...
 ```
 
 The allocation gate against `bench/baseline.txt` is described in

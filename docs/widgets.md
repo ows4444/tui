@@ -32,7 +32,7 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, skeleton, spinner, streamtext, tabs, taginput, textarea, textinput, toolapproval, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, skeleton, spinner, streamtext, tabs, taginput, textarea, textinput, toolapproval, treeview, viewport, virtuallist |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | contextmenu, dialog, drawer, helpscreen, menubar, popover, toast |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
@@ -58,6 +58,7 @@ in `examples/` that imports the package.
 | [accordion](../accordion) | A list of collapsible sections | yes | `examples/settings` |
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
+| [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
 | [clockview](../clockview) | A wall-clock, stopwatch or countdown timer | | |
 | [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes | |
@@ -70,11 +71,11 @@ in `examples/` that imports the package.
 | [drawer](../drawer) | An overlay anchored to an edge of the base view | yes | |
 | [emailinput](../emailinput) | A `textinput.Model` wrapper that rejects whitespace | | |
 | [errorretry](../errorretry) | An error with retry (Enter or `r`, up to `MaxRetries`) and dismiss (Esc). Experimental | yes | |
-| [faces](../faces) | A catalog of 50 animated Braille characters and a widget that plays them. Experimental | | `examples/faces` |
+| [faces](../faces) | A catalog of 50 ready-made animated Braille characters and a widget that plays them. For a picture derived from a name, see avatar. Experimental | | `examples/faces` |
 | [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes | |
 | [form](../form) | A validating column of labelled fields with Submit | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
-| [imageview](../imageview) | A PNG drawn with the kitty graphics protocol or Sixel, or a text placeholder. Experimental | | |
+| [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
 | [logview](../logview) | An append-only scrolling log | | `examples/procstream` |
 | [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/agentshell` |

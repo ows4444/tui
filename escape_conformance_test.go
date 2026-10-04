@@ -12,6 +12,7 @@ import (
 	"github.com/ows4444/tui/accordion"
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
+	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
@@ -71,6 +72,11 @@ var conformance = map[string]func() map[string]string{
 		m := autocomplete.New(evil)
 		m.Input.SetValue("M")
 		return map[string]string{"View": m.View()}
+	},
+	"avatar": func() map[string]string {
+		// The name is hashed, never drawn; Linearize is the one place it is shown.
+		m := avatar.New(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"clipboard": func() map[string]string {
 		m := clipboard.New(evil, evil)

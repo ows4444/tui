@@ -12,6 +12,7 @@ import (
 	"github.com/ows4444/tui/accordion"
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
+	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/clockview"
 	"github.com/ows4444/tui/colorpicker"
@@ -256,6 +257,7 @@ func TestCopyIsolationSweep(t *testing.T) {
 	sweep(t, "skeleton", func() skeleton.Model { m := skeleton.New(); m.Start(); return m })
 	sweep(t, "clock", func() clockview.Model { m := clockview.New(clockview.ModeStopwatch); m.Start(); return m })
 	sweep(t, "faces", func() faces.Model { return faces.New() })
+	sweep(t, "avatar", func() avatar.Model { m := avatar.New("alain"); m.Blink(); return m })
 }
 
 // focus.Ring returns (Ring, bool) from Update, so it gets its own adapter.
