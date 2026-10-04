@@ -8,20 +8,40 @@ import (
 	"github.com/ows4444/tui/motion"
 )
 
-// ReactHold is how long a reaction is held before the avatar returns to its
-// own Expression.
+// ReactHold is how long a reaction lasts, from the click to the moment the
+// avatar starts back to its own Expression. The ease into the reaction is
+// part of it.
 const ReactHold = 1500 * time.Millisecond
 
-// releaseMsg ends a reaction. owner is the token of the reaction that
-// scheduled it, so a reaction that was replaced is not cut short by the
-// release of the one before it, and one avatar's release leaves the others
-// alone.
-type releaseMsg struct{ owner *int }
+// A pose change is eased over tweenFrames frames, tweenInterval apart: the
+// eyes are drawn part of the way from the old pose to the new one on each.
+const (
+	tweenFrames   = 4
+	tweenInterval = 45 * time.Millisecond
+)
+
+// tweenMsg advances an ease one frame, and releaseMsg ends a reaction. owner
+// is the token of the pose change that scheduled it, so a change that was
+// replaced is not disturbed by what the one before it left behind, and one
+// avatar's Msgs leave the others alone.
+type (
+	tweenMsg   struct{ owner *int }
+	releaseMsg struct{ owner *int }
+)
+
+// ease starts the ease from pose from to the pose now shown and returns its
+// first tick.
+func (m *Model) ease(from Expression) tui.Cmd {
+	owner := new(int)
+	m.from, m.tween, m.poseOwner = from, 1, owner
+	return tui.FromCtx(motion.After(tweenInterval, func(time.Time) tui.Msg { return tweenMsg{owner: owner} }))
+}
 
 // React makes the avatar pull a face: an expression other than the one it is
-// showing, held for ReactHold and then released back to Expression. Return
-// the Cmd from your Update, for example on a mouse click. Reacting again
-// during the hold picks another expression and starts the hold again.
+// showing, eased into, held until ReactHold has passed and then eased back
+// to Expression. Return the Cmd from your Update, for example on a mouse
+// click, and pass the Msgs that follow to Update. Reacting again during the
+// hold picks another expression and starts the hold again.
 //
 // The expression is not random: it is drawn from the name and from how many
 // times this Model has reacted, so the same name reacts the same way every
@@ -30,7 +50,7 @@ type releaseMsg struct{ owner *int }
 // expression does not change.
 func (m *Model) React() tui.Cmd {
 	if m.Motion.Reduced() {
-		m.reaction, m.reactOwner = ExpressionNone, nil
+		m.reaction, m.tween, m.poseOwner = ExpressionNone, 0, nil
 		return nil
 	}
 	shown := m.shown()
@@ -43,16 +63,27 @@ func (m *Model) React() tui.Cmd {
 	m.reacts++
 	pick := m.traits().at("react." + strconv.Itoa(m.reacts))
 	m.reaction = pool[int(pick*float64(len(pool)))]
-	owner := new(int)
-	m.reactOwner = owner
-	return tui.FromCtx(motion.After(ReactHold, func(time.Time) tui.Msg { return releaseMsg{owner: owner} }))
+	return m.ease(shown)
 }
 
 // Reacting reports whether a reaction is being held.
 func (m Model) Reacting() bool { return m.reaction != ExpressionNone }
 
-// shown is the expression that is drawn: the reaction being held, or else
-// the Model's own Expression.
+// SetExpression changes Expression and eases the eyes into the new pose over
+// a few frames; return the Cmd from your Update. Assigning the field changes
+// the pose at once, as does this under motion.Reduced, where it returns nil.
+// While a reaction is held the change shows when the reaction is released.
+func (m *Model) SetExpression(e Expression) tui.Cmd {
+	from := m.shown()
+	m.Expression = e
+	if m.Motion.Reduced() || m.reaction != ExpressionNone || m.shown() == from {
+		return nil
+	}
+	return m.ease(from)
+}
+
+// shown is the expression the avatar is in, or is easing into: the reaction
+// being held, or else the Model's own Expression.
 func (m Model) shown() Expression {
 	if m.reaction != ExpressionNone {
 		return m.reaction
@@ -63,12 +94,53 @@ func (m Model) shown() Expression {
 	return m.Expression
 }
 
-// release ends the reaction msg belongs to, and reports whether msg was a
-// release at all.
-func (m *Model) release(msg tui.Msg) bool {
-	r, ok := msg.(releaseMsg)
-	if ok && m.reactOwner != nil && r.owner == m.reactOwner {
-		m.reaction, m.reactOwner = ExpressionNone, nil
+// easing is the pose being eased away from, or the pose shown when no ease
+// is in progress.
+func (m Model) easing() Expression {
+	if m.tween == 0 {
+		return m.shown()
 	}
-	return ok
+	return m.from
+}
+
+// poses returns what to draw: the pose eased from, the pose eased to, and
+// how far along the ease is; 1 when the avatar rests on the pose shown.
+func (m Model) poses() (from, to pose, at float64) {
+	to = m.shown().pose()
+	if m.tween == 0 {
+		return to, to, 1
+	}
+	return m.from.pose(), to, float64(m.tween) / tweenFrames
+}
+
+// posing handles the Msgs of a pose change: a tick of the ease, and the
+// release of a reaction. It reports whether msg was one of them, with the
+// Cmd that carries the change on.
+func (m *Model) posing(msg tui.Msg) (tui.Cmd, bool) {
+	switch msg := msg.(type) {
+	case tweenMsg:
+		if m.poseOwner == nil || msg.owner != m.poseOwner || m.tween == 0 {
+			return nil, true
+		}
+		if m.tween++; m.tween < tweenFrames {
+			owner := m.poseOwner
+			return tui.FromCtx(motion.After(tweenInterval, func(time.Time) tui.Msg { return tweenMsg{owner: owner} })), true
+		}
+		m.tween = 0
+		if m.reaction == ExpressionNone {
+			return nil, true
+		}
+		// The ease into a reaction is over: wait out the rest of the hold.
+		owner := m.poseOwner
+		hold := ReactHold - (tweenFrames-1)*tweenInterval
+		return tui.FromCtx(motion.After(hold, func(time.Time) tui.Msg { return releaseMsg{owner: owner} })), true
+	case releaseMsg:
+		if m.poseOwner == nil || msg.owner != m.poseOwner || m.reaction == ExpressionNone {
+			return nil, true
+		}
+		held := m.reaction
+		m.reaction = ExpressionNone
+		return m.ease(held), true
+	}
+	return nil, false
 }

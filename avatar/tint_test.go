@@ -127,11 +127,11 @@ func TestAReactionCanTint(t *testing.T) {
 	if m.shown() != ExpressionMad {
 		t.Fatal("forty reactions never reached the mad pose")
 	}
+	m, _, _ = settle(t, m)
 	if b, _, _ := m.Colors(); b == body {
 		t.Error("a mad reaction did not tint the body")
 	}
-	n, _ := m.Update(releaseMsg{owner: m.reactOwner})
-	if b, _, _ := n.Colors(); b != body {
+	if b, _, _ := release(t, m).Colors(); b != body {
 		t.Error("the tint outlived the reaction")
 	}
 }

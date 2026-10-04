@@ -15,8 +15,8 @@
 // Hue, Tone and Silhouette pin the colour or the shape, for an app with a
 // house style, while the name still decides everything else.
 //
-// The figure can react. Expression sets a pose the eyes hold, React pulls a
-// face for a moment and lets it go, Blink closes and reopens the eyes once
+// The figure can react. Expression sets a pose the eyes hold (SetExpression
+// eases into it), React pulls a face for a moment and lets it go, Blink closes and reopens the eyes once
 // and StartIdle keeps the avatar breathing, blinking and glancing aside, all
 // three driven by Update, and LookAt turns the eyes toward a target such as
 // the mouse pointer.
@@ -84,7 +84,8 @@ type Model struct {
 	// name choose; the name still sizes and places it.
 	Silhouette Silhouette
 	// Expression is the pose the eyes hold. The zero value, ExpressionNone,
-	// is the figure at rest.
+	// is the figure at rest. Assigning it changes the pose at once;
+	// SetExpression eases into it.
 	Expression Expression
 	// LookX and LookY turn the eyes: each runs from -1 to 1, where LookX 1
 	// is fully right and LookY 1 fully down, and zero is the name's own
@@ -104,12 +105,16 @@ type Model struct {
 	// owner is the token of the animation in progress; its ticks carry it,
 	// and a tick with another token is ignored.
 	owner *int
-	// reaction is the expression React is holding, or ExpressionNone;
-	// reactOwner is the token its release carries, and reacts counts the
-	// reactions so far.
-	reaction   Expression
-	reactOwner *int
-	reacts     int
+	// reaction is the expression React is holding, or ExpressionNone, and
+	// reacts counts the reactions so far.
+	reaction Expression
+	reacts   int
+	// from is the pose the eyes are easing away from and tween the frame of
+	// that ease; 0 is at rest on the pose shown. poseOwner is the token the
+	// ease's ticks and a reaction's release carry.
+	from      Expression
+	tween     int
+	poseOwner *int
 	// cache holds the last View; nil on a struct literal.
 	cache *viewCache
 }
@@ -138,6 +143,8 @@ type viewKey struct {
 	lookX, lookY  float64
 	zoom          float64
 	expression    Expression
+	from          Expression
+	tween         int
 	blink         int
 	ascii         bool
 	shades        string
@@ -171,9 +178,19 @@ func (m Model) restPalette(t traits) palette {
 // palette is the colours the avatar is drawn in now: its own, tinted by the
 // expression showing if that one tints.
 func (m Model) palette(t traits) palette {
-	p := m.restPalette(t)
-	if pose := m.shown().pose(); pose.tint != nil {
-		p = p.tinted(pose.tint, pose.heat)
+	rest := m.restPalette(t)
+	wear := func(pose pose) palette {
+		if pose.tint == nil {
+			return rest
+		}
+		return rest.tinted(pose.tint, pose.heat)
+	}
+	from, to, at := m.poses()
+	p := wear(to)
+	if at < 1 && (from.tint != nil || to.tint != nil) {
+		// Part of the way from one pose's colours to the other's.
+		a := wear(from)
+		p.head, p.eye = mixRGB(a.head, p.head, at), mixRGB(a.eye, p.eye, at)
 	}
 	return p
 }
@@ -268,7 +285,7 @@ func (m Model) View() string {
 		name: m.Name, raw: m.Raw, width: m.Width, height: m.Height, bg: m.Background,
 		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette,
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
-		expression: m.shown(), blink: m.blink,
+		expression: m.shown(), from: m.easing(), tween: m.tween, blink: m.blink,
 		ascii: glyphs.ASCII(), shades: glyphs.Shades,
 	}
 	c.mu.Lock()
@@ -289,7 +306,8 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	lookX, zoom := m.moved()
 	f := layoutFigure(t)
 	s := newScene(f, m.plate())
-	s.setEyes(f.posed(m.shown().pose(), unit(unit(m.LookX)+lookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
+	from, to, at := m.poses()
+	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), open, s.eyeBoost(f, m.Width, m.Height)))
 	s.zoom = zoom
 	g := s.rasterize(m.Width, m.Height, open == 1)
 	return g.render(m.palette(t), glyphs)

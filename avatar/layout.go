@@ -80,26 +80,43 @@ type eyeSpec struct{ cx, cy, rx, ry, n, rot float64 }
 // face's radius on each axis.
 const gazeTravel = 0.3
 
-// posed returns f with its eyes in pose p, moved by (lx, ly), each in
-// [-1, 1], closed to open of their height, and enlarged boost times about
-// their centres. The body is unchanged, and the renderer draws an eye only
-// where it is over the body.
-func (f figure) posed(p pose, lx, ly, open, boost float64) figure {
+// in returns eye i as pose p shapes it, before any look, blink or boost.
+func (p pose) in(f figure, i int) eyeSpec {
+	e, q := f.eye[i], p.eye[i]
+	out := eyeSpec{
+		cx: e.cx + q.dx*f.face.rx, cy: e.cy + q.dy*f.face.ry,
+		rx: e.rx * q.sx, ry: e.ry * q.sy, n: e.n, rot: e.rot,
+	}
+	if p.n > 0 {
+		out.n = p.n
+	}
+	if q.turn {
+		out.rot = q.rot
+	}
+	return out
+}
+
+// posed returns f with its eyes at the fraction at of the way from pose a to
+// pose b (1 is b itself), moved by (lx, ly), each in [-1, 1], closed to open
+// of their height, and enlarged boost times about their centres. The body is
+// unchanged, and the renderer draws an eye only where it is over the body.
+func (f figure) posed(a, b pose, at, lx, ly, open, boost float64) figure {
 	dx, dy := lx*gazeTravel*f.face.rx, ly*gazeTravel*f.face.ry
-	for i, e := range f.eye {
-		q := p.eye[i]
-		cx, cy := e.cx+dx+q.dx*f.face.rx, e.cy+dy+q.dy*f.face.ry
-		n, rot := e.n, e.rot
-		if p.n > 0 {
-			n = p.n
-		}
-		if q.turn {
-			rot = q.rot
-		}
-		rx, ry := e.rx*q.sx*boost, e.ry*q.sy*open*boost
+	mix := func(x, y float64) float64 { return x + (y-x)*at }
+	// A dome and a capsule have no shape between them: the eye changes
+	// kind half way.
+	domed := b.dome
+	if at < 0.5 {
+		domed = a.dome
+	}
+	for i := range f.eye {
+		from, to := a.in(f, i), b.in(f, i)
+		cx, cy := mix(from.cx, to.cx)+dx, mix(from.cy, to.cy)+dy
+		rx, ry := mix(from.rx, to.rx)*boost, mix(from.ry, to.ry)*open*boost
+		n, rot := mix(from.n, to.n), mix(from.rot, to.rot)
 		f.eyeAt[i] = point{cx, cy}
 		f.eyes[i] = superellipse(cx, cy, rx, ry, n, rot)
-		if p.dome {
+		if domed {
 			// The centre of a dome is on its flat edge; a third of the
 			// way up is inside it.
 			f.eyeAt[i] = point{cx, cy - ry/3}

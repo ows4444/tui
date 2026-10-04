@@ -704,6 +704,7 @@ func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
 func (m *Model) LookAt(dx, dy int)
 func (m *Model) React() tui.Cmd
+func (m *Model) SetExpression(e Expression) tui.Cmd
 func (m *Model) StartIdle() tui.Cmd
 func (m *Model) StopIdle()
 func (m Model) Blinking() bool

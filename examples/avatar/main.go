@@ -9,7 +9,7 @@
 //	←/→ or h/l  previous / next name
 //	+/- or ↑/↓  larger / smaller avatars
 //	b           cycle the background: none, squircle, circle, square
-//	e           cycle the expression: none, happy, sad, mad, ...
+//	e           ease every avatar into the next expression: happy, sad, mad, ...
 //	i           idle on / off: every avatar breathes, blinks and glances
 //	c           pin the hue: name's own, 30, 90, 140, 250, 320
 //	t           pin the tone: name's own, pastel, pale, mid, deep, bright, ink
@@ -135,7 +135,13 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 			case "a":
 				m.ascii = !m.ascii
 			case "e":
+				// Every avatar eases into the next expression.
 				m.expression = (m.expression + 1) % (avatar.ExpressionSick + 1)
+				var cmds []tui.Cmd
+				for i := range m.wall {
+					cmds = append(cmds, m.wall[i].SetExpression(m.expression))
+				}
+				return m, tui.Batch(cmds...)
 			case "c":
 				m.hue = (m.hue + 1) % len(hues)
 			case "t":
@@ -211,7 +217,6 @@ func (m model) avatar(i, x, y int) avatar.Model {
 	a := m.wall[i].SetTheme(m.theme())
 	a.Width, a.Height = sizes[m.size][0], sizes[m.size][1]
 	a.Background = backgrounds[m.bg].bg
-	a.Expression = m.expression
 	a.Hue, a.Tone, a.Silhouette = hues[m.hue], m.tone, m.silhouette
 	if m.mouse {
 		a.LookAt(m.mouseX-(x+a.Width/2), m.mouseY-(y+a.Height/2))
