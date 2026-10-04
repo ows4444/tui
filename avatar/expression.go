@@ -63,7 +63,8 @@ type eyePose struct {
 // are drawn as domes, flat side down, the tint it gives the body with how
 // far it goes toward it (nil leaves the colours alone), and how it moves
 // while it is held: shake is how hard the eyes tremble, and with rock the two
-// eyes trade heights on a loop.
+// eyes trade heights on a loop. lift moves the whole figure, in frame units:
+// a lifted body (negative) reads as light, a sunk one as heavy.
 type pose struct {
 	name  string
 	eye   [2]eyePose
@@ -73,6 +74,7 @@ type pose struct {
 	heat  float64
 	shake float64
 	rock  bool
+	lift  float64
 }
 
 // moves reports whether the pose moves while it is held.
@@ -98,19 +100,19 @@ var still = eyePose{sx: 1, sy: 1}
 // and with colour stripped.
 var poses = [...]pose{
 	ExpressionNone:      {name: "none", eye: [2]eyePose{still, still}},
-	ExpressionHappy:     {name: "happy", eye: [2]eyePose{{sx: 2.1, sy: 1.05, dy: 0.14, turn: true}, {sx: 2.1, sy: 1.05, dy: 0.14, turn: true}}, dome: true},
-	ExpressionSad:       {name: "sad", eye: [2]eyePose{{sx: 1.6, sy: 0.36, dy: 0.3, rot: -24, turn: true}, {sx: 1.6, sy: 0.36, dy: 0.3, rot: 24, turn: true}}},
-	ExpressionMad:       {name: "mad", eye: [2]eyePose{{sx: 2.1, sy: 0.34, dx: 0.04, rot: 26, turn: true}, {sx: 2.1, sy: 0.34, dx: -0.04, rot: -26, turn: true}}, tint: tintHot, heat: 0.62, shake: 0.55},
-	ExpressionSurprised: {name: "surprised", eye: [2]eyePose{{sx: 1.9, sy: 1.3, dy: -0.08}, {sx: 1.9, sy: 1.3, dy: -0.08}}, n: 2},
-	ExpressionWink:      {name: "wink", eye: [2]eyePose{{sx: 1.9, sy: 0.2, turn: true}, still}},
-	ExpressionSleepy:    {name: "sleepy", eye: [2]eyePose{{sx: 1.9, sy: 0.2, dy: 0.2, turn: true}, {sx: 1.9, sy: 0.2, dy: 0.2, turn: true}}},
-	ExpressionThinking:  {name: "thinking", eye: [2]eyePose{{sx: 1, sy: 0.7, dx: 0.2, dy: -0.26}, {sx: 1, sy: 0.7, dx: 0.2, dy: 0.14}}, rock: true},
-	ExpressionSmug:      {name: "smug", eye: [2]eyePose{{sx: 1.6, sy: 0.5, dy: -0.16, rot: 20, turn: true}, {sx: 1.6, sy: 0.5, dy: 0.04, rot: 20, turn: true}}},
+	ExpressionHappy:     {name: "happy", eye: [2]eyePose{{sx: 2.1, sy: 1.05, dy: 0.14, turn: true}, {sx: 2.1, sy: 1.05, dy: 0.14, turn: true}}, dome: true, lift: -2.2},
+	ExpressionSad:       {name: "sad", eye: [2]eyePose{{sx: 1.6, sy: 0.36, dy: 0.3, rot: -24, turn: true}, {sx: 1.6, sy: 0.36, dy: 0.3, rot: 24, turn: true}}, lift: 2.6},
+	ExpressionMad:       {name: "mad", eye: [2]eyePose{{sx: 2.1, sy: 0.34, dx: 0.04, rot: 26, turn: true}, {sx: 2.1, sy: 0.34, dx: -0.04, rot: -26, turn: true}}, tint: tintHot, heat: 0.62, shake: 0.55, lift: 0.8},
+	ExpressionSurprised: {name: "surprised", eye: [2]eyePose{{sx: 1.9, sy: 1.3, dy: -0.08}, {sx: 1.9, sy: 1.3, dy: -0.08}}, n: 2, lift: -1.4},
+	ExpressionWink:      {name: "wink", eye: [2]eyePose{{sx: 1.9, sy: 0.2, turn: true}, still}, lift: -1.1},
+	ExpressionSleepy:    {name: "sleepy", eye: [2]eyePose{{sx: 1.9, sy: 0.2, dy: 0.2, turn: true}, {sx: 1.9, sy: 0.2, dy: 0.2, turn: true}}, lift: 1.2},
+	ExpressionThinking:  {name: "thinking", eye: [2]eyePose{{sx: 1, sy: 0.7, dx: 0.2, dy: -0.26}, {sx: 1, sy: 0.7, dx: 0.2, dy: 0.14}}, rock: true, lift: -0.4},
+	ExpressionSmug:      {name: "smug", eye: [2]eyePose{{sx: 1.6, sy: 0.5, dy: -0.16, rot: 20, turn: true}, {sx: 1.6, sy: 0.5, dy: 0.04, rot: 20, turn: true}}, lift: -1},
 	ExpressionUnsure:    {name: "unsure", eye: [2]eyePose{still, {sx: 1.5, sy: 0.4, dy: 0.12, rot: -24, turn: true}}},
-	ExpressionScared:    {name: "scared", eye: [2]eyePose{{sx: 0.8, sy: 0.5, dx: 0.16, dy: -0.22}, {sx: 0.8, sy: 0.5, dx: -0.16, dy: -0.22}}, n: 2, shake: 0.35},
-	ExpressionLove:      {name: "love", eye: [2]eyePose{{sx: 1.2, sy: 1.25, dx: 0.1, rot: -16, turn: true}, {sx: 1.2, sy: 1.25, dx: -0.1, rot: 16, turn: true}}, tint: tintRose, heat: 0.6},
-	ExpressionShy:       {name: "shy", eye: [2]eyePose{{sx: 0.85, sy: 0.5, dx: 0.14, dy: 0.26}, {sx: 0.85, sy: 0.5, dx: -0.14, dy: 0.26}}, tint: tintBlush, heat: 0.55},
-	ExpressionSick:      {name: "sick", eye: [2]eyePose{{sx: 2, sy: 0.3, dy: -0.04, rot: -20, turn: true}, {sx: 1.5, sy: 0.3, dy: 0.22, rot: 20, turn: true}}, tint: tintBile, heat: 0.6, shake: 0.18},
+	ExpressionScared:    {name: "scared", eye: [2]eyePose{{sx: 0.8, sy: 0.5, dx: 0.16, dy: -0.22}, {sx: 0.8, sy: 0.5, dx: -0.16, dy: -0.22}}, n: 2, shake: 0.35, lift: -0.6},
+	ExpressionLove:      {name: "love", eye: [2]eyePose{{sx: 1.2, sy: 1.25, dx: 0.1, rot: -16, turn: true}, {sx: 1.2, sy: 1.25, dx: -0.1, rot: 16, turn: true}}, tint: tintRose, heat: 0.6, lift: -1.6},
+	ExpressionShy:       {name: "shy", eye: [2]eyePose{{sx: 0.85, sy: 0.5, dx: 0.14, dy: 0.26}, {sx: 0.85, sy: 0.5, dx: -0.14, dy: 0.26}}, tint: tintBlush, heat: 0.55, lift: 0.9},
+	ExpressionSick:      {name: "sick", eye: [2]eyePose{{sx: 2, sy: 0.3, dy: -0.04, rot: -20, turn: true}, {sx: 1.5, sy: 0.3, dy: 0.22, rot: 20, turn: true}}, tint: tintBile, heat: 0.6, shake: 0.18, lift: 1.4},
 }
 
 func (e Expression) pose() pose {

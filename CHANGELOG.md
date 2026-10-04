@@ -33,7 +33,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   the avatar as a PNG, for `imageview` on a terminal that shows images.
   `Model.React` pulls a face for `ReactHold` and lets it go, for a click;
   it eases in and out, as does `Model.SetExpression`. Eased into, the mad,
-  scared and sick poses tremble and the thinking pose rocks.
+  scared and sick poses tremble and the thinking pose rocks. A pose also
+  lifts or sinks the body a little; in cells that shows only at large sizes.
   `ExpressionMad`, `ExpressionLove`, `ExpressionShy` and `ExpressionSick`
   tint the body; `Colors` reports the tinted colours.
 - `tui.WriteClipboard(text)` copies text: the Program writes the OSC 52

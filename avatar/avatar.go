@@ -325,6 +325,8 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	shift := m.tremble(to, f, 0.5*s.pixelWidth(m.Width, m.Height))
 	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), shift, open, s.eyeBoost(f, m.Width, m.Height)))
 	s.zoom = zoom
+	// In cells a pixel is twice as tall as it is wide.
+	s.setLift(lift(from, to, at), 2*s.pixelWidth(m.Width, m.Height))
 	g := s.rasterize(m.Width, m.Height, open == 1)
 	return g.render(m.palette(t), glyphs)
 }

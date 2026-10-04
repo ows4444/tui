@@ -61,6 +61,9 @@ type scene struct {
 	// zoom draws the body this many times its size at rest; 0 is 1. It is
 	// how the idle loop breathes, and has no effect over a plate.
 	zoom float64
+	// lift draws the body and the eyes this far down the square; a pose
+	// sets it.
+	lift float64
 }
 
 func (s scene) inBody(x, y float64) bool {
@@ -80,9 +83,10 @@ func (s scene) inBody(x, y float64) bool {
 // at is the layer at a point. An eye is part of the body: where a look
 // carries it past the outline, it is not drawn.
 func (s scene) at(x, y float64) layer {
-	if s.inBody(x, y) {
+	// The figure is drawn lift lower: look it up where it is at rest.
+	if fy := y - s.lift; s.inBody(x, fy) {
 		for _, e := range s.eyes {
-			if e.contains(x, y) {
+			if e.contains(x, fy) {
 				return layerEye
 			}
 		}
@@ -111,7 +115,17 @@ func (s scene) bounds() (cx, cy, side float64) {
 	if s.plate != nil {
 		return 50, 50, 100
 	}
-	minX, minY, maxX, maxY := math.Inf(1), math.Inf(1), math.Inf(-1), math.Inf(-1)
+	minX, minY, maxX, maxY := s.extent()
+	side = math.Max(maxX-minX, maxY-minY) * bodyAir
+	if s.zoom > 0 {
+		side /= s.zoom
+	}
+	return (minX + maxX) / 2, (minY + maxY) / 2, side
+}
+
+// extent returns the bounding box of the body at rest.
+func (s scene) extent() (minX, minY, maxX, maxY float64) {
+	minX, minY, maxX, maxY = math.Inf(1), math.Inf(1), math.Inf(-1), math.Inf(-1)
 	for _, b := range s.body {
 		minX, maxX = math.Min(minX, b.minX), math.Max(maxX, b.maxX)
 		minY, maxY = math.Min(minY, b.minY), math.Max(maxY, b.maxY)
@@ -120,11 +134,28 @@ func (s scene) bounds() (cx, cy, side float64) {
 		minX, maxX = math.Min(minX, c.cx-c.r), math.Max(maxX, c.cx+c.r)
 		minY, maxY = math.Min(minY, c.cy-c.r), math.Max(maxY, c.cy+c.r)
 	}
-	side = math.Max(maxX-minX, maxY-minY) * bodyAir
-	if s.zoom > 0 {
-		side /= s.zoom
+	return minX, minY, maxX, maxY
+}
+
+// room returns how far the body can be lifted (a negative number) and sunk
+// before it reaches the edge of the drawn square.
+func (s scene) room() (up, down float64) {
+	_, cy, side := s.bounds()
+	_, minY, _, maxY := s.extent()
+	return math.Min(0, cy-side/2-minY), math.Max(0, cy+side/2-maxY)
+}
+
+// setLift moves the body and its eyes lift frame units down the drawn square
+// (up when negative), stopping at its edge. step, when positive, is the
+// height of a pixel: the move is cut down to whole pixels, so a shift too
+// small to show does not smear the outline instead.
+func (s *scene) setLift(lift, step float64) {
+	up, down := s.room()
+	lift = math.Max(up, math.Min(down, lift))
+	if step > 0 {
+		lift = math.Trunc(lift/step) * step
 	}
-	return (minX + maxX) / 2, (minY + maxY) / 2, side
+	s.lift = lift
 }
 
 // bodyAir is the side of the drawn square as a multiple of the body's larger
@@ -207,7 +238,7 @@ func (s scene) rasterize(w, h int, keepEyes bool) grid {
 	// An eye narrower than a pixel would lose every vote; give each its
 	// pixel, unless a look has carried its centre off the body.
 	for _, c := range s.eyeAt {
-		i, j := int(math.Floor((c.x/unit+ox)*2)), int(math.Floor(c.y/unit+oy))
+		i, j := int(math.Floor((c.x/unit+ox)*2)), int(math.Floor((c.y+s.lift)/unit+oy))
 		if i >= 0 && j >= 0 && i < 2*w && j < 2*h && s.inBody(c.x, c.y) {
 			g.px[j*2*w+i] = layerEye
 		}

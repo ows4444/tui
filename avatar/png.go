@@ -36,6 +36,7 @@ func (m Model) PNG(size int) []byte {
 	from, to, at := m.poses()
 	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), m.tremble(to, f, 0), blinkOpen[m.blink%len(blinkOpen)], 1))
 	s.zoom = zoom
+	s.setLift(lift(from, to, at), 0)
 	p := m.palette(t)
 	colour := [layers]ansi.RGB{layerPlate: p.bg, layerBody: p.head, layerEye: p.eye}
 

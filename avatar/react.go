@@ -154,6 +154,10 @@ func (m Model) poses() (from, to pose, at float64) {
 	return m.from.pose(), to, float64(m.tween) / tweenFrames
 }
 
+// lift is how far the body is moved part of the way from pose from to pose
+// to.
+func lift(from, to pose, at float64) float64 { return from.lift + (to.lift-from.lift)*at }
+
 // posing handles the Msgs of a pose change: a tick of the ease, a tick of a
 // held pose's own motion, and the release of a reaction. It reports whether msg was one of them, with the
 // Cmd that carries the change on.
