@@ -3398,6 +3398,7 @@ func (s *Session) Paste(text string)
 func (s *Session) Resize(w, h int)
 func (s *Session) Screen() []string
 func (s *Session) Send(msg tui.Msg)
+func (s *Session) WaitForText(text string, timeout time.Duration) bool
 func (s *Session) Wheel(x, y, dy int)
 func New(model tui.Model, w, h int, opts ...tui.ProgramOption) *Session
 func NewFakeClock() *FakeClock

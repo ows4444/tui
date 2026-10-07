@@ -57,7 +57,13 @@ type Session struct {
 	inbox   chan tui.Msg
 	quit    chan struct{}
 	done    chan struct{}
-	updates atomic.Int64
+	updates atomic.Int64 // every Update, whatever caused it: settle's quiet check
+
+	// What the harness sent and the model has since received, counted by
+	// kind. A method waits on the counter of what it sent, so an Update
+	// caused by something else (a tick, a command's result) is not taken
+	// for it.
+	keys, pastes, resizes, injects atomic.Int64
 
 	mu     sync.Mutex
 	screen *vtscreen.Screen
@@ -114,8 +120,8 @@ func (sw screenWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// host wraps the user's model to count updates, deliver injected Msgs and
-// hide the pre-size frame.
+// host wraps the user's model to count updates and what caused them, deliver
+// injected Msgs and hide the pre-size frame.
 type host struct {
 	s     *Session
 	inner tui.Model
@@ -137,8 +143,31 @@ func (h *host) listen() tui.Cmd {
 
 func (h *host) Init() tui.Cmd { return tui.Batch(h.inner.Init(), h.listen()) }
 
+// counter returns the counter of the kind of message msg is, or nil for a
+// message the harness did not send: a tick, a command's result.
+func (s *Session) counter(msg tui.Msg) *atomic.Int64 {
+	switch msg.(type) {
+	case injected:
+		return &s.injects
+	case tui.Key, tui.ChordMsg:
+		return &s.keys
+	case tui.PasteEvent:
+		return &s.pastes
+	case tui.ResizeMsg:
+		return &s.resizes
+	}
+	return nil
+}
+
 func (h *host) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
-	defer h.s.updates.Add(1)
+	// Counted once the model has handled it, so a waiter that sees the count
+	// also sees the model's new state.
+	defer func(c *atomic.Int64) {
+		if c != nil {
+			c.Add(1)
+		}
+		h.s.updates.Add(1)
+	}(h.s.counter(msg))
 	next := *h
 	if in, ok := msg.(injected); ok {
 		msg = in.msg
@@ -193,19 +222,20 @@ func (s *Session) watchQuit(c tui.Cmd) tui.Cmd {
 }
 
 func (s *Session) inject(msg tui.Msg) {
-	start := s.updates.Load()
+	start := s.injects.Load()
 	select {
 	case s.inbox <- msg:
 	case <-s.done:
 		return
 	}
-	s.settle(start + 1)
+	s.settle(&s.injects, start+1)
 }
 
-// settle waits until updates reaches want, then until output goes quiet.
-func (s *Session) settle(want int64) {
+// settle waits until the model has received want messages of the kind n
+// counts, then until output goes quiet.
+func (s *Session) settle(n *atomic.Int64, want int64) {
 	deadline := time.Now().Add(settleTimeout)
-	for s.updates.Load() < want && time.Now().Before(deadline) {
+	for n.Load() < want && time.Now().Before(deadline) {
 		select {
 		case <-s.done:
 			return
@@ -311,7 +341,14 @@ func encodeKey(k string) string {
 // "volume-up") or literal text, which is sent as one key press per character.
 // The one group of names it cannot send is super+ with a navigation or
 // function key (up to f20), which the xterm sequences have no bit for; such an
-// argument is typed as text. Keys returns once the frame has settled.
+// argument is typed as text.
+//
+// Keys returns once the model has received every key and the frame has
+// settled. Only key messages count toward that: an Update caused by a tick or
+// a command's result while the keys are in flight does not. A key the Program
+// keeps for itself (the inspector's, or all but the last of a chord set with
+// tui.WithChords) never reaches the model, so Keys then waits out its
+// five-second limit before returning.
 func (s *Session) Keys(keys ...string) {
 	var seqs []string
 	for _, k := range keys {
@@ -323,13 +360,13 @@ func (s *Session) Keys(keys ...string) {
 			seqs = append(seqs, string(r))
 		}
 	}
-	start := s.updates.Load()
+	start := s.keys.Load()
 	for _, q := range seqs {
 		if _, err := s.inW.Write([]byte(q)); err != nil {
 			return
 		}
 	}
-	s.settle(start + int64(len(seqs)))
+	s.settle(&s.keys, start+int64(len(seqs)))
 }
 
 // Cell is one screen cell as the VT-emulated terminal shows it: the character
@@ -388,11 +425,11 @@ func (s *Session) Wheel(x, y, dy int) {
 
 // Paste delivers text as one bracketed paste.
 func (s *Session) Paste(text string) {
-	start := s.updates.Load()
+	start := s.pastes.Load()
 	if _, err := s.inW.Write([]byte("\x1b[200~" + text + "\x1b[201~")); err != nil {
 		return
 	}
-	s.settle(start + 1)
+	s.settle(&s.pastes, start+1)
 }
 
 // Resize changes the terminal to w x h: the emulated screen, the size the
@@ -406,9 +443,9 @@ func (s *Session) Resize(w, h int) {
 	// through its loop, so the message goes through the Program, not through
 	// the inbox that reaches only the model.
 	s.term.SetSize(w, h)
-	start := s.updates.Load()
+	start := s.resizes.Load()
 	s.prog.Send(tui.ResizeMsg{Width: w, Height: h})
-	s.settle(start + 1)
+	s.settle(&s.resizes, start+1)
 }
 
 // Send delivers an arbitrary Msg to the model's Update.
@@ -419,6 +456,37 @@ func (s *Session) Screen() []string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.screen.Lines()
+}
+
+// WaitForText waits until some row of the screen contains text, and reports
+// whether it did within timeout. Use it for output that arrives on its own
+// time, after a command or a tick, which no call to Keys or Send waits for. A
+// row is matched as Screen returns it, so text that wraps across two rows is
+// not found. If the program exits first, the screen it left is checked once.
+func (s *Session) WaitForText(text string, timeout time.Duration) bool {
+	deadline := time.Now().Add(timeout)
+	for {
+		if s.hasText(text) {
+			return true
+		}
+		if !time.Now().Before(deadline) {
+			return false
+		}
+		select {
+		case <-s.done:
+			return s.hasText(text)
+		case <-time.After(2 * time.Millisecond):
+		}
+	}
+}
+
+func (s *Session) hasText(text string) bool {
+	for _, row := range s.Screen() {
+		if strings.Contains(row, text) {
+			return true
+		}
+	}
+	return false
 }
 
 // Done reports whether the program has exited (for example after the model

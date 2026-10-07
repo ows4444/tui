@@ -10,6 +10,22 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+### Added
+
+- `tuitest.Session.WaitForText(text, timeout)` waits until a row of the
+  screen contains `text` and reports whether it did. It is for output that
+  arrives on its own time, after a command or a tick, which `Keys` and `Send`
+  do not wait for.
+
+### Fixed
+
+- `tuitest.Session.Keys` waits until the model has received the keys it
+  sent. It counted any `Update`, so one caused by a tick or a command's
+  result while a key was still on its way was taken for the key, and `Keys`
+  could return before the model had seen it; on a loaded machine tests then
+  read a stale screen. `Paste`, `Resize` and `Send` wait for their own
+  message in the same way.
+
 ## [0.1.0] - 2026-10-08
 
 The first tagged release: everything written before a tag existed.
