@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 )
@@ -69,9 +70,5 @@ func Box(title, content string, t theme.Theme, width int) string {
 		}
 	}
 
-	b := layout.NewBox().Border(t.Border).BorderColor(t.BorderColor).PaddingAll(1)
-	if !auto {
-		b = b.Width(cw)
-	}
-	return b.Render(body)
+	return boxdraw.Draw(layout.NewBox().BorderColor(t.BorderColor), t.Border, 1, cw, body)
 }

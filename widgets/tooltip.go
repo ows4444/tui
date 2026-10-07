@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 )
@@ -21,11 +22,7 @@ func Tooltip(text string, t theme.Theme, width int) string {
 		body = ansi.WrapStyled(text, cw)
 	}
 
-	b := layout.NewBox().Border(t.Border).BorderColor(t.Info).PaddingAll(1)
-	if !auto {
-		b = b.Width(cw)
-	}
-	return b.Render(body)
+	return boxdraw.Draw(layout.NewBox().BorderColor(t.Info), t.Border, 1, cw, body)
 }
 
 // tooltipSize returns the rendered width (the widest line) and height

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -90,11 +91,7 @@ func (m Model) Render(base string) string {
 	}
 	body := strings.Join(lines, "\n")
 
-	b := layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(1)
-	if m.Width > 0 {
-		b = b.Width(m.Width)
-	}
-	panel := b.Render(body)
+	panel := boxdraw.Draw(layout.NewBox().BorderColor(m.themed().BorderColor), m.themed().Border, 1, m.Width, body)
 
 	baseLines := strings.Split(base, "\n")
 	baseWidth := 0

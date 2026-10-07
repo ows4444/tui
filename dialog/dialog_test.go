@@ -6,6 +6,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 )
@@ -108,7 +109,7 @@ func TestRenderCentersDialog(t *testing.T) {
 	got := m.Render(base)
 
 	titleStyled := ansi.NewStyle().Bold().Foreground(m.Theme.Primary).Render("Hi")
-	box := layout.NewBox().Border(m.Theme.Border).BorderColor(m.Theme.BorderColor).PaddingAll(1).Render(titleStyled)
+	box := boxdraw.Draw(layout.NewBox().BorderColor(m.Theme.BorderColor), m.Theme.Border, 1, 0, titleStyled)
 
 	// Hand-verified: "Hi" padded 1 on all sides has content width 2, inner
 	// width 2+1+1=4, box width 4+2(border chars)=6, box height =

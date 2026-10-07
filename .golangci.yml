@@ -92,6 +92,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -160,6 +161,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -189,6 +191,7 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
@@ -213,6 +216,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -258,6 +262,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -292,6 +297,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -323,6 +329,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -359,6 +366,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -394,6 +402,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -420,6 +429,7 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
@@ -438,6 +448,7 @@ linters:
             - "github.com/ows4444/tui/ansi$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
@@ -459,6 +470,7 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -484,6 +496,7 @@ linters:
             - "github.com/ows4444/tui/ansi$"
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
@@ -501,6 +514,7 @@ linters:
             - "github.com/ows4444/tui/ansi$"
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
@@ -508,6 +522,24 @@ linters:
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
         group-14:
+          list-mode: strict
+          files:
+            - "**/internal/boxdraw/*.go"
+            - "!**/examples/**"
+            - "!$test"
+          allow:
+            - "$gostd"
+            - "github.com/ows4444/tui/ansi$"
+            - "github.com/ows4444/tui/internal/a11y$"
+            - "github.com/ows4444/tui/internal/basetypes$"
+            - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/fsutil$"
+            - "github.com/ows4444/tui/internal/highlight$"
+            - "github.com/ows4444/tui/internal/ptytest$"
+            - "github.com/ows4444/tui/layout$"
+            - "github.com/ows4444/tui/motion$"
+            - "github.com/ows4444/tui/theme$"
+        group-15:
           list-mode: strict
           files:
             - "**/internal/braille/*.go"
@@ -523,36 +555,8 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/cancelreader$"
-            - "github.com/ows4444/tui/internal/capprobe$"
-            - "github.com/ows4444/tui/internal/edit$"
-            - "github.com/ows4444/tui/internal/fsutil$"
-            - "github.com/ows4444/tui/internal/highlight$"
-            - "github.com/ows4444/tui/internal/ptytest$"
-            - "github.com/ows4444/tui/internal/render$"
-            - "github.com/ows4444/tui/internal/termio$"
-            - "github.com/ows4444/tui/internal/vtscreen$"
-            - "github.com/ows4444/tui/keymap$"
-            - "github.com/ows4444/tui/layout$"
-            - "github.com/ows4444/tui/motion$"
-            - "github.com/ows4444/tui/theme$"
-        group-15:
-          list-mode: strict
-          files:
-            - "**/internal/cancelreader/*.go"
-            - "!**/examples/**"
-            - "!$test"
-          allow:
-            - "$gostd"
-            - "github.com/ows4444/tui/ansi$"
-            - "github.com/ows4444/tui/cellbuf$"
-            - "github.com/ows4444/tui/hittest$"
-            - "github.com/ows4444/tui/input$"
-            - "github.com/ows4444/tui/internal/a11y$"
-            - "github.com/ows4444/tui/internal/announce$"
-            - "github.com/ows4444/tui/internal/basetypes$"
-            - "github.com/ows4444/tui/internal/bidi$"
-            - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/capprobe$"
             - "github.com/ows4444/tui/internal/edit$"
             - "github.com/ows4444/tui/internal/fsutil$"
@@ -568,6 +572,36 @@ linters:
         group-16:
           list-mode: strict
           files:
+            - "**/internal/cancelreader/*.go"
+            - "!**/examples/**"
+            - "!$test"
+          allow:
+            - "$gostd"
+            - "github.com/ows4444/tui/ansi$"
+            - "github.com/ows4444/tui/cellbuf$"
+            - "github.com/ows4444/tui/hittest$"
+            - "github.com/ows4444/tui/input$"
+            - "github.com/ows4444/tui/internal/a11y$"
+            - "github.com/ows4444/tui/internal/announce$"
+            - "github.com/ows4444/tui/internal/basetypes$"
+            - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
+            - "github.com/ows4444/tui/internal/braille$"
+            - "github.com/ows4444/tui/internal/capprobe$"
+            - "github.com/ows4444/tui/internal/edit$"
+            - "github.com/ows4444/tui/internal/fsutil$"
+            - "github.com/ows4444/tui/internal/highlight$"
+            - "github.com/ows4444/tui/internal/ptytest$"
+            - "github.com/ows4444/tui/internal/render$"
+            - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vtscreen$"
+            - "github.com/ows4444/tui/keymap$"
+            - "github.com/ows4444/tui/layout$"
+            - "github.com/ows4444/tui/motion$"
+            - "github.com/ows4444/tui/theme$"
+        group-17:
+          list-mode: strict
+          files:
             - "**/internal/capprobe/*.go"
             - "!**/examples/**"
             - "!$test"
@@ -581,6 +615,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/edit$"
@@ -594,7 +629,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-17:
+        group-18:
           list-mode: strict
           files:
             - "**/internal/edit/*.go"
@@ -610,6 +645,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -623,7 +659,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-18:
+        group-19:
           list-mode: strict
           files:
             - "**/internal/fsutil/*.go"
@@ -635,12 +671,13 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-19:
+        group-20:
           list-mode: strict
           files:
             - "**/internal/highlight/*.go"
@@ -652,12 +689,13 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-20:
+        group-21:
           list-mode: strict
           files:
             - "**/internal/ptytest/*.go"
@@ -669,12 +707,13 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-21:
+        group-22:
           list-mode: strict
           files:
             - "**/internal/render/*.go"
@@ -690,6 +729,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -703,7 +743,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-22:
+        group-23:
           list-mode: strict
           files:
             - "**/internal/termio/*.go"
@@ -719,6 +759,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -733,7 +774,7 @@ linters:
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/term$"
             - "github.com/ows4444/tui/theme$"
-        group-23:
+        group-24:
           list-mode: strict
           files:
             - "**/internal/vtscreen/*.go"
@@ -749,6 +790,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -762,7 +804,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-24:
+        group-25:
           list-mode: strict
           files:
             - "**/keymap/*.go"
@@ -775,13 +817,14 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-25:
+        group-26:
           list-mode: strict
           files:
             - "**/layout/*.go"
@@ -793,12 +836,13 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-26:
+        group-27:
           list-mode: strict
           files:
             - "**/logview/*.go"
@@ -816,6 +860,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -835,7 +880,7 @@ linters:
             - "github.com/ows4444/tui/viewport$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-27:
+        group-28:
           list-mode: strict
           files:
             - "**/markdown/*.go"
@@ -851,6 +896,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -867,7 +913,7 @@ linters:
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-28:
+        group-29:
           list-mode: strict
           files:
             - "**/menu/*.go"
@@ -885,6 +931,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -904,7 +951,7 @@ linters:
             - "github.com/ows4444/tui/tuitest$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-29:
+        group-30:
           list-mode: strict
           files:
             - "**/menubar/*.go"
@@ -923,6 +970,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -941,7 +989,7 @@ linters:
             - "github.com/ows4444/tui/tuitest$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-30:
+        group-31:
           list-mode: strict
           files:
             - "**/motion/*.go"
@@ -953,12 +1001,13 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/theme$"
-        group-31:
+        group-32:
           list-mode: strict
           files:
             - "**/term/*.go"
@@ -970,13 +1019,14 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-32:
+        group-33:
           list-mode: strict
           files:
             - "**/theme/*.go"
@@ -988,12 +1038,13 @@ linters:
             - "github.com/ows4444/tui/internal/a11y$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/fsutil$"
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
-        group-33:
+        group-34:
           list-mode: strict
           files:
             - "**/tuitest/*.go"
@@ -1011,6 +1062,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -1028,7 +1080,7 @@ linters:
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-34:
+        group-35:
           list-mode: strict
           files:
             - "**/widgets/*.go"
@@ -1044,6 +1096,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"
@@ -1060,7 +1113,7 @@ linters:
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-35:
+        group-36:
           list-mode: strict
           files:
             - "**/widgets/chart/*.go"
@@ -1076,6 +1129,7 @@ linters:
             - "github.com/ows4444/tui/internal/announce$"
             - "github.com/ows4444/tui/internal/basetypes$"
             - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
             - "github.com/ows4444/tui/internal/braille$"
             - "github.com/ows4444/tui/internal/cancelreader$"
             - "github.com/ows4444/tui/internal/capprobe$"

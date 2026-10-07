@@ -11,6 +11,7 @@ import (
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
@@ -137,7 +138,7 @@ func (m Model) Render(base string) string {
 		contentWidth = 0
 	}
 
-	box := layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(1).Width(contentWidth).Render(content)
+	box := boxdraw.Draw(layout.NewBox().BorderColor(m.themed().BorderColor), m.themed().Border, 1, contentWidth, content)
 
 	return layout.Overlay(base, box, 0, 0)
 }

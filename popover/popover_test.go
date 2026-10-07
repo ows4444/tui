@@ -6,6 +6,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -104,7 +105,7 @@ func TestRenderCompositesContentNearAnchor(t *testing.T) {
 		t.Fatalf("Render() should contain multi-line Content: %q", visible)
 	}
 
-	box := layout.NewBox().Border(m.Theme.Border).BorderColor(m.Theme.BorderColor).PaddingAll(1).Render(m.Content)
+	box := boxdraw.Draw(layout.NewBox().BorderColor(m.Theme.BorderColor), m.Theme.Border, 1, 0, m.Content)
 	want := layout.Overlay(base, box, 5, 4)
 	if got != want {
 		t.Errorf("Render() did not composite the box anchored below-right of (5,3)")
@@ -124,7 +125,7 @@ func TestRenderCompositesContentNearAnchor(t *testing.T) {
 func TestRenderShiftsLeftWhenClipped(t *testing.T) {
 	content := "a fairly long popover content string"
 	probe := New(content, 0, 0)
-	box := layout.NewBox().Border(probe.Theme.Border).BorderColor(probe.Theme.BorderColor).PaddingAll(1).Render(content)
+	box := boxdraw.Draw(layout.NewBox().BorderColor(probe.Theme.BorderColor), probe.Theme.Border, 1, 0, content)
 	bw, _ := extent(box)
 
 	baseWidth := bw + 5
@@ -152,7 +153,7 @@ func TestRenderFlipsAboveWhenNoRoomBelow(t *testing.T) {
 	base := grid(40, baseHeight)
 	content := "hi"
 	probe := New(content, 0, 0)
-	box := layout.NewBox().Border(probe.Theme.Border).BorderColor(probe.Theme.BorderColor).PaddingAll(1).Render(content)
+	box := boxdraw.Draw(layout.NewBox().BorderColor(probe.Theme.BorderColor), probe.Theme.Border, 1, 0, content)
 	_, bh := extent(box)
 
 	anchorX, anchorY := 5, baseHeight-1

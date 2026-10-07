@@ -11,6 +11,7 @@ import (
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/theme"
@@ -140,7 +141,7 @@ func (m Model) build() (box string, w, h int) {
 		text = m.Variant.Icon(m.themed().GlyphSet()) + " " + text
 	}
 	msgStyled := ansi.NewStyle().Foreground(color).Render(text)
-	box = layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(m.themed().ResolvedSpacing().S).Render(msgStyled)
+	box = boxdraw.Draw(layout.NewBox().BorderColor(m.themed().BorderColor), m.themed().Border, m.themed().ResolvedSpacing().S, 0, msgStyled)
 	lines := strings.Split(box, "\n")
 	return box, ansi.Width(lines[0]), len(lines)
 }

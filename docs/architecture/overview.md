@@ -97,7 +97,7 @@ import each other. `TestImportDirection` fails on any import that points up.
 
 | Tier | Packages |
 | --- | --- |
-| 0 | `ansi`, `layout`, `theme`, `motion`, `term`; `internal/basetypes`, `internal/a11y`, `internal/bidi`, `internal/fsutil`, `internal/highlight`, `internal/ptytest` |
+| 0 | `ansi`, `layout`, `theme`, `motion`, `term`; `internal/basetypes`, `internal/a11y`, `internal/bidi`, `internal/fsutil`, `internal/highlight`, `internal/ptytest`, `internal/boxdraw` |
 | 1 | `input`, `keymap` |
 | 2 | `hittest`, `cellbuf`; `internal/render`, `internal/termio`, `internal/capprobe`, `internal/announce`, `internal/braille`, `internal/cancelreader`, `internal/edit`, `internal/vtscreen` |
 | 3 | the root package `tui` |
