@@ -61,48 +61,48 @@ in `examples/` that imports the package.
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
 | [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
-| [clockview](../clockview) | A wall-clock, stopwatch or countdown timer | | |
-| [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes | |
+| [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `examples/timers` |
+| [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes  `examples/pickers` |
 | [commandpalette](../commandpalette) | A text input with a fuzzy-filtered dropdown of Commands ("Ctrl+K" style). Experimental | yes | |
 | [confirm](../confirm) | A yes/no prompt | yes | `examples/form` |
-| [contextmenu](../contextmenu) | A popup menu opened at an anchor point | yes | |
+| [contextmenu](../contextmenu) | A popup menu opened at an anchor point | yes  `examples/menus` |
 | [datatable](../datatable) | `widgets.Table` plus row navigation | yes | `examples/table`, `examples/inspector` |
-| [datepicker](../datepicker) | A keyboard-navigable calendar on `time.Time` | yes | |
+| [datepicker](../datepicker) | A keyboard-navigable calendar on `time.Time` | yes  `examples/pickers` |
 | [dialog](../dialog) | A modal box with title and message, composited over the screen, dismissed with Enter/Esc | yes | `examples/dashboard` |
-| [drawer](../drawer) | An overlay anchored to an edge of the base view | yes | |
-| [emailinput](../emailinput) | A `textinput.Model` wrapper that rejects whitespace | | |
+| [drawer](../drawer) | An overlay anchored to an edge of the base view | yes  `examples/panes` |
+| [emailinput](../emailinput) | A `textinput.Model` wrapper that rejects whitespace |  `examples/inputs` |
 | [errorretry](../errorretry) | An error with retry (Enter or `r`, up to `MaxRetries`) and dismiss (Esc). Experimental | yes | |
 | [faces](../faces) | A catalog of 50 ready-made animated Braille characters and a widget that plays them. For a picture derived from a name, see avatar. Experimental | | `examples/faces` |
-| [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes | |
+| [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes  `examples/pickers` |
 | [form](../form) | A validating column of labelled fields with Submit | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
 | [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
 | [logview](../logview) | An append-only scrolling log | | `examples/procstream` |
 | [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/agentshell` |
-| [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune | | |
-| [menu](../menu) | Nested-navigation list on top of `picker.Model` | yes | |
-| [menubar](../menubar) | A horizontal bar of titled dropdown menus | yes | |
+| [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune |  `examples/inputs` |
+| [menu](../menu) | Nested-navigation list on top of `picker.Model` | yes  `examples/menus` |
+| [menubar](../menubar) | A horizontal bar of titled dropdown menus | yes  `examples/menus` |
 | [multiselect](../multiselect) | A multi-choice list: Space toggles, Enter confirms | yes | `examples/list` |
 | [notificationcenter](../notificationcenter) | A panel showing every queued notification at once. Experimental | | |
-| [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` | | |
+| [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `examples/inputs` |
 | [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
-| [popover](../popover) | An overlay anchored near a point | yes | |
-| [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes | |
-| [skeleton](../skeleton) | A loading placeholder block | | |
+| [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
+| [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/panes` |
+| [skeleton](../skeleton) | A loading placeholder block |  `examples/timers` |
 | [spinner](../spinner) | An animated loading indicator | | `examples/asyncload`, `examples/buildlog`, `examples/inlinespinners` |
-| [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes | |
+| [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes  `examples/panes` |
 | [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/agentshell` |
 | [tabs](../tabs) | A horizontal tab bar | yes | `examples/settings`, `examples/inspector` |
-| [taginput](../taginput) | A text input plus a list of committed tags drawn as `widgets.Tag` chips | yes | |
+| [taginput](../taginput) | A text input plus a list of committed tags drawn as `widgets.Tag` chips | yes  `examples/inputs` |
 | [textarea](../textarea) | A multi-line text input | yes | `examples/focus`, `examples/agentshell` |
 | [textinput](../textinput) | A single-line text input | yes | `examples/focus`, `examples/cursorfield`, `examples/form` |
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |
 | [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/agentshell` |
 | [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |
-| [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes | |
+| [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes  `examples/panes` |
 | [wizard](../wizard) | Step navigation for multi-step flows, drawn with `widgets.Stepper` | | `examples/form` |
 
 Every package listed has an `Example` in its `example_test.go`

@@ -1,0 +1,10 @@
+Log: 10000 entries, list pane 27 wide
+> 09:00:00 INFO  request s█│Entry 1 of  
+  09:00:07 INFO  cache ref░│10000       
+  09:00:14 INFO  retrying ░│            
+  09:00:21 WARN  connectio░│Time:       
+  09:00:28 INFO  job finis░│09:00:00 UTC
+  09:00:35 INFO  configura░│Level: INFO 
+  09:00:42 ERROR upstream ░│Source: api 
+  09:00:49 INFO  request s░│            
+[up/down]  [brackets]  [i]  [l]  [q] 

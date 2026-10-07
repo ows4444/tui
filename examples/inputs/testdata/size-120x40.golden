@@ -1,0 +1,10 @@
+Service settings
+
+Port     8080                                               
+Email   ops@example.com                                     
+Token   paste a token                                       
+Labels  type, then enter                                    
+
+no port · no email · no token · 0 of 5 labels
+
+[tab] next  [shift+tab] back  [esc] quit

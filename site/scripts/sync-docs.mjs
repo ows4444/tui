@@ -270,10 +270,10 @@ const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
 // them is listed under "More", so a new example still appears.
 const EXAMPLE_CATEGORIES = [
 	{ id: 'showcase', title: 'Showcase', blurb: 'Full screens that show what a tui program can look like.', names: ['dashboard', 'canvas', 'chat', 'welcomescreen', 'splashscreen', 'probe', 'faces', 'avatar'] },
-	{ id: 'forms', title: 'Forms and input', blurb: 'Text fields, sign-in and multi-step flows, focus and the cursor.', names: ['loginflow', 'setupflow', 'login', 'signup', 'form', 'focus', 'cursorfield'] },
-	{ id: 'lists', title: 'Lists, tables and navigation', blurb: 'Selection, tabs, scrolling and switching screens.', names: ['inspector', 'table', 'list', 'settings', 'router', 'pager'] },
+	{ id: 'forms', title: 'Forms and input', blurb: 'Text fields, sign-in and multi-step flows, focus and the cursor.', names: ['loginflow', 'setupflow', 'login', 'signup', 'form', 'inputs', 'pickers', 'focus', 'cursorfield'] },
+	{ id: 'lists', title: 'Lists, tables and navigation', blurb: 'Selection, tabs, scrolling and switching screens.', names: ['inspector', 'table', 'list', 'menus', 'panes', 'settings', 'router', 'pager'] },
 	{ id: 'layout', title: 'Layout and rendering', blurb: 'Composing string and cell children, and the smallest program.', names: ['mixedscreen', 'counter'] },
-	{ id: 'async', title: 'Async and streaming', blurb: 'Commands that resolve later, child processes and committed output.', names: ['asyncload', 'procstream', 'buildlog', 'agentshell'] },
+	{ id: 'async', title: 'Async and streaming', blurb: 'Commands that resolve later, child processes and committed output.', names: ['asyncload', 'timers', 'procstream', 'buildlog', 'agentshell'] },
 	{ id: 'inline', title: 'Inline mode', blurb: 'Programs that draw in the normal scrollback instead of the alternate screen; their first frame is small by design.', names: ['inlinespinners', 'inlinebuild', 'inlinechat', 'inlinetall'] },
 ];
 

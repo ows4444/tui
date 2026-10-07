@@ -1,0 +1,24 @@
+Log: 10000 entries, list pane 39 wide
+> 09:00:00 INFO  request served       █│Entry 1 of 10000                        
+  09:00:07 INFO  cache refreshed from ░│                                        
+  09:00:14 INFO  retrying after a time░│Time: 09:00:00 UTC                      
+  09:00:21 WARN  connection pool is at░│Level: INFO                             
+  09:00:28 INFO  job finished         ░│Source: api                             
+  09:00:35 INFO  configuration reloade░│                                        
+  09:00:42 ERROR upstream returned an ░│request served                          
+  09:00:49 INFO  request served       ░│                                        
+  09:00:56 WARN  retrying after a time░│                                        
+  09:01:03 INFO  retrying after a time░│                                        
+  09:01:10 INFO  connection pool is at░│                                        
+  09:01:17 INFO  job finished         ░│                                        
+  09:01:24 INFO  configuration reloade░│                                        
+  09:01:31 WARN  connection pool is at░│                                        
+  09:01:38 INFO  request served       ░│                                        
+  09:01:45 INFO  cache refreshed from ░│                                        
+  09:01:52 INFO  retrying after a time░│                                        
+  09:01:59 INFO  connection pool is at░│                                        
+  09:02:06 WARN  retrying after a time░│                                        
+  09:02:13 INFO  configuration reloade░│                                        
+  09:02:20 INFO  upstream returned an ░│                                        
+  09:02:27 INFO  request served       ░│                                        
+[up/down] move  [brackets] divider  [i] info  [l] levels  [q] quit
