@@ -87,7 +87,7 @@ func TestControlsMeasureZero(t *testing.T) {
 	if w := Width("a\tb"); w != 2 {
 		t.Errorf("Width(a\\tb) = %d, want 2", w)
 	}
-	if w := Width("­"); w != 1 {
+	if w := Width("\u00ad"); w != 1 {
 		t.Errorf("soft hyphen Width = %d, want 1", w)
 	}
 }

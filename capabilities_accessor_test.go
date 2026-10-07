@@ -3,8 +3,6 @@ package tui
 import (
 	"testing"
 	"time"
-
-	"github.com/ows4444/tui/ansi"
 )
 
 // capSeenModel records p.Capabilities() as seen from Update when the
@@ -26,7 +24,7 @@ func (m capSeenModel) Update(msg Msg) (Model, Cmd) {
 func (capSeenModel) View() string { return "" }
 
 func TestProgramCapabilitiesMatchesCapabilitiesMsg(t *testing.T) {
-	t.Cleanup(func() { ansi.SetClusterWidth(true) })
+	t.Cleanup(func() { setClusterWidth(true) })
 	var msg CapabilitiesMsg
 	var seen Capabilities
 	var p *Program

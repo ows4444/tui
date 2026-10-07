@@ -110,7 +110,7 @@ func TestPNGFollowsThePose(t *testing.T) {
 	for what, change := range changes {
 		m := avatar.New("alain00")
 		change(&m)
-		if got := string(m.PNG(64)); seen[got] {
+		if seen[string(m.PNG(64))] {
 			t.Errorf("%s did not change the image", what)
 		}
 	}

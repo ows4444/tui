@@ -8,7 +8,14 @@ import (
 	"github.com/ows4444/tui/ansi"
 )
 
-const zwjFamily = "\U0001F468‍\U0001F469‍\U0001F467" // 3 emoji joined: 2 cols as a cluster, 6 per codepoint
+const zwjFamily = "\U0001F468\u200d\U0001F469\u200d\U0001F467" // 3 emoji joined: 2 cols as a cluster, 6 per codepoint
+
+// setClusterWidth sets ansi's process-wide cluster width. The probe tests
+// exercise that switch and must put it back, and nothing else can set it.
+func setClusterWidth(on bool) {
+	//lint:ignore SA1019 the deprecated process-wide switch is what these tests cover and restore
+	ansi.SetClusterWidth(on)
+}
 
 // probeResult is what a probe run left behind: the output the terminal saw,
 // the Program (for Measurer) and the ResizeMsgs the model received.
@@ -67,9 +74,9 @@ func runProbeWith(t *testing.T, replies string) probeResult {
 // The probe's answer about clusters belongs to the Program, not the process:
 // ansi.Width keeps its own setting, and the model hears about it in a ResizeMsg.
 func TestProbeMode2027SettableEnablesClusterWidth(t *testing.T) {
-	t.Cleanup(func() { ansi.SetClusterWidth(true) })
+	t.Cleanup(func() { setClusterWidth(true) })
 	for _, val := range []string{"1", "2"} {
-		ansi.SetClusterWidth(false)
+		setClusterWidth(false)
 		r := runProbeWith(t, "\x1b[?2027;"+val+"$y\x1b[?62;c")
 		if !strings.Contains(r.out, "\x1b[?2027h") {
 			t.Errorf("value %s: ESC[?2027h not sent in %q", val, r.out)
@@ -87,13 +94,13 @@ func TestProbeMode2027SettableEnablesClusterWidth(t *testing.T) {
 }
 
 func TestProbeMode2027UnsupportedUsesPerCodepointWidth(t *testing.T) {
-	t.Cleanup(func() { ansi.SetClusterWidth(true) })
+	t.Cleanup(func() { setClusterWidth(true) })
 	for name, replies := range map[string]string{
 		"reset":       "\x1b[?2027;0$y\x1b[?62;c",
 		"unanswered":  "\x1b[?62;c",
 		"unsupported": "\x1b[?2027;4$y\x1b[?62;c",
 	} {
-		ansi.SetClusterWidth(true)
+		setClusterWidth(true)
 		r := runProbeWith(t, replies)
 		if strings.Contains(r.out, "\x1b[?2027h") {
 			t.Errorf("%s: ESC[?2027h sent", name)
@@ -132,7 +139,7 @@ func TestProgramsDoNotShareAMeasurer(t *testing.T) {
 }
 
 func TestMode2027ResetOnRestore(t *testing.T) {
-	t.Cleanup(func() { ansi.SetClusterWidth(true) })
+	t.Cleanup(func() { setClusterWidth(true) })
 	p := NewProgram(staticModel{}, WithCapabilityProbe(time.Hour))
 	if strings.Contains(p.restoreFixedString(), "\x1b[?2027l") {
 		t.Error("reset emitted although 2027 was never set")

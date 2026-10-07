@@ -74,7 +74,7 @@ func TestReadmeUnicodeClaimsMatchClusterDefault(t *testing.T) {
 		t.Skip("cluster handling disabled in this environment; default differs")
 	}
 	bullet := strings.ToLower(readmeBullet(t, "Unicode."))
-	family := "\U0001F468‍\U0001F469‍\U0001F467"
+	family := "\U0001F468\u200d\U0001F469\u200d\U0001F467"
 	segmented := ansi.Width(family) == 2
 	says := strings.Contains(bullet, "grapheme cluster") &&
 		!strings.Contains(bullet, "not** segmented") && !strings.Contains(bullet, "not segmented")

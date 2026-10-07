@@ -169,7 +169,7 @@ The allocation gate against `bench/baseline.txt` is described in
 - `api`: `api.txt` is current, and the CHANGELOG names every breaking change
   since the latest tag.
 - `widthtables`: the Unicode tables match a fresh generation.
-- `lint` (golangci-lint) and `security` (gosec).
+- `lint` (golangci-lint), `security` (gosec) and `staticcheck`.
 
 [.github/workflows/bench.yml](../.github/workflows/bench.yml) runs the
 allocation gate.

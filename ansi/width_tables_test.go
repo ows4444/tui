@@ -1,9 +1,10 @@
 package ansi
 
 import (
+	"go/ast"
 	"go/parser"
 	"go/token"
-	"io/fs"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -115,13 +116,9 @@ func TestWidthOfRunesThatChangedWithTheGeneratedTables(t *testing.T) {
 // The package doc must name the Unicode version the tables come from, so it
 // cannot drift when the tables are regenerated.
 func TestPackageDocStatesTheUnicodeVersion(t *testing.T) {
-	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, ".", func(fi fs.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, parser.ParseComments)
-	if err != nil {
-		t.Fatal(err)
-	}
+	files := parseSources(t, ".", parser.ParseComments)
 	doc := ""
-	for _, f := range pkgs["ansi"].Files {
+	for _, f := range files {
 		if f.Doc != nil {
 			doc += f.Doc.Text()
 		}
@@ -129,4 +126,28 @@ func TestPackageDocStatesTheUnicodeVersion(t *testing.T) {
 	if !strings.Contains(doc, "Unicode "+unicodeVersion) {
 		t.Errorf("the package doc does not mention %q:\n%s", "Unicode "+unicodeVersion, doc)
 	}
+}
+
+// parseSources parses the non-test Go files in dir. It replaces
+// parser.ParseDir, deprecated since Go 1.25; these checks read declarations
+// and comments only, so the build tags ParseDir ignored do not matter here.
+func parseSources(t *testing.T, dir string, mode parser.Mode) []*ast.File {
+	t.Helper()
+	names, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fset := token.NewFileSet()
+	var files []*ast.File
+	for _, name := range names {
+		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, name, nil, mode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files = append(files, f)
+	}
+	return files
 }

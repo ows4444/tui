@@ -9,7 +9,7 @@ import (
 	"github.com/ows4444/tui/input"
 )
 
-const family = "\U0001F468‍\U0001F469‍\U0001F467" // ZWJ family, one cluster
+const family = "\U0001F468\u200d\U0001F469\u200d\U0001F467" // ZWJ family, one cluster
 
 func key(t tui.KeyType) tui.Key { return tui.Key{Type: t} }
 

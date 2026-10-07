@@ -61,7 +61,8 @@ func TestColorDrawsTheFaceAndTokensStillWin(t *testing.T) {
 // ColorFor is stable, ignores case and surrounding space, spreads over the
 // hues, and is chosen independently of the face.
 func TestColorForNames(t *testing.T) {
-	if ColorFor("Ada") != ColorFor(" ada ") || ColorFor("ada") != ColorFor("ada") {
+	first, second := ColorFor("ada"), ColorFor("ada")
+	if ColorFor("Ada") != ColorFor(" ada ") || first != second {
 		t.Error("ColorFor is not stable under case and space")
 	}
 	if got, want := ColorFor("ada"), (ansi.RGB{R: 0x62, G: 0xd8, B: 0x5a}); got != want {

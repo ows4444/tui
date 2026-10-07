@@ -155,7 +155,7 @@ func TestResponsiveHeightSkipsAndZeroAdmitsAny(t *testing.T) {
 	if m := r.Measure(Loose(Size{W: 4, H: 6})); m != (Size{1, 1}) {
 		t.Errorf("measure = %+v", m)
 	}
-	if _, ok := any(Break{}).(interface{}); !ok || (Break{MaxH: 1}) != (Break{MaxH: 1}) {
+	if a, b := (Break{MaxH: 1}), (Break{MaxH: 1}); a != b {
 		t.Error("Break must stay comparable")
 	}
 }

@@ -171,3 +171,21 @@ jobs:
         run: go install github.com/securego/gosec/v2/cmd/gosec@v2.29.0
       - name: gosec
         run: gosec ./...
+
+  # staticcheck finds what go vet does not: calls to deprecated identifiers
+  # (this module's own included), unused code and comparisons that cannot
+  # fail. It is a dev tool, not a module dependency; pinned to the version the
+  # findings were cleared against. That version needs Go 1.26 to build, so
+  # this job uses a newer toolchain than the test jobs. Any finding fails it.
+  staticcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false # no go.sum to key the module cache on
+      - name: install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@2026.2.1
+      - name: staticcheck
+        run: staticcheck ./...

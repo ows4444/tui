@@ -81,7 +81,8 @@ func TestCacheKeyUsesTheClampedLook(t *testing.T) {
 func TestStructLiteralDrawsEveryTime(t *testing.T) {
 	draws := countDraws(t)
 	m := Model{Name: "alain00", Width: DefaultWidth, Height: DefaultHeight}
-	if m.View() != m.View() || m.View() == "" {
+	first, second := m.View(), m.View()
+	if first != second || m.View() == "" {
 		t.Error("an uncached Model does not draw the same View")
 	}
 	if *draws != 3 {
