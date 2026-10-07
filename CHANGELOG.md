@@ -25,6 +25,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Fixed
 
+- `numberinput` and `emailinput` reject the space bar. Their filters looked
+  only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
+  went into a digits-only field and into an email address.
 - `tuitest.Session.Keys` waits until the model has received the keys it
   sent. It counted any `Update`, so one caused by a tick or a command's
   result while a key was still on its way was taken for the key, and `Keys`

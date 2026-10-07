@@ -76,3 +76,15 @@ func TestValid(t *testing.T) {
 		}
 	}
 }
+
+// The space bar is its own key type (tui.KeySpace), not a KeyRunes key, so the
+// whitespace filter never saw it and a space was inserted into the address.
+func TestRejectsTheSpaceKey(t *testing.T) {
+	m := focused()
+	typeString(t, &m, "ada")
+	m, _ = m.Update(tui.Key{Type: tui.KeySpace, Text: " ", Code: ' '})
+	typeString(t, &m, "@example.com")
+	if m.Value() != "ada@example.com" {
+		t.Fatalf("Value() = %q, want %q", m.Value(), "ada@example.com")
+	}
+}

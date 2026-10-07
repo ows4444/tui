@@ -27,6 +27,10 @@ func New() Model {
 // other key or Msg (navigation, deletion, paste, blink ticks, ...) is
 // forwarded unchanged to the embedded textinput.Model.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
+	// The space bar arrives as its own key type, not as KeyRunes.
+	if k, ok := msg.(tui.Key); ok && k.Type == tui.KeySpace {
+		return m, nil
+	}
 	if k, ok := msg.(tui.Key); ok && k.Type == tui.KeyRunes {
 		filtered := make([]rune, 0, len(k.Text))
 		for _, r := range k.Text {

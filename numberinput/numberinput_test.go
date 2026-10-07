@@ -78,3 +78,15 @@ func TestBehavesLikeTextinputForOtherOperations(t *testing.T) {
 		t.Fatalf("Value() = %q, want %q", m.Value(), "1453")
 	}
 }
+
+// The space bar is its own key type (tui.KeySpace), not a KeyRunes key, so the
+// rune filter never saw it and a space was inserted between the digits.
+func TestRejectsTheSpaceKey(t *testing.T) {
+	m := focused()
+	typeString(t, &m, "12")
+	m, _ = m.Update(tui.Key{Type: tui.KeySpace, Text: " ", Code: ' '})
+	typeString(t, &m, "3")
+	if m.Value() != "123" {
+		t.Fatalf("Value() = %q, want %q", m.Value(), "123")
+	}
+}
