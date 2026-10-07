@@ -22,8 +22,8 @@ Requires Go 1.25 or later.
 $ go get github.com/ows4444/tui
 ```
 
-There is no tagged release yet, so this resolves to a pseudo-version of the
-latest commit.
+This resolves to the latest tagged release. Before v1.0 a release may change
+exported identifiers; [CHANGELOG.md](CHANGELOG.md) lists each one.
 
 ## Usage
 
