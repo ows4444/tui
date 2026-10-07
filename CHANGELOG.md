@@ -1,13 +1,18 @@
 # Changelog
 
 User-visible changes to `github.com/ows4444/tui`. The format loosely follows
-[Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/). There is no
-tagged release yet, so everything is under Unreleased.
+[Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/). Before v1.0
+a minor release may remove or change exported identifiers; each one is a
+`- BREAKING:` entry.
 
 A removed or changed exported identifier needs a `- BREAKING:` entry under
 Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
+
+## [0.1.0] - 2026-10-08
+
+The first tagged release: everything written before a tag existed.
 
 ### Added
 

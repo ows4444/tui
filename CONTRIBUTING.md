@@ -165,11 +165,10 @@ platform ([.gitattributes](.gitattributes)).
 Add user-visible changes to [CHANGELOG.md](CHANGELOG.md) under
 `## [Unreleased]`. Removing or changing an exported identifier needs a
 `- BREAKING:` bullet in that section naming the identifier as a whole word
-(`Style.Render` or `Render`), and saying what to use instead. Once a tag
-exists, the `api` CI job runs
-`go run ./internal/tools/apilist -since-tag -changelog CHANGELOG.md`, which
-fails on a removed or changed line of `api.txt` that no such bullet names.
-With no tag yet it compares nothing.
+(`Style.Render` or `Render`), and saying what to use instead. The `api` CI
+job runs `go run ./internal/tools/apilist -since-tag -changelog CHANGELOG.md`,
+which fails on a line of `api.txt` removed or changed since the latest tag
+that no such bullet names.
 
 ## Benchmarks
 

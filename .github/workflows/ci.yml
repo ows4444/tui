@@ -74,7 +74,7 @@ jobs:
         run: go run ./internal/tools/apilist -check
       # Fails when an exported symbol present at the latest tag was removed or
       # changed and the unreleased section of CHANGELOG.md has no "- BREAKING"
-      # entry naming it. With no tag yet it does nothing.
+      # entry naming it.
       - name: every breaking change since the latest tag is in the CHANGELOG
         run: go run ./internal/tools/apilist -since-tag -changelog CHANGELOG.md
 
