@@ -50,6 +50,7 @@ const pages = [
 	{ src: 'docs/capabilities.md', slug: 'capabilities' },
 	{ src: 'docs/accessibility.md', slug: 'accessibility', seoTitle: 'Accessible terminal UIs in Go: screen readers and reduced motion | tui' },
 	{ src: 'docs/migrating-to-v1.md', slug: 'migrating-to-v1', optional: true },
+	{ src: 'docs/v1.md', slug: 'v1', optional: true },
 	{ src: "docs/testing.md", slug: "testing", seoTitle: 'Testing Go terminal UIs: golden files and a headless harness | tui',
 		description: "Run and write tests for tui: the tuitest headless harness, golden files, PTY tests, race, fuzz and benchmark runs, and the test environment variables." },
 	{ src: 'docs/architecture/overview.md', slug: 'architecture', optional: true },
