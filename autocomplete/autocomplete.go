@@ -96,6 +96,9 @@ func (m Model) Bindings() []keymap.Binding {
 // Init returns the Cmd that starts the embedded input's cursor blink.
 // Without running it, the input still renders and accepts typing, just
 // with a static (non-blinking) cursor.
+//
+// Deprecated: use Focus, which returns the same Cmd. A component has no Init;
+// only a program's root model does.
 func (m Model) Init() tui.Cmd {
 	return m.Input.Focus()
 }

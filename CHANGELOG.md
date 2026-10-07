@@ -17,6 +17,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   arrives on its own time, after a command or a tick, which `Keys` and `Send`
   do not wait for.
 
+### Deprecated
+
+- `autocomplete.Model.Init` and `commandpalette.Model.Init`: use `Focus`,
+  which returns the same Cmd. They were the only two components with an
+  `Init`; a component has none.
+
 ### Fixed
 
 - `tuitest.Session.Keys` waits until the model has received the keys it
