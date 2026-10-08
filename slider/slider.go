@@ -259,7 +259,7 @@ func (m Model) text() string {
 }
 
 // View renders the track on one row: the part below the value filled, the
-// thumb, and the rest empty, between two cells that hold brackets when the
+// thumb, and the rest empty, between two cells that hold angle brackets when the
 // slider has focus and blanks when it does not, so focus reads without
 // colour and does not change the width. A disabled slider is dimmed and
 // held in parentheses. ShowValue adds the value after a space.
@@ -277,7 +277,7 @@ func (m Model) View() string {
 		open, shut = "(", ")"
 		filled, rest, edge = st.Disabled, st.Disabled, st.Disabled
 	case m.focused:
-		open, shut = "[", "]"
+		open, shut = "<", ">"
 		edge = st.Focus.Bold()
 		filled = filled.Bold()
 	}

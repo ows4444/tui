@@ -19,5 +19,5 @@ func Example() {
 	}
 	fmt.Println(ansi.StripANSI(volume.View()))
 	// Output:
-	// [████●░░░░░░] 40
+	// <████●░░░░░░> 40
 }

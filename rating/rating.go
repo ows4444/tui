@@ -190,7 +190,7 @@ func (m Model) updateMouse(ev tui.MouseEvent) (Model, tui.Cmd) {
 }
 
 // View renders Max marks on one row, filled up to the score and empty after
-// it, between two cells that hold brackets when the rating has focus and
+// it, between two cells that hold angle brackets when the rating has focus and
 // blanks when it does not, so focus reads without colour and does not change
 // the width. A disabled rating is dimmed and held in parentheses. ShowValue
 // adds the score, as "3/5", after a space.
@@ -207,7 +207,7 @@ func (m Model) View() string {
 		open, shut = "(", ")"
 		on, off, edge = st.Disabled, st.Disabled, st.Disabled
 	case m.focused:
-		open, shut = "[", "]"
+		open, shut = "<", ">"
 		edge = st.Focus.Bold()
 		on = on.Bold()
 	}

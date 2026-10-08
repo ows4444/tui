@@ -16,5 +16,5 @@ func Example() {
 	stars, _ = stars.Update(tui.Key{Type: tui.KeyRunes, Text: "4"})
 	fmt.Println(ansi.StripANSI(stars.View()))
 	// Output:
-	// [●●●●○] 4/5
+	// <●●●●○> 4/5
 }

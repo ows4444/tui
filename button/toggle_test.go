@@ -119,6 +119,9 @@ func TestToggleLinearize(t *testing.T) {
 	}
 	m.SetOn(true)
 	m.Focus()
+	if got := plain(m); got != "<●Bold >" {
+		t.Errorf("on and focused view = %q", got)
+	}
 	if got := m.Linearize(); got != "Bold, toggle button, on, focused" {
 		t.Errorf("on and focused = %q", got)
 	}

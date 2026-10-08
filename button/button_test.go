@@ -145,8 +145,14 @@ func TestGhostAndLinkShowBracketsOnlyWhenFocusedOrHeld(t *testing.T) {
 			t.Errorf("variant %d at rest = %q", v, got)
 		}
 		m.Focus()
-		if got := plain(m); got != "[ More ]" {
+		if got := plain(m); got != "< More >" {
 			t.Errorf("variant %d focused = %q", v, got)
+		}
+		m.Blur()
+		m.Mouse, m.Bounds = true, hittest.Rect{W: 8, H: 1}
+		m, _ = m.Update(tui.MouseEvent{X: 1, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
+		if got := plain(m); got != "[ More ]" {
+			t.Errorf("variant %d held down without focus = %q", v, got)
 		}
 	}
 }
@@ -186,8 +192,12 @@ func TestStatesAreToldApartWithoutColour(t *testing.T) {
 	rest := m.View()
 	f := m
 	f.Focus()
-	if v := f.View(); !strings.Contains(v, "\x1b[1") && !strings.Contains(v, ";1") || !strings.Contains(v, "4") || v == rest {
-		t.Errorf("focused view carries no bold and underline: %q", v)
+	if got := plain(f); got != "< Save >" || f.View() == rest {
+		t.Errorf("a focused button is not in angle brackets: %q", got)
+	}
+	d2, _ := f.Update(tui.MouseEvent{X: 1, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
+	if got := plain(d2); got != "< Save >" {
+		t.Errorf("a focused button held down lost its angle brackets: %q", got)
 	}
 	d, _ := m.Update(tui.MouseEvent{X: 1, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
 	if v := d.View(); !strings.Contains(v, "7") || v == rest {

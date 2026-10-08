@@ -190,7 +190,7 @@ func TestMultipleModeTogglesEachByItself(t *testing.T) {
 	if !found {
 		t.Fatal("no ChangedMsg with both buttons on")
 	}
-	if got := plain(m); got != "[●Bold ] [ Italic ] [●Underline ]" {
+	if got := plain(m); got != "[●Bold ] [ Italic ] <●Underline >" {
 		t.Errorf("View = %q", got)
 	}
 }

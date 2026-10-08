@@ -148,15 +148,15 @@ func TestViewShowsThumbFocusAndValueWithoutColour(t *testing.T) {
 	}
 	m.SetValue(100)
 	m.Focus()
-	if got := plain(m); got != "[██████████●]" {
+	if got := plain(m); got != "<██████████●>" {
 		t.Errorf("focused at Max = %q", got)
 	}
 	m.ShowValue = true
-	if got := plain(m); got != "[██████████●] 100" {
+	if got := plain(m); got != "<██████████●> 100" {
 		t.Errorf("with the value = %q", got)
 	}
 	m.Format = func(v float64) string { return fmt.Sprintf("%.0f%%", v) }
-	if got := plain(m); got != "[██████████●] 100%" {
+	if got := plain(m); got != "<██████████●> 100%" {
 		t.Errorf("with Format = %q", got)
 	}
 	m.Disabled = true
@@ -168,7 +168,7 @@ func TestViewShowsThumbFocusAndValueWithoutColour(t *testing.T) {
 		t.Errorf("default width = %d cells, want 22", got)
 	}
 	m.Disabled, m.ShowValue = false, false
-	if got := plain(m); got != "[█●]" {
+	if got := plain(m); got != "<█●>" {
 		t.Errorf("a Width of 0 = %q, want a track of 2", got)
 	}
 	a := New(0, 10)
