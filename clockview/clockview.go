@@ -8,6 +8,7 @@ package clockview
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/ows4444/tui"
@@ -49,7 +50,15 @@ type Model struct {
 	// Model, advance it, so a tick already in flight from the old chain is
 	// recognised as stale and dropped instead of running beside the new one.
 	gen int
+	// id tells this Model's ticks from another's. A program that holds two
+	// Models passes every message to both, and without it each would take
+	// the other's tick for its own, count it, and schedule one more. Start
+	// sets it; a copy of a Model is the same widget and keeps it.
+	id uint64
 }
+
+// lastID is the id most recently given to a Model by Start.
+var lastID atomic.Uint64
 
 // New returns an idle Model in the given Mode with sane defaults: a 1s
 // Interval, a "15:04:05" clock Layout and time.Now for Now. Set Duration
@@ -63,10 +72,13 @@ func New(mode Mode) Model {
 	}
 }
 
-type tickMsg struct{ gen int }
+type tickMsg struct {
+	id  uint64
+	gen int
+}
 
-func tickCmd(d time.Duration, gen int) tui.Cmd {
-	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return tickMsg{gen: gen} }))
+func tickCmd(d time.Duration, id uint64, gen int) tui.Cmd {
+	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return tickMsg{id: id, gen: gen} }))
 }
 
 // Start begins the animation; return the Cmd it produces from your own
@@ -75,8 +87,11 @@ func (m *Model) Start() tui.Cmd {
 	if m.running {
 		m.gen++ // a restart: the chain already ticking is now stale
 	}
+	if m.id == 0 {
+		m.id = lastID.Add(1)
+	}
 	m.running = true
-	return tickCmd(m.Interval, m.gen)
+	return tickCmd(m.Interval, m.id, m.gen)
 }
 
 // Stop ends the animation without resetting elapsed. A tick already on its
@@ -89,12 +104,12 @@ func (m *Model) Stop() {
 // Running reports whether the animation is currently running.
 func (m Model) Running() bool { return m.running }
 
-// Update advances the model on each tick; a no-op for any other Msg or
-// while stopped. In ModeTimer, once elapsed reaches Duration it clamps,
+// Update advances the model on each of its own ticks; a no-op for any other
+// Msg, another Model's tick included, or while stopped. In ModeTimer, once elapsed reaches Duration it clamps,
 // sets Running() false and stops rescheduling — further ticks are no-ops.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	tm, ok := msg.(tickMsg)
-	if !ok || !m.running || tm.gen != m.gen {
+	if !ok || !m.running || tm.id != m.id || tm.gen != m.gen {
 		return m, nil
 	}
 
@@ -111,7 +126,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	case ModeClock:
 		// No state to update; a tick just triggers a re-render.
 	}
-	return m, tickCmd(m.Interval, m.gen)
+	return m, tickCmd(m.Interval, m.id, m.gen)
 }
 
 // View renders the model per its Mode: ModeStopwatch renders elapsed time

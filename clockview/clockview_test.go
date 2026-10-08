@@ -20,7 +20,7 @@ func TestStopwatchCountsUp(t *testing.T) {
 	}
 
 	for i := 1; i <= 3; i++ {
-		next, cmd := m.Update(tickMsg{})
+		next, cmd := m.Update(tickFor(m))
 		m = next
 		if cmd == nil {
 			t.Fatalf("tick %d: expected a rescheduled Cmd, got nil", i)
@@ -47,12 +47,12 @@ func TestTimerCountsDown(t *testing.T) {
 		t.Fatalf("initial View() = %q, want 00:00:05", got)
 	}
 
-	m, _ = m.Update(tickMsg{})
+	m, _ = m.Update(tickFor(m))
 	if got, want := m.View(), "00:00:04"; got != want {
 		t.Errorf("View() after 1 tick = %q, want %q", got, want)
 	}
 
-	m, _ = m.Update(tickMsg{})
+	m, _ = m.Update(tickFor(m))
 	if got, want := m.View(), "00:00:03"; got != want {
 		t.Errorf("View() after 2 ticks = %q, want %q", got, want)
 	}
@@ -68,7 +68,7 @@ func TestTimerStopsAtZero(t *testing.T) {
 	m.Interval = time.Second
 	m.Start()
 
-	m, cmd := m.Update(tickMsg{}) // elapsed = 1s
+	m, cmd := m.Update(tickFor(m)) // elapsed = 1s
 	if cmd == nil {
 		t.Fatal("tick below Duration should reschedule")
 	}
@@ -76,7 +76,7 @@ func TestTimerStopsAtZero(t *testing.T) {
 		t.Error("timer should still be running before reaching Duration")
 	}
 
-	m, cmd = m.Update(tickMsg{}) // elapsed = 2s == Duration
+	m, cmd = m.Update(tickFor(m)) // elapsed = 2s == Duration
 	if cmd != nil {
 		t.Error("tick that reaches Duration should not reschedule another tick")
 	}
@@ -88,7 +88,7 @@ func TestTimerStopsAtZero(t *testing.T) {
 	}
 
 	// Further ticks are no-ops: state and Cmd stay unchanged.
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if cmd != nil {
 		t.Error("tick after stop should return a nil Cmd")
 	}
@@ -115,7 +115,7 @@ func TestClockRendersInjectedNow(t *testing.T) {
 
 	// Ticking a clock does not touch elapsed; View still reflects Now().
 	m.Start()
-	m, _ = m.Update(tickMsg{})
+	m, _ = m.Update(tickFor(m))
 	fixed = fixed.Add(time.Hour)
 	if got, want := m.View(), "10:26:53"; got != want {
 		t.Errorf("View() after Now advances = %q, want %q", got, want)
@@ -163,7 +163,7 @@ func TestFollowsSpinnerTickPattern(t *testing.T) {
 			t.Errorf("mode %v: Start()'s Cmd produced %T, want tickMsg", mode, msg)
 		}
 
-		next, tickCmd := m.Update(tickMsg{})
+		next, tickCmd := m.Update(tickFor(m))
 		if tickCmd == nil {
 			t.Errorf("mode %v: a tick while running should reschedule", mode)
 		}
@@ -173,7 +173,7 @@ func TestFollowsSpinnerTickPattern(t *testing.T) {
 			t.Errorf("mode %v: Stop() should set Running() false", mode)
 		}
 		// A tick that arrives after Stop is a no-op: no reschedule.
-		_, cmdAfterStop := next.Update(tickMsg{})
+		_, cmdAfterStop := next.Update(tickFor(next))
 		if cmdAfterStop != nil {
 			t.Errorf("mode %v: tick after Stop() should return a nil Cmd", mode)
 		}
@@ -206,4 +206,29 @@ func TestSingleModelCoversAllModes(t *testing.T) {
 	var _ Model = New(ModeClock)
 	var _ Model = New(ModeStopwatch)
 	var _ Model = New(ModeTimer)
+}
+
+// tickFor is the tick m's own chain delivers next.
+func tickFor(m Model) tickMsg { return tickMsg{id: m.id, gen: m.gen} }
+
+// Two Models in one program each see every message. A tick belongs to the
+// Model that scheduled it: the other must not count it, or it would run fast
+// and schedule a second chain, doubling the ticks every interval.
+func TestATickIsIgnoredByAnotherModel(t *testing.T) {
+	a, b := New(ModeStopwatch), New(ModeStopwatch)
+	a.Start()
+	b.Start()
+	a2, cmdA := a.Update(tickFor(a))
+	b2, cmdB := b.Update(tickFor(a))
+	if a2.View() != "00:00:01" || cmdA == nil {
+		t.Fatalf("its own tick: View() = %q, rescheduled = %v", a2.View(), cmdA != nil)
+	}
+	if b2.View() != "00:00:00" || cmdB != nil {
+		t.Fatalf("another Model's tick: View() = %q, rescheduled = %v; want it ignored", b2.View(), cmdB != nil)
+	}
+	// A copy is the same widget: the tick still reaches it.
+	c := a
+	if c2, _ := c.Update(tickFor(a)); c2.View() != "00:00:01" {
+		t.Fatalf("a copy ignored its own tick: View() = %q", c2.View())
+	}
 }
