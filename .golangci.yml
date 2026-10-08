@@ -23,6 +23,7 @@ linters:
             - "!**/appshell/**"
             - "!**/autocomplete/**"
             - "!**/avatar/**"
+            - "!**/button/**"
             - "!**/cellbuf/**"
             - "!**/clipboard/**"
             - "!**/clockview/**"
@@ -112,6 +113,7 @@ linters:
           files:
             - "**/accordion/*.go"
             - "**/avatar/*.go"
+            - "**/button/*.go"
             - "**/clipboard/*.go"
             - "**/clockview/*.go"
             - "**/confirm/*.go"

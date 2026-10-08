@@ -30,6 +30,7 @@ const (
 	ComponentAccordion          = "accordion"
 	ComponentAppShell           = "appshell"
 	ComponentAutocomplete       = "autocomplete"
+	ComponentButton             = "button"
 	ComponentColorPicker        = "colorpicker"
 	ComponentCommandPalette     = "commandpalette"
 	ComponentConfirm            = "confirm"
@@ -73,7 +74,7 @@ const (
 func Components() []string {
 	return []string{
 		ComponentAccordion, ComponentAppShell, ComponentAutocomplete,
-		ComponentColorPicker, ComponentCommandPalette,
+		ComponentButton, ComponentColorPicker, ComponentCommandPalette,
 		ComponentConfirm, ComponentContextMenu, ComponentDataTable,
 		ComponentDatePicker, ComponentDialog, ComponentDrawer,
 		ComponentErrorRetry, ComponentFaces, ComponentFilePicker,

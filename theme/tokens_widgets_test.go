@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
+	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/colorpicker"
 	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
@@ -104,6 +105,13 @@ func tokenCases() []tokenCase {
 		{theme.ComponentCommandPalette, func(th theme.Theme, i *theme.Tokens) string {
 			m := commandpalette.New(commandpalette.Command{Name: "open", Description: "d"}).SetTheme(th)
 			m.Input.SetValue("o")
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentButton, func(th theme.Theme, i *theme.Tokens) string {
+			m := button.New("Save").SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}
