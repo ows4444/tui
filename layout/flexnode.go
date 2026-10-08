@@ -285,9 +285,16 @@ func (b boxNode) Render(s Size) string {
 	inner := Size{W: s.W - ch.W, H: s.H - ch.H}
 	content := ""
 	box := b.box
+	if inner.W > 0 {
+		box = box.minWidth(inner.W)
+	}
 	if inner.W > 0 && inner.H > 0 {
 		content = b.child.Render(inner)
-		box = box.minWidth(inner.W)
+	} else {
+		// No room for the child: draw the frame around exactly the rows
+		// that are left, none included. Box.Render alone would give empty
+		// content one blank row and push the bottom border off the end.
+		box = box.exactRows(maxInt(inner.H, 0))
 	}
 	return Block(box.Render(content)).Render(s)
 }

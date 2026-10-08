@@ -51,6 +51,8 @@ type Box struct {
 	width                                int        // 0 = size to content
 	height                               int        // 0 = size to content
 	clip                                 bool       // width was set by Width: wider lines are cut to it
+	rows                                 int        // body rows when fixedRows is set; may be 0
+	fixedRows                            bool       // set by exactRows: draw rows body rows whatever the content
 	title                                string
 	titleAlign                           Align
 	noTop, noRight, noBottom, noLeft     bool // border sides switched off by BorderSides
@@ -123,6 +125,11 @@ func (b Box) Width(w int) Box { b.width, b.clip = w, w > 0; return b }
 // clipped (the package's no-truncation convention for FlexRow and Grid).
 func (b Box) minWidth(w int) Box { b.width, b.clip = w, false; return b }
 
+// exactRows fixes the number of body rows at n, which may be 0: a frame with
+// nothing inside. Height cannot say that, because its 0 means "as many rows
+// as the content has", and empty content still counts as one row.
+func (b Box) exactRows(n int) Box { b.rows, b.fixedRows = n, true; return b }
+
 // edge returns the horizontal line of a border edge of n cells, with title
 // embedded when it is the top edge.
 func (b Box) edge(line string, n int, title string) string {
@@ -189,6 +196,9 @@ func (b Box) Render(content string) string {
 	bodyRows := nLines
 	if b.height > 0 {
 		bodyRows = b.height
+	}
+	if b.fixedRows {
+		bodyRows = b.rows
 	}
 
 	paint := func(s string) string { return s }
