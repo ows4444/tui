@@ -43,6 +43,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   value receiver, so the model the Program kept was never running and the
   animation stayed on its first frame. `Start`'s doc comments now say where
   to call it.
+- `layout.BoxNode` draws its whole frame when the child has no room. Around
+  an empty child it drew a blank row where the bottom border belongs, did not
+  stretch to the width it was given, and, when only as wide as its frame, left
+  the bottom border above the last row.
 - `numberinput` and `emailinput` reject the space bar. Their filters looked
   only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
   went into a digits-only field and into an email address.
