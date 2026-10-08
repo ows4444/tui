@@ -127,6 +127,9 @@ func tickCmd(id int64, d time.Duration) tui.Cmd {
 
 // Start begins revealing; return the Cmd it produces (nil when there is
 // nothing to reveal yet) from your own Init or Update.
+// Call it on the model your program keeps: in an Init with a value receiver
+// it would run on a copy, and the kept model would ignore the ticks. Start
+// where the model is built and have Init return that Cmd.
 func (m *Model) Start() tui.Cmd {
 	m.running = true
 	return m.schedule()

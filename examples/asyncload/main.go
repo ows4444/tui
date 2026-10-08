@@ -47,12 +47,18 @@ type model struct {
 	spinner spinner.Model
 	loading bool
 	result  string
+	// start is the spinner's first tick. Start has to run on the model the
+	// Program keeps, and Init has a value receiver and gets a copy, so it
+	// runs where the model is built and Init only hands the Cmd over.
+	start tui.Cmd
 }
 
 func initialModel() model {
 	s := spinner.New()
 	s.Label = "fetching data..."
-	return model{spinner: s, loading: true}
+	m := model{spinner: s, loading: true}
+	m.start = m.spinner.Start()
+	return m
 }
 
 // Init kicks off the simulated slow operation immediately on startup,
@@ -61,7 +67,7 @@ func initialModel() model {
 // "loading -> resolved" transition below, while the spinner's tickMsg just
 // keeps the animation going in the meantime.
 func (m model) Init() tui.Cmd {
-	return tui.Batch(m.spinner.Start(), fetchCmd())
+	return tui.Batch(m.start, fetchCmd())
 }
 
 func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {

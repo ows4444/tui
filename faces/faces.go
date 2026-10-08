@@ -114,6 +114,9 @@ func (m *Model) Prev() { m.Set(m.Index() - 1) }
 
 // Start begins playing; return the Cmd from your own Init or Update.
 // Restarting is safe at any moment: ticks left over from before are ignored.
+// Call it on the model your program keeps: in an Init with a value receiver
+// it would run on a copy, and the kept model would ignore the ticks. Start
+// where the model is built and have Init return that Cmd.
 func (m *Model) Start() tui.Cmd {
 	m.once = false
 	m.gen++

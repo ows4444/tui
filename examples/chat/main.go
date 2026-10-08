@@ -61,6 +61,11 @@ type model struct {
 
 	width, height int // terminal size from the last ResizeMsg; 0 until known
 	top           int // first screen line shown, when the chat is taller than the window
+
+	// start is the reply's first tick. Start has to run on the model the
+	// Program keeps, and Init has a value receiver and gets a copy, so it
+	// runs where the model is built and Init only hands the Cmd over.
+	start tui.Cmd
 }
 
 // boxWidth is the width of the message boxes: boxWidth, or the terminal width
@@ -85,12 +90,11 @@ func initialModel() model {
 	m.reply = streamtext.NewTypewriter()
 	m.reply.Width = boxWidth - 4
 	m.reply.SetText(assistantExplain)
+	m.start = m.reply.Start()
 	return m
 }
 
-func (m model) Init() tui.Cmd {
-	return m.reply.Start()
-}
+func (m model) Init() tui.Cmd { return m.start }
 
 func (m model) theme() theme.Theme {
 	if m.light {

@@ -21,12 +21,20 @@ type doneMsg struct{ i int }
 type model struct {
 	sp   spinner.Model
 	done int
+	// start is the spinner's first tick. Start has to run on the model the
+	// Program keeps, and Init has a value receiver and gets a copy, so it
+	// runs where the model is built and Init only hands the Cmd over.
+	start tui.Cmd
 }
 
-func initialModel() model { return model{sp: spinner.New()} }
+func initialModel() model {
+	m := model{sp: spinner.New()}
+	m.start = m.sp.Start()
+	return m
+}
 
 func (m model) Init() tui.Cmd {
-	cmds := []tui.Cmd{m.sp.Start()}
+	cmds := []tui.Cmd{m.start}
 	for i := range tasks {
 		i := i
 		cmds = append(cmds, tui.FromCtx(motion.After(time.Duration(i+1)*600*time.Millisecond,
