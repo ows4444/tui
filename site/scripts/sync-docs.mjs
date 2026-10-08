@@ -36,7 +36,7 @@ const TITLE_SUFFIX = 'tui, the Go terminal UI framework';
 // optional pages go under "Optional" in llms.txt.
 const pages = [
 	{ src: "README.md", slug: "overview", title: "Overview", seoTitle: 'Install tui and write your first Go terminal app',
-		description: "Install tui with go get (Go 1.25+), write a first Model with Init, Update and View, and see every package, its stability level and the supported platforms." },
+		description: "Install tui with go get (Go 1.26+), write a first Model with Init, Update and View, and see every package, its stability level and the supported platforms." },
 	{ src: 'docs/cookbook.md', slug: 'cookbook', seoTitle: 'Go terminal UI recipes: the tui cookbook' },
 	{ src: 'docs/program.md', slug: 'program' },
 	{ src: "docs/layout.md", slug: "layout", seoTitle: 'Terminal UI layout in Go: rows, columns, grids | tui',
@@ -198,7 +198,7 @@ function writeLlmsTxt() {
 	const entry = (p) => `- [${p.title}](${SITE}/${p.slug}.md)` + (p.description ? `: ${p.description}` : '');
 	let txt = `# tui\n\n> tui is a terminal UI (TUI) framework for Go, built on the Elm Architecture (Model, Update, View). Module path: github.com/ows4444/tui.\n\n`;
 	txt += `${intro}\n\n`;
-	txt += `Install with \`go get github.com/ows4444/tui\` (Go 1.25 or later). Source: ${GITHUB}. API reference: https://pkg.go.dev/github.com/ows4444/tui. License: MIT.\n\n`;
+	txt += `Install with \`go get github.com/ows4444/tui\` (Go 1.26 or later). Source: ${GITHUB}. API reference: https://pkg.go.dev/github.com/ows4444/tui. License: MIT.\n\n`;
 	txt += `## Docs\n\n${mdCopies.filter((p) => !p.optional).map(entry).join('\n')}\n\n`;
 	txt += `## Optional\n\n${mdCopies.filter((p) => p.optional).map(entry).join('\n')}\n`;
 	fs.writeFileSync(path.join(publicDir, 'llms.txt'), txt);

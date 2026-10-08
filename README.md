@@ -16,7 +16,7 @@ Guides, a cookbook and screens of every example are at
 
 ## Install
 
-Requires Go 1.25 or later.
+Requires Go 1.26 or later.
 
 ```console
 $ go get github.com/ows4444/tui

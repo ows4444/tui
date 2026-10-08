@@ -7,18 +7,21 @@ on:
 
 jobs:
   test:
-    name: test (${{ matrix.os }})
+    name: test (${{ matrix.os }}, go ${{ matrix.go }})
     strategy:
       # Let every OS report, so a Windows-only failure doesn't hide a macOS one.
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        # The two newest Go releases, the ones docs/v1.md promises. The older
+        # is the one go.mod names; the other jobs in this file run on it.
+        go: ["1.26", "1.27"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: ${{ matrix.go }}
           cache: false # no go.sum to key the module cache on
       - name: go build
         run: go build ./...
@@ -28,17 +31,18 @@ jobs:
       # module for linux, darwin, windows and the BSDs.
       - name: go test -race
         run: go test -race ./...
-      # Linux only: one coverage profile is enough, and the floor is per package.
+      # Linux on the older Go only: one coverage profile is enough, and the
+      # floor is per package. The same holds for the two steps after it.
       - name: coverage floor (90% per library package)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         run: |
           go test -coverprofile=cover.out -coverpkg=./... ./...
           go run ./internal/tools/covercheck cover.out
       - name: every exported identifier has a doc comment
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         run: go run ./internal/tools/doccheck
       - name: benchmarks (smoke)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         run: go test -run '^$' -bench 'VirtualList10k|RenderDiff|Frame|Repaint|AvatarView|FacesView' -benchtime=100x ./...
 
   conpty:
@@ -48,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.26"
           cache: false # no go.sum to key the module cache on
       # Builds examples/probe, runs it inside a Windows pseudo console, sends an
       # Up arrow, a resize and Ctrl+C, and asserts the decoded keys, the new
@@ -66,7 +70,7 @@ jobs:
           fetch-depth: 0 # the tags, for the breaking-change check below
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.26"
           cache: false # no go.sum to key the module cache on
       # Fails when the exported API changed without api.txt being updated, so
       # every change to the public surface shows up in the PR diff.
@@ -106,7 +110,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.26"
           cache: false # no go.sum to key the module cache on
       # Regenerates the tables from the pinned Unicode files (fetched from
       # unicode.org, each verified by SHA-256) and fails if
@@ -150,7 +154,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.26"
           cache: false # no go.sum to key the module cache on
       - name: install golangci-lint v2
         run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
@@ -163,7 +167,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.26"
           cache: false # no go.sum to key the module cache on
       # gosec is a dev tool, not a module dependency; pinned to the version
       # the findings were cleared against. Any finding fails the job.
@@ -175,8 +179,8 @@ jobs:
   # staticcheck finds what go vet does not: calls to deprecated identifiers
   # (this module's own included), unused code and comparisons that cannot
   # fail. It is a dev tool, not a module dependency; pinned to the version the
-  # findings were cleared against. That version needs Go 1.26 to build, so
-  # this job uses a newer toolchain than the test jobs. Any finding fails it.
+  # findings were cleared against. That version needs Go 1.26 to build. Any
+  # finding fails it.
   staticcheck:
     runs-on: ubuntu-latest
     steps:
