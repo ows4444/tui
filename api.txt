@@ -803,6 +803,70 @@ type Silhouette int
 type Tone int
 type Trait int
 
+## github.com/ows4444/tui/button (package button)
+
+const (
+	SizeDefault	Size	= iota
+
+	SizeSmall
+
+	SizeLarge
+)
+const (
+	VariantDefault	Variant	= iota
+
+	VariantSecondary
+
+	VariantDestructive
+
+	VariantGhost
+
+	VariantLink
+)
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Down() bool
+func (m Model) Focused() bool
+func (m Model) Hovered() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(label string) Model
+type KeyMap struct {
+	Press keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Label	string
+	Variant	Variant
+	Size	Size
+
+	Disabled	bool
+
+	Loading	bool
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type PressedMsg struct {
+	ID string
+}
+type Size int
+type Variant int
+
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 
 const (
@@ -3015,6 +3079,7 @@ const (
 	ComponentAccordion		= "accordion"
 	ComponentAppShell		= "appshell"
 	ComponentAutocomplete		= "autocomplete"
+	ComponentButton			= "button"
 	ComponentColorPicker		= "colorpicker"
 	ComponentCommandPalette		= "commandpalette"
 	ComponentConfirm		= "confirm"

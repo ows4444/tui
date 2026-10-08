@@ -12,6 +12,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `button`, a new experimental package: a pressable button with five
+  variants and three sizes. Enter or Space presses it when focused; with
+  `Mouse` on, so does a left click that goes down and comes up inside it.
+  It delivers `button.PressedMsg` carrying the button's `ID`. Its states
+  (focused, held down, hovered, disabled, loading) are told apart without
+  colour. `theme.ComponentButton` names it for token overrides.
 - `tuitest.Session.WaitForText(text, timeout)` waits until a row of the
   screen contains `text` and reports whether it did. It is for output that
   arrives on its own time, after a command or a tick, which `Keys` and `Send`
