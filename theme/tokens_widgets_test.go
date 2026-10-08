@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
+	"github.com/ows4444/tui/backdrop"
 	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/carousel"
@@ -26,6 +27,8 @@ import (
 	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
+	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/hovercard"
 	"github.com/ows4444/tui/imageview"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/loadingbar"
@@ -57,6 +60,7 @@ import (
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
+	"github.com/ows4444/tui/tooltip"
 	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/widgets"
@@ -309,6 +313,29 @@ func tokenCases() []tokenCase {
 				m = m.WithTokens(*i)
 			}
 			return m.View()
+		}},
+		{theme.ComponentBackdrop, func(th theme.Theme, i *theme.Tokens) string {
+			m := backdrop.New().SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.Render(base)
+		}},
+		{theme.ComponentHoverCard, func(th theme.Theme, i *theme.Tokens) string {
+			m := hovercard.New("Title", "body", hittest.Rect{X: 2, Y: 1, W: 4, H: 1}).SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			m.Show()
+			return m.Render(base)
+		}},
+		{theme.ComponentTooltip, func(th theme.Theme, i *theme.Tokens) string {
+			m := tooltip.New("tip", hittest.Rect{X: 2, Y: 1, W: 4, H: 1}).SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			m.Show()
+			return m.Render(base)
 		}},
 		{theme.ComponentPagination, func(th theme.Theme, i *theme.Tokens) string {
 			m := pagination.New(9).SetTheme(th)

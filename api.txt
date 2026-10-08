@@ -803,6 +803,34 @@ type Silhouette int
 type Tone int
 type Trait int
 
+## github.com/ows4444/tui/backdrop (package backdrop)
+
+func (m *Model) Hide()
+func (m *Model) Show()
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Open() bool
+func (m Model) Render(base string) string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) WithTokens(tok theme.Tokens) Model
+func New() Model
+type Model struct {
+	ID	string
+	Theme	theme.Theme
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+
+	Hole	hittest.Rect
+	// contains filtered or unexported fields
+}
+type PressedMsg struct {
+	ID string
+}
+
 ## github.com/ows4444/tui/breadcrumb (package breadcrumb)
 
 func (m *Model) Blur()
@@ -1888,6 +1916,48 @@ type Map[ID comparable] struct {
 	// contains filtered or unexported fields
 }
 type Rect = layout.Rect
+
+## github.com/ows4444/tui/hovercard (package hovercard)
+
+func (m *Model) Hide()
+func (m *Model) Show()
+func (m Model) Bindings() []keymap.Binding
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Open() bool
+func (m Model) Rect() hittest.Rect
+func (m Model) Render(base string) string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(title, content string, target hittest.Rect) Model
+type ClosedMsg struct {
+	ID string
+}
+type KeyMap struct {
+	Close keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Title	string
+
+	Content	string
+
+	Width	int
+
+	Target	hittest.Rect
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
 
 ## github.com/ows4444/tui/imageview (package imageview)
 
@@ -3574,6 +3644,7 @@ const (
 	ComponentAccordion		= "accordion"
 	ComponentAppShell		= "appshell"
 	ComponentAutocomplete		= "autocomplete"
+	ComponentBackdrop		= "backdrop"
 	ComponentBreadcrumb		= "breadcrumb"
 	ComponentButton			= "button"
 	ComponentCarousel		= "carousel"
@@ -3590,6 +3661,7 @@ const (
 	ComponentFaces			= "faces"
 	ComponentFilePicker		= "filepicker"
 	ComponentForm			= "form"
+	ComponentHoverCard		= "hovercard"
 	ComponentHelpScreen		= "helpscreen"
 	ComponentImageView		= "imageview"
 	ComponentLoadingBar		= "loadingbar"
@@ -3619,6 +3691,7 @@ const (
 	ComponentToast			= "toast"
 	ComponentToggle			= "toggle"
 	ComponentToolApproval		= "toolapproval"
+	ComponentTooltip		= "tooltip"
 	ComponentTransferList		= "transferlist"
 	ComponentTreeView		= "treeview"
 	ComponentWizard			= "wizard"
@@ -3939,6 +4012,34 @@ type ResolvedMsg struct {
 	Choice Choice
 }
 type Risk int
+
+## github.com/ows4444/tui/tooltip (package tooltip)
+
+func (m *Model) Hide()
+func (m *Model) Show()
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Open() bool
+func (m Model) Rect() hittest.Rect
+func (m Model) Render(base string) string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) WithTokens(tok theme.Tokens) Model
+func New(text string, target hittest.Rect) Model
+type Model struct {
+	Text	string
+
+	Width	int
+
+	Target	hittest.Rect
+	Theme	theme.Theme
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
 
 ## github.com/ows4444/tui/transferlist (package transferlist)
 
