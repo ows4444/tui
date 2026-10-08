@@ -2019,6 +2019,28 @@ type ReplyEvent struct {
 	Data	string
 }
 
+## github.com/ows4444/tui/inputgroup (package inputgroup)
+
+func (m Model) CursorCell() (x, y int, ok bool)
+func (m Model) FullValue() string
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func New(prefix, suffix string) Model
+type Model struct {
+	textinput.Model
+
+	Prefix	string
+
+	Suffix	string
+
+	Theme	theme.Theme
+}
+
 ## github.com/ows4444/tui/keymap (package keymap)
 
 func (b *Binding) SetEnabled(on bool)
@@ -2650,6 +2672,65 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func New() Model
 type Model struct {
 	textinput.Model
+}
+
+## github.com/ows4444/tui/otpinput (package otpinput)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetValue(s string)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Complete() bool
+func (m Model) Cursor() int
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) Value() string
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(length int) Model
+type ChangedMsg struct {
+	ID	string
+
+	Value	string
+
+	Complete	bool
+}
+type KeyMap struct {
+	Back	keymap.Binding
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+	Clear	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Length	int
+
+	Group	int
+
+	Accept	func(rune) bool
+
+	Upper	bool
+
+	Mask	bool
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
 }
 
 ## github.com/ows4444/tui/passwordinput (package passwordinput)
@@ -3372,6 +3453,7 @@ const (
 	ComponentMenuBar		= "menubar"
 	ComponentMultiSelect		= "multiselect"
 	ComponentNotificationCenter	= "notificationcenter"
+	ComponentOTPInput		= "otpinput"
 	ComponentPasswordInput		= "passwordinput"
 	ComponentPicker			= "picker"
 	ComponentPopover		= "popover"
@@ -3945,6 +4027,15 @@ const (
 	TagOutline
 )
 const (
+	TimelineDone	TimelineStatus	= iota
+
+	TimelineCurrent
+
+	TimelinePending
+
+	TimelineFailed
+)
+const (
 	VariantNeutral	Variant	= iota
 
 	VariantInfo
@@ -3982,6 +4073,7 @@ func Divider(width int) string
 func DividerLabel(width int, label string) string
 func DividerLabelWith(width int, label string, t theme.Theme) string
 func DividerWith(width int, t theme.Theme) string
+func Empty(title, description, hint string, t theme.Theme, width int) string
 func ErrorBoundary(render func() string, fallback string, t theme.Theme) (out string)
 func Form(fields ...string) string
 func FormField(label string, fieldView string, err string, t theme.Theme) string
@@ -4015,6 +4107,7 @@ func Table(headers []string, rows [][]string, t theme.Theme) string
 func TableRows(headers []string, rows [][]string, headerStyle, dividerStyle ansi.Style, styleForRow func(i int) ansi.Style) string
 func TableRowsWith(headers []string, rows [][]string, headerStyle, dividerStyle ansi.Style, styleForRow func(i int) ansi.Style, t theme.Theme) string
 func Tag(text string, style TagStyle, variant Variant, t theme.Theme) string
+func Timeline(items []TimelineItem, t theme.Theme, width int) string
 func Toggle(label string, on, focused bool, t theme.Theme) string
 func TokenCounter(used, limit int, t theme.Theme) string
 func Tooltip(text string, t theme.Theme, width int) string
@@ -4039,6 +4132,15 @@ type ProgressItem struct {
 type ProgressStatus int
 type Sender int
 type TagStyle int
+type TimelineItem struct {
+	Title	string
+
+	Time	string
+
+	Detail	string
+	Status	TimelineStatus
+}
+type TimelineStatus int
 type TreeRow struct {
 	Key		string
 	Value		string

@@ -34,6 +34,7 @@ import (
 	"github.com/ows4444/tui/multiselect"
 	"github.com/ows4444/tui/notificationcenter"
 	"github.com/ows4444/tui/numberinput"
+	"github.com/ows4444/tui/otpinput"
 	"github.com/ows4444/tui/passwordinput"
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
@@ -272,6 +273,13 @@ func tokenCases() []tokenCase {
 		{theme.ComponentPasswordInput, func(th theme.Theme, i *theme.Tokens) string {
 			m := passwordinput.New().SetTheme(th)
 			m.SetValue("abc")
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentOTPInput, func(th theme.Theme, i *theme.Tokens) string {
+			m := otpinput.New(4).SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}
