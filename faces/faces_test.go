@@ -220,7 +220,7 @@ func TestStartTickAdvancesWrapsAndReschedules(t *testing.T) {
 	n := len(m.frames())
 	for i := 1; i <= n; i++ {
 		var next tui.Cmd
-		m, next = m.Update(tickMsg{gen: m.gen})
+		m, next = m.Update(tickMsg{id: m.id, gen: m.gen})
 		if next == nil {
 			t.Fatal("a running tick should reschedule")
 		}
@@ -240,7 +240,7 @@ func TestStoppedOrForeignMsgsDoNothing(t *testing.T) {
 		t.Error("a foreign Msg should be ignored")
 	}
 	m.Stop()
-	if _, cmd := m.Update(tickMsg{gen: m.gen}); cmd != nil {
+	if _, cmd := m.Update(tickMsg{id: m.id, gen: m.gen}); cmd != nil {
 		t.Error("a tick after Stop should not reschedule")
 	}
 }
@@ -311,16 +311,16 @@ func TestPlayOnceRunsOneLoopThenRestsOnTheFirstFrame(t *testing.T) {
 	n := len(m.frames())
 	for i := 1; i < n; i++ {
 		var next tui.Cmd
-		m, next = m.Update(tickMsg{gen: m.gen})
+		m, next = m.Update(tickMsg{id: m.id, gen: m.gen})
 		if next == nil || m.Frame() != i {
 			t.Fatalf("tick %d: frame %d, reschedule %v; want frame %d and true", i, m.Frame(), next != nil, i)
 		}
 	}
-	m, next := m.Update(tickMsg{gen: m.gen})
+	m, next := m.Update(tickMsg{id: m.id, gen: m.gen})
 	if m.Frame() != 0 || m.Running() || next != nil {
 		t.Errorf("after the last frame: frame %d running %v reschedule %v; want 0, stopped, none", m.Frame(), m.Running(), next != nil)
 	}
-	if _, next := m.Update(tickMsg{gen: m.gen}); next != nil {
+	if _, next := m.Update(tickMsg{id: m.id, gen: m.gen}); next != nil {
 		t.Error("a finished single loop must not tick again")
 	}
 }
@@ -328,8 +328,8 @@ func TestPlayOnceRunsOneLoopThenRestsOnTheFirstFrame(t *testing.T) {
 func TestPlayOnceMidLoopRestartsAndStartLoopsForever(t *testing.T) {
 	m := New()
 	m.PlayOnce()
-	m, _ = m.Update(tickMsg{gen: m.gen})
-	m, _ = m.Update(tickMsg{gen: m.gen})
+	m, _ = m.Update(tickMsg{id: m.id, gen: m.gen})
+	m, _ = m.Update(tickMsg{id: m.id, gen: m.gen})
 	m.PlayOnce()
 	if m.Frame() != 0 {
 		t.Errorf("PlayOnce mid-loop should restart, frame = %d", m.Frame())
@@ -338,7 +338,7 @@ func TestPlayOnceMidLoopRestartsAndStartLoopsForever(t *testing.T) {
 	m.Start() // a looping Start cancels the one-shot behaviour
 	for i := 0; i < len(m.frames())+2; i++ {
 		var next tui.Cmd
-		if m, next = m.Update(tickMsg{gen: m.gen}); next == nil {
+		if m, next = m.Update(tickMsg{id: m.id, gen: m.gen}); next == nil {
 			t.Fatalf("Start should keep looping past the first wrap (stopped at tick %d)", i+1)
 		}
 	}

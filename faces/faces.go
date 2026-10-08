@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"math/bits"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/ows4444/tui"
@@ -55,12 +56,22 @@ type Model struct {
 	running bool
 	gen     int // bumped by Start so a stale tick from an earlier run is ignored
 	once    bool
+	// id tells this Model's ticks from another's. gen starts at 0 in every
+	// Model, so two Models started once each would take each other's ticks.
+	// Start sets it; a copy of a Model is the same widget and keeps it.
+	id uint64
 }
+
+// lastID is the id most recently given to a Model by Start.
+var lastID atomic.Uint64
 
 // New returns a stopped Model showing the first face.
 func New() Model { return Model{Theme: theme.DarkTheme()} }
 
-type tickMsg struct{ gen int }
+type tickMsg struct {
+	id  uint64
+	gen int
+}
 
 func (m Model) delay() time.Duration {
 	if m.Interval > 0 {
@@ -70,8 +81,8 @@ func (m Model) delay() time.Duration {
 }
 
 func (m Model) tick() tui.Cmd {
-	gen := m.gen
-	return tui.FromCtx(motion.After(m.delay(), func(time.Time) tui.Msg { return tickMsg{gen: gen} }))
+	id, gen := m.id, m.gen
+	return tui.FromCtx(motion.After(m.delay(), func(time.Time) tui.Msg { return tickMsg{id: id, gen: gen} }))
 }
 
 func (m Model) frames() []string { return m.Face().Frames(m.Size) }
@@ -106,6 +117,9 @@ func (m *Model) Prev() { m.Set(m.Index() - 1) }
 func (m *Model) Start() tui.Cmd {
 	m.once = false
 	m.gen++
+	if m.id == 0 {
+		m.id = lastID.Add(1)
+	}
 	if m.Motion.Reduced() {
 		m.running = false
 		return nil
@@ -127,9 +141,10 @@ func (m *Model) PlayOnce() tui.Cmd {
 // Stop pauses on the current frame.
 func (m *Model) Stop() { m.running, m.once = false, false }
 
-// Update advances one frame per tick; it ignores every other Msg.
+// Update advances one frame per tick of its own; it ignores every other
+// Msg, another Model's tick included.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
-	if t, ok := msg.(tickMsg); !ok || !m.running || t.gen != m.gen {
+	if t, ok := msg.(tickMsg); !ok || !m.running || t.id != m.id || t.gen != m.gen {
 		return m, nil
 	}
 	m.frame = (m.frame + 1) % len(m.frames())

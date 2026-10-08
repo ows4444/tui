@@ -26,7 +26,7 @@ func TestBouncePosMatchesUpdateWalk(t *testing.T) {
 	m := New(9)
 	m.Start()
 	for n := 1; n < 30; n++ {
-		m, _ = m.Update(tickMsg{})
+		m, _ = m.Update(tickFor(m))
 		if want := bouncePos(n, m.maxPos()); m.pos != want {
 			t.Fatalf("step %d: pos %d, bouncePos %d", n, m.pos, want)
 		}

@@ -2,6 +2,7 @@
 package spinner
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/ows4444/tui"
@@ -42,27 +43,38 @@ type Model struct {
 
 	frame   int
 	running bool
+	// id tells this Model's ticks from another's. A program that holds two
+	// Models passes every message to both, and without it each would take
+	// the other's tick for its own, advance, and schedule one more. Start
+	// sets it; a copy of a Model is the same widget and keeps it.
+	id uint64
 }
+
+// lastID is the id most recently given to a Model by Start.
+var lastID atomic.Uint64
 
 // New returns an idle Model using Frames() at a 100ms interval.
 func New() Model {
 	return Model{Frames: Frames(), Interval: 100 * time.Millisecond, Theme: theme.DarkTheme()}
 }
 
-type tickMsg struct{}
+type tickMsg struct{ id uint64 }
 
-func tickCmd(d time.Duration) tui.Cmd {
-	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return tickMsg{} }))
+func tickCmd(d time.Duration, id uint64) tui.Cmd {
+	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return tickMsg{id: id} }))
 }
 
 // Start begins the animation; return the Cmd it produces from your own
 // Init or Update so it actually runs.
 func (m *Model) Start() tui.Cmd {
 	m.running = true
+	if m.id == 0 {
+		m.id = lastID.Add(1)
+	}
 	if m.Motion.Reduced() || m.Clock != nil {
 		return nil
 	}
-	return tickCmd(m.Interval)
+	return tickCmd(m.Interval, m.id)
 }
 
 // Stop ends the animation without resetting its frame.
@@ -72,13 +84,13 @@ func (m *Model) Stop() { m.running = false }
 func (m Model) Running() bool { return m.running }
 
 // Update advances to the next frame; a no-op for any Msg but its own
-// tick, while stopped, or with no Frames.
+// tick, another Model's tick included, while stopped, or with no Frames.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
-	if _, ok := msg.(tickMsg); !ok || !m.running || len(m.Frames) == 0 || m.Motion.Reduced() {
+	if t, ok := msg.(tickMsg); !ok || t.id != m.id || !m.running || len(m.Frames) == 0 || m.Motion.Reduced() {
 		return m, nil
 	}
 	m.frame = (m.frame + 1) % len(m.Frames)
-	return m, tickCmd(m.Interval)
+	return m, tickCmd(m.Interval, m.id)
 }
 
 // isDefaultFrames reports whether f holds exactly the stock frames.

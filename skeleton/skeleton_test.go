@@ -69,7 +69,7 @@ func TestTickAdvancesFrameAndReschedules(t *testing.T) {
 	m := New()
 	m.Start()
 
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if next.frame != 1 {
 		t.Errorf("frame after one tick = %d, want 1", next.frame)
 	}
@@ -83,7 +83,7 @@ func TestTickIsNoOpAfterStop(t *testing.T) {
 	m.Start()
 	m.Stop()
 
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if cmd != nil {
 		t.Error("a tick after Stop should not reschedule (nil Cmd) — that's what ends the animation")
 	}
@@ -103,7 +103,7 @@ func TestNonTickMsgIgnored(t *testing.T) {
 
 func TestUpdateNoOpWhileNotRunning(t *testing.T) {
 	m := New()
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if cmd != nil || next.frame != 0 {
 		t.Error("a tick while not running should be a no-op")
 	}
@@ -119,7 +119,7 @@ func TestViewAnimatesAcrossFrames(t *testing.T) {
 
 	// Advance a few frames so the shimmer moves to a different column.
 	for i := 0; i < 3; i++ {
-		next, _ := m.Update(tickMsg{})
+		next, _ := m.Update(tickFor(m))
 		m = next
 	}
 	second := m.View()

@@ -34,7 +34,7 @@ func TestTickAdvancesFrameAndReschedules(t *testing.T) {
 	m := New()
 	m.Start()
 
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if next.frame != 1 {
 		t.Errorf("frame after one tick = %d, want 1", next.frame)
 	}
@@ -49,7 +49,7 @@ func TestFrameWrapsAround(t *testing.T) {
 	m.Start()
 
 	for i := 0; i < 3; i++ {
-		next, _ := m.Update(tickMsg{})
+		next, _ := m.Update(tickFor(m))
 		m = next
 	}
 	if m.frame != 0 {
@@ -62,7 +62,7 @@ func TestTickIsNoOpAfterStop(t *testing.T) {
 	m.Start()
 	m.Stop()
 
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if cmd != nil {
 		t.Error("a tick after Stop should not reschedule (nil Cmd) — that's what ends the animation")
 	}
@@ -109,7 +109,7 @@ func TestEmptyFramesDoesNotPanic(t *testing.T) {
 		t.Errorf("View() with no Frames = %q, want just the Label", got)
 	}
 	m.Start()
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if cmd != nil || next.frame != 0 {
 		t.Error("ticking with no Frames should be a safe no-op")
 	}
@@ -119,7 +119,7 @@ func TestFrameStaysInBoundsIfFramesShrinks(t *testing.T) {
 	m := New() // 10 default frames
 	m.Start()
 	for i := 0; i < 7; i++ {
-		next, _ := m.Update(tickMsg{})
+		next, _ := m.Update(tickFor(m))
 		m = next
 	}
 	m.Frames = []string{"x"} // shrink after frame has advanced past index 0
