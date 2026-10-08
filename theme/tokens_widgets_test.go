@@ -10,6 +10,7 @@ import (
 	"github.com/ows4444/tui/autocomplete"
 	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
+	"github.com/ows4444/tui/carousel"
 	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/colorpicker"
 	"github.com/ows4444/tui/commandpalette"
@@ -56,6 +57,7 @@ import (
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
+	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/widgets"
 	"github.com/ows4444/tui/wizard"
@@ -289,6 +291,20 @@ func tokenCases() []tokenCase {
 		}},
 		{theme.ComponentOTPInput, func(th theme.Theme, i *theme.Tokens) string {
 			m := otpinput.New(4).SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentCarousel, func(th theme.Theme, i *theme.Tokens) string {
+			m := carousel.New("A", "B").SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentTransferList, func(th theme.Theme, i *theme.Tokens) string {
+			m := transferlist.New("A", "B").SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}

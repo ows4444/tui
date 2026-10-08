@@ -17,6 +17,7 @@ import (
 	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
+	"github.com/ows4444/tui/carousel"
 	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/commandpalette"
@@ -52,6 +53,7 @@ import (
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
+	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/viewport"
 	"github.com/ows4444/tui/widgets"
@@ -249,6 +251,15 @@ var conformance = map[string]func() map[string]string{
 	"toolapproval": func() map[string]string {
 		m := toolapproval.New(evil, evil, toolapproval.RiskLow)
 		return map[string]string{"View": m.View()}
+	},
+	"carousel": func() map[string]string {
+		m := carousel.New(evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"transferlist": func() map[string]string {
+		m := transferlist.New(evil)
+		m.Right, m.LeftTitle, m.RightTitle = []string{evil}, evil, evil
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"treeview": func() map[string]string {
 		m := treeview.New(treeview.Node{Label: evil})

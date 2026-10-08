@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
+	"github.com/ows4444/tui/carousel"
 	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/otpinput"
 	"github.com/ows4444/tui/pagination"
@@ -15,6 +16,7 @@ import (
 	"github.com/ows4444/tui/rating"
 	"github.com/ows4444/tui/slider"
 	"github.com/ows4444/tui/toggle"
+	"github.com/ows4444/tui/transferlist"
 )
 
 // The pressable and adjustable controls show keyboard focus one way: the
@@ -26,6 +28,20 @@ func TestControlsShowFocusWithAngleBrackets(t *testing.T) {
 	cases := map[string]func(focused bool) string{
 		"breadcrumb": func(f bool) string {
 			m := breadcrumb.New("Home", "Docs")
+			if f {
+				m.Focus()
+			}
+			return plain(m.View())
+		},
+		"carousel": func(f bool) string {
+			m := carousel.New("one", "two")
+			if f {
+				m.Focus()
+			}
+			return plain(m.View())
+		},
+		"transferlist": func(f bool) string {
+			m := transferlist.New("Apples", "Dates")
 			if f {
 				m.Focus()
 			}

@@ -71,6 +71,15 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   ellipsis. `widgets.Breadcrumb` still draws one without state.
 - `theme.ComponentPagination` and `ComponentBreadcrumb` name the two for
   token overrides.
+- `transferlist`, a new experimental package: two lists side by side. Up and
+  Down move a cursor, Left and Right change list, and Enter, Space or a
+  click moves an item across; Ctrl+A moves a whole list. It delivers
+  `transferlist.ChangedMsg`.
+- `carousel`, a new experimental package: one slide of several at a time
+  with a row of dots under it. Left, Right, Home, End or a click change the
+  slide; `Loop` wraps at the ends. It delivers `carousel.ChangedMsg`.
+- `theme.ComponentTransferList` and `ComponentCarousel` name the two for
+  token overrides.
 - `widgets.Empty` draws the placeholder for a view with nothing to show: a
   title, a description and a hint, centred.
 - `widgets.Timeline` draws `[]widgets.TimelineItem` one under another with a
