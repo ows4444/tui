@@ -980,6 +980,53 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/carousel (package carousel)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetIndex(i int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) Index() int
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Size() (w, h int)
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(slides ...string) Model
+type ChangedMsg struct {
+	ID	string
+
+	Index	int
+}
+type KeyMap struct {
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Slides	[]string
+
+	Width, Height	int
+
+	Loop	bool
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 
 const (
@@ -3529,6 +3576,7 @@ const (
 	ComponentAutocomplete		= "autocomplete"
 	ComponentBreadcrumb		= "breadcrumb"
 	ComponentButton			= "button"
+	ComponentCarousel		= "carousel"
 	ComponentCheckbox		= "checkbox"
 	ComponentColorPicker		= "colorpicker"
 	ComponentCommandPalette		= "commandpalette"
@@ -3571,6 +3619,7 @@ const (
 	ComponentToast			= "toast"
 	ComponentToggle			= "toggle"
 	ComponentToolApproval		= "toolapproval"
+	ComponentTransferList		= "transferlist"
 	ComponentTreeView		= "treeview"
 	ComponentWizard			= "wizard"
 )
@@ -3890,6 +3939,70 @@ type ResolvedMsg struct {
 	Choice Choice
 }
 type Risk int
+
+## github.com/ows4444/tui/transferlist (package transferlist)
+
+const (
+	Left	Side	= iota
+	Right
+)
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetCursor(s Side, i int)
+func (m Model) Active() Side
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Cursor(s Side) int
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Rows() int
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(items ...string) Model
+type ChangedMsg struct {
+	ID	string
+
+	Moved	[]string
+
+	To	Side
+}
+type KeyMap struct {
+	Up	keymap.Binding
+	Down	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+	ToLeft	keymap.Binding
+	ToRight	keymap.Binding
+	Move	keymap.Binding
+	MoveAll	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Left, Right	[]string
+
+	LeftTitle, RightTitle	string
+
+	Height	int
+
+	ColumnWidth	int
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type Side int
 
 ## github.com/ows4444/tui/treeview (package treeview)
 

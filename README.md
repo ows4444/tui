@@ -194,6 +194,8 @@ every widget implements `Linearize` for accessible mode; tests in
 | `inputgroup` | A text field with fixed text before and after it | Experimental |
 | `pagination` | A row of page numbers with the current one marked and far pages folded | Experimental |
 | `breadcrumb` | A trail of places that can be walked back along and chosen from | Experimental |
+| `transferlist` | Two lists side by side with items that move between them | Experimental |
+| `carousel` | One slide of several at a time, with a row of dots that says which | Experimental |
 
 Packages under `internal/` are not public API.
 

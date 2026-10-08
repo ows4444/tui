@@ -32,6 +32,7 @@ const (
 	ComponentAutocomplete       = "autocomplete"
 	ComponentBreadcrumb         = "breadcrumb"
 	ComponentButton             = "button"
+	ComponentCarousel           = "carousel"
 	ComponentCheckbox           = "checkbox"
 	ComponentColorPicker        = "colorpicker"
 	ComponentCommandPalette     = "commandpalette"
@@ -74,6 +75,7 @@ const (
 	ComponentToast              = "toast"
 	ComponentToggle             = "toggle"
 	ComponentToolApproval       = "toolapproval"
+	ComponentTransferList       = "transferlist"
 	ComponentTreeView           = "treeview"
 	ComponentWizard             = "wizard"
 )
@@ -82,7 +84,7 @@ const (
 func Components() []string {
 	return []string{
 		ComponentAccordion, ComponentAppShell, ComponentAutocomplete,
-		ComponentBreadcrumb, ComponentButton, ComponentCheckbox, ComponentColorPicker, ComponentCommandPalette,
+		ComponentBreadcrumb, ComponentButton, ComponentCarousel, ComponentCheckbox, ComponentColorPicker, ComponentCommandPalette,
 		ComponentConfirm, ComponentContextMenu, ComponentDataTable,
 		ComponentDatePicker, ComponentDialog, ComponentDrawer,
 		ComponentErrorRetry, ComponentFaces, ComponentFilePicker,
@@ -94,7 +96,7 @@ func Components() []string {
 		ComponentScrollbar, ComponentSkeleton, ComponentSlider, ComponentSpinner,
 		ComponentSplitPane, ComponentStreamText, ComponentTabs,
 		ComponentTagInput, ComponentTextArea, ComponentTextInput,
-		ComponentToast, ComponentToggle, ComponentToolApproval, ComponentTreeView,
+		ComponentToast, ComponentToggle, ComponentToolApproval, ComponentTransferList, ComponentTreeView,
 		ComponentWizard,
 	}
 }
