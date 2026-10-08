@@ -61,19 +61,25 @@ type model struct {
 	spinner   spinner.Model
 	completed int // number of steps finished so far
 	finished  bool
+	// start is the spinner's first tick. Start has to run on the model the
+	// Program keeps, and Init has a value receiver and gets a copy, so it
+	// runs where the model is built and Init only hands the Cmd over.
+	start tui.Cmd
 }
 
 func initialModel() model {
 	s := spinner.New()
 	s.Label = "Running: " + steps[0] + "..."
-	return model{spinner: s}
+	m := model{spinner: s}
+	m.start = m.spinner.Start()
+	return m
 }
 
 // Init starts the spinner's own animation alongside every step's
 // completion timer, all running concurrently via tui.Batch.
 func (m model) Init() tui.Cmd {
 	cmds := make([]tui.Cmd, 0, len(steps)+1)
-	cmds = append(cmds, m.spinner.Start())
+	cmds = append(cmds, m.start)
 	for i := range steps {
 		cmds = append(cmds, stepDelayCmd(i))
 	}

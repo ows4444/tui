@@ -68,6 +68,9 @@ func tickCmd(d time.Duration, id uint64) tui.Cmd {
 
 // Start begins the shimmer animation; return the Cmd it produces from your
 // own Init or Update so it actually runs.
+// Call it on the model your program keeps: in an Init with a value receiver
+// it would run on a copy, and the kept model would ignore the ticks. Start
+// where the model is built and have Init return that Cmd.
 func (m *Model) Start() tui.Cmd {
 	m.running = true
 	if m.id == 0 {

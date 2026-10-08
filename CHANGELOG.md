@@ -38,6 +38,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   one program each took the other's tick, so both ran fast and the number of
   pending ticks doubled every interval. Models that share a `motion.Clock`
   were not affected.
+- The `asyncload`, `buildlog`, `chat` and `inlinespinners` examples animate.
+  Each started its spinner, or its typed-out reply, inside an `Init` with a
+  value receiver, so the model the Program kept was never running and the
+  animation stayed on its first frame. `Start`'s doc comments now say where
+  to call it.
 - `numberinput` and `emailinput` reject the space bar. Their filters looked
   only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
   went into a digits-only field and into an email address.
