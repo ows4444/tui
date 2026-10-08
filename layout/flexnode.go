@@ -237,9 +237,9 @@ func (f flexNode) Render(s Size) string {
 	return Block(joined).Render(s)
 }
 
-// BoxNode wraps child in box's padding and border as a Node. Measure adds
-// the box's chrome to the child's size; Render gives the child what is left
-// of the allotted Size after the chrome and draws the box around it.
+// BoxNode wraps child in box's padding, border and margin as a Node. Measure
+// adds the box's chrome to the child's size; Render gives the child what is
+// left of the allotted Size after the chrome and draws the box around it.
 func BoxNode(box Box, child Node) Node { return boxNode{box: box, child: child} }
 
 type boxNode struct {
@@ -248,8 +248,8 @@ type boxNode struct {
 }
 
 func (b boxNode) chrome() Size {
-	w := b.box.padLeft + b.box.padRight
-	h := b.box.padTop + b.box.padBottom
+	w := b.box.padLeft + b.box.padRight + b.box.marginL + b.box.marginR
+	h := b.box.padTop + b.box.padBottom + b.box.marginT + b.box.marginB
 	if hasBorder(b.box.border) {
 		w += 2
 		h += 2

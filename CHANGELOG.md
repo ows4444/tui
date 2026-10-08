@@ -47,6 +47,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   an empty child it drew a blank row where the bottom border belongs, did not
   stretch to the width it was given, and, when only as wide as its frame, left
   the bottom border above the last row.
+- `layout.BoxNode` measures the box's margin. It left the margin out, so a
+  box with one was drawn larger than it measured and lost its right and
+  bottom borders to the clip. A box with a margin now takes that much more
+  room in a layout.
 - `numberinput` and `emailinput` reject the space bar. Their filters looked
   only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
   went into a digits-only field and into an email address.
