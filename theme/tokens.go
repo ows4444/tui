@@ -55,8 +55,11 @@ const (
 	ComponentPasswordInput      = "passwordinput"
 	ComponentPicker             = "picker"
 	ComponentPopover            = "popover"
+	ComponentRadioGroup         = "radiogroup"
+	ComponentRating             = "rating"
 	ComponentScrollbar          = "scrollbar"
 	ComponentSkeleton           = "skeleton"
+	ComponentSlider             = "slider"
 	ComponentSpinner            = "spinner"
 	ComponentSplitPane          = "splitpane"
 	ComponentStreamText         = "streamtext"
@@ -82,7 +85,8 @@ func Components() []string {
 		ComponentLoadingBar, ComponentMarkdown, ComponentMaskedInput, ComponentMenu,
 		ComponentMenuBar, ComponentMultiSelect, ComponentNotificationCenter,
 		ComponentPasswordInput, ComponentPicker, ComponentPopover,
-		ComponentScrollbar, ComponentSkeleton, ComponentSpinner,
+		ComponentRadioGroup, ComponentRating,
+		ComponentScrollbar, ComponentSkeleton, ComponentSlider, ComponentSpinner,
 		ComponentSplitPane, ComponentStreamText, ComponentTabs,
 		ComponentTagInput, ComponentTextArea, ComponentTextInput,
 		ComponentToast, ComponentToolApproval, ComponentTreeView,

@@ -26,6 +26,20 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   buttons; `ModeSingle` and `ModeMultiple` are toggle buttons of which one or
   several are on, read with `On` and reported with `ChangedMsg`. `Required`
   keeps a single choice from being left empty.
+- `radiogroup`, a new experimental package: a set of options of which
+  exactly one is chosen. The arrow keys move between the options and choose
+  as they go; Space or Enter chooses the one under the cursor. Vertical or
+  on one row, with disabled options skipped. It delivers
+  `radiogroup.ChangedMsg`.
+- `slider`, a new experimental package: a value in a range, moved along a
+  track by the arrow keys, Page Up and Page Down, Home and End, and by a
+  press or a drag with the pointer. `Step` rounds the value and `Max` stays
+  reachable. It delivers `slider.ChangedMsg`.
+- `rating`, a new experimental package: a score out of a small maximum, as a
+  row of filled and empty marks. Left and Right, a digit, or a click set it;
+  a click on the mark it is at clears it. It delivers `rating.ChangedMsg`.
+- `theme.ComponentRadioGroup`, `ComponentSlider` and `ComponentRating` name
+  the three for token overrides.
 - `tuitest.Session.WaitForText(text, timeout)` waits until a row of the
   screen contains `text` and reports whether it did. It is for output that
   arrives on its own time, after a command or a tick, which `Keys` and `Send`

@@ -2706,6 +2706,112 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/radiogroup (package radiogroup)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) Select(i int)
+func (m *Model) SelectValue(v string) bool
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Cursor() int
+func (m Model) Focused() bool
+func (m Model) Index() (int, bool)
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) Value() string
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(labels ...string) Model
+type ChangedMsg struct {
+	ID	string
+
+	Index	int
+
+	Value	string
+}
+type KeyMap struct {
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+	Choose	keymap.Binding
+}
+type Model struct {
+	ID	string
+	Options	[]Option
+
+	Horizontal	bool
+
+	Gap	int
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type Option struct {
+	Label	string
+
+	Value	string
+
+	Disabled	bool
+}
+
+## github.com/ows4444/tui/rating (package rating)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetValue(v int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) Value() int
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(max int) Model
+type ChangedMsg struct {
+	ID	string
+
+	Value	int
+}
+type KeyMap struct {
+	Dec	keymap.Binding
+	Inc	keymap.Binding
+	Clear	keymap.Binding
+	Full	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Max	int
+
+	ReadOnly	bool
+
+	Disabled	bool
+
+	ShowValue	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/scrollbar (package scrollbar)
 
 const (
@@ -2782,6 +2888,63 @@ type Model struct {
 	Motion	motion.Preference
 
 	Clock	*motion.Clock
+	// contains filtered or unexported fields
+}
+
+## github.com/ows4444/tui/slider (package slider)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetValue(v float64)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Dragging() bool
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) Value() float64
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(min, max float64) Model
+type ChangedMsg struct {
+	ID	string
+
+	Value	float64
+}
+type KeyMap struct {
+	Dec	keymap.Binding
+	Inc	keymap.Binding
+	DecBig	keymap.Binding
+	IncBig	keymap.Binding
+	ToMin	keymap.Binding
+	ToMax	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Min, Max	float64
+
+	Step	float64
+
+	BigStep	float64
+
+	Width	int
+
+	ShowValue	bool
+
+	Format	func(float64) string
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
 	// contains filtered or unexported fields
 }
 
@@ -3167,8 +3330,11 @@ const (
 	ComponentPasswordInput		= "passwordinput"
 	ComponentPicker			= "picker"
 	ComponentPopover		= "popover"
+	ComponentRadioGroup		= "radiogroup"
+	ComponentRating			= "rating"
 	ComponentScrollbar		= "scrollbar"
 	ComponentSkeleton		= "skeleton"
+	ComponentSlider			= "slider"
 	ComponentSpinner		= "spinner"
 	ComponentSplitPane		= "splitpane"
 	ComponentStreamText		= "streamtext"

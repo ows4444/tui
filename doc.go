@@ -60,7 +60,7 @@
 //
 // Experimental: appshell, streamtext, toolapproval, notificationcenter,
 // commandpalette, errorretry, faces, imageview, clipboard, avatar, button,
-// buttongroup.
+// buttongroup, radiogroup, slider, rating.
 //
 // Terminals other than the local one (an SSH session, a test) plug in through
 // the Terminal and Clock ports (WithTerminal, WithClock), plus ResizeNotifier
