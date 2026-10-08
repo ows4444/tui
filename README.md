@@ -190,6 +190,8 @@ every widget implements `Linearize` for accessible mode; tests in
 | `rating` | A score out of a small maximum, as a row of filled and empty marks | Experimental |
 | `checkbox` | One box that is checked, unchecked or partly checked, with a label | Experimental |
 | `toggle` | An on/off switch with a label | Experimental |
+| `otpinput` | A short code typed one character to a cell, such as a one-time password | Experimental |
+| `inputgroup` | A text field with fixed text before and after it | Experimental |
 
 Packages under `internal/` are not public API.
 

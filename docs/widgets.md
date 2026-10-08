@@ -33,7 +33,7 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, treeview, viewport, virtuallist |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | contextmenu, dialog, drawer, helpscreen, menubar, popover, toast |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
@@ -81,6 +81,7 @@ in `examples/` that imports the package.
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
 | [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
+| [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | |
 | [logview](../logview) | An append-only scrolling log | | `examples/procstream` |
 | [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/agentshell` |
 | [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune |  `examples/inputs` |
@@ -89,6 +90,7 @@ in `examples/` that imports the package.
 | [multiselect](../multiselect) | A multi-choice list: Space toggles, Enter confirms | yes | `examples/list` |
 | [notificationcenter](../notificationcenter) | A panel showing every queued notification at once. Experimental | | |
 | [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `examples/inputs` |
+| [otpinput](../otpinput) | A short code typed one character to a cell, `[4][8][2] — [1][ ][ ]`; a paste fills the cells, and `ChangedMsg` says when it is complete. Experimental | | |
 | [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
@@ -125,9 +127,9 @@ package: it sits below the components. Use `layout.Block(s)` (or
 
 | Kind | Functions |
 | --- | --- |
-| Containers and labels | `Alert`, `Badge`, `Banner`, `Box`, `Card`, `InfoBox`, `Panel`, `Tag`, `Tooltip`, `TooltipOverlay`, `Center`, `Spacer` |
+| Containers and labels | `Alert`, `Badge`, `Banner`, `Box`, `Card`, `Empty`, `InfoBox`, `Panel`, `Tag`, `Tooltip`, `TooltipOverlay`, `Center`, `Spacer` |
 | Separators and headings | `Divider`, `DividerLabel`, `DividerWith`, `DividerLabelWith`, `Header`, `HeaderWithAccessory`, `Breadcrumb` |
-| Progress and status | `ProgressBar`, `ProgressCircle`, `MultiProgress`, `StatusIndicator`, `Stepper`, `Pagination`, `PaginationDots` |
+| Progress and status | `ProgressBar`, `ProgressCircle`, `MultiProgress`, `StatusIndicator`, `Stepper`, `Timeline`, `Pagination`, `PaginationDots` |
 | Controls drawn as text | `Checkbox`, `Toggle`, `FormField`, `Form` |
 | Lists and tables | `List`, `ListWith`, `KeyValue`, `Table`, `TableRows`, `TableRowsWith` |
 | Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap` |

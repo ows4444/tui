@@ -51,6 +51,20 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   `toggle.ChangedMsg`. `widgets.Toggle` still draws one without state.
 - `theme.ComponentCheckbox` and `ComponentToggle` name the two for token
   overrides.
+- `otpinput`, a new experimental package: a short code typed one character
+  to a cell, such as a one-time password. A typed character fills a cell and
+  moves on, Backspace steps back, and a paste fills as many cells as it has
+  characters. `Group` draws a dash between groups of cells, `Accept` chooses
+  the characters, `Mask` hides them. It delivers `otpinput.ChangedMsg` with
+  `Complete`. `theme.ComponentOTPInput` names it for token overrides.
+- `inputgroup`, a new experimental package: a `textinput.Model` with fixed
+  text before and after it. The suffix keeps its column when a `Width` is
+  set, `CursorCell` is reported past the prefix, and `FullValue` joins the
+  three.
+- `widgets.Empty` draws the placeholder for a view with nothing to show: a
+  title, a description and a hint, centred.
+- `widgets.Timeline` draws `[]widgets.TimelineItem` one under another with a
+  marker for each status and a rail between them.
 - `examples/controls`, an export panel that uses `button`, `buttongroup`,
   `radiogroup`, `slider`, `rating`, `checkbox` and `toggle` together, by
   keyboard and by mouse.

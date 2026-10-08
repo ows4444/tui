@@ -29,12 +29,14 @@ import (
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
 	tuiimage "github.com/ows4444/tui/imageview"
+	"github.com/ows4444/tui/inputgroup"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/logview"
 	"github.com/ows4444/tui/menu"
 	"github.com/ows4444/tui/menubar"
 	"github.com/ows4444/tui/multiselect"
 	"github.com/ows4444/tui/notificationcenter"
+	"github.com/ows4444/tui/otpinput"
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
 	"github.com/ows4444/tui/radiogroup"
@@ -169,6 +171,16 @@ var conformance = map[string]func() map[string]string{
 		m := notificationcenter.New(3, 40)
 		m.Push(notificationcenter.Notification{Message: evil})
 		return map[string]string{"Render": m.Render(strings.Repeat(strings.Repeat(".", 50)+"\n", 8)), "Linearize": m.Linearize()}
+	},
+	"inputgroup": func() map[string]string {
+		m := inputgroup.New(evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"otpinput": func() map[string]string {
+		m := otpinput.New(4)
+		m.Accept = func(rune) bool { return true }
+		m.SetValue(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"picker": func() map[string]string {
 		m := picker.New(picker.Item{Label: evil, Value: "v"})

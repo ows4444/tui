@@ -53,6 +53,7 @@ var composition = map[string][]string{
 	"form":           {"textinput", "passwordinput"},
 	"appshell":       {"textinput", "viewport"},
 	"emailinput":     {"textinput"},
+	"inputgroup":     {"textinput"},
 	"numberinput":    {"textinput"},
 	"maskedinput":    {"textinput"},
 	"passwordinput":  {"textinput"},
