@@ -62,6 +62,15 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   two rows and two columns for any border, so a box with sides switched off
   by `BorderSides` was padded out with blank rows and columns. Such a box now
   takes less room in a layout.
+- A terminal resize in a program's first moments is no longer lost on Linux,
+  macOS and the BSDs. The program began listening for the window-size signal
+  on a goroutine of its own, and a resize that came before that goroutine ran
+  found no listener, so the program stayed drawn at its old size until the
+  next resize.
+- `tuitest`: `Keys`, `Send` and the other input methods return only after the
+  program has exited when the model quit in response. On a slow terminal they
+  returned while it was still leaving the screen, so `Done` was false straight
+  after.
 - `numberinput` and `emailinput` reject the space bar. Their filters looked
   only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
   went into a digits-only field and into an email address.

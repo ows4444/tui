@@ -16,3 +16,10 @@ const resizePollFallback = 250 * time.Millisecond
 func watchResize(p *Program, done <-chan struct{}) {
 	watchResizeKicks(p, p.resizeKick, p.resizePollEvery(), done)
 }
+
+// startResizeWatch returns watchResize for p. The unix version starts
+// listening before it returns; the console needs no such step, since its
+// events queue in the input buffer whether or not anyone is reading yet.
+func startResizeWatch(p *Program) func(done <-chan struct{}) {
+	return func(done <-chan struct{}) { watchResize(p, done) }
+}
