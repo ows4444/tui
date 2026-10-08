@@ -803,6 +803,56 @@ type Silhouette int
 type Tone int
 type Trait int
 
+## github.com/ows4444/tui/breadcrumb (package breadcrumb)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetCursor(i int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Cursor() int
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(items ...string) Model
+type ChosenMsg struct {
+	ID	string
+
+	Index	int
+
+	Label	string
+}
+type KeyMap struct {
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+	Choose	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Items	[]string
+
+	Separator	string
+
+	Max	int
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/button (package button)
 
 const (
@@ -2733,6 +2783,53 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/pagination (package pagination)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetPage(p int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Page() int
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(total int) Model
+type ChangedMsg struct {
+	ID	string
+
+	Page	int
+}
+type KeyMap struct {
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Total	int
+
+	Siblings	int
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/passwordinput (package passwordinput)
 
 const Mask = '•'
@@ -3430,6 +3527,7 @@ const (
 	ComponentAccordion		= "accordion"
 	ComponentAppShell		= "appshell"
 	ComponentAutocomplete		= "autocomplete"
+	ComponentBreadcrumb		= "breadcrumb"
 	ComponentButton			= "button"
 	ComponentCheckbox		= "checkbox"
 	ComponentColorPicker		= "colorpicker"
@@ -3454,6 +3552,7 @@ const (
 	ComponentMultiSelect		= "multiselect"
 	ComponentNotificationCenter	= "notificationcenter"
 	ComponentOTPInput		= "otpinput"
+	ComponentPagination		= "pagination"
 	ComponentPasswordInput		= "passwordinput"
 	ComponentPicker			= "picker"
 	ComponentPopover		= "popover"

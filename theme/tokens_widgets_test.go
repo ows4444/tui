@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
+	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/colorpicker"
@@ -35,6 +36,7 @@ import (
 	"github.com/ows4444/tui/notificationcenter"
 	"github.com/ows4444/tui/numberinput"
 	"github.com/ows4444/tui/otpinput"
+	"github.com/ows4444/tui/pagination"
 	"github.com/ows4444/tui/passwordinput"
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
@@ -111,6 +113,13 @@ func tokenCases() []tokenCase {
 		{theme.ComponentCommandPalette, func(th theme.Theme, i *theme.Tokens) string {
 			m := commandpalette.New(commandpalette.Command{Name: "open", Description: "d"}).SetTheme(th)
 			m.Input.SetValue("o")
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentBreadcrumb, func(th theme.Theme, i *theme.Tokens) string {
+			m := breadcrumb.New("A", "B").SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}
@@ -280,6 +289,13 @@ func tokenCases() []tokenCase {
 		}},
 		{theme.ComponentOTPInput, func(th theme.Theme, i *theme.Tokens) string {
 			m := otpinput.New(4).SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentPagination, func(th theme.Theme, i *theme.Tokens) string {
+			m := pagination.New(9).SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}

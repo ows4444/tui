@@ -33,7 +33,7 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, breadcrumb, button, buttongroup, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, pagination, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, treeview, viewport, virtuallist |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | contextmenu, dialog, drawer, helpscreen, menubar, popover, toast |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
@@ -60,6 +60,7 @@ in `examples/` that imports the package.
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
 | [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
+| [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | |
 | [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `examples/controls` |
 | [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `examples/controls` |
 | [checkbox](../checkbox) | One box with a label, drawn `[x] Label`; Space or a click checks and unchecks it, and `Indeterminate` draws `[-]`. For a list of them see multiselect. Experimental | | `examples/controls` |
@@ -91,6 +92,7 @@ in `examples/` that imports the package.
 | [notificationcenter](../notificationcenter) | A panel showing every queued notification at once. Experimental | | |
 | [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `examples/inputs` |
 | [otpinput](../otpinput) | A short code typed one character to a cell, `[4][8][2] — [1][ ][ ]`; a paste fills the cells, and `ChangedMsg` says when it is complete. Experimental | | |
+| [pagination](../pagination) | A row of page numbers, ` 1  …  9 [10] 11  …  20 `; Left, Right, Home, End or a click change the page and deliver `ChangedMsg`. Experimental | | |
 | [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
