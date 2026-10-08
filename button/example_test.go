@@ -18,6 +18,6 @@ func Example() {
 	_, cmd := save.Update(tui.Key{Type: tui.KeyEnter})
 	fmt.Println(cmd().(button.PressedMsg).ID)
 	// Output:
-	// [ Save ]
+	// < Save >
 	// save
 }

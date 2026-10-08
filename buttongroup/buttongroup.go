@@ -176,7 +176,7 @@ func (m Model) step(from, dir int) int {
 }
 
 // Focus gives the group keyboard focus: the button under the cursor shows
-// it. It returns no Cmd; the result is there so a group can stand where any
+// it, in angle brackets. It returns no Cmd; the result is there so a group can stand where any
 // focusable widget does.
 func (m *Model) Focus() tui.Cmd {
 	m.focused = true

@@ -17,7 +17,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   `Mouse` on, so does a left click that goes down and comes up inside it.
   It delivers `button.PressedMsg` carrying the button's `ID`. Its states
   (focused, held down, hovered, disabled, loading) are told apart without
-  colour. `theme.ComponentButton` names it for token overrides. With
+  colour. Focus is shown by angle brackets, `< Save >`, as in every control
+  of this family: `buttongroup`, `radiogroup`, `checkbox`, `toggle`, `slider`
+  and `rating`. `theme.ComponentButton` names it for token overrides. With
   `Toggle` set it is a toggle button: a press turns it on or off, a dot
   before the label marks it on, and `PressedMsg.On` carries its state.
 - `buttongroup`, a new experimental package: a row of buttons that take one

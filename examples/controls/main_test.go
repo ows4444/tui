@@ -175,7 +175,7 @@ func TestTheMouseClicksEveryKindOfControl(t *testing.T) {
 func TestAClickMovesFocusToItsRow(t *testing.T) {
 	s := session(t)
 	s.Click(14, 5)
-	waitFor(t, s, "[●●●●●]") // the rating shows focus with brackets
+	waitFor(t, s, "<●●●●●>") // the rating shows focus with angle brackets
 	s.Keys("left")
 	waitFor(t, s, "4/5")
 }

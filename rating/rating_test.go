@@ -124,11 +124,11 @@ func TestViewShowsScoreAndFocusWithoutColour(t *testing.T) {
 		t.Errorf("three = %q", got)
 	}
 	m.Focus()
-	if got := plain(m); got != "[●●●○○]" {
+	if got := plain(m); got != "<●●●○○>" {
 		t.Errorf("focused = %q", got)
 	}
 	m.ShowValue = true
-	if got := plain(m); got != "[●●●○○] 3/5" {
+	if got := plain(m); got != "<●●●○○> 3/5" {
 		t.Errorf("with the score = %q", got)
 	}
 	m.Disabled = true

@@ -3,8 +3,10 @@
 // left click that goes down and comes up inside it.
 //
 // A button draws on one row. Its states are told apart without colour:
-// brackets mark it as a button, bold and underline mark focus, reverse video
-// marks a press, and a disabled or loading button says so in its label.
+// square brackets mark it as a button, angle brackets mark focus ("< Save >"),
+// reverse video marks a press, and a disabled or loading button says so in
+// its label. Angle brackets are how every control of this family shows
+// focus: buttongroup, radiogroup, checkbox, toggle, slider and rating too.
 //
 // With Toggle set it is a toggle button: each press turns it on or off, and
 // a dot before the label shows that it is on.
@@ -239,13 +241,16 @@ func (m Model) text() string {
 
 // brackets returns the characters either side of the padded label. A
 // disabled button is drawn in parentheses, so it reads as unavailable
-// without its dimmed colour; ghost and link buttons have none unless they
-// are focused or held down, when the brackets are what shows it.
+// without its dimmed colour. A button that has focus is drawn in angle
+// brackets. Ghost and link buttons have none at rest; held down without
+// focus, they get the square ones.
 func (m Model) brackets() (left, right string) {
 	switch {
 	case m.Disabled:
 		return "(", ")"
-	case (m.Variant == VariantGhost || m.Variant == VariantLink) && !m.focused && !m.down:
+	case m.focused:
+		return "<", ">"
+	case (m.Variant == VariantGhost || m.Variant == VariantLink) && !m.down:
 		return " ", " "
 	}
 	return "[", "]"
@@ -272,7 +277,7 @@ func (m Model) style() ansi.Style {
 	case m.down:
 		return s.Reverse()
 	case m.focused:
-		return s.Bold().Underline()
+		return s.Bold()
 	case m.hovered:
 		return s.Bold()
 	}

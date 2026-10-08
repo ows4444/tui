@@ -17,6 +17,6 @@ func Example() {
 	fmt.Println(ansi.StripANSI(align.View()))
 	fmt.Println(align.On())
 	// Output:
-	// [ Left ] [●Centre ] [ Right ]
+	// [ Left ] <●Centre > [ Right ]
 	// [Centre]
 }
