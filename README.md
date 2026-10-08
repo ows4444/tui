@@ -183,7 +183,13 @@ every widget implements `Linearize` for accessible mode; tests in
 | `imageview` | PNG through the kitty graphics protocol, iTerm2 inline images or Sixel, with a text placeholder otherwise | Experimental |
 | `clipboard` | A "copy to clipboard" button that writes OSC 52 | Experimental |
 | `avatar` | A deterministic avatar drawn from a name; for ready-made animated characters, see `faces` | Experimental |
-| `button` | A pressable button: Enter, Space or a click reports a press | Experimental |
+| `button` | A pressable button, or a toggle button: Enter, Space or a click reports a press | Experimental |
+| `buttongroup` | A row of buttons with one cursor: a set of actions, or a choice of one or of several | Experimental |
+| `radiogroup` | A set of options of which exactly one is chosen; the arrow keys move and choose | Experimental |
+| `slider` | A value in a range, set by moving a thumb along a track with keys or the pointer | Experimental |
+| `rating` | A score out of a small maximum, as a row of filled and empty marks | Experimental |
+| `checkbox` | One box that is checked, unchecked or partly checked, with a label | Experimental |
+| `toggle` | An on/off switch with a label | Experimental |
 
 Packages under `internal/` are not public API.
 

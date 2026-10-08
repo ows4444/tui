@@ -57,6 +57,7 @@ var composition = map[string][]string{
 	"maskedinput":    {"textinput"},
 	"passwordinput":  {"textinput"},
 	"autocomplete":   {"textinput"},
+	"buttongroup":    {"button"},
 	"colorpicker":    {"textinput"},
 	"commandpalette": {"textinput"},
 	"taginput":       {"textinput"},

@@ -15,6 +15,8 @@ import (
 	"github.com/ows4444/tui/autocomplete"
 	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/button"
+	"github.com/ows4444/tui/buttongroup"
+	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
@@ -35,6 +37,8 @@ import (
 	"github.com/ows4444/tui/notificationcenter"
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
+	"github.com/ows4444/tui/radiogroup"
+	"github.com/ows4444/tui/slider"
 	"github.com/ows4444/tui/spinner"
 	"github.com/ows4444/tui/streamtext"
 	"github.com/ows4444/tui/tabs"
@@ -43,6 +47,7 @@ import (
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/toast"
+	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/viewport"
@@ -82,6 +87,14 @@ var conformance = map[string]func() map[string]string{
 	},
 	"button": func() map[string]string {
 		m := button.New(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"buttongroup": func() map[string]string {
+		m := buttongroup.New(buttongroup.ModeMultiple, evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"checkbox": func() map[string]string {
+		m := checkbox.New(evil)
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"clipboard": func() map[string]string {
@@ -165,6 +178,16 @@ var conformance = map[string]func() map[string]string{
 		m := popover.New(evil, 2, 2)
 		return map[string]string{"Render": m.Render(strings.Repeat(strings.Repeat(".", 50)+"\n", 8))}
 	},
+	"radiogroup": func() map[string]string {
+		m := radiogroup.New(evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"slider": func() map[string]string {
+		m := slider.New(0, 10)
+		m.ShowValue = true
+		m.Format = func(float64) string { return evil }
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
 	"spinner": func() map[string]string {
 		m := spinner.New()
 		m.Label = evil
@@ -201,6 +224,10 @@ var conformance = map[string]func() map[string]string{
 		m.Show()
 		return map[string]string{"Render": m.Render(strings.Repeat(strings.Repeat(".", 50)+"\n", 8)), "Linearize": m.Linearize()}
 	},
+	"toggle": func() map[string]string {
+		m := toggle.New(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
 	"toolapproval": func() map[string]string {
 		m := toolapproval.New(evil, evil, toolapproval.RiskLow)
 		return map[string]string{"View": m.View()}
@@ -233,6 +260,7 @@ var exempt = map[string]string{
 	"passwordinput": "renders a mask of the typed value",
 	"emailinput":    "a textinput.Model wrapper; covered by textinput",
 	"numberinput":   "a textinput.Model wrapper; covered by textinput",
+	"rating":        "draws marks and a score from numbers; no caller text",
 	"scrollbar":     "draws a thumb and track from numbers; no caller text",
 	"splitpane":     "draws only a divider; the panes are caller layout.Nodes that sanitise their own content",
 	"markdown":      "Render sanitises its input (markdown/render.go); has its own tests",

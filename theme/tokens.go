@@ -31,6 +31,7 @@ const (
 	ComponentAppShell           = "appshell"
 	ComponentAutocomplete       = "autocomplete"
 	ComponentButton             = "button"
+	ComponentCheckbox           = "checkbox"
 	ComponentColorPicker        = "colorpicker"
 	ComponentCommandPalette     = "commandpalette"
 	ComponentConfirm            = "confirm"
@@ -55,8 +56,11 @@ const (
 	ComponentPasswordInput      = "passwordinput"
 	ComponentPicker             = "picker"
 	ComponentPopover            = "popover"
+	ComponentRadioGroup         = "radiogroup"
+	ComponentRating             = "rating"
 	ComponentScrollbar          = "scrollbar"
 	ComponentSkeleton           = "skeleton"
+	ComponentSlider             = "slider"
 	ComponentSpinner            = "spinner"
 	ComponentSplitPane          = "splitpane"
 	ComponentStreamText         = "streamtext"
@@ -65,6 +69,7 @@ const (
 	ComponentTextArea           = "textarea"
 	ComponentTextInput          = "textinput"
 	ComponentToast              = "toast"
+	ComponentToggle             = "toggle"
 	ComponentToolApproval       = "toolapproval"
 	ComponentTreeView           = "treeview"
 	ComponentWizard             = "wizard"
@@ -74,7 +79,7 @@ const (
 func Components() []string {
 	return []string{
 		ComponentAccordion, ComponentAppShell, ComponentAutocomplete,
-		ComponentButton, ComponentColorPicker, ComponentCommandPalette,
+		ComponentButton, ComponentCheckbox, ComponentColorPicker, ComponentCommandPalette,
 		ComponentConfirm, ComponentContextMenu, ComponentDataTable,
 		ComponentDatePicker, ComponentDialog, ComponentDrawer,
 		ComponentErrorRetry, ComponentFaces, ComponentFilePicker,
@@ -82,10 +87,11 @@ func Components() []string {
 		ComponentLoadingBar, ComponentMarkdown, ComponentMaskedInput, ComponentMenu,
 		ComponentMenuBar, ComponentMultiSelect, ComponentNotificationCenter,
 		ComponentPasswordInput, ComponentPicker, ComponentPopover,
-		ComponentScrollbar, ComponentSkeleton, ComponentSpinner,
+		ComponentRadioGroup, ComponentRating,
+		ComponentScrollbar, ComponentSkeleton, ComponentSlider, ComponentSpinner,
 		ComponentSplitPane, ComponentStreamText, ComponentTabs,
 		ComponentTagInput, ComponentTextArea, ComponentTextInput,
-		ComponentToast, ComponentToolApproval, ComponentTreeView,
+		ComponentToast, ComponentToggle, ComponentToolApproval, ComponentTreeView,
 		ComponentWizard,
 	}
 }
