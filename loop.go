@@ -83,22 +83,27 @@ func (p *Program) runLoop() (_ Model, err error) {
 		}()
 	}
 
-	// watchResize is implemented per-OS (resize_unix.go / resize_windows.go)
+	// startResizeWatch is implemented per-OS (resize_unix.go / resize_windows.go)
 	// since there's no portable way to detect a terminal resize: unix has
 	// SIGWINCH; windows reads window-buffer-size events from the console
 	// input queue (see resizeKick), with a slow poll as a fallback.
 	//
 	// A Terminal that implements ResizeNotifier is the source instead, so a
 	// remote session needs no signal to deliver a resize.
+	//
+	// The source is set up here, before the first frame, and only its
+	// forwarding runs on the goroutine: see startResizeWatch.
+	var watch func(done <-chan struct{})
+	if rn, ok := p.terminal().(ResizeNotifier); ok {
+		watch = func(done <-chan struct{}) { forwardResizeSignals(p, rn.Resizes(), p.termSize, done) }
+	} else {
+		watch = startResizeWatch(p)
+	}
 	p.wg.Add(1)
 	go func() {
 		defer p.wg.Done()
 		defer close(resizeStopped)
-		if rn, ok := p.terminal().(ResizeNotifier); ok {
-			forwardResizeSignals(p, rn.Resizes(), p.termSize, done)
-			return
-		}
-		watchResize(p, done)
+		watch(done)
 	}()
 
 	if p.themeSet && p.bgTimeout <= 0 {

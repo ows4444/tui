@@ -58,6 +58,9 @@ type Session struct {
 	quit    chan struct{}
 	done    chan struct{}
 	updates atomic.Int64 // every Update, whatever caused it: settle's quiet check
+	// quitting is set once a Cmd has returned tui.Quit: the program is on its
+	// way out, and settle waits for it to exit, not for quiet.
+	quitting atomic.Bool
 
 	// What the harness sent and the model has since received, counted by
 	// kind. A method waits on the counter of what it sent, so an Update
@@ -215,6 +218,7 @@ func (s *Session) watchQuit(c tui.Cmd) tui.Cmd {
 	return func() tui.Msg {
 		m := c()
 		if _, ok := m.(tui.QuitMsg); ok {
+			s.quitting.Store(true)
 			_ = s.inR.Close()
 		}
 		return m
@@ -232,7 +236,9 @@ func (s *Session) inject(msg tui.Msg) {
 }
 
 // settle waits until the model has received want messages of the kind n
-// counts, then until output goes quiet.
+// counts, then until output goes quiet. If the model has quit, it waits for
+// the program to exit: leaving the screen takes several writes, and a slow
+// terminal can stay quiet between them for longer than settleQuiet.
 func (s *Session) settle(n *atomic.Int64, want int64) {
 	deadline := time.Now().Add(settleTimeout)
 	for n.Load() < want && time.Now().Before(deadline) {
@@ -251,7 +257,7 @@ func (s *Session) settle(n *atomic.Int64, want int64) {
 		u := s.updates.Load()
 		if u != lastU || w != lastW {
 			lastU, lastW, quietSince = u, w, time.Now()
-		} else if time.Since(quietSince) >= settleQuiet {
+		} else if time.Since(quietSince) >= settleQuiet && !s.quitting.Load() {
 			return
 		}
 		select {
