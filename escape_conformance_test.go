@@ -15,6 +15,7 @@ import (
 	"github.com/ows4444/tui/autocomplete"
 	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/button"
+	"github.com/ows4444/tui/buttongroup"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
@@ -82,6 +83,10 @@ var conformance = map[string]func() map[string]string{
 	},
 	"button": func() map[string]string {
 		m := button.New(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"buttongroup": func() map[string]string {
+		m := buttongroup.New(buttongroup.ModeMultiple, evil, evil)
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"clipboard": func() map[string]string {

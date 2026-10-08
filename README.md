@@ -183,7 +183,8 @@ every widget implements `Linearize` for accessible mode; tests in
 | `imageview` | PNG through the kitty graphics protocol, iTerm2 inline images or Sixel, with a text placeholder otherwise | Experimental |
 | `clipboard` | A "copy to clipboard" button that writes OSC 52 | Experimental |
 | `avatar` | A deterministic avatar drawn from a name; for ready-made animated characters, see `faces` | Experimental |
-| `button` | A pressable button: Enter, Space or a click reports a press | Experimental |
+| `button` | A pressable button, or a toggle button: Enter, Space or a click reports a press | Experimental |
+| `buttongroup` | A row of buttons with one cursor: a set of actions, or a choice of one or of several | Experimental |
 
 Packages under `internal/` are not public API.
 
