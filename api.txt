@@ -825,12 +825,14 @@ const (
 )
 func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
+func (m *Model) SetOn(on bool)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Down() bool
 func (m Model) Focused() bool
 func (m Model) Hovered() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) On() bool
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
@@ -852,6 +854,8 @@ type Model struct {
 	Disabled	bool
 
 	Loading	bool
+
+	Toggle	bool
 	Theme	theme.Theme
 
 	KeyMap	KeyMap
@@ -862,10 +866,69 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 type PressedMsg struct {
-	ID string
+	ID	string
+
+	On	bool
 }
 type Size int
 type Variant int
+
+## github.com/ows4444/tui/buttongroup (package buttongroup)
+
+const (
+	ModeActions	Mode	= iota
+
+	ModeSingle
+
+	ModeMultiple
+)
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetCursor(i int)
+func (m *Model) SetOn(ids ...string)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Cursor() int
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) On() []string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func DefaultKeyMap() KeyMap
+func New(mode Mode, labels ...string) Model
+type ChangedMsg struct {
+	ID	string
+
+	Pressed	string
+
+	On	[]string
+}
+type KeyMap struct {
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+}
+type Mode int
+type Model struct {
+	ID	string
+
+	Buttons	[]button.Model
+	Mode	Mode
+
+	Required	bool
+
+	Gap	int
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
 
 ## github.com/ows4444/tui/cellbuf (package cellbuf)
 

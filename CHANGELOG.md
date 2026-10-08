@@ -17,7 +17,15 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   `Mouse` on, so does a left click that goes down and comes up inside it.
   It delivers `button.PressedMsg` carrying the button's `ID`. Its states
   (focused, held down, hovered, disabled, loading) are told apart without
-  colour. `theme.ComponentButton` names it for token overrides.
+  colour. `theme.ComponentButton` names it for token overrides. With
+  `Toggle` set it is a toggle button: a press turns it on or off, a dot
+  before the label marks it on, and `PressedMsg.On` carries its state.
+- `buttongroup`, a new experimental package: a row of buttons that take one
+  place in the focus order. Left, Right, Home and End move its cursor,
+  skipping disabled buttons and wrapping. `ModeActions` is a set of plain
+  buttons; `ModeSingle` and `ModeMultiple` are toggle buttons of which one or
+  several are on, read with `On` and reported with `ChangedMsg`. `Required`
+  keeps a single choice from being left empty.
 - `tuitest.Session.WaitForText(text, timeout)` waits until a row of the
   screen contains `text` and reports whether it did. It is for output that
   arrives on its own time, after a command or a tick, which `Keys` and `Send`
