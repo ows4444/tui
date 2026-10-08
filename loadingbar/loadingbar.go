@@ -5,6 +5,7 @@ package loadingbar
 
 import (
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/ows4444/tui"
@@ -36,27 +37,38 @@ type Model struct {
 	pos     int
 	dir     int // +1 moving right, -1 moving left
 	running bool
+	// id tells this Model's ticks from another's. A program that holds two
+	// Models passes every message to both, and without it each would take
+	// the other's tick for its own, advance, and schedule one more. Start
+	// sets it; a copy of a Model is the same widget and keeps it.
+	id uint64
 }
+
+// lastID is the id most recently given to a Model by Start.
+var lastID atomic.Uint64
 
 // New returns an idle Model with an 80ms interval and a width-wide track.
 func New(width int) Model {
 	return Model{Width: width, Interval: 80 * time.Millisecond, Theme: theme.DarkTheme(), dir: 1}
 }
 
-type tickMsg struct{}
+type tickMsg struct{ id uint64 }
 
-func tickCmd(d time.Duration) tui.Cmd {
-	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return tickMsg{} }))
+func tickCmd(d time.Duration, id uint64) tui.Cmd {
+	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return tickMsg{id: id} }))
 }
 
 // Start begins the animation; return the Cmd it produces from your own
 // Init or Update.
 func (m *Model) Start() tui.Cmd {
 	m.running = true
+	if m.id == 0 {
+		m.id = lastID.Add(1)
+	}
 	if m.Motion.Reduced() || m.Clock != nil {
 		return nil
 	}
-	return tickCmd(m.Interval)
+	return tickCmd(m.Interval, m.id)
 }
 
 // Stop ends the animation without resetting its position.
@@ -91,9 +103,10 @@ func (m Model) maxPos() int {
 }
 
 // Update advances the segment one step and bounces it off either end of
-// the track; a no-op for any Msg but its own tick, or while stopped.
+// the track; a no-op for any Msg but its own tick, another Model's tick
+// included, or while stopped.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
-	if _, ok := msg.(tickMsg); !ok || !m.running || m.Motion.Reduced() {
+	if t, ok := msg.(tickMsg); !ok || t.id != m.id || !m.running || m.Motion.Reduced() {
 		return m, nil
 	}
 
@@ -108,7 +121,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.dir = 1
 	}
 	m.pos = next
-	return m, tickCmd(m.Interval)
+	return m, tickCmd(m.Interval, m.id)
 }
 
 // View renders the track with the moving segment at its current position.

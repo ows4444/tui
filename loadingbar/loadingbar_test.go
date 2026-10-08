@@ -54,7 +54,7 @@ func TestBouncesAtRightEdge(t *testing.T) {
 	m.Start()
 
 	for i := 0; i < 6; i++ {
-		next, _ := m.Update(tickMsg{})
+		next, _ := m.Update(tickFor(m))
 		m = next
 	}
 	if m.pos != 6 {
@@ -64,7 +64,7 @@ func TestBouncesAtRightEdge(t *testing.T) {
 		t.Fatalf("dir at the right edge = %d, want -1 (should have reversed)", m.dir)
 	}
 
-	next, _ := m.Update(tickMsg{})
+	next, _ := m.Update(tickFor(m))
 	m = next
 	if m.pos != 5 {
 		t.Errorf("pos one tick past the right edge = %d, want 5 (moving back left)", m.pos)
@@ -77,13 +77,13 @@ func TestBouncesAtLeftEdge(t *testing.T) {
 	m.pos = 1
 	m.Start()
 
-	next, _ := m.Update(tickMsg{}) // 1 + (-1) = 0
+	next, _ := m.Update(tickFor(m)) // 1 + (-1) = 0
 	m = next
 	if m.pos != 0 || m.dir != 1 {
 		t.Fatalf("after reaching the left edge: pos=%d dir=%d, want pos=0 dir=1", m.pos, m.dir)
 	}
 
-	next, _ = m.Update(tickMsg{})
+	next, _ = m.Update(tickFor(m))
 	m = next
 	if m.pos != 1 {
 		t.Errorf("pos one tick past the left edge = %d, want 1 (moving right again)", m.pos)
@@ -95,7 +95,7 @@ func TestTickIsNoOpAfterStop(t *testing.T) {
 	m.Start()
 	m.Stop()
 
-	next, cmd := m.Update(tickMsg{})
+	next, cmd := m.Update(tickFor(m))
 	if cmd != nil {
 		t.Error("a tick after Stop should not reschedule (nil Cmd)")
 	}
@@ -120,7 +120,7 @@ func TestViewWidthMatchesTrackWidth(t *testing.T) {
 	}
 	m.Start()
 	for i := 0; i < 5; i++ {
-		next, _ := m.Update(tickMsg{})
+		next, _ := m.Update(tickFor(m))
 		m = next
 		if w := ansi.Width(m.View()); w != 20 {
 			t.Fatalf("Width(View()) after tick %d = %d, want 20", i, w)

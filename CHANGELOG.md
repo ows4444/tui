@@ -33,6 +33,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `clockview`: a Model ignores another Model's ticks. Two of them in one
   program each took the other's tick for their own, so a stopwatch ran fast
   and the number of pending ticks doubled every interval.
+- `spinner`, `skeleton`, `loadingbar` and `faces`: a Model ignores another
+  Model's ticks, as `clockview` now does. Two spinners started separately in
+  one program each took the other's tick, so both ran fast and the number of
+  pending ticks doubled every interval. Models that share a `motion.Clock`
+  were not affected.
 - `numberinput` and `emailinput` reject the space bar. Their filters looked
   only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
   went into a digits-only field and into an email address.
