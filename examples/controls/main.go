@@ -1,7 +1,7 @@
 // Command controls is an export panel built from the pressable and
 // adjustable controls: radiogroup (one format of three), buttongroup (any of
-// three options, and a row of actions), slider (quality), rating, and a
-// toggle button. Tab and Shift+Tab move between the rows, the arrow keys work
+// three options, and a row of actions), slider (quality), rating, checkbox
+// and toggle (a switch). Tab and Shift+Tab move between the rows, the arrow keys work
 // inside one, and the mouse clicks and drags them. A status line reads every
 // control back, so what a key or a click changed shows at once. Esc quits.
 package main
@@ -16,10 +16,12 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
+	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/radiogroup"
 	"github.com/ows4444/tui/rating"
 	"github.com/ows4444/tui/slider"
+	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/widgets"
 )
 
@@ -29,12 +31,13 @@ const (
 	rowOptions
 	rowQuality
 	rowRating
-	rowPreview
+	rowMetadata
+	rowExisting
 	rowActions
 	rowCount
 )
 
-var labels = [rowCount]string{"Format", "Options", "Quality", "Rating", "Preview", ""}
+var labels = [rowCount]string{"Format", "Options", "Quality", "Rating", "Metadata", "Existing", ""}
 
 // labelWidth is the width of the label column: the longest label and a gap.
 const labelWidth = 9
@@ -44,7 +47,8 @@ type model struct {
 	options buttongroup.Model
 	quality slider.Model
 	stars   rating.Model
-	preview button.Model
+	keep    checkbox.Model
+	replace toggle.Model
 	actions buttongroup.Model
 
 	focus         int
@@ -58,15 +62,15 @@ func initialModel() model {
 		options: buttongroup.New(buttongroup.ModeMultiple, "Strip", "Resize", "Dither"),
 		quality: slider.New(0, 100),
 		stars:   rating.New(5),
-		preview: button.New("Show preview"),
+		keep:    checkbox.New("Keep"),
+		replace: toggle.New("Overwrite"),
 		actions: buttongroup.New(buttongroup.ModeActions, "Export", "Reset"),
 	}
 	m.format.Horizontal = true
 	m.quality.Step, m.quality.ShowValue = 5, true
 	m.stars.ShowValue = true
-	m.preview.ID, m.preview.Toggle, m.preview.Variant = "preview", true, button.VariantSecondary
 	m.actions.Buttons[1].Variant = button.VariantSecondary
-	for _, c := range []*bool{&m.format.Mouse, &m.options.Mouse, &m.quality.Mouse, &m.stars.Mouse, &m.preview.Mouse, &m.actions.Mouse} {
+	for _, c := range []*bool{&m.format.Mouse, &m.options.Mouse, &m.quality.Mouse, &m.stars.Mouse, &m.keep.Mouse, &m.replace.Mouse, &m.actions.Mouse} {
 		*c = true
 	}
 	m.reset()
@@ -80,7 +84,8 @@ func (m *model) reset() {
 	m.options.SetOn("Strip")
 	m.quality.SetValue(80)
 	m.stars.SetValue(3)
-	m.preview.SetOn(false)
+	m.keep.SetChecked(true)
+	m.replace.SetOn(false)
 	m.exported = ""
 }
 
@@ -93,7 +98,8 @@ func (m *model) setFocus(i int) {
 	m.options.Blur()
 	m.quality.Blur()
 	m.stars.Blur()
-	m.preview.Blur()
+	m.keep.Blur()
+	m.replace.Blur()
 	m.actions.Blur()
 	m.focus = (i + rowCount) % rowCount
 	switch m.focus {
@@ -105,8 +111,10 @@ func (m *model) setFocus(i int) {
 		m.quality.Focus()
 	case rowRating:
 		m.stars.Focus()
-	case rowPreview:
-		m.preview.Focus()
+	case rowMetadata:
+		m.keep.Focus()
+	case rowExisting:
+		m.replace.Focus()
 	case rowActions:
 		m.actions.Focus()
 	}
@@ -123,7 +131,7 @@ func (m model) contentWidth() int {
 
 // compact reports whether the terminal is too short for blank rows between
 // the sections.
-func (m model) compact() bool { return m.height > 0 && m.height < 14 }
+func (m model) compact() bool { return m.height > 0 && m.height < 15 }
 
 // rowY is the screen row control i is drawn on: under the title, and under
 // the blank row after it when there is room for one.
@@ -144,7 +152,8 @@ func (m *model) place() {
 	m.options.Bounds = at(rowOptions, m.options.Width())
 	m.quality.Bounds = at(rowQuality, m.quality.Width+2)
 	m.stars.Bounds = at(rowRating, m.stars.Max+2)
-	m.preview.Bounds = at(rowPreview, m.preview.Width())
+	m.keep.Bounds = at(rowMetadata, m.keep.Width())
+	m.replace.Bounds = at(rowExisting, m.replace.Width())
 	m.actions.Bounds = at(rowActions, m.actions.Width())
 }
 
@@ -187,8 +196,10 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 		m.quality, cmd = m.quality.Update(msg)
 	case rowRating:
 		m.stars, cmd = m.stars.Update(msg)
-	case rowPreview:
-		m.preview, cmd = m.preview.Update(msg)
+	case rowMetadata:
+		m.keep, cmd = m.keep.Update(msg)
+	case rowExisting:
+		m.replace, cmd = m.replace.Update(msg)
 	case rowActions:
 		m.actions, cmd = m.actions.Update(msg)
 	}
@@ -212,7 +223,8 @@ func (m model) updateMouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
 	m.options, cmds[rowOptions] = m.options.Update(ev)
 	m.quality, cmds[rowQuality] = m.quality.Update(ev)
 	m.stars, cmds[rowRating] = m.stars.Update(ev)
-	m.preview, cmds[rowPreview] = m.preview.Update(ev)
+	m.keep, cmds[rowMetadata] = m.keep.Update(ev)
+	m.replace, cmds[rowExisting] = m.replace.Update(ev)
 	m.actions, cmds[rowActions] = m.actions.Update(ev)
 	return m, tui.Batch(cmds[:]...)
 }
@@ -244,17 +256,24 @@ func (m model) summary() string {
 	}
 	s := fmt.Sprintf("%s · %s · quality %s · %d/%d",
 		m.format.Value(), opts, strconv.FormatFloat(m.quality.Value(), 'f', -1, 64), m.stars.Value(), m.stars.Max)
-	if m.preview.On() {
-		s += " · preview"
+	if m.keep.Checked() {
+		s += " · metadata"
+	}
+	if m.replace.On() {
+		s += " · overwrite"
 	}
 	return s
 }
 
-// status is the summary, or what the last Export wrote.
+// status is the summary, or what the last Export wrote. It wraps when there
+// is room for a second line and is cut when there is not.
 func (m model) status() string {
 	line := muted.Render(m.summary())
 	if m.exported != "" {
 		line = good.Render("Exported: " + m.exported)
+	}
+	if m.compact() {
+		return ansi.Truncate(line, m.contentWidth())
 	}
 	return ansi.WrapStyled(line, m.contentWidth())
 }
@@ -283,7 +302,8 @@ func (m model) View() string {
 		m.row(rowOptions, m.options.View()),
 		m.row(rowQuality, m.quality.View()),
 		m.row(rowRating, m.stars.View()),
-		m.row(rowPreview, m.preview.View()),
+		m.row(rowMetadata, m.keep.View()),
+		m.row(rowExisting, m.replace.View()),
 		m.row(rowActions, m.actions.View()),
 	}
 	return strings.Join([]string{

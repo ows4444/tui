@@ -16,6 +16,7 @@ import (
 	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
+	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/clipboard"
 	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
@@ -46,6 +47,7 @@ import (
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/toast"
+	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/viewport"
@@ -89,6 +91,10 @@ var conformance = map[string]func() map[string]string{
 	},
 	"buttongroup": func() map[string]string {
 		m := buttongroup.New(buttongroup.ModeMultiple, evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"checkbox": func() map[string]string {
+		m := checkbox.New(evil)
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"clipboard": func() map[string]string {
@@ -217,6 +223,10 @@ var conformance = map[string]func() map[string]string{
 		m := toast.New(evil)
 		m.Show()
 		return map[string]string{"Render": m.Render(strings.Repeat(strings.Repeat(".", 50)+"\n", 8)), "Linearize": m.Linearize()}
+	},
+	"toggle": func() map[string]string {
+		m := toggle.New(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"toolapproval": func() map[string]string {
 		m := toolapproval.New(evil, evil, toolapproval.RiskLow)

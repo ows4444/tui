@@ -4,9 +4,10 @@ Format   <●> PNG  ( ) JPEG  ( ) WebP
 Options  [●Strip ] [ Resize ] [ Dither ]
 Quality   ███████████████████████●░░░░░░  80
 Rating    ●●●○○  3/5
-Preview  [ Show preview ]
+Metadata [x] Keep
+Existing (○  ) Overwrite
          [ Export ] [ Reset ]
 
-PNG · strip · quality 80 · 3/5
+PNG · strip · quality 80 · 3/5 · metadata
 
 [tab] next row  [arrows] change  [space] press  [esc] quit

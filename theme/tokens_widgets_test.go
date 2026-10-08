@@ -9,6 +9,7 @@ import (
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
 	"github.com/ows4444/tui/button"
+	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/colorpicker"
 	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
@@ -50,6 +51,7 @@ import (
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/toast"
+	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/widgets"
@@ -115,6 +117,13 @@ func tokenCases() []tokenCase {
 		}},
 		{theme.ComponentButton, func(th theme.Theme, i *theme.Tokens) string {
 			m := button.New("Save").SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentCheckbox, func(th theme.Theme, i *theme.Tokens) string {
+			m := checkbox.New("A").SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}
@@ -382,6 +391,13 @@ func tokenCases() []tokenCase {
 			}
 			m.Show()
 			return m.Render(base)
+		}},
+		{theme.ComponentToggle, func(th theme.Theme, i *theme.Tokens) string {
+			m := toggle.New("A").SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
 		}},
 		{theme.ComponentToolApproval, func(th theme.Theme, i *theme.Tokens) string {
 			m := toolapproval.New("rm", "remove", toolapproval.RiskHigh).SetTheme(th)

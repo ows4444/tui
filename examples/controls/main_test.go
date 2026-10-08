@@ -76,11 +76,15 @@ func TestEachRowTakesItsOwnKeys(t *testing.T) {
 	if m.stars.Value() != 5 {
 		t.Fatalf("rating = %d", m.stars.Value())
 	}
-	m = send(m, tab, key(tui.KeyEnter)) // preview on
-	if !m.preview.On() {
-		t.Fatal("the preview toggle is off")
+	m = send(m, tab, key(tui.KeySpace)) // metadata: unchecked
+	if m.keep.Checked() {
+		t.Fatal("the checkbox is still checked")
 	}
-	want := "JPEG · strip, resize · quality 90 · 5/5 · preview"
+	m = send(m, tab, key(tui.KeyRight)) // existing: overwrite on
+	if !m.replace.On() {
+		t.Fatal("the switch is off")
+	}
+	want := "JPEG · strip, resize · quality 90 · 5/5 · overwrite"
 	if got := plain(m); !strings.Contains(got, want) {
 		t.Fatalf("the status line does not read %q:\n%s", want, got)
 	}
@@ -90,15 +94,15 @@ func TestExportAndReset(t *testing.T) {
 	m := initialModel()
 	m = send(m, key(tui.KeyEnd))             // WebP
 	m = send(m, shiftTab, key(tui.KeyEnter)) // actions: Export
-	if !strings.Contains(plain(m), "Exported: WebP · strip · quality 80 · 3/5") {
+	if !strings.Contains(plain(m), "Exported: WebP · strip · quality 80 · 3/5 · metadata") {
 		t.Fatalf("no export line:\n%s", plain(m))
 	}
 	m = send(m, key(tui.KeyRight), key(tui.KeyEnter)) // Reset
 	if m.format.Value() != "PNG" || m.exported != "" {
 		t.Fatalf("after Reset: format %q, exported %q", m.format.Value(), m.exported)
 	}
-	if got := send(m, button.PressedMsg{ID: "preview"}); got.exported != "" {
-		t.Fatal("the preview button's press was taken for Export")
+	if got := send(m, button.PressedMsg{ID: "other"}); got.exported != "" {
+		t.Fatal("another button's press was taken for Export")
 	}
 }
 
@@ -146,7 +150,7 @@ func waitFor(t *testing.T, s *tuitest.Session, text string) {
 	}
 }
 
-// At 80x24 the rows are on screen rows 2 to 7 and the controls start at
+// At 80x24 the rows are on screen rows 2 to 8 and the controls start at
 // column 9: "<●> PNG  ( ) JPEG  ( ) WebP", so JPEG's mark is at column 18.
 func TestTheMouseClicksEveryKindOfControl(t *testing.T) {
 	s := session(t)
@@ -158,12 +162,14 @@ func TestTheMouseClicksEveryKindOfControl(t *testing.T) {
 	waitFor(t, s, "quality 0 ")
 	s.Click(14, 5) // rating: the fifth mark
 	waitFor(t, s, "5/5")
-	s.Click(12, 6) // preview toggle
-	waitFor(t, s, "· preview")
-	s.Click(12, 7) // actions: Export
-	waitFor(t, s, "Exported: JPEG · strip, resize · quality 0 · 5/5 · preview")
-	s.Click(22, 7) // actions: Reset
-	waitFor(t, s, "PNG · strip · quality 80 · 3/5")
+	s.Click(15, 6)            // metadata: the checkbox's label; it starts checked
+	waitFor(t, s, "< > Keep") // unchecked, and in angle brackets: the click focused it
+	s.Click(10, 7)            // existing: the switch
+	waitFor(t, s, "· overwrite")
+	s.Click(12, 8) // actions: Export
+	waitFor(t, s, "Exported: JPEG · strip, resize · quality 0 · 5/5 · overwrite")
+	s.Click(22, 8) // actions: Reset
+	waitFor(t, s, "PNG · strip · quality 80 · 3/5 · metadata")
 }
 
 func TestAClickMovesFocusToItsRow(t *testing.T) {

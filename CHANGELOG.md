@@ -40,8 +40,18 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   a click on the mark it is at clears it. It delivers `rating.ChangedMsg`.
 - `theme.ComponentRadioGroup`, `ComponentSlider` and `ComponentRating` name
   the three for token overrides.
+- `checkbox`, a new experimental package: one box with a label that Space or
+  a click checks and unchecks, with an `Indeterminate` state drawn `[-]`. It
+  delivers `checkbox.ChangedMsg`. `widgets.Checkbox` still draws one without
+  state.
+- `toggle`, a new experimental package: an on/off switch with a label. Space
+  or Enter flips it, Left turns it off and Right turns it on. It delivers
+  `toggle.ChangedMsg`. `widgets.Toggle` still draws one without state.
+- `theme.ComponentCheckbox` and `ComponentToggle` name the two for token
+  overrides.
 - `examples/controls`, an export panel that uses `button`, `buttongroup`,
-  `radiogroup`, `slider` and `rating` together, by keyboard and by mouse.
+  `radiogroup`, `slider`, `rating`, `checkbox` and `toggle` together, by
+  keyboard and by mouse.
 - `tuitest.Session.WaitForText(text, timeout)` waits until a row of the
   screen contains `text` and reports whether it did. It is for output that
   arrives on its own time, after a command or a tick, which `Keys` and `Send`

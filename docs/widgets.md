@@ -33,7 +33,7 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toolapproval, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, treeview, viewport, virtuallist |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | contextmenu, dialog, drawer, helpscreen, menubar, popover, toast |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
@@ -62,6 +62,7 @@ in `examples/` that imports the package.
 | [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
 | [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `examples/controls` |
 | [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `examples/controls` |
+| [checkbox](../checkbox) | One box with a label, drawn `[x] Label`; Space or a click checks and unchecks it, and `Indeterminate` draws `[-]`. For a list of them see multiselect. Experimental | | `examples/controls` |
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
 | [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `examples/timers` |
 | [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes  `examples/pickers` |
@@ -104,6 +105,7 @@ in `examples/` that imports the package.
 | [textarea](../textarea) | A multi-line text input | yes | `examples/focus`, `examples/agentshell` |
 | [textinput](../textinput) | A single-line text input | yes | `examples/focus`, `examples/cursorfield`, `examples/form` |
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |
+| [toggle](../toggle) | An on/off switch with a label, drawn `(○  )` and `(  ●)`; Space or Enter flips it, Left and Right set it. Experimental | | `examples/controls` |
 | [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/agentshell` |
 | [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |

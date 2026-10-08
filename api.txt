@@ -1006,6 +1006,50 @@ type Surface struct {
 }
 var ErrUnsupported = errors.New("cellbuf: unsupported string")
 
+## github.com/ows4444/tui/checkbox (package checkbox)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetChecked(checked bool)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Checked() bool
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(label string) Model
+type ChangedMsg struct {
+	ID	string
+
+	Checked	bool
+}
+type KeyMap struct {
+	Toggle keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Label	string
+
+	Indeterminate	bool
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/clipboard (package clipboard)
 
 func (m Model) Copied() bool
@@ -3306,6 +3350,7 @@ const (
 	ComponentAppShell		= "appshell"
 	ComponentAutocomplete		= "autocomplete"
 	ComponentButton			= "button"
+	ComponentCheckbox		= "checkbox"
 	ComponentColorPicker		= "colorpicker"
 	ComponentCommandPalette		= "commandpalette"
 	ComponentConfirm		= "confirm"
@@ -3343,6 +3388,7 @@ const (
 	ComponentTextArea		= "textarea"
 	ComponentTextInput		= "textinput"
 	ComponentToast			= "toast"
+	ComponentToggle			= "toggle"
 	ComponentToolApproval		= "toolapproval"
 	ComponentTreeView		= "treeview"
 	ComponentWizard			= "wizard"
@@ -3555,6 +3601,50 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 type Position int
+
+## github.com/ows4444/tui/toggle (package toggle)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetOn(on bool)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) On() bool
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(label string) Model
+type ChangedMsg struct {
+	ID	string
+
+	On	bool
+}
+type KeyMap struct {
+	Flip	keymap.Binding
+	Off	keymap.Binding
+	On	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Label	string
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
 
 ## github.com/ows4444/tui/toolapproval (package toolapproval)
 
