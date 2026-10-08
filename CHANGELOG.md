@@ -22,6 +22,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - The minimum Go version is 1.26, up from 1.25. tui supports the two newest
   Go releases, now 1.26 and 1.27, and CI tests on both.
 
+- `layout.BoxNode` measures a `Width`, a `Height` and a title set on its
+  box. It asked only for the child's size, so a box with a `Width` or a title
+  came out narrower than `Box.Render` drew it, and one with a `Height` lost
+  its bottom border. Given the size it asks for, `BoxNode` now draws what
+  `Box.Render` draws; a layout that allots less still wins. A box with any
+  of the three set may take a different amount of room than before.
+
 ### Deprecated
 
 - `autocomplete.Model.Init` and `commandpalette.Model.Init`: use `Focus`,
@@ -51,6 +58,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   box with one was drawn larger than it measured and lost its right and
   bottom borders to the clip. A box with a margin now takes that much more
   room in a layout.
+- `layout.BoxNode` measures only the border sides the box draws. It counted
+  two rows and two columns for any border, so a box with sides switched off
+  by `BorderSides` was padded out with blank rows and columns. Such a box now
+  takes less room in a layout.
 - `numberinput` and `emailinput` reject the space bar. Their filters looked
   only at `KeyRunes` keys, and the space bar is a `KeySpace` key, so a space
   went into a digits-only field and into an email address.

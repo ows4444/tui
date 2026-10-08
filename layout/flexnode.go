@@ -240,6 +240,11 @@ func (f flexNode) Render(s Size) string {
 // BoxNode wraps child in box's padding, border and margin as a Node. Measure
 // adds the box's chrome to the child's size; Render gives the child what is
 // left of the allotted Size after the chrome and draws the box around it.
+//
+// A Width or Height set on the box is the content size it asks for, and a
+// box of no fixed width asks for room to show its title whole. Given that
+// size, BoxNode draws what Box.Render draws. The layout's constraints still
+// bound it: given less, the frame is kept and the child and title are cut.
 func BoxNode(box Box, child Node) Node { return boxNode{box: box, child: child} }
 
 type boxNode struct {
@@ -251,8 +256,17 @@ func (b boxNode) chrome() Size {
 	w := b.box.padLeft + b.box.padRight + b.box.marginL + b.box.marginR
 	h := b.box.padTop + b.box.padBottom + b.box.marginT + b.box.marginB
 	if hasBorder(b.box.border) {
-		w += 2
-		h += 2
+		// One cell for each side that is drawn; BorderSides may switch any off.
+		for _, off := range []bool{b.box.noLeft, b.box.noRight} {
+			if !off {
+				w++
+			}
+		}
+		for _, off := range []bool{b.box.noTop, b.box.noBottom} {
+			if !off {
+				h++
+			}
+		}
 	}
 	return Size{W: w, H: h}
 }
@@ -273,8 +287,31 @@ func (b boxNode) Measure(c Constraints) Size {
 		MinW: shrinkBound(c.MinW, ch.W), MaxW: shrinkBound(c.MaxW, ch.W),
 		MinH: shrinkBound(c.MinH, ch.H), MaxH: shrinkBound(c.MaxH, ch.H),
 	}
+	// A Width or Height set on the box is the content size it asks for, so
+	// the child is measured at that size, within what the layout allows.
+	if w := b.box.width; w > 0 {
+		w = clampInt(w, inner.MinW, inner.MaxW)
+		inner.MinW, inner.MaxW = w, w
+	}
+	if h := b.box.height; h > 0 {
+		h = clampInt(h, inner.MinH, inner.MaxH)
+		inner.MinH, inner.MaxH = h, h
+	}
 	in := b.child.Measure(inner)
+	if need := b.titleWidth(); need > in.W {
+		in.W = need
+	}
 	return c.Constrain(Size{W: in.W + ch.W, H: in.H + ch.H})
+}
+
+// titleWidth is the content width a box of no fixed width needs to show its
+// title whole, with a space each side, as Box.Render grows to; 0 when the
+// title is not drawn or the width is fixed.
+func (b boxNode) titleWidth() int {
+	if b.box.title == "" || b.box.width > 0 || b.box.noTop || !hasBorder(b.box.border) {
+		return 0
+	}
+	return ansi.Width(b.box.title) + 2 - b.box.padLeft - b.box.padRight
 }
 
 func (b boxNode) Render(s Size) string {
@@ -290,12 +327,11 @@ func (b boxNode) Render(s Size) string {
 	}
 	if inner.W > 0 && inner.H > 0 {
 		content = b.child.Render(inner)
-	} else {
-		// No room for the child: draw the frame around exactly the rows
-		// that are left, none included. Box.Render alone would give empty
-		// content one blank row and push the bottom border off the end.
-		box = box.exactRows(maxInt(inner.H, 0))
 	}
+	// Draw the frame around exactly the rows that are left, whatever Height
+	// the box asked for and even when that is none: Box.Render alone would
+	// give empty content one blank row and push the bottom border off the end.
+	box = box.exactRows(maxInt(inner.H, 0))
 	return Block(box.Render(content)).Render(s)
 }
 
