@@ -80,6 +80,19 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   slide; `Loop` wraps at the ends. It delivers `carousel.ChangedMsg`.
 - `theme.ComponentTransferList` and `ComponentCarousel` name the two for
   token overrides.
+- `tooltip`, a new experimental overlay: a short hint drawn under its
+  `Target` while the pointer is over it. It needs `tui.MouseAllMotion`;
+  `Show` and `Hide` serve keyboard focus. `widgets.TooltipOverlay` still
+  draws one without state.
+- `hovercard`, a new experimental overlay: a titled card drawn under its
+  `Target`, which stays open while the pointer is on the target or on the
+  card. Esc or the pointer leaving closes it and delivers
+  `hovercard.ClosedMsg`.
+- `backdrop`, a new experimental overlay: `Render` returns a frame dimmed,
+  to put behind a dialog or a drawer. A press on it delivers
+  `backdrop.PressedMsg`.
+- `theme.ComponentTooltip`, `ComponentHoverCard` and `ComponentBackdrop`
+  name the three for token overrides.
 - `widgets.Empty` draws the placeholder for a view with nothing to show: a
   title, a description and a hint, centred.
 - `widgets.Timeline` draws `[]widgets.TimelineItem` one under another with a

@@ -34,7 +34,7 @@ packages assert them at compile time with lines such as
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
 | `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, breadcrumb, button, buttongroup, carousel, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, pagination, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, transferlist, treeview, viewport, virtuallist |
-| `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | contextmenu, dialog, drawer, helpscreen, menubar, popover, toast |
+| `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | backdrop, contextmenu, dialog, drawer, helpscreen, hovercard, menubar, popover, toast, tooltip |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
 | `tui.CursorProvider` | `CursorCell() (x, y int, ok bool)` | textarea, textinput |
@@ -59,6 +59,7 @@ in `examples/` that imports the package.
 | [accordion](../accordion) | A list of collapsible sections | yes | `examples/settings` |
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
+| [backdrop](../backdrop) | An overlay that dims a finished frame, to put behind a dialog or a drawer; a press on it delivers `PressedMsg`. Experimental | | |
 | [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
 | [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | |
 | [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `examples/controls` |
@@ -81,6 +82,7 @@ in `examples/` that imports the package.
 | [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes  `examples/pickers` |
 | [form](../form) | A validating column of labelled fields with Submit | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
+| [hovercard](../hovercard) | An overlay with a title and a body, drawn under its target while the pointer is on the target or the card; Esc closes it. Experimental | | |
 | [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
 | [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | |
@@ -112,6 +114,7 @@ in `examples/` that imports the package.
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |
 | [toggle](../toggle) | An on/off switch with a label, drawn `(○  )` and `(  ●)`; Space or Enter flips it, Left and Right set it. Experimental | | `examples/controls` |
 | [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/agentshell` |
+| [tooltip](../tooltip) | An overlay with a short hint, drawn under its target while the pointer is over it. Experimental | | |
 | [transferlist](../transferlist) | Two lists side by side; Enter, Space or a click moves the item under the cursor to the other list and delivers `ChangedMsg`. Experimental | | |
 | [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |

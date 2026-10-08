@@ -14,6 +14,7 @@ import (
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
 	"github.com/ows4444/tui/avatar"
+	"github.com/ows4444/tui/backdrop"
 	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
@@ -30,6 +31,8 @@ import (
 	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
+	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/hovercard"
 	tuiimage "github.com/ows4444/tui/imageview"
 	"github.com/ows4444/tui/inputgroup"
 	"github.com/ows4444/tui/layout"
@@ -53,6 +56,7 @@ import (
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
+	"github.com/ows4444/tui/tooltip"
 	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/viewport"
@@ -89,6 +93,19 @@ var conformance = map[string]func() map[string]string{
 		// The name is hashed, never drawn; Linearize is the one place it is shown.
 		m := avatar.New(evil)
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"backdrop": func() map[string]string {
+		return map[string]string{"Render": backdrop.New().Render(evil)}
+	},
+	"hovercard": func() map[string]string {
+		m := hovercard.New(evil, evil, hittest.Rect{W: 4, H: 1})
+		m.Show()
+		return map[string]string{"Render": m.Render(strings.Repeat(" ", 60) + "\n\n\n\n\n\n\n"), "Linearize": m.Linearize()}
+	},
+	"tooltip": func() map[string]string {
+		m := tooltip.New(evil, hittest.Rect{W: 4, H: 1})
+		m.Show()
+		return map[string]string{"Render": m.Render(strings.Repeat(" ", 60) + "\n\n\n\n\n"), "Linearize": m.Linearize()}
 	},
 	"breadcrumb": func() map[string]string {
 		m := breadcrumb.New(evil, evil)

@@ -196,6 +196,9 @@ every widget implements `Linearize` for accessible mode; tests in
 | `breadcrumb` | A trail of places that can be walked back along and chosen from | Experimental |
 | `transferlist` | Two lists side by side with items that move between them | Experimental |
 | `carousel` | One slide of several at a time, with a row of dots that says which | Experimental |
+| `tooltip` | A short hint shown under the thing the pointer is over | Experimental |
+| `hovercard` | A card of details shown while the pointer is over its target or the card | Experimental |
+| `backdrop` | Dims a finished frame behind a dialog or a drawer | Experimental |
 
 Packages under `internal/` are not public API.
 
