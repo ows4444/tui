@@ -1,3 +1,3 @@
 module github.com/ows4444/tui
 
-go 1.25
+go 1.26

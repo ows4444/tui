@@ -30,7 +30,7 @@ const jsonLd = {
 			url: `${site}/`,
 			codeRepository: repo,
 			programmingLanguage: { '@type': 'ComputerLanguage', name: 'Go', url: 'https://go.dev' },
-			runtimePlatform: 'Go 1.25 or later',
+			runtimePlatform: 'Go 1.26 or later',
 			operatingSystem: 'Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD, DragonFly BSD',
 			license: `${repo}/blob/code/LICENSE`,
 			keywords: 'Go, Golang, TUI, terminal UI, terminal user interface, CLI, Elm Architecture, widgets, ANSI, accessibility',
