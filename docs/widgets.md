@@ -60,8 +60,8 @@ in `examples/` that imports the package.
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
 | [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
-| [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | |
-| [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | |
+| [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `examples/controls` |
+| [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `examples/controls` |
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
 | [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `examples/timers` |
 | [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes  `examples/pickers` |
@@ -91,11 +91,11 @@ in `examples/` that imports the package.
 | [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
-| [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | |
-| [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | |
+| [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | `examples/controls` |
+| [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | `examples/controls` |
 | [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/panes` |
 | [skeleton](../skeleton) | A loading placeholder block |  `examples/timers` |
-| [slider](../slider) | A value in a range on a track with a thumb; arrows, Page Up and Page Down, Home and End move it, and the pointer can press or drag. Experimental | | |
+| [slider](../slider) | A value in a range on a track with a thumb; arrows, Page Up and Page Down, Home and End move it, and the pointer can press or drag. Experimental | | `examples/controls` |
 | [spinner](../spinner) | An animated loading indicator | | `examples/asyncload`, `examples/buildlog`, `examples/inlinespinners` |
 | [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes  `examples/panes` |
 | [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/agentshell` |

@@ -40,6 +40,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   a click on the mark it is at clears it. It delivers `rating.ChangedMsg`.
 - `theme.ComponentRadioGroup`, `ComponentSlider` and `ComponentRating` name
   the three for token overrides.
+- `examples/controls`, an export panel that uses `button`, `buttongroup`,
+  `radiogroup`, `slider` and `rating` together, by keyboard and by mouse.
 - `tuitest.Session.WaitForText(text, timeout)` waits until a row of the
   screen contains `text` and reports whether it did. It is for output that
   arrives on its own time, after a command or a tick, which `Keys` and `Send`
