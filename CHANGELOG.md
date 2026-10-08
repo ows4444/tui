@@ -97,6 +97,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   title, a description and a hint, centred.
 - `widgets.Timeline` draws `[]widgets.TimelineItem` one under another with a
   marker for each status and a rail between them.
+- `examples/gallery`, seven pages that show `otpinput`, `inputgroup`,
+  `transferlist`, `carousel`, `widgets.Timeline`, `widgets.Empty`, and
+  `tooltip`, `hovercard` and a dialog over a `backdrop`, with a `breadcrumb`
+  and a `pagination` row as its own navigation.
 - `examples/controls`, an export panel that uses `button`, `buttongroup`,
   `radiogroup`, `slider`, `rating`, `checkbox` and `toggle` together, by
   keyboard and by mouse.
