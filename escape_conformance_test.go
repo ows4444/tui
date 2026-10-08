@@ -14,6 +14,7 @@ import (
 	"github.com/ows4444/tui/appshell"
 	"github.com/ows4444/tui/autocomplete"
 	"github.com/ows4444/tui/avatar"
+	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
 	"github.com/ows4444/tui/checkbox"
@@ -85,6 +86,11 @@ var conformance = map[string]func() map[string]string{
 	"avatar": func() map[string]string {
 		// The name is hashed, never drawn; Linearize is the one place it is shown.
 		m := avatar.New(evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"breadcrumb": func() map[string]string {
+		m := breadcrumb.New(evil, evil)
+		m.Separator = evil
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"button": func() map[string]string {
@@ -272,6 +278,7 @@ var exempt = map[string]string{
 	"passwordinput": "renders a mask of the typed value",
 	"emailinput":    "a textinput.Model wrapper; covered by textinput",
 	"numberinput":   "a textinput.Model wrapper; covered by textinput",
+	"pagination":    "draws page numbers; no caller text",
 	"rating":        "draws marks and a score from numbers; no caller text",
 	"scrollbar":     "draws a thumb and track from numbers; no caller text",
 	"splitpane":     "draws only a divider; the panes are caller layout.Nodes that sanitise their own content",

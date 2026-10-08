@@ -192,6 +192,8 @@ every widget implements `Linearize` for accessible mode; tests in
 | `toggle` | An on/off switch with a label | Experimental |
 | `otpinput` | A short code typed one character to a cell, such as a one-time password | Experimental |
 | `inputgroup` | A text field with fixed text before and after it | Experimental |
+| `pagination` | A row of page numbers with the current one marked and far pages folded | Experimental |
+| `breadcrumb` | A trail of places that can be walked back along and chosen from | Experimental |
 
 Packages under `internal/` are not public API.
 

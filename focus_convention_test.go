@@ -5,9 +5,12 @@ import (
 	"testing"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
 	"github.com/ows4444/tui/checkbox"
+	"github.com/ows4444/tui/otpinput"
+	"github.com/ows4444/tui/pagination"
 	"github.com/ows4444/tui/radiogroup"
 	"github.com/ows4444/tui/rating"
 	"github.com/ows4444/tui/slider"
@@ -21,6 +24,27 @@ import (
 func TestControlsShowFocusWithAngleBrackets(t *testing.T) {
 	plain := ansi.StripANSI
 	cases := map[string]func(focused bool) string{
+		"breadcrumb": func(f bool) string {
+			m := breadcrumb.New("Home", "Docs")
+			if f {
+				m.Focus()
+			}
+			return plain(m.View())
+		},
+		"otpinput": func(f bool) string {
+			m := otpinput.New(4)
+			if f {
+				m.Focus()
+			}
+			return plain(m.View())
+		},
+		"pagination": func(f bool) string {
+			m := pagination.New(9)
+			if f {
+				m.Focus()
+			}
+			return plain(m.View())
+		},
 		"button": func(f bool) string {
 			m := button.New("Save")
 			if f {

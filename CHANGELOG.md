@@ -61,6 +61,16 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   text before and after it. The suffix keeps its column when a `Width` is
   set, `CursorCell` is reported past the prefix, and `FullValue` joins the
   three.
+- `pagination`, a new experimental package: a row of page numbers with the
+  current one in brackets and far pages folded into an ellipsis. Left,
+  Right, Home, End or a click on a number change the page. It delivers
+  `pagination.ChangedMsg`. `widgets.Pagination` still draws "Page X of Y".
+- `breadcrumb`, a new experimental package: a trail of places with a cursor
+  moved by Left and Right; Enter, Space or a click chooses a place and
+  delivers `breadcrumb.ChosenMsg`. `Max` folds a long trail around an
+  ellipsis. `widgets.Breadcrumb` still draws one without state.
+- `theme.ComponentPagination` and `ComponentBreadcrumb` name the two for
+  token overrides.
 - `widgets.Empty` draws the placeholder for a view with nothing to show: a
   title, a description and a hint, centred.
 - `widgets.Timeline` draws `[]widgets.TimelineItem` one under another with a

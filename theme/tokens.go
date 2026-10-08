@@ -30,6 +30,7 @@ const (
 	ComponentAccordion          = "accordion"
 	ComponentAppShell           = "appshell"
 	ComponentAutocomplete       = "autocomplete"
+	ComponentBreadcrumb         = "breadcrumb"
 	ComponentButton             = "button"
 	ComponentCheckbox           = "checkbox"
 	ComponentColorPicker        = "colorpicker"
@@ -54,6 +55,7 @@ const (
 	ComponentMultiSelect        = "multiselect"
 	ComponentNotificationCenter = "notificationcenter"
 	ComponentOTPInput           = "otpinput"
+	ComponentPagination         = "pagination"
 	ComponentPasswordInput      = "passwordinput"
 	ComponentPicker             = "picker"
 	ComponentPopover            = "popover"
@@ -80,14 +82,14 @@ const (
 func Components() []string {
 	return []string{
 		ComponentAccordion, ComponentAppShell, ComponentAutocomplete,
-		ComponentButton, ComponentCheckbox, ComponentColorPicker, ComponentCommandPalette,
+		ComponentBreadcrumb, ComponentButton, ComponentCheckbox, ComponentColorPicker, ComponentCommandPalette,
 		ComponentConfirm, ComponentContextMenu, ComponentDataTable,
 		ComponentDatePicker, ComponentDialog, ComponentDrawer,
 		ComponentErrorRetry, ComponentFaces, ComponentFilePicker,
 		ComponentForm, ComponentHelpScreen, ComponentImageView,
 		ComponentLoadingBar, ComponentMarkdown, ComponentMaskedInput, ComponentMenu,
 		ComponentMenuBar, ComponentMultiSelect, ComponentNotificationCenter,
-		ComponentOTPInput, ComponentPasswordInput, ComponentPicker, ComponentPopover,
+		ComponentOTPInput, ComponentPagination, ComponentPasswordInput, ComponentPicker, ComponentPopover,
 		ComponentRadioGroup, ComponentRating,
 		ComponentScrollbar, ComponentSkeleton, ComponentSlider, ComponentSpinner,
 		ComponentSplitPane, ComponentStreamText, ComponentTabs,
