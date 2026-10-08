@@ -59,12 +59,12 @@ in `examples/` that imports the package.
 | [accordion](../accordion) | A list of collapsible sections | yes | `examples/settings` |
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
-| [backdrop](../backdrop) | An overlay that dims a finished frame, to put behind a dialog or a drawer; a press on it delivers `PressedMsg`. Experimental | | |
+| [backdrop](../backdrop) | An overlay that dims a finished frame, to put behind a dialog or a drawer; a press on it delivers `PressedMsg`. Experimental | | `examples/gallery` |
 | [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
-| [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | |
+| [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | `examples/gallery` |
 | [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `examples/controls` |
 | [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `examples/controls` |
-| [carousel](../carousel) | One slide of several at a time, with a row of dots under it, ` ○ ● ○ `; Left, Right, Home, End or a click change the slide and deliver `ChangedMsg`. Experimental | | |
+| [carousel](../carousel) | One slide of several at a time, with a row of dots under it, ` ○ ● ○ `; Left, Right, Home, End or a click change the slide and deliver `ChangedMsg`. Experimental | | `examples/gallery` |
 | [checkbox](../checkbox) | One box with a label, drawn `[x] Label`; Space or a click checks and unchecks it, and `Indeterminate` draws `[-]`. For a list of them see multiselect. Experimental | | `examples/controls` |
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
 | [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `examples/timers` |
@@ -82,10 +82,10 @@ in `examples/` that imports the package.
 | [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes  `examples/pickers` |
 | [form](../form) | A validating column of labelled fields with Submit | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
-| [hovercard](../hovercard) | An overlay with a title and a body, drawn under its target while the pointer is on the target or the card; Esc closes it. Experimental | | |
+| [hovercard](../hovercard) | An overlay with a title and a body, drawn under its target while the pointer is on the target or the card; Esc closes it. Experimental | | `examples/gallery` |
 | [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
-| [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | |
+| [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | `examples/gallery` |
 | [logview](../logview) | An append-only scrolling log | | `examples/procstream` |
 | [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/agentshell` |
 | [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune |  `examples/inputs` |
@@ -94,8 +94,8 @@ in `examples/` that imports the package.
 | [multiselect](../multiselect) | A multi-choice list: Space toggles, Enter confirms | yes | `examples/list` |
 | [notificationcenter](../notificationcenter) | A panel showing every queued notification at once. Experimental | | |
 | [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `examples/inputs` |
-| [otpinput](../otpinput) | A short code typed one character to a cell, `[4][8][2] — [1][ ][ ]`; a paste fills the cells, and `ChangedMsg` says when it is complete. Experimental | | |
-| [pagination](../pagination) | A row of page numbers, ` 1  …  9 [10] 11  …  20 `; Left, Right, Home, End or a click change the page and deliver `ChangedMsg`. Experimental | | |
+| [otpinput](../otpinput) | A short code typed one character to a cell, `[4][8][2] — [1][ ][ ]`; a paste fills the cells, and `ChangedMsg` says when it is complete. Experimental | | `examples/gallery` |
+| [pagination](../pagination) | A row of page numbers, ` 1  …  9 [10] 11  …  20 `; Left, Right, Home, End or a click change the page and deliver `ChangedMsg`. Experimental | | `examples/gallery` |
 | [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
@@ -114,8 +114,8 @@ in `examples/` that imports the package.
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |
 | [toggle](../toggle) | An on/off switch with a label, drawn `(○  )` and `(  ●)`; Space or Enter flips it, Left and Right set it. Experimental | | `examples/controls` |
 | [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/agentshell` |
-| [tooltip](../tooltip) | An overlay with a short hint, drawn under its target while the pointer is over it. Experimental | | |
-| [transferlist](../transferlist) | Two lists side by side; Enter, Space or a click moves the item under the cursor to the other list and delivers `ChangedMsg`. Experimental | | |
+| [tooltip](../tooltip) | An overlay with a short hint, drawn under its target while the pointer is over it. Experimental | | `examples/gallery` |
+| [transferlist](../transferlist) | Two lists side by side; Enter, Space or a click moves the item under the cursor to the other list and delivers `ChangedMsg`. Experimental | | `examples/gallery` |
 | [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |
 | [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes  `examples/panes` |
