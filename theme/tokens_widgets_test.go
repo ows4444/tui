@@ -36,8 +36,11 @@ import (
 	"github.com/ows4444/tui/passwordinput"
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
+	"github.com/ows4444/tui/radiogroup"
+	"github.com/ows4444/tui/rating"
 	"github.com/ows4444/tui/scrollbar"
 	"github.com/ows4444/tui/skeleton"
+	"github.com/ows4444/tui/slider"
 	"github.com/ows4444/tui/spinner"
 	"github.com/ows4444/tui/splitpane"
 	"github.com/ows4444/tui/streamtext"
@@ -280,6 +283,20 @@ func tokenCases() []tokenCase {
 			m.Show()
 			return m.Render(base)
 		}},
+		{theme.ComponentRadioGroup, func(th theme.Theme, i *theme.Tokens) string {
+			m := radiogroup.New("A", "B").SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentRating, func(th theme.Theme, i *theme.Tokens) string {
+			m := rating.New(5).SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
 		{theme.ComponentScrollbar, func(th theme.Theme, i *theme.Tokens) string {
 			m := scrollbar.New(100, 10).SetTheme(th)
 			m.Length = 10
@@ -291,6 +308,13 @@ func tokenCases() []tokenCase {
 		{theme.ComponentSkeleton, func(th theme.Theme, i *theme.Tokens) string {
 			m := skeleton.New().SetTheme(th)
 			m.Width, m.Lines = 10, 2
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentSlider, func(th theme.Theme, i *theme.Tokens) string {
+			m := slider.New(0, 10).SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}

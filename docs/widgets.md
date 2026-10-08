@@ -33,7 +33,7 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, skeleton, spinner, streamtext, tabs, taginput, textarea, textinput, toolapproval, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, button, buttongroup, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, loadingbar, logview, maskedinput, menu, multiselect, numberinput, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toolapproval, treeview, viewport, virtuallist |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | contextmenu, dialog, drawer, helpscreen, menubar, popover, toast |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
@@ -91,8 +91,11 @@ in `examples/` that imports the package.
 | [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
+| [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | |
+| [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | |
 | [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/panes` |
 | [skeleton](../skeleton) | A loading placeholder block |  `examples/timers` |
+| [slider](../slider) | A value in a range on a track with a thumb; arrows, Page Up and Page Down, Home and End move it, and the pointer can press or drag. Experimental | | |
 | [spinner](../spinner) | An animated loading indicator | | `examples/asyncload`, `examples/buildlog`, `examples/inlinespinners` |
 | [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes  `examples/panes` |
 | [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/agentshell` |
