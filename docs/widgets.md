@@ -26,7 +26,8 @@ From `ExampleBox` in `widgets/example_test.go`.
 
 A component is embedded in your own model. You hold its `Model` in a field,
 pass messages to its `Update`, keep the Model it returns, and draw its `View` or
-`LayoutNode`. It has no `Init`. The root package names these shapes, and
+`LayoutNode`. It has no `Init` (`autocomplete` and `commandpalette` still
+export a deprecated one; use their `Focus`). The root package names these shapes, and
 packages assert them at compile time with lines such as
 `var _ tui.Component[Model] = Model{}`:
 

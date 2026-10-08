@@ -10,8 +10,6 @@ type penState struct {
 	link string
 }
 
-func (p penState) active() bool { return p.sgr != "" || p.link != "" }
-
 // apply folds one complete escape sequence into the state.
 func (p *penState) apply(seq string) {
 	if len(seq) >= 3 && seq[1] == '[' && seq[len(seq)-1] == 'm' {

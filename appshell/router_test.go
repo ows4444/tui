@@ -81,7 +81,7 @@ func TestRouterTheme(t *testing.T) {
 		Add("a", Wrap(themed{rec{"a", &log}, &n1})).
 		Add("plain", Wrap(rec{"p", &log})).
 		Add("b", Wrap(themed{rec{"b", &log}, &n2}))
-	r = r.SetTheme(theme.DarkTheme())
+	_ = r.SetTheme(theme.DarkTheme())
 	if n1 != 1 || n2 != 1 {
 		t.Fatalf("n1=%d n2=%d", n1, n2)
 	}

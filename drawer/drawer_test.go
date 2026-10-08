@@ -6,6 +6,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -125,17 +126,17 @@ func TestRenderCompositesBorderedBoxSizedByEdge(t *testing.T) {
 				t.Fatalf("Render() should contain multi-line Content: %q", visible)
 			}
 
-			b := layout.NewBox().Border(m.Theme.Border).BorderColor(m.Theme.BorderColor).PaddingAll(1)
+			b := layout.NewBox().BorderColor(m.Theme.BorderColor)
 			var box string
 			switch tt.edge {
 			case EdgeLeft, EdgeRight:
-				box = b.Width(m.Width).Render(m.Content)
+				box = boxdraw.Draw(b, m.Theme.Border, 1, m.Width, m.Content)
 				bw, _ := extent(box)
 				if want := m.Width + 2 + 2; bw != want { // border (1+1) + padding (1+1)
 					t.Errorf("box width = %d, want %d (Width %d + border/padding)", bw, want, m.Width)
 				}
 			case EdgeTop, EdgeBottom:
-				box = b.Render(padToHeight(m.Content, m.Height))
+				box = boxdraw.Draw(b, m.Theme.Border, 1, 0, padToHeight(m.Content, m.Height))
 				_, bh := extent(box)
 				if want := m.Height + 2 + 2; bh != want { // border (1+1) + padding (1+1)
 					t.Errorf("box height = %d, want %d (Height %d + border/padding)", bh, want, m.Height)
@@ -160,12 +161,12 @@ func TestRenderPositionsBoxAtEdge(t *testing.T) {
 	}
 
 	boxFor := func(m Model) string {
-		b := layout.NewBox().Border(m.Theme.Border).BorderColor(m.Theme.BorderColor).PaddingAll(1)
+		b := layout.NewBox().BorderColor(m.Theme.BorderColor)
 		switch m.Edge {
 		case EdgeLeft, EdgeRight:
-			return b.Width(m.Width).Render(m.Content)
+			return boxdraw.Draw(b, m.Theme.Border, 1, m.Width, m.Content)
 		default:
-			return b.Render(padToHeight(m.Content, m.Height))
+			return boxdraw.Draw(b, m.Theme.Border, 1, 0, padToHeight(m.Content, m.Height))
 		}
 	}
 

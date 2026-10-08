@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 )
@@ -28,11 +29,7 @@ func panel(title, content string, t theme.Theme, width int, border layout.Border
 	}
 
 	if title == "" {
-		b := layout.NewBox().Border(border).BorderColor(t.BorderColor).PaddingAll(1)
-		if !auto {
-			b = b.Width(cw)
-		}
-		return b.Render(wrapped)
+		return boxdraw.Draw(layout.NewBox().BorderColor(t.BorderColor), border, 1, cw, wrapped)
 	}
 
 	if auto {
@@ -51,6 +48,5 @@ func panel(title, content string, t theme.Theme, width int, border layout.Border
 		body += "\n" + wrapped
 	}
 
-	b := layout.NewBox().Border(border).BorderColor(t.BorderColor).PaddingAll(1).Width(cw)
-	return b.Render(body)
+	return boxdraw.Draw(layout.NewBox().BorderColor(t.BorderColor), border, 1, cw, body)
 }

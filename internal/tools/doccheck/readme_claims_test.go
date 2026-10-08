@@ -26,20 +26,12 @@ func widgetMethods(t *testing.T) map[string]map[string]bool {
 			d.Name() == "tuitest" /* a test harness, not a widget */ {
 			continue
 		}
-		fset := token.NewFileSet()
-		pkgs, err := parser.ParseDir(fset, d.Name(), func(fi os.FileInfo) bool {
-			return !strings.HasSuffix(fi.Name(), "_test.go")
-		}, 0)
-		if err != nil {
-			t.Fatal(err)
-		}
+		files := parseSources(t, d.Name(), 0)
 		methods := map[string]bool{}
-		for _, p := range pkgs {
-			for _, f := range p.Files {
-				for _, decl := range f.Decls {
-					if fn, ok := decl.(*ast.FuncDecl); ok && fn.Recv != nil {
-						methods[fn.Name.Name] = true
-					}
+		for _, f := range files {
+			for _, decl := range f.Decls {
+				if fn, ok := decl.(*ast.FuncDecl); ok && fn.Recv != nil {
+					methods[fn.Name.Name] = true
 				}
 			}
 		}
@@ -82,4 +74,28 @@ func TestREADMECapabilityClaimsHold(t *testing.T) {
 			t.Errorf("README claims every widget has %s, but package %s lacks it", method, pkg)
 		}
 	}
+}
+
+// parseSources parses the non-test Go files in dir. It replaces
+// parser.ParseDir, deprecated since Go 1.25; these checks read declarations
+// and comments only, so the build tags ParseDir ignored do not matter here.
+func parseSources(t *testing.T, dir string, mode parser.Mode) []*ast.File {
+	t.Helper()
+	names, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fset := token.NewFileSet()
+	var files []*ast.File
+	for _, name := range names {
+		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, name, nil, mode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files = append(files, f)
+	}
+	return files
 }

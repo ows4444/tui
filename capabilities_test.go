@@ -4,8 +4,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/ows4444/tui/ansi"
 )
 
 func capMsgs(rec recorderModel) (n int, last CapabilitiesMsg) {
@@ -20,7 +18,7 @@ func capMsgs(rec recorderModel) (n int, last CapabilitiesMsg) {
 
 // AC1: DA1 ends the probe with one message even if others went unanswered.
 func TestCapabilityProbeDA1SentinelDeliversOnce(t *testing.T) {
-	t.Cleanup(func() { ansi.SetClusterWidth(true) }) // the probe sets the global cluster width
+	t.Cleanup(func() { setClusterWidth(true) }) // the probe sets the global cluster width
 	write, read, wait := bgRun(t, recorderModel{quitAfter: 3}, WithCapabilityProbe(time.Hour))
 	write("\x1b[?2026;1$y\x1b[?62;22c\x1b[?62;22c")
 	write("a") // a key after the replies: replies must not leak as keys
@@ -50,7 +48,7 @@ func TestCapabilityProbeDA1SentinelDeliversOnce(t *testing.T) {
 
 // AC2: no answer within the timeout yields an all-false message.
 func TestCapabilityProbeTimeoutAllFalse(t *testing.T) {
-	t.Cleanup(func() { ansi.SetClusterWidth(true) }) // the probe sets the global cluster width
+	t.Cleanup(func() { setClusterWidth(true) }) // the probe sets the global cluster width
 	_, _, wait := bgRun(t, recorderModel{quitAfter: 2}, WithCapabilityProbe(50*time.Millisecond))
 	rec := wait().model.(recorderModel)
 	n, c := capMsgs(rec)

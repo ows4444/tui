@@ -5,6 +5,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -277,21 +278,15 @@ func widgetPackages(t *testing.T) []string {
 		if !d.IsDir() || strings.HasPrefix(d.Name(), ".") {
 			continue
 		}
-		fset := token.NewFileSet()
-		pkgs, err := parser.ParseDir(fset, d.Name(), func(fi os.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, 0)
-		if err != nil {
-			t.Fatal(err)
-		}
+		files := parseSources(t, d.Name(), 0)
 		has := false
-		for _, p := range pkgs {
-			for _, f := range p.Files {
-				for _, decl := range f.Decls {
-					fn, ok := decl.(*ast.FuncDecl)
-					if !ok || fn.Recv == nil || (fn.Name.Name != "View" && fn.Name.Name != "Render") {
-						continue
-					}
-					has = true
+		for _, f := range files {
+			for _, decl := range f.Decls {
+				fn, ok := decl.(*ast.FuncDecl)
+				if !ok || fn.Recv == nil || (fn.Name.Name != "View" && fn.Name.Name != "Render") {
+					continue
 				}
+				has = true
 			}
 		}
 		if has {
@@ -380,4 +375,28 @@ func TestFilepickerConformance(t *testing.T) {
 			t.Errorf("filepicker %s: %q", path, out)
 		}
 	}
+}
+
+// parseSources parses the non-test Go files in dir. It replaces
+// parser.ParseDir, deprecated since Go 1.25; these checks read declarations
+// and comments only, so the build tags ParseDir ignored do not matter here.
+func parseSources(t *testing.T, dir string, mode parser.Mode) []*ast.File {
+	t.Helper()
+	names, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fset := token.NewFileSet()
+	var files []*ast.File
+	for _, name := range names {
+		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, name, nil, mode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files = append(files, f)
+	}
+	return files
 }

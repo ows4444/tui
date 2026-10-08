@@ -15,24 +15,16 @@ import (
 // whose doc comment has a "Deprecated:" paragraph.
 func deprecatedLayoutFuncs(t *testing.T) map[string]bool {
 	t.Helper()
-	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, ".", func(fi fs.FileInfo) bool {
-		return !strings.HasSuffix(fi.Name(), "_test.go")
-	}, parser.ParseComments)
-	if err != nil {
-		t.Fatal(err)
-	}
+	files := parseSources(t, ".", parser.ParseComments)
 	out := map[string]bool{}
-	for _, pkg := range pkgs {
-		for _, f := range pkg.Files {
-			for _, d := range f.Decls {
-				fn, ok := d.(*ast.FuncDecl)
-				if !ok || fn.Recv != nil || fn.Doc == nil || !fn.Name.IsExported() {
-					continue
-				}
-				if strings.Contains(fn.Doc.Text(), "Deprecated:") {
-					out[fn.Name.Name] = true
-				}
+	for _, f := range files {
+		for _, d := range f.Decls {
+			fn, ok := d.(*ast.FuncDecl)
+			if !ok || fn.Recv != nil || fn.Doc == nil || !fn.Name.IsExported() {
+				continue
+			}
+			if strings.Contains(fn.Doc.Text(), "Deprecated:") {
+				out[fn.Name.Name] = true
 			}
 		}
 	}
@@ -101,26 +93,18 @@ func TestRemovedStringLayoutAPIIsGone(t *testing.T) {
 		"JoinHorizontal": true, "JoinHorizontalAlign": true, "JoinVertical": true, "JoinVerticalAlign": true,
 		"FlexRow": true, "FlexItem": true, "GridFlex": true, "ColSpec": true, "Grid": true,
 	}
-	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, ".", func(fi fs.FileInfo) bool {
-		return !strings.HasSuffix(fi.Name(), "_test.go")
-	}, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, pkg := range pkgs {
-		for _, f := range pkg.Files {
-			for _, d := range f.Decls {
-				switch d := d.(type) {
-				case *ast.FuncDecl:
-					if d.Recv == nil && removed[d.Name.Name] {
-						t.Errorf("layout.%s is declared; it was removed for v1.0", d.Name.Name)
-					}
-				case *ast.GenDecl:
-					for _, sp := range d.Specs {
-						if ts, ok := sp.(*ast.TypeSpec); ok && removed[ts.Name.Name] {
-							t.Errorf("layout.%s is declared; it was removed for v1.0", ts.Name.Name)
-						}
+	files := parseSources(t, ".", 0)
+	for _, f := range files {
+		for _, d := range f.Decls {
+			switch d := d.(type) {
+			case *ast.FuncDecl:
+				if d.Recv == nil && removed[d.Name.Name] {
+					t.Errorf("layout.%s is declared; it was removed for v1.0", d.Name.Name)
+				}
+			case *ast.GenDecl:
+				for _, sp := range d.Specs {
+					if ts, ok := sp.(*ast.TypeSpec); ok && removed[ts.Name.Name] {
+						t.Errorf("layout.%s is declared; it was removed for v1.0", ts.Name.Name)
 					}
 				}
 			}
@@ -157,4 +141,28 @@ func TestMigrationGuideMapsEachRemovedIdentifier(t *testing.T) {
 			t.Errorf("the section for %s does not name its replacement %s", name, node)
 		}
 	}
+}
+
+// parseSources parses the non-test Go files in dir. It replaces
+// parser.ParseDir, deprecated since Go 1.25; these checks read declarations
+// and comments only, so the build tags ParseDir ignored do not matter here.
+func parseSources(t *testing.T, dir string, mode parser.Mode) []*ast.File {
+	t.Helper()
+	names, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fset := token.NewFileSet()
+	var files []*ast.File
+	for _, name := range names {
+		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, name, nil, mode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files = append(files, f)
+	}
+	return files
 }

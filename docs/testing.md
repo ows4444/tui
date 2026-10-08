@@ -66,6 +66,17 @@ fmt.Printf("%q\n", s.Cell(2, 0).Grapheme)
 `tuitest.NewFakeClock` with `tuitest.WithClock` lets a test advance time by
 hand (`Session.Advance`) instead of waiting on the wall clock.
 `Session.Golden(t, name)` compares the screen with `testdata/<name>.golden`.
+
+`Keys`, `Paste`, `Resize` and `Send` return once the model has received what
+they sent and the frame has settled. Output that a command or a tick draws
+later is not waited for; wait for it by its text:
+
+```go
+s.Keys("enter") // starts a command that finishes on its own time
+if !s.WaitForText("saved", 5*time.Second) {
+	t.Fatalf("never saved: %q", s.Screen())
+}
+```
 See the package godoc for the rest of `Session`.
 
 Most widget tests don't need a Program: they call `Update` with a `tui.Key` or
@@ -169,7 +180,7 @@ The allocation gate against `bench/baseline.txt` is described in
 - `api`: `api.txt` is current, and the CHANGELOG names every breaking change
   since the latest tag.
 - `widthtables`: the Unicode tables match a fresh generation.
-- `lint` (golangci-lint) and `security` (gosec).
+- `lint` (golangci-lint), `security` (gosec) and `staticcheck`.
 
 [.github/workflows/bench.yml](../.github/workflows/bench.yml) runs the
 allocation gate.

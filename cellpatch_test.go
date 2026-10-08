@@ -75,13 +75,6 @@ func inEscape(b []byte, k int) bool {
 	return false
 }
 
-// screenOf replays the bytes a Program wrote through the VT emulator.
-func patchScreen(out []byte, cols, rows int) *vtscreen.Screen {
-	sc := vtscreen.NewScreen(cols, rows)
-	sc.Write(out)
-	return sc
-}
-
 // TestCellPatchDrawsTheScreenOfAFullParse: patching rows from the previous
 // frame and copying the changed spans from the new line must leave the
 // emulated screen, every cell with its attributes and the cursor, exactly as

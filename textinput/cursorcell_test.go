@@ -11,7 +11,7 @@ import (
 // prompt, wide clusters, a scrolled window and an empty value.
 func TestCursorCellMatchesView(t *testing.T) {
 	for _, width := range []int{0, 6} {
-		for _, text := range []string{"", "abc", "abé\U0001F468‍\U0001F469cd中文efghijkl"} {
+		for _, text := range []string{"", "abc", "abé\U0001F468\u200d\U0001F469cd中文efghijkl"} {
 			m := New()
 			m.Prompt = "> "
 			m.Width = width

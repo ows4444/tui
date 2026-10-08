@@ -5,6 +5,7 @@ package dialog
 
 import (
 	"github.com/ows4444/tui/focus"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/keymap"
 	"strings"
 
@@ -157,11 +158,7 @@ func (m Model) build() (box string, w, h int) {
 		}
 		body += "\n\n" + msg
 	}
-	boxBuilder := layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(1)
-	if m.Width > 0 {
-		boxBuilder = boxBuilder.Width(m.Width)
-	}
-	box = boxBuilder.Render(body)
+	box = boxdraw.Draw(layout.NewBox().BorderColor(m.themed().BorderColor), m.themed().Border, 1, m.Width, body)
 	lines := strings.Split(box, "\n")
 	return box, ansi.Width(lines[0]), len(lines)
 }

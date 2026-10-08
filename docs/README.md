@@ -17,6 +17,7 @@ can't. Start with the [README](../README.md).
 | Handle keys, mouse and paste | [Input](input.md) |
 | Pick and compose widgets | [Widgets](widgets.md) |
 | Replace a removed identifier | [Migrating to v1](migrating-to-v1.md) |
+| Know what v1.0 will promise | [What v1.0 means](v1.md) |
 
 ## Working on tui
 

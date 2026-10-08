@@ -164,7 +164,7 @@ func TestTrimLeftWidthKeepsAClusterWhole(t *testing.T) {
 // rune-by-rune sum exactly: nothing changes for ordinary text.
 func TestOrdinaryTextMeasuresAsBefore(t *testing.T) {
 	r := rand.New(rand.NewSource(11))
-	pieces := []string{"a", "hello", " ", "\t", "\n", "\r\n", "你好", "🎉", "é", "​", "│", "\x1b[1m", "\x1b[0m", "ü", "ß", "→"}
+	pieces := []string{"a", "hello", " ", "\t", "\n", "\r\n", "你好", "🎉", "é", "\u200b", "│", "\x1b[1m", "\x1b[0m", "ü", "ß", "→"}
 	for i := 0; i < 20000; i++ {
 		var b strings.Builder
 		for j, n := 0, r.Intn(8); j < n; j++ {
@@ -181,7 +181,7 @@ func TestOrdinaryTextMeasuresAsBefore(t *testing.T) {
 // joiners, flags and modifiers, and never allocates.
 func TestClusterWidthAgreesWithStrippedAndDoesNotAllocate(t *testing.T) {
 	r := rand.New(rand.NewSource(5))
-	pieces := []string{"a", "e", "́", "‍", "👨", "👩", "🇩", "🇪", "🏽", "👋", "️", "❤", "\x1b[1m", "\x1b[0m", "你", "ᄀ", "ᅡ", "क", "्", "ष", "\r", "\n"}
+	pieces := []string{"a", "e", "́", "\u200d", "👨", "👩", "🇩", "🇪", "🏽", "👋", "️", "❤", "\x1b[1m", "\x1b[0m", "你", "ᄀ", "ᅡ", "क", "्", "ष", "\r", "\n"}
 	for i := 0; i < 30000; i++ {
 		var b strings.Builder
 		for j, n := 0, r.Intn(10); j < n; j++ {

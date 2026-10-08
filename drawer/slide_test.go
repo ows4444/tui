@@ -1,10 +1,11 @@
 package drawer
 
 import (
+	"go/ast"
 	"go/parser"
 	"go/token"
-	"io/fs"
 	"math"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -252,13 +253,9 @@ func TestDismissKeysSlideOutOnlyWhenSlideIsConfigured(t *testing.T) {
 // The package documentation says how reduced motion makes the slide immediate,
 // so the two ways of asking for it stay written down.
 func TestPackageDocExplainsReducedMotion(t *testing.T) {
-	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, ".", func(fi fs.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, parser.ParseComments)
-	if err != nil {
-		t.Fatal(err)
-	}
+	files := parseSources(t, ".", parser.ParseComments)
 	doc := ""
-	for _, f := range pkgs["drawer"].Files {
+	for _, f := range files {
 		if f.Doc != nil {
 			doc += f.Doc.Text()
 		}
@@ -268,4 +265,28 @@ func TestPackageDocExplainsReducedMotion(t *testing.T) {
 			t.Errorf("the package doc does not mention %q", want)
 		}
 	}
+}
+
+// parseSources parses the non-test Go files in dir. It replaces
+// parser.ParseDir, deprecated since Go 1.25; these checks read declarations
+// and comments only, so the build tags ParseDir ignored do not matter here.
+func parseSources(t *testing.T, dir string, mode parser.Mode) []*ast.File {
+	t.Helper()
+	names, err := filepath.Glob(filepath.Join(dir, "*.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fset := token.NewFileSet()
+	var files []*ast.File
+	for _, name := range names {
+		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, name, nil, mode)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files = append(files, f)
+	}
+	return files
 }

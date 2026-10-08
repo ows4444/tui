@@ -39,6 +39,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/focus"
 	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
@@ -284,16 +285,16 @@ func (m Model) Render(base string) string {
 // a base of baseW x baseH, fully slid in.
 func (m Model) place(baseW, baseH int) (box string, x, y, bw, bh int) {
 	content := m.Content
-	b := layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(1)
+	width := 0
 
 	switch m.Edge {
 	case EdgeLeft, EdgeRight:
-		b = b.Width(m.Width)
+		width = m.Width
 	case EdgeTop, EdgeBottom:
 		content = padToHeight(content, m.Height)
 	}
 
-	box = b.Render(content)
+	box = boxdraw.Draw(layout.NewBox().BorderColor(m.themed().BorderColor), m.themed().Border, 1, width, content)
 	bw, bh = extent(box)
 
 	switch m.Edge {

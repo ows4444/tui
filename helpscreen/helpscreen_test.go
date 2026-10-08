@@ -6,6 +6,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/boxdraw"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/widgets"
@@ -150,7 +151,7 @@ func TestRenderBordersAndColorsViaTheme(t *testing.T) {
 	got := m.Render(base)
 
 	content := widgets.KeyHint("q", "quit")
-	wantBox := layout.NewBox().Border(m.Theme.Border).BorderColor(m.Theme.BorderColor).PaddingAll(1).Width(30 - 4).Render(content)
+	wantBox := boxdraw.Draw(layout.NewBox().BorderColor(m.Theme.BorderColor), m.Theme.Border, 1, 30-4, content)
 	want := layout.Overlay(base, wantBox, 0, 0)
 
 	if got != want {

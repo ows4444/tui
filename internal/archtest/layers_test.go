@@ -36,7 +36,7 @@ var tiers = map[string]int{
 // nowhere, so none defaults to a tier by accident.
 var internalTiers = map[string]int{
 	"internal/basetypes": 0, "internal/a11y": 0, "internal/bidi": 0, "internal/fsutil": 0,
-	"internal/highlight": 0, "internal/ptytest": 0,
+	"internal/highlight": 0, "internal/ptytest": 0, "internal/boxdraw": 0,
 	"internal/render": 2, "internal/termio": 2, "internal/capprobe": 2, "internal/announce": 2, "internal/braille": 2,
 	"internal/cancelreader": 2, "internal/edit": 2, "internal/vtscreen": 2,
 	// test support: import the root runtime, so no library package may import them

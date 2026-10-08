@@ -9,6 +9,7 @@ import (
 
 	"github.com/ows4444/tui/focus"
 	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/internal/boxdraw"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
@@ -159,7 +160,7 @@ func extent(s string) (w, h int) {
 // place renders the popover box and returns it with its offset and size
 // inside a base of baseW x baseH.
 func (m Model) place(baseW, baseH int) (box string, x, y, bw, bh int) {
-	box = layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(m.themed().ResolvedSpacing().S).Render(m.Content)
+	box = boxdraw.Draw(layout.NewBox().BorderColor(m.themed().BorderColor), m.themed().Border, m.themed().ResolvedSpacing().S, 0, m.Content)
 	bw, bh = extent(box)
 
 	x = m.AnchorX

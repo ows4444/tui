@@ -106,6 +106,7 @@ export default defineConfig({
 					items: [
 						{ label: 'API reference (pkg.go.dev)', link: 'https://pkg.go.dev/github.com/ows4444/tui', attrs: { target: '_blank' } },
 						{ label: 'Migrating to v1', link: '/migrating-to-v1/' },
+						{ label: 'What v1.0 means', link: '/v1/' },
 						{ label: 'Changelog', link: '/changelog/' },
 					],
 				},

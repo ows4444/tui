@@ -20,8 +20,12 @@ go run ./internal/tools/doccheck
 ```
 
 CI also checks that the generated files below are current, and runs
-`golangci-lint run ./...` (v2.1.6) and `gosec ./...` (v2.29.0). Both are dev
-tools that CI installs with `go install`; they are not module dependencies.
+`golangci-lint run ./...` (v2.1.6), `gosec ./...` (v2.29.0) and
+`staticcheck ./...` (2026.2.1, which needs Go 1.26 to build). All three are
+dev tools that CI installs with `go install`; they are not module
+dependencies. Any staticcheck finding fails CI, so a call to one of this
+module's own deprecated identifiers does too. Where a test must use one,
+route it through one helper with a `//lint:ignore SA1019 <reason>` line.
 
 ## No dependencies
 

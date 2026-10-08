@@ -60,7 +60,8 @@ func TestMeasurerTruncateAndTrimLeftUseItsOwnSetting(t *testing.T) {
 }
 
 func TestMeasurerIsComparable(t *testing.T) {
-	if (Measurer{}) != (Measurer{}) || ClusterMeasurer(true) == ClusterMeasurer(false) || ClusterMeasurer(true) == (Measurer{}) {
+	zero, same := Measurer{}, Measurer{}
+	if zero != same || ClusterMeasurer(true) == ClusterMeasurer(false) || ClusterMeasurer(true) == zero {
 		t.Fatal("Measurer equality is wrong")
 	}
 }
