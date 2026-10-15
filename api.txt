@@ -1833,14 +1833,18 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) Values() map[string]string
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
+func Bool(m Model, name string) bool
 func DefaultKeyMap() KeyMap
 func Email() Validator
+func Int(m Model, name string) (int, error)
 func Match(re *regexp.Regexp, msg string) Validator
 func MaxLen(n int) Validator
 func MinLen(n int) Validator
 func New(fields ...Field) Model
 func NewGroups(groups ...Group) Model
 func Required() Validator
+func SelectOf[T any](name, label string, options ...Option[T]) Field
+func Value[T any](m Model, name string) (v T, ok bool)
 type Field struct {
 	Name	string
 	Label	string
@@ -1848,6 +1852,8 @@ type Field struct {
 	Kind	FieldKind
 
 	Options	[]string
+
+	OptionsFunc	func(values map[string]string) []string
 
 	Placeholder	string
 
@@ -1857,6 +1863,7 @@ type Field struct {
 
 	Width		int
 	Validators	[]Validator
+	// contains filtered or unexported fields
 }
 type FieldKind int
 type Group struct {
@@ -1886,6 +1893,10 @@ type Model struct {
 
 	Bounds	hittest.Rect
 	// contains filtered or unexported fields
+}
+type Option[T any] struct {
+	Label	string
+	Value	T
 }
 type SubmittedMsg struct {
 	Values map[string]string

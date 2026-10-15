@@ -12,6 +12,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `form.SelectOf`, `form.Option` and `form.Value`: a select whose options carry
+  a value of any type, read back with `Value[T]`; `form.Bool` and `form.Int`
+  read a checkbox and a number field. The string values in `Values` and
+  `SubmittedMsg` are unchanged.
+- `form.Field.OptionsFunc`: a select's options computed from the other fields'
+  values, asked after every change; the chosen option stays while still offered.
 - `form.NewGroups`, `form.Group` and the `form.KeyMap` fields `NextGroup` and
   `PrevGroup`: a form of titled groups, one showing at a time under its title
   and "step n of N". Enter checks the group and moves on, the last group's

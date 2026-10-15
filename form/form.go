@@ -14,6 +14,9 @@
 // string in Values and SubmittedMsg.Values: a select's is its chosen option, a
 // checkbox's is "true" or "false", so one Validator type checks them all.
 //
+// A select can carry typed values (SelectOf, read with Value) and can take its
+// options from the other fields (Field.OptionsFunc).
+//
 // Fields can be arranged in Groups (see NewGroups): the form shows one group
 // at a time under its title, Enter checks that group and moves on, and the
 // last group's Enter submits every field. A group can be hidden while the
@@ -70,6 +73,13 @@ type Field struct {
 	Kind FieldKind
 	// Options are the choices of a FieldSelect, in order. Ignored otherwise.
 	Options []string
+	// OptionsFunc, when set on a FieldSelect, is asked with every field's
+	// value and returns the options to offer, so a choice can depend on
+	// another field: the cities of the country chosen above. It is asked when
+	// the form is built and after every change, and replaces Options. The
+	// option chosen stays chosen while it is still offered, otherwise the
+	// first one is.
+	OptionsFunc func(values map[string]string) []string
 	// Placeholder is shown while a text field is empty. Text fields only.
 	Placeholder string
 	// Value is the initial value: the text of a text field, the chosen option
@@ -81,6 +91,9 @@ type Field struct {
 	// Width is a text field's visible width; 0 = DefaultWidth. Text fields only.
 	Width      int
 	Validators []Validator
+
+	// choices holds the []Option[T] a SelectOf field was built from.
+	choices any
 }
 
 // SubmittedMsg is the message Submit's Cmd yields when every field is valid.
@@ -390,6 +403,10 @@ func New(fields ...Field) Model {
 		switch f.Kind {
 		case FieldSelect:
 			in := fieldInput{kind: FieldSelect, label: f.Label, options: append([]string(nil), f.Options...)}
+			if f.OptionsFunc != nil && f.Value != "" {
+				// refreshOptions keeps this one if the func still offers it.
+				in.options = []string{f.Value}
+			}
 			for j, o := range f.Options {
 				if o == f.Value {
 					in.choice = j
@@ -419,7 +436,7 @@ func New(fields ...Field) Model {
 		t.SetValue(f.Value)
 		m.inputs[i] = fieldInput{text: t}
 	}
-	return m
+	return m.refreshOptions()
 }
 
 // clone copies the slices a change would write through, so the receiver of
@@ -525,6 +542,11 @@ func (m Model) check(i int) string {
 // handles tui.MouseEvent (see Model.Mouse). A form without focus ignores all
 // messages.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
+	m, cmd := m.update(msg)
+	return m.refreshOptions(), cmd
+}
+
+func (m Model) update(msg tui.Msg) (Model, tui.Cmd) {
 	if !m.focused || len(m.inputs) == 0 {
 		return m, nil
 	}

@@ -77,3 +77,26 @@ func ExampleNewGroups() {
 	// now showing 2 terms
 	// map[email:ada@example.com terms:false]
 }
+
+// A select whose choices carry a typed value, and a select whose options come
+// from another field.
+func ExampleSelectOf() {
+	m := form.New(
+		form.SelectOf("size", "Size",
+			form.Option[int]{Label: "Small", Value: 1},
+			form.Option[int]{Label: "Large", Value: 10}),
+		form.Field{Name: "city", Label: "City", Kind: form.FieldSelect,
+			OptionsFunc: func(v map[string]string) []string {
+				if v["size"] == "Large" {
+					return []string{"Tokyo", "Lahore"}
+				}
+				return []string{"Kyoto"}
+			}},
+	)
+	m.Focus()
+	m, _ = m.Update(tui.Key{Type: tui.KeyRight}) // Small -> Large
+
+	size, _ := form.Value[int](m, "size")
+	fmt.Println(size, m.Values()["city"])
+	// Output: 10 Tokyo
+}
