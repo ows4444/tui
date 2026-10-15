@@ -10,10 +10,13 @@ import (
 	"github.com/ows4444/tui/cellbuf"
 )
 
+// parse is cellbuf.Parse; a test replaces it to reach the failure branch.
+var parse = cellbuf.Parse
+
 // StyleID returns the id in buf of the look st gives text, and false when the
 // cell grid cannot represent it. The zero ansi.Style is id 0.
 func StyleID(buf *cellbuf.Buffer, st ansi.Style) (cellbuf.StyleID, bool) {
-	p, err := cellbuf.Parse(st.Render("x"))
+	p, err := parse(st.Render("x"))
 	if err != nil {
 		return 0, false
 	}
