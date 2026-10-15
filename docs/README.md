@@ -7,7 +7,7 @@ can't. Start with the [README](../README.md).
 
 | I want to... | Read |
 |---|---|
-| Build a first program from an empty directory | [Tutorial](tutorial.md) |
+| Build a first program from an empty directory | [Tutorial](tutorial.md), then [part 2: search and count](tutorial-2.md) |
 | Copy a working snippet | [Cookbook](cookbook.md) |
 | Know what a Program does from `Run` to exit | [Program](program.md) |
 | Understand how frames reach the terminal | [Rendering](rendering.md) |

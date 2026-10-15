@@ -18,6 +18,12 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `docs/tutorial-2.md` and `examples/tutorial2`: a second tutorial that turns
+  the task list into a searchable one with `picker.Filter`, with a test.
+- Seven cookbook recipes: a one-line prompt, a filtering list, a form in steps,
+  a sorted and filtered table, line numbers in a text area, and a multi-series
+  chart; and examples `datatable.ExampleModel_filter` and
+  `textarea.ExampleModel_ShowLineNumbers` behind them.
 - `prompt`, an experimental package that asks one question and returns the
   answer without a `Model` of your own: `Input`, `Password`, `Confirm`,
   `Select` (typing narrows), `MultiSelect` and `Spin`. They run an inline
