@@ -18,6 +18,12 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `chart.Canvas`, `NewCanvas`: a public grid of braille dots (2 x 4 per
+  cell) with `Set`, `Line`, `Rect`, `Circle`, `Clear`, `Rows` and `String`, in
+  any colour per shape. `Plot` now draws on one.
+- `chart.Series.Kind` with `Line` (the zero value), `Scatter` and `Bars`: a
+  series drawn as joined lines, lone points, or columns that rise from the
+  bottom of the plot or from zero.
 - `form.FieldMultiSelect` and `form.FieldTextArea`, `form.Selected`,
   `Field.Description`, `Field.Height` and `KeyMap.SubmitInArea`: a list with
   any number of options ticked (value: the ticked options joined by ","), a
