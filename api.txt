@@ -1769,6 +1769,7 @@ type Size int
 
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Entries() []fsutil.Entry
 func (m Model) Err() error
 func (m Model) LayoutNode() layout.Node
@@ -2647,6 +2648,7 @@ type Model struct {
 ## github.com/ows4444/tui/menu (package menu)
 
 func (m Model) Bindings() []keymap.Binding
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -3551,6 +3553,7 @@ type Model struct {
 func (m *Model) SetActive(i int)
 func (m Model) Active() int
 func (m Model) Bindings() []keymap.Binding
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model

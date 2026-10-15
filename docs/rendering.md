@@ -92,10 +92,14 @@ uses it whenever the direct path is unavailable:
 
 `examples/canvas` is a `CellDrawer` widget. Of the library's components,
 `viewport`, `logview`, `virtuallist`, `textarea`, `streamtext`, `datatable`,
-`picker`, `multiselect`, `treeview` and `spinner` implement it; each has a test
+`picker`, `multiselect`, `treeview`, `spinner`, `tabs`, `menu` and `filepicker`
+implement it; each has a test
 that its cells equal its `View`'s. The rest are composed with `DrawView`, which
-parses their string. A new component should implement `DrawCells` when it draws
-many rows, and use `internal/celldraw.StyleID` to turn an `ansi.Style` into a
+parses their string. `textinput` does not, on purpose: wrappers such as `passwordinput` embed it and
+override `View` to mask the value, and a promoted `DrawCells` would draw the
+unmasked text past their `View`. A model that embeds a component and
+overrides `View` must override `DrawCells` too. A new component should
+implement `DrawCells` when it draws many rows, and use `internal/celldraw.StyleID` to turn an `ansi.Style` into a
 cell style.
 
 ## Which renderer
