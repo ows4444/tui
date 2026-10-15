@@ -1,5 +1,5 @@
 // Package chart renders data as text: Sparkline, BarChart, LineChart, HeatMap
-// and Gauge. Like widgets, each is a stateless function from its data and a
+// and Gauge, and Plot, which draws several series on labelled axes. Like widgets, each is a stateless function from its data and a
 // theme to a string, with no Msg handling, and the package never imports tui or
 // a stateful component. It is split from widgets because charts share one
 // concern (turning numbers into marks) and one scaling convention (the slice's

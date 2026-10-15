@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `chart.Plot`, `chart.Series`, `chart.PlotOptions` and `chart.LinearizePlot`:
+  several series drawn as braille lines on a shared y axis with labelled ticks,
+  an x axis with optional labels and a legend. A fixed `Min` and `Max` or the
+  data's range; NaN and infinite values leave a gap; ASCII glyph sets draw
+  with `+`, `-` and `|`.
 - `textarea.Model.ShowLineNumbers` and `LineNumberStyle`: a right-aligned
   line-number column left of the text, blank on soft-wrapped continuation rows.
   The column is extra width, so `Width` still counts the text only; the cursor

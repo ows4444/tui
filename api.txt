@@ -4544,12 +4544,34 @@ func LinearizeBarChart(items []BarItem) string
 func LinearizeGauge(percent float64) string
 func LinearizeHeatMap(values [][]float64) string
 func LinearizeLineChart(values []float64) string
+func LinearizePlot(series []Series, o PlotOptions) string
 func LinearizeSparkline(values []float64) string
+func Plot(series []Series, o PlotOptions, t theme.Theme) string
 func Sparkline(values []float64) string
 func SparklineWith(values []float64, t theme.Theme) string
 type BarItem struct {
 	Label	string
 	Value	float64
+}
+type PlotOptions struct {
+	Width, Height	int
+
+	Min, Max	float64
+
+	YTicks	int
+
+	XLabels	[]string
+
+	YFormat	func(float64) string
+
+	Legend	bool
+}
+type Series struct {
+	Name	string
+
+	Values	[]float64
+
+	Color	ansi.Color
 }
 
 ## github.com/ows4444/tui/wizard (package wizard)

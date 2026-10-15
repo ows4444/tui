@@ -39,7 +39,10 @@ func stats(values []float64) (n int, min, max, mean float64) {
 	return
 }
 
-func series(kind string, values []float64) string {
+func series(kind string, values []float64) string { return summary(kind, values) }
+
+// summary is the text for one series of values under a label.
+func summary(kind string, values []float64) string {
 	if len(values) == 0 {
 		return kind + ": no data"
 	}
