@@ -488,6 +488,9 @@ const (
 )
 const QueryBackgroundColor = "\x1b]11;?\x1b\\"
 const QueryPalette = "\x1b]4;0;?;1;?;2;?;3;?;4;?;5;?;6;?;7;?;8;?;9;?;10;?;11;?;12;?;13;?;14;?;15;?\x1b\\"
+func (c RGB) Darken(t float64) RGB
+func (c RGB) Lighten(t float64) RGB
+func (c RGB) Mix(other RGB, t float64) RGB
 func (m Measurer) Clusters() bool
 func (m Measurer) TrimLeftWidth(s string, w int) string
 func (m Measurer) Truncate(s string, w int) string
@@ -508,6 +511,7 @@ func (s Style) Strikethrough() Style
 func (s Style) Underline() Style
 func (s Style) UnderlineColor(c Color) Style
 func (s Style) UnderlineStyle(style UnderlineStyle) Style
+func Blend(n int, stops ...RGB) []RGB
 func Clean(raw bool, s string) string
 func CleanAll(raw bool, in []string) []string
 func ClusterMeasurer(clusters bool) Measurer
