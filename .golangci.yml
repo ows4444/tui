@@ -72,6 +72,7 @@ linters:
             - "!**/passwordinput/**"
             - "!**/picker/**"
             - "!**/popover/**"
+            - "!**/prompt/**"
             - "!**/radiogroup/**"
             - "!**/rating/**"
             - "!**/scrollbar/**"
@@ -1186,6 +1187,51 @@ linters:
         group-35:
           list-mode: strict
           files:
+            - "**/prompt/*.go"
+            - "!**/examples/**"
+            - "!$test"
+          allow:
+            - "$gostd"
+            - "github.com/ows4444/tui$"
+            - "github.com/ows4444/tui/ansi$"
+            - "github.com/ows4444/tui/cellbuf$"
+            - "github.com/ows4444/tui/confirm$"
+            - "github.com/ows4444/tui/focus$"
+            - "github.com/ows4444/tui/fuzzy$"
+            - "github.com/ows4444/tui/hittest$"
+            - "github.com/ows4444/tui/input$"
+            - "github.com/ows4444/tui/internal/a11y$"
+            - "github.com/ows4444/tui/internal/announce$"
+            - "github.com/ows4444/tui/internal/basetypes$"
+            - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
+            - "github.com/ows4444/tui/internal/braille$"
+            - "github.com/ows4444/tui/internal/cancelreader$"
+            - "github.com/ows4444/tui/internal/capprobe$"
+            - "github.com/ows4444/tui/internal/clusterwidth$"
+            - "github.com/ows4444/tui/internal/edit$"
+            - "github.com/ows4444/tui/internal/fsutil$"
+            - "github.com/ows4444/tui/internal/highlight$"
+            - "github.com/ows4444/tui/internal/ptytest$"
+            - "github.com/ows4444/tui/internal/render$"
+            - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vtscreen$"
+            - "github.com/ows4444/tui/keymap$"
+            - "github.com/ows4444/tui/layout$"
+            - "github.com/ows4444/tui/markdown$"
+            - "github.com/ows4444/tui/motion$"
+            - "github.com/ows4444/tui/multiselect$"
+            - "github.com/ows4444/tui/passwordinput$"
+            - "github.com/ows4444/tui/picker$"
+            - "github.com/ows4444/tui/spinner$"
+            - "github.com/ows4444/tui/textinput$"
+            - "github.com/ows4444/tui/theme$"
+            - "github.com/ows4444/tui/tuitest$"
+            - "github.com/ows4444/tui/widgets$"
+            - "github.com/ows4444/tui/widgets/chart$"
+        group-36:
+          list-mode: strict
+          files:
             - "**/term/*.go"
             - "!**/examples/**"
             - "!$test"
@@ -1204,7 +1250,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-36:
+        group-37:
           list-mode: strict
           files:
             - "**/theme/*.go"
@@ -1224,7 +1270,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
-        group-37:
+        group-38:
           list-mode: strict
           files:
             - "**/tuitest/*.go"
@@ -1262,7 +1308,7 @@ linters:
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-38:
+        group-39:
           list-mode: strict
           files:
             - "**/widgets/*.go"
@@ -1297,7 +1343,7 @@ linters:
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-39:
+        group-40:
           list-mode: strict
           files:
             - "**/widgets/chart/*.go"

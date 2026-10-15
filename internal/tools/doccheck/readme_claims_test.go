@@ -23,7 +23,8 @@ func widgetMethods(t *testing.T) map[string]map[string]bool {
 	out := map[string]map[string]bool{}
 	for _, d := range dirs {
 		if !d.IsDir() || d.Name() == "internal" || d.Name() == "examples" || d.Name() == "tools" ||
-			d.Name() == "tuitest" /* a test harness, not a widget */ {
+			d.Name() == "tuitest" /* a test harness, not a widget */ ||
+			d.Name() == "prompt" /* runs a program per call; its models are unexported */ {
 			continue
 		}
 		files := parseSources(t, d.Name(), 0)

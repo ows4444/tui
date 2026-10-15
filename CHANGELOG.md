@@ -18,6 +18,11 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `prompt`, an experimental package that asks one question and returns the
+  answer without a `Model` of your own: `Input`, `Password`, `Confirm`,
+  `Select` (typing narrows), `MultiSelect` and `Spin`. They run an inline
+  program, return `ErrCanceled` on Esc or Ctrl+C, and take an optional
+  `prompt.Config` (`Default`, `Placeholder`, `Validate`, `NoFilter`, `Program`).
 - `chart.Plot`, `chart.Series`, `chart.PlotOptions` and `chart.LinearizePlot`:
   several series drawn as braille lines on a shared y axis with labelled ticks,
   an x axis with optional labels and a legend. A fixed `Min` and `Max` or the

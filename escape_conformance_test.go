@@ -311,6 +311,7 @@ var exempt = map[string]string{
 	"scrollbar":     "draws a thumb and track from numbers; no caller text",
 	"splitpane":     "draws only a divider; the panes are caller layout.Nodes that sanitise their own content",
 	"markdown":      "Render sanitises its input (markdown/render.go); has its own tests",
+	"prompt":        "labels and validation errors go through ansi.Sanitize in its models; covered by prompt's own test",
 }
 
 // knownUnsanitised lists widgets that draw a caller string as given. It is

@@ -14,7 +14,9 @@ import (
 // mouseAllowlist names the widget packages that handle a key for navigation
 // but not the mouse, each with the reason. The test fails if a package is on
 // the list and does handle the mouse (prune it), or is not a widget package.
-var mouseAllowlist = map[string]string{}
+var mouseAllowlist = map[string]string{
+	"prompt": "its models are unexported wrappers that forward every message, mouse included, to the component they hold",
+}
 
 // TestKeyNavigationPackagesHandleMouse enforces acceptance criterion #75: the
 // system shall handle MouseEvent in every package that handles Key for

@@ -62,6 +62,7 @@ var composition = map[string][]string{
 	"colorpicker":    {"textinput"},
 	"commandpalette": {"textinput"},
 	"taginput":       {"textinput"},
+	"prompt":         {"textinput", "passwordinput", "confirm", "picker", "multiselect", "spinner"},
 }
 
 func rel(p string) string { return strings.TrimPrefix(strings.TrimPrefix(p, mod), "/") }
