@@ -33,7 +33,7 @@ func (m Model) offsetAt(x, y int) int {
 	if m.value.len() == 0 {
 		return 0
 	}
-	x = max(x, 0)
+	x = max(x-m.gutter(), 0) // a click in the line numbers is the line's start
 	top := m.firstRow()
 	if m.wrapping() {
 		rows, _ := m.allRows()

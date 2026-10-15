@@ -3562,16 +3562,21 @@ type State struct {
 
 func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
+func (m *Model) InsertString(s string)
 func (m *Model) Reset()
 func (m *Model) SelectAll()
 func (m *Model) SetCursor(pos int)
+func (m *Model) SetCursorPosition(line, col int)
 func (m *Model) SetValue(s string)
 func (m Model) Bindings() []keymap.Binding
+func (m Model) Column() int
 func (m Model) Cursor() int
 func (m Model) CursorCell() (x, y int, ok bool)
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Focused() bool
 func (m Model) LayoutNode() layout.Node
+func (m Model) Line() int
+func (m Model) LineCount() int
 func (m Model) Linearize() string
 func (m Model) SelectedText() string
 func (m Model) Selection() (lo, hi int, ok bool)
@@ -3618,6 +3623,10 @@ type Model struct {
 	CursorStyle		ansi.Style
 
 	SelectionStyle	ansi.Style
+
+	ShowLineNumbers	bool
+
+	LineNumberStyle	ansi.Style
 
 	UndoLimit	int
 

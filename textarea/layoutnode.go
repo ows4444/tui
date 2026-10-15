@@ -18,8 +18,9 @@ func (m Model) LayoutNode() layout.Node { return textareaNode{m} }
 type textareaNode struct{ m Model }
 
 func (n textareaNode) Measure(c layout.Constraints) layout.Size {
+	g := n.m.gutter()
 	if n.m.value.len() == 0 {
-		return c.Constrain(layout.Size{W: ansi.Width(n.m.Placeholder), H: 1})
+		return c.Constrain(layout.Size{W: g + ansi.Width(n.m.Placeholder), H: 1})
 	}
 	lines := strings.Split(n.m.value.String(), "\n")
 	w := 0
@@ -28,7 +29,7 @@ func (n textareaNode) Measure(c layout.Constraints) layout.Size {
 			w = lw
 		}
 	}
-	return c.Constrain(layout.Size{W: w, H: len(lines)})
+	return c.Constrain(layout.Size{W: g + w, H: len(lines)})
 }
 
 func (n textareaNode) Render(s layout.Size) string {
@@ -36,7 +37,7 @@ func (n textareaNode) Render(s layout.Size) string {
 		return ""
 	}
 	m := n.m
-	m.Width = s.W
+	m.Width = max(s.W-m.gutter(), 1)
 	lines := strings.Split(m.View(), "\n")
 	if len(lines) > s.H {
 		cursorLine, _ := m.lineCol()

@@ -12,6 +12,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `textarea.Model.ShowLineNumbers` and `LineNumberStyle`: a right-aligned
+  line-number column left of the text, blank on soft-wrapped continuation rows.
+  The column is extra width, so `Width` still counts the text only; the cursor
+  cell, mouse clicks, `DrawCells` and `LayoutNode` account for it. Off by default.
+- `textarea.Model.Line`, `Column`, `LineCount`, `SetCursorPosition` and
+  `InsertString`: where the cursor is as a line and column, move it there, and
+  insert text at it as one undo step.
 - `datatable.Model.Filter`: "/" opens a filter line that keeps the rows whose
   cells fuzzy-match the typed text; Enter closes the line and keeps the filter,
   Esc clears it. `Query`, `SetQuery` and `Filtering` read and set it. Off by
