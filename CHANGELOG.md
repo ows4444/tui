@@ -15,6 +15,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `fuzzy`, an experimental package that matches a typed query against text
   (`Score`, `Find`) and marks the matched runes (`Highlight`). It ignores case,
   prefers consecutive runes and word starts, and ranks best first.
+- `picker.Model.Filter`: type to narrow the list to the fuzzy matches, best
+  first, matched runes underlined; Backspace edits and Esc clears the query.
+  `Query` and `SetQuery` read and set it. Off by default, so existing lists do
+  not change. `fuzzy.Split` cuts a text into matched and unmatched runs.
 - `ansi.RGB.Mix`, `Lighten` and `Darken`, and `ansi.Blend`: move a colour
   toward another, white or black by a fraction, and spread n colours along a
   list of stops. A translucent colour is a `Mix` with the background it sits on.

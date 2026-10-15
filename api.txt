@@ -1880,12 +1880,17 @@ type Validator func(value string) error
 func Find(query string, n int, text func(i int) string) []Result
 func Highlight(text string, positions []int, mark func(string) string) string
 func Score(query, text string) (score int, positions []int, ok bool)
+func Split(text string, positions []int) []Run
 type Result struct {
 	Index	int
 
 	Score	int
 
 	Positions	[]int
+}
+type Run struct {
+	Text	string
+	Match	bool
 }
 
 ## github.com/ows4444/tui/helpscreen (package helpscreen)
@@ -2980,11 +2985,13 @@ type Model struct {
 ## github.com/ows4444/tui/picker (package picker)
 
 func (m *Model) SetCursor(i int)
+func (m *Model) SetQuery(q string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) Highlighted() Item
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) Query() string
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
@@ -3015,6 +3022,8 @@ type Model struct {
 	Bounds	hittest.Rect
 
 	WheelStep	int
+
+	Filter	bool
 	// contains filtered or unexported fields
 }
 type SelectedMsg struct {

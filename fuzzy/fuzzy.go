@@ -102,33 +102,54 @@ func Find(query string, n int, text func(i int) string) []Result {
 	return sorted
 }
 
-// Highlight returns text with each rune at positions passed through mark and
-// the rest left as it is. Adjacent marked runes are given to mark together,
-// so a style opens and closes once per run. positions are rune offsets, as
-// Result.Positions has them; out-of-range offsets are ignored.
-func Highlight(text string, positions []int, mark func(string) string) string {
-	if len(positions) == 0 || mark == nil {
-		return text
-	}
+// Run is a stretch of text that is all matched or all unmatched.
+type Run struct {
+	Text  string
+	Match bool
+}
+
+// Split cuts text into alternating runs of unmatched and matched runes, in
+// order, so a widget can style each kind itself (a cursor row styles the
+// unmatched runs too, where Highlight leaves them alone). positions are rune
+// offsets, as Result.Positions has them; out-of-range offsets are ignored.
+// Joining the runs' Text gives text back.
+func Split(text string, positions []int) []Run {
 	r := []rune(text)
+	if len(r) == 0 {
+		return nil
+	}
 	on := make([]bool, len(r))
 	for _, p := range positions {
 		if p >= 0 && p < len(r) {
 			on[p] = true
 		}
 	}
-	var b strings.Builder
+	var runs []Run
 	for i := 0; i < len(r); {
 		j := i
 		for j < len(r) && on[j] == on[i] {
 			j++
 		}
-		if on[i] {
-			b.WriteString(mark(string(r[i:j])))
-		} else {
-			b.WriteString(string(r[i:j]))
-		}
+		runs = append(runs, Run{Text: string(r[i:j]), Match: on[i]})
 		i = j
+	}
+	return runs
+}
+
+// Highlight returns text with each matched run passed through mark and the
+// rest left as it is. Adjacent matched runes are given to mark together, so a
+// style opens and closes once per run. A nil mark returns text unchanged.
+func Highlight(text string, positions []int, mark func(string) string) string {
+	if len(positions) == 0 || mark == nil {
+		return text
+	}
+	var b strings.Builder
+	for _, run := range Split(text, positions) {
+		if run.Match {
+			b.WriteString(mark(run.Text))
+		} else {
+			b.WriteString(run.Text)
+		}
 	}
 	return b.String()
 }

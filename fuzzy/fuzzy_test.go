@@ -101,6 +101,24 @@ func TestHighlight(t *testing.T) {
 	}
 }
 
+func TestSplit(t *testing.T) {
+	got := Split("héllo", []int{0, 1, 4})
+	want := []Run{{"hé", true}, {"ll", false}, {"o", true}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Split = %+v, want %+v", got, want)
+	}
+	if got := Split("", []int{0}); got != nil {
+		t.Errorf("empty text = %+v", got)
+	}
+	var joined string
+	for _, r := range Split("a b", nil) {
+		joined += r.Text
+	}
+	if joined != "a b" {
+		t.Errorf("no positions: %q", joined)
+	}
+}
+
 func TestLongTextStillMatches(t *testing.T) {
 	text := strings.Repeat("x", 2000) + "needle"
 	_, pos, ok := Score("needle", text)
