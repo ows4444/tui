@@ -33,12 +33,12 @@ func TestBlockRenderClipsAndPads(t *testing.T) {
 }
 
 func TestBoxRenderEdgeCases(t *testing.T) {
-	got := NewBox().Border(NormalBorder()).Padding(1, 1, 1, 1).Render("a\n\nbc")
+	got := NewBox().Border(NormalBorder()).Padding(1, 1, 1, 1).render("a\n\nbc")
 	lines := strings.Split(got, "\n")
 	if len(lines) != 5+2 {
 		t.Fatalf("rows = %d: %q", len(lines), got)
 	}
-	if NewBox().Render("") != "" {
+	if NewBox().render("") != "" {
 		t.Errorf("empty unbordered box should be empty")
 	}
 }

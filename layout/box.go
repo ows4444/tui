@@ -166,12 +166,11 @@ func corner(c string, vertOn bool) string {
 	return ""
 }
 
-// Render lays content out inside the box: content lines are padded flush
+// render lays content out inside the box: content lines are padded flush
 // to a common width, then padding rows/columns and an optional border are
-// added around them.
-//
-// Deprecated: use BoxNode(box, Block(content)) or BoxNode with any Node child.
-func (b Box) Render(content string) string {
+// added around them. BoxNode draws through it; the exported way to draw a box
+// is BoxNode(box, Block(content)) or BoxNode with any Node child.
+func (b Box) render(content string) string {
 	contentWidth := b.width
 	nLines := 0
 	for rest, more := content, true; more; nLines++ {

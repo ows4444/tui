@@ -8,14 +8,14 @@ import (
 )
 
 func TestBoxRenderNoBorderNoPadding(t *testing.T) {
-	got := NewBox().Render("hi")
+	got := NewBox().render("hi")
 	if got != "hi" {
 		t.Errorf("Render() = %q, want %q", got, "hi")
 	}
 }
 
 func TestBoxRenderPadsLinesToCommonWidth(t *testing.T) {
-	got := NewBox().Render("a\nbb\nc")
+	got := NewBox().render("a\nbb\nc")
 	lines := strings.Split(got, "\n")
 	if len(lines) != 3 {
 		t.Fatalf("got %d lines, want 3: %q", len(lines), got)
@@ -28,7 +28,7 @@ func TestBoxRenderPadsLinesToCommonWidth(t *testing.T) {
 }
 
 func TestBoxRenderPadding(t *testing.T) {
-	got := NewBox().PaddingAll(1).Render("x")
+	got := NewBox().PaddingAll(1).render("x")
 	lines := strings.Split(got, "\n")
 	if len(lines) != 3 {
 		t.Fatalf("got %d lines, want 3 (1 pad + 1 content + 1 pad): %q", len(lines), got)
@@ -42,7 +42,7 @@ func TestBoxRenderPadding(t *testing.T) {
 }
 
 func TestBoxRenderBorder(t *testing.T) {
-	got := NewBox().Border(NormalBorder()).Render("hi")
+	got := NewBox().Border(NormalBorder()).render("hi")
 	want := "┌──┐\n│hi│\n└──┘"
 	if got != want {
 		t.Errorf("Render() =\n%q\nwant\n%q", got, want)
@@ -50,7 +50,7 @@ func TestBoxRenderBorder(t *testing.T) {
 }
 
 func TestBoxRenderASCIIBorder(t *testing.T) {
-	got := NewBox().Border(ASCIIBorder()).Render("hi")
+	got := NewBox().Border(ASCIIBorder()).render("hi")
 	want := "+--+\n|hi|\n+--+"
 	if got != want {
 		t.Errorf("Render() =\n%q\nwant\n%q", got, want)
@@ -58,7 +58,7 @@ func TestBoxRenderASCIIBorder(t *testing.T) {
 }
 
 func TestBoxRenderBorderWithPadding(t *testing.T) {
-	got := NewBox().Border(RoundedBorder()).PaddingAll(1).Render("x")
+	got := NewBox().Border(RoundedBorder()).PaddingAll(1).render("x")
 	want := "╭───╮\n│   │\n│ x │\n│   │\n╰───╯"
 	if got != want {
 		t.Errorf("Render() =\n%s\nwant\n%s", got, want)
@@ -66,7 +66,7 @@ func TestBoxRenderBorderWithPadding(t *testing.T) {
 }
 
 func TestBoxRenderFixedWidth(t *testing.T) {
-	got := NewBox().Width(5).Border(NormalBorder()).Render("hi")
+	got := NewBox().Width(5).Border(NormalBorder()).render("hi")
 	lines := strings.Split(got, "\n")
 	if ansi.Width(lines[0]) != 7 { // width(5) + 2 border chars
 		t.Errorf("top border width = %d, want 7 for content width 5", ansi.Width(lines[0]))
@@ -81,8 +81,8 @@ func TestBoxRenderIsANSIWidthAware(t *testing.T) {
 	plain := "hi"
 	styled := ansi.NewStyle().Bold().Foreground(ansi.Red).Render("hi")
 
-	gotPlain := NewBox().Border(NormalBorder()).Render(plain)
-	gotStyled := NewBox().Border(NormalBorder()).Render(styled)
+	gotPlain := NewBox().Border(NormalBorder()).render(plain)
+	gotStyled := NewBox().Border(NormalBorder()).render(styled)
 
 	plainLines := strings.Split(gotPlain, "\n")
 	styledLines := strings.Split(gotStyled, "\n")
@@ -196,7 +196,7 @@ func TestJoinVerticalIsANSIAndWideAware(t *testing.T) {
 
 func TestBoxBorderColorPaintsEveryBorderSegment(t *testing.T) {
 	red := ansi.NewStyle().Foreground(ansi.Red)
-	got := NewBox().Border(NormalBorder()).Padding(0, 1, 0, 1).BorderColor(ansi.Red).Render("ab\ncd")
+	got := NewBox().Border(NormalBorder()).Padding(0, 1, 0, 1).BorderColor(ansi.Red).render("ab\ncd")
 	lines := strings.Split(got, "\n")
 	want := []string{
 		red.Render("┌────┐"),
@@ -221,8 +221,8 @@ func TestBoxBorderColorPaintsEveryBorderSegment(t *testing.T) {
 }
 
 func TestBoxBorderColorIsOptIn(t *testing.T) {
-	plain := NewBox().Border(RoundedBorder()).PaddingAll(1).Width(6).Render("hi\nthere")
-	if got := NewBox().Border(RoundedBorder()).PaddingAll(1).Width(6).BorderColor(nil).Render("hi\nthere"); got != plain {
+	plain := NewBox().Border(RoundedBorder()).PaddingAll(1).Width(6).render("hi\nthere")
+	if got := NewBox().Border(RoundedBorder()).PaddingAll(1).Width(6).BorderColor(nil).render("hi\nthere"); got != plain {
 		t.Errorf("nil colour changed the output:\n got  %q\n want %q", got, plain)
 	}
 	if strings.Contains(plain, ansi.CSI) {
@@ -231,8 +231,8 @@ func TestBoxBorderColorIsOptIn(t *testing.T) {
 }
 
 func TestBoxBorderColorWithoutBorderHasNoEffect(t *testing.T) {
-	plain := NewBox().PaddingAll(1).Render("hi")
-	if got := NewBox().PaddingAll(1).BorderColor(ansi.Red).Render("hi"); got != plain {
+	plain := NewBox().PaddingAll(1).render("hi")
+	if got := NewBox().PaddingAll(1).BorderColor(ansi.Red).render("hi"); got != plain {
 		t.Errorf("colour applied to a borderless box: %q vs %q", got, plain)
 	}
 }
@@ -240,8 +240,8 @@ func TestBoxBorderColorWithoutBorderHasNoEffect(t *testing.T) {
 func TestBoxBorderColorKeepsDimensionsAndText(t *testing.T) {
 	for _, b := range []Border{NormalBorder(), RoundedBorder(), DoubleBorder(), ThickBorder(), ASCIIBorder()} {
 		base := NewBox().Border(b).Padding(1, 2, 1, 2).Width(9)
-		plain := strings.Split(base.Render("wide 你好\nx"), "\n")
-		coloured := strings.Split(base.BorderColor(ansi.Green).Render("wide 你好\nx"), "\n")
+		plain := strings.Split(base.render("wide 你好\nx"), "\n")
+		coloured := strings.Split(base.BorderColor(ansi.Green).render("wide 你好\nx"), "\n")
 		if len(plain) != len(coloured) {
 			t.Fatalf("line count changed: %d vs %d", len(plain), len(coloured))
 		}
@@ -259,7 +259,7 @@ func TestBoxBorderColorKeepsDimensionsAndText(t *testing.T) {
 func TestBoxBorderColorIsImmutableBuilder(t *testing.T) {
 	base := NewBox().Border(NormalBorder())
 	_ = base.BorderColor(ansi.Red)
-	if strings.Contains(base.Render("x"), ansi.CSI) {
+	if strings.Contains(base.render("x"), ansi.CSI) {
 		t.Error("BorderColor mutated the receiver")
 	}
 }
@@ -379,7 +379,7 @@ func TestExistingCallSitesUnchanged(t *testing.T) {
 // #39: a fixed Width clips wider content, so every row is exactly as wide as
 // the box was asked to be.
 func TestBoxWidthClipsContent(t *testing.T) {
-	out := NewBox().Border(NormalBorder()).Width(5).Render("hello world")
+	out := NewBox().Border(NormalBorder()).Width(5).render("hello world")
 	lines := strings.Split(out, "\n")
 	if len(lines) != 3 {
 		t.Fatalf("got %d lines: %q", len(lines), out)
@@ -397,7 +397,7 @@ func TestBoxWidthClipsContent(t *testing.T) {
 func TestBoxWidthClipsEveryLineStyledAndWide(t *testing.T) {
 	content := "\x1b[31mabcdefghij\x1b[0m\n你好你好你好\nshort"
 	for _, pad := range []int{0, 2} {
-		out := NewBox().Border(NormalBorder()).PaddingAll(pad).Width(6).Render(content)
+		out := NewBox().Border(NormalBorder()).PaddingAll(pad).Width(6).render(content)
 		for i, l := range strings.Split(out, "\n") {
 			if w := ansi.Width(l); w != 6+2*pad+2 {
 				t.Errorf("pad %d line %d is %d columns, want %d: %q", pad, i, w, 6+2*pad+2, l)
@@ -407,7 +407,7 @@ func TestBoxWidthClipsEveryLineStyledAndWide(t *testing.T) {
 }
 
 func TestBoxWithoutWidthStillSizesToContent(t *testing.T) {
-	out := NewBox().Border(NormalBorder()).Render("hello world")
+	out := NewBox().Border(NormalBorder()).render("hello world")
 	if w := ansi.Width(strings.Split(out, "\n")[1]); w != 13 {
 		t.Fatalf("auto-width row is %d columns, want 13", w)
 	}
@@ -416,7 +416,7 @@ func TestBoxWithoutWidthStillSizesToContent(t *testing.T) {
 func boxLines(s string) []string { return strings.Split(s, "\n") }
 
 func TestBoxTitleCentredOnTopBorder(t *testing.T) {
-	out := NewBox().Border(NormalBorder()).Width(20).Title("Logs", AlignCenter).Render("hi")
+	out := NewBox().Border(NormalBorder()).Width(20).Title("Logs", AlignCenter).render("hi")
 	lines := boxLines(out)
 	top := lines[0]
 	if ansi.Width(top) != 22 {
@@ -437,37 +437,37 @@ func TestBoxTitleCentredOnTopBorder(t *testing.T) {
 }
 
 func TestBoxTitleAlignAndClip(t *testing.T) {
-	start := boxLines(NewBox().Border(NormalBorder()).Width(20).Title("Logs", AlignStart).Render("x"))[0]
-	end := boxLines(NewBox().Border(NormalBorder()).Width(20).Title("Logs", AlignEnd).Render("x"))[0]
+	start := boxLines(NewBox().Border(NormalBorder()).Width(20).Title("Logs", AlignStart).render("x"))[0]
+	end := boxLines(NewBox().Border(NormalBorder()).Width(20).Title("Logs", AlignEnd).render("x"))[0]
 	if !strings.HasPrefix(start, "┌─ Logs ") || !strings.HasSuffix(end, " Logs ─┐") {
 		t.Fatalf("start %q end %q", start, end)
 	}
-	long := boxLines(NewBox().Border(NormalBorder()).Width(6).Title("a very long title", AlignStart).Render("x"))[0]
+	long := boxLines(NewBox().Border(NormalBorder()).Width(6).Title("a very long title", AlignStart).render("x"))[0]
 	if ansi.Width(long) != 8 {
 		t.Fatalf("long title widened the border to %d: %q", ansi.Width(long), long)
 	}
-	auto := boxLines(NewBox().Border(NormalBorder()).Title("Settings", AlignStart).Render("x"))[0]
+	auto := boxLines(NewBox().Border(NormalBorder()).Title("Settings", AlignStart).render("x"))[0]
 	if !strings.Contains(auto, "Settings") {
 		t.Fatalf("auto-sized box clipped its title: %q", auto)
 	}
-	if got := NewBox().Title("T", AlignStart).Render("x"); got != "x" {
+	if got := NewBox().Title("T", AlignStart).render("x"); got != "x" {
 		t.Fatalf("borderless box drew a title: %q", got)
 	}
 }
 
 func TestBoxHeightPadsAndCuts(t *testing.T) {
-	short := boxLines(NewBox().Border(NormalBorder()).Width(3).Height(4).Render("a"))
+	short := boxLines(NewBox().Border(NormalBorder()).Width(3).Height(4).render("a"))
 	if len(short) != 6 {
 		t.Fatalf("got %d rows, want 6 (4 + border)", len(short))
 	}
-	cut := boxLines(NewBox().Height(2).Render("a\nb\nc\nd"))
+	cut := boxLines(NewBox().Height(2).render("a\nb\nc\nd"))
 	if len(cut) != 2 || cut[1] != "b" {
 		t.Fatalf("cut = %q, want 2 rows a,b", cut)
 	}
 }
 
 func TestBoxMargin(t *testing.T) {
-	out := boxLines(NewBox().Border(NormalBorder()).Width(3).Margin(1, 2, 1, 4).Render("abc"))
+	out := boxLines(NewBox().Border(NormalBorder()).Width(3).Margin(1, 2, 1, 4).render("abc"))
 	if len(out) != 5 {
 		t.Fatalf("got %d rows, want 5", len(out))
 	}
@@ -482,11 +482,11 @@ func TestBoxMargin(t *testing.T) {
 }
 
 func TestBoxBorderSides(t *testing.T) {
-	out := boxLines(NewBox().Border(NormalBorder()).Width(3).BorderSides(true, false, true, false).Render("abc"))
+	out := boxLines(NewBox().Border(NormalBorder()).Width(3).BorderSides(true, false, true, false).render("abc"))
 	if len(out) != 3 || out[0] != "───" || out[2] != "───" || out[1] != "abc" {
 		t.Fatalf("got %q", out)
 	}
-	got := boxLines(NewBox().Border(NormalBorder()).Width(2).BorderSides(false, false, true, true).Render("ab"))
+	got := boxLines(NewBox().Border(NormalBorder()).Width(2).BorderSides(false, false, true, true).render("ab"))
 	if len(got) != 2 || got[0] != "│ab" || got[1] != "└──" {
 		t.Fatalf("got %q", got)
 	}
@@ -495,14 +495,14 @@ func TestBoxBorderSides(t *testing.T) {
 func TestBoxBackgroundFillsInterior(t *testing.T) {
 	c := ansi.RGB{R: 10, G: 20, B: 30}
 	plain := NewBox().Border(NormalBorder()).Width(6).Padding(0, 1, 0, 1)
-	out := plain.Background(c).Render("hi")
-	if ansi.StripANSI(out) != plain.Render("hi") {
+	out := plain.Background(c).render("hi")
+	if ansi.StripANSI(out) != plain.render("hi") {
 		t.Fatalf("background changed the layout: %q", out)
 	}
 	if !strings.Contains(out, "\x1b[48") {
 		t.Fatalf("no background escape in %q", out)
 	}
-	styled := NewBox().Width(6).Background(c).Render(ansi.NewStyle().Bold().Render("hi") + "x")
+	styled := NewBox().Width(6).Background(c).render(ansi.NewStyle().Bold().Render("hi") + "x")
 	open, _, _ := strings.Cut(ansi.NewStyle().Background(c).Render("X"), "X")
 	if !strings.Contains(styled, "\x1b[0m"+open+"x") {
 		t.Fatalf("background not restored after reset: %q", styled)

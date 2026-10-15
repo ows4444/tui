@@ -2280,7 +2280,6 @@ func (b Box) Height(h int) Box
 func (b Box) Margin(top, right, bottom, left int) Box
 func (b Box) Padding(top, right, bottom, left int) Box
 func (b Box) PaddingAll(n int) Box
-func (b Box) Render(content string) string
 func (b Box) Title(s string, a Align) Box
 func (b Box) Width(w int) Box
 func (c Constraints) Constrain(s Size) Size

@@ -129,6 +129,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - BREAKING: `autocomplete.Model.Init` and `commandpalette.Model.Init` are
   removed. Use `Focus`, which returns the same Cmd. They were the only two
   components with an `Init`; a component has none.
+- BREAKING: `layout.Box.Render` is removed from the exported API. Use
+  `layout.BoxNode(box, layout.Block(content))`, or `BoxNode` with any Node
+  child. `BoxNode` draws what `Render` drew.
 - BREAKING: `ansi.SetClusterWidth` is removed. Grapheme-cluster width is on
   by default and `TUI_NO_CLUSTERS` set to a non-empty value turns it off for
   the process, read once when the first width is measured. For one terminal use

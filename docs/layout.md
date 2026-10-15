@@ -134,7 +134,7 @@ rendered.
 
 Pre-rendered strings have their own helpers: `layout.Overlay(base, overlay, x, y)`,
 `JoinHorizontalJustify`, and `Window`/`WindowRange` for keeping a cursor line in
-view. `Box.Render` is deprecated in favour of `BoxNode`.
+view. `Box.Render` is removed; draw a box with `BoxNode`.
 
 ## Overlays on a drawn screen
 

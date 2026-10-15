@@ -12,7 +12,7 @@ func BenchmarkBoxJoin(b *testing.B) {
 	const n = 50
 	blocks := make([]string, n)
 	for i := range blocks {
-		blocks[i] = NewBox().PaddingAll(1).Border(NormalBorder()).Render(fmt.Sprintf("cell %d\nsecond line", i))
+		blocks[i] = NewBox().PaddingAll(1).Border(NormalBorder()).render(fmt.Sprintf("cell %d\nsecond line", i))
 	}
 
 	b.ReportAllocs()

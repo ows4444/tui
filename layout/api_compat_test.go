@@ -14,7 +14,6 @@ func TestExistingExportedAPIUnchanged(t *testing.T) {
 		_ func(Box, int) Box                    = Box.PaddingAll
 		_ func(Box, Border) Box                 = Box.Border
 		_ func(Box, int) Box                    = Box.Width
-		_ func(Box, string) string              = Box.Render
 		_ func(int, Justify, ...string) string  = JoinHorizontalJustify
 		_ func(string, string, int, int) string = Overlay
 	)

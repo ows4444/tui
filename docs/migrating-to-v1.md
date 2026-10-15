@@ -2,8 +2,7 @@
 
 Each identifier removed before v1, and what to use instead. The `- BREAKING:`
 entries under Removed in [CHANGELOG.md](../CHANGELOG.md) list the same
-removals. Deprecated identifiers that still exist, such as `layout.Box.Render`,
-are listed under Deprecated there.
+removals. No deprecated identifier is exported at v1.0.0.
 
 ## Program options (package tui)
 
@@ -105,6 +104,14 @@ removed.
 ### JoinHorizontal
 
 Use `layout.Row(gap, children...)`, with one `FlexChild` per block.
+
+### Box.Render
+
+Use `layout.BoxNode(box, layout.Block(content))`, or `BoxNode` with any Node as
+the child, and draw it with `layout.Draw` (or place it in a layout). The
+method is unexported, not deleted: `BoxNode` draws through it, so the cells are
+the ones `Box.Render` gave. A box with a `Width`, a `Height` or a title now
+takes the room it asks for, as the changelog says under Changed.
 
 ### JoinHorizontalAlign
 
