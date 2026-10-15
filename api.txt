@@ -1875,6 +1875,19 @@ type SubmittedMsg struct {
 }
 type Validator func(value string) error
 
+## github.com/ows4444/tui/fuzzy (package fuzzy)
+
+func Find(query string, n int, text func(i int) string) []Result
+func Highlight(text string, positions []int, mark func(string) string) string
+func Score(query, text string) (score int, positions []int, ok bool)
+type Result struct {
+	Index	int
+
+	Score	int
+
+	Positions	[]int
+}
+
 ## github.com/ows4444/tui/helpscreen (package helpscreen)
 
 func (m *Model) Hide()

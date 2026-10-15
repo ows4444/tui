@@ -14,6 +14,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/fuzzy"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/textinput"
@@ -118,10 +119,10 @@ func (m *Model) Blur() { m.Input.Blur() }
 // IsOpen reports whether the command dropdown is currently showing.
 func (m Model) IsOpen() bool { return len(m.filtered()) > 0 }
 
-// filtered returns the Commands that fuzzy-match the current input value:
-// every rune of the (lowercased) query must appear in order within the
-// (lowercased) Command Name, not necessarily contiguously — so "cp"
-// matches "CommandPalette". It returns nil (no dropdown) for an empty
+// filtered returns the Commands that fuzzy-match the current input value,
+// best match first (see package fuzzy): every rune of the query must appear
+// in order within the Command Name, ignoring case and not necessarily
+// contiguously — so "cp" matches "CommandPalette". It returns nil (no dropdown) for an empty
 // value or right after an accept/close, until the next keystroke, the
 // same convention autocomplete.Model uses: an empty query in a command
 // palette usually means "nothing typed yet", not "show every command",
@@ -131,37 +132,19 @@ func (m Model) filtered() []Command {
 	if m.justAccepted {
 		return nil
 	}
-	q := strings.ToLower(m.Input.Value())
-	if q == "" {
+	q := m.Input.Value()
+	if strings.TrimSpace(q) == "" {
 		return nil
 	}
-	var out []Command
-	for _, c := range m.Commands {
-		if fuzzyMatch(q, strings.ToLower(c.Name)) {
-			out = append(out, c)
-		}
+	found := fuzzy.Find(q, len(m.Commands), func(i int) string { return m.Commands[i].Name })
+	if len(found) == 0 {
+		return nil
+	}
+	out := make([]Command, len(found))
+	for i, r := range found {
+		out[i] = m.Commands[r.Index]
 	}
 	return out
-}
-
-// fuzzyMatch reports whether every rune of q appears in order within s
-// (not necessarily contiguously). Both q and s are assumed already
-// case-normalized by the caller.
-func fuzzyMatch(q, s string) bool {
-	if q == "" {
-		return true
-	}
-	qr := []rune(q)
-	qi := 0
-	for _, r := range s {
-		if r == qr[qi] {
-			qi++
-			if qi == len(qr) {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // SelectedMsg is delivered (via the Cmd Update returns) when a command is

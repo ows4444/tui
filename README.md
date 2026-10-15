@@ -178,6 +178,7 @@ every widget implements `Linearize` for accessible mode; tests in
 | `toolapproval` | Gate-before-execution prompt for an agent tool call | Experimental |
 | `notificationcenter` | Panel showing every queued notification at once | Experimental |
 | `commandpalette` | Text input with a fuzzy-filtered list of Commands | Stable-ish |
+| `fuzzy` | Rank and highlight text against a typed query; the filter behind `commandpalette` | Experimental |
 | `errorretry` | An error with retry and dismiss keys | Experimental |
 | `faces` | 50 ready-made animated Braille characters and a widget that plays them; for a picture derived from a name, see `avatar` | Experimental |
 | `imageview` | PNG through the kitty graphics protocol, iTerm2 inline images or Sixel, with a text placeholder otherwise | Experimental |
