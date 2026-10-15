@@ -18,6 +18,12 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `DrawCells` on `picker`, `multiselect`, `treeview` and `spinner`: each draws
+  its rows straight into the cell grid, as `viewport`, `datatable` and
+  `textarea` already did, instead of building a string for the frame to parse.
+  A 24-row list costs 47 µs and 131 allocations through `DrawCells` against
+  172 µs and 1,100 through `View` and parse. A test per package checks the cells
+  against `View`'s. `View` is unchanged.
 - Tests that lift ten library packages (`passwordinput`, `maskedinput`,
   `taginput`, `numberinput`, `spinner`, `wizard`, `loadingbar`, `motion`,
   `keymap`, `layout`, `emailinput`, `commandpalette`, `toast`, `helpscreen`) past 90% on their own tests, and a note in

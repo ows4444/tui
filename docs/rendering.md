@@ -90,7 +90,13 @@ uses it whenever the direct path is unavailable:
 - when the terminal size is unknown
 - once an inline frame has scrolled rows into scrollback
 
-`examples/canvas` is a `CellDrawer` widget.
+`examples/canvas` is a `CellDrawer` widget. Of the library's components,
+`viewport`, `logview`, `virtuallist`, `textarea`, `streamtext`, `datatable`,
+`picker`, `multiselect`, `treeview` and `spinner` implement it; each has a test
+that its cells equal its `View`'s. The rest are composed with `DrawView`, which
+parses their string. A new component should implement `DrawCells` when it draws
+many rows, and use `internal/celldraw.StyleID` to turn an `ansi.Style` into a
+cell style.
 
 ## Frame budget
 

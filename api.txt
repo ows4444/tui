@@ -2819,6 +2819,7 @@ func (m *Model) SetQuery(q string)
 func (m *Model) Toggle(i int)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) IsSelected(i int) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -3032,6 +3033,7 @@ func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Highlighted() Item
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -3378,6 +3380,7 @@ type Model struct {
 
 func (m *Model) Start() tui.Cmd
 func (m *Model) Stop()
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) Running() bool
@@ -4203,6 +4206,7 @@ func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) IsExpanded(path string) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
