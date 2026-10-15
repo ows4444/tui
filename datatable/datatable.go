@@ -8,7 +8,9 @@
 // fuzzy-match it, Enter closes the line and keeps the filter, Esc clears it.
 // Rows is what is shown; SetRows replaces the rows given in, and SourceRow
 // maps a shown row back to its place in them. Assign Rows directly only when
-// no sort or filter is active.
+// no sort or filter is active. CellMode makes the cursor one cell, CellStyle
+// styles cells by their place and value, and FrozenCols keeps leading columns
+// in view while the others scroll.
 package datatable
 
 import (
@@ -70,6 +72,21 @@ type Model struct {
 	Name string
 	// WheelStep is the rows scrolled per wheel notch; zero means 3.
 	WheelStep int
+
+	// CellMode, when true, makes the cursor a single cell: Left and Right move
+	// it along the row, only that cell is highlighted, and SelectedMsg.Col says
+	// which one Enter confirmed. Off (the default), the cursor is the row, and
+	// Left and Right still move the column Sort sorts by.
+	CellMode bool
+	// CellStyle, when set, styles the cell of displayed row row (0 is the
+	// first shown row) in column col, holding value. The zero ansi.Style
+	// leaves the cell alone. It is called for every cell that is drawn, so it
+	// should be cheap. The cell the cursor is on keeps its cursor style.
+	CellStyle func(row, col int, value string) ansi.Style
+	// FrozenCols is the number of leading columns that stay in view while the
+	// rest scroll sideways, when Width is smaller than the columns. 0 freezes
+	// none.
+	FrozenCols int
 
 	// Filter, when true, lets KeyMap.Filter ("/") open a filter line above the
 	// table: see the package comment. Off (the default), no key opens it and
@@ -279,10 +296,12 @@ func (m *Model) moveCol(d int) {
 		return
 	}
 	m.col = clamp(m.col+d, 0, len(m.Headers)-1)
-	if m.col < m.colOffset {
+	frozen := m.frozen()
+	if m.col >= frozen && m.col < m.colOffset {
 		m.colOffset = m.col
 	}
-	for m.colOffset < m.col && m.col >= m.colOffset+m.fitCols(m.colOffset) {
+	m.colOffset = max(m.colOffset, frozen)
+	for m.colOffset < m.col && m.col >= m.colOffset+m.fit(m.colOffset) {
 		m.colOffset++
 	}
 }
@@ -355,6 +374,9 @@ type SelectedMsg struct {
 	// Row is its index among those shown, which differs while the rows are
 	// sorted or filtered.
 	SourceRow int
+	// Col is the column the cursor was on: the cell Enter confirmed in
+	// CellMode, else the column Sort sorts by.
+	Col int
 }
 
 // Update moves the cursor on Up/Down and confirms the row under it on
@@ -419,7 +441,8 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	case keymap.Matches(msg, k.Select):
 		row, cells := m.cursor, m.Rows[m.cursor]
 		src := m.SourceRow(row)
-		return m, func() tui.Msg { return SelectedMsg{Row: row, SourceRow: src, Cells: cells} }
+		col := m.col
+		return m, func() tui.Msg { return SelectedMsg{Row: row, SourceRow: src, Cells: cells, Col: col} }
 	case keymap.Matches(msg, k.Sort):
 		if m.col < len(m.Headers) {
 			m.sortBy(m.col)
@@ -478,17 +501,27 @@ func (m Model) View() string {
 		}
 		headers[m.sortCol] += arrow
 	}
+	rows = m.styleCells(rows, start, &own)
 	if m.Width > 0 && len(headers) > 0 {
-		first := clamp(m.colOffset, 0, len(headers)-1)
-		last := min(first+max(m.fitCols(first), 1), len(headers))
-		headers = headers[first:last]
+		cols := m.colWindow()
+		nh := make([]string, len(cols))
+		for i, c := range cols {
+			nh[i] = headers[c]
+		}
+		headers = nh
 		own()
 		for i, r := range rows {
-			rows[i] = r[min(first, len(r)):min(last, len(r))]
+			nr := make([]string, 0, len(cols))
+			for _, c := range cols {
+				if c < len(r) {
+					nr = append(nr, r[c])
+				}
+			}
+			rows[i] = nr
 		}
 	}
 	table := widgets.TableRowsWith(headers, rows, headerStyle, dividerStyle, func(i int) ansi.Style {
-		if i+start == m.cursor {
+		if !m.CellMode && i+start == m.cursor {
 			return cursorStyle
 		}
 		return ansi.Style{}

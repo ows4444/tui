@@ -18,6 +18,12 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `datatable.Model.CellMode`, `CellStyle`, `FrozenCols` and `SelectedMsg.Col`: a
+  cursor that is one cell (Left and Right move it, only that cell is
+  highlighted, Enter reports its column), a hook that styles any cell from its
+  row, column and value, and leading columns that stay in view while the rest
+  scroll sideways. All are off by default. `DrawCells` draws a table that uses
+  them through `View`.
 - `chart.Canvas`, `NewCanvas`: a public grid of braille dots (2 x 4 per
   cell) with `Set`, `Line`, `Rect`, `Circle`, `Clear`, `Rows` and `String`, in
   any colour per shape. `Plot` now draws on one.

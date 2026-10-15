@@ -1489,6 +1489,12 @@ type Model struct {
 
 	WheelStep	int
 
+	CellMode	bool
+
+	CellStyle	func(row, col int, value string) ansi.Style
+
+	FrozenCols	int
+
 	Filter	bool
 
 	ColumnWidths	[]int
@@ -1499,6 +1505,8 @@ type SelectedMsg struct {
 	Cells	[]string
 
 	SourceRow	int
+
+	Col	int
 }
 
 ## github.com/ows4444/tui/datepicker (package datepicker)

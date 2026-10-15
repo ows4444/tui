@@ -27,6 +27,12 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	if len(m.Headers) == 0 {
 		return
 	}
+	if m.styled() {
+		// Per-cell styles, a cell cursor and frozen columns are drawn through
+		// View; the fast path below is for the plain table.
+		m.drawViaView(buf, r)
+		return
+	}
 	if m.top() > 0 {
 		tui.DrawView(buf, cellbuf.Rect{X: r.X, Y: r.Y, W: r.W, H: 1}, m.filterLine())
 		below := m
