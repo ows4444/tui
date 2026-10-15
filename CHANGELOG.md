@@ -18,6 +18,11 @@ is out would be a reason to cut an rc.2.
 
 ### Changed
 
+- Documented which renderer is the renderer: the cell renderer (a tenth of the
+  bytes for a changing frame, 202 against 2,004 on an 80x24 view, for about a
+  quarter more CPU). `WithCellRenderer(false)` stays, for comparing and
+  debugging, since the line renderer is also the cell renderer's fallback. A
+  test keeps the byte figure from regressing.
 - The cell renderer reads a drawn frame 40% faster: a text-area keystroke through
   `DrawCells` costs 64 µs instead of 107 µs. `internal/render` remembers the
   style of the cell before and takes a printable ASCII cell without scanning

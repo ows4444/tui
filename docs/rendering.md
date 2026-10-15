@@ -98,6 +98,27 @@ parses their string. A new component should implement `DrawCells` when it draws
 many rows, and use `internal/celldraw.StyleID` to turn an `ansi.Style` into a
 cell style.
 
+## Which renderer
+
+The cell renderer is the renderer. `WithCellRenderer(false)` selects the line
+renderer, which is also what the cell renderer falls back to for a frame it
+cannot draw (taller than the terminal, an unrepresentable row, see above), so
+it stays in the code. Measured on one laptop (Go 1.27, 80x24, a frame whose
+values change every time):
+
+| | line renderer | cell renderer |
+|---|---|---|
+| bytes written per changing frame | 2,004 | 202 |
+| CPU per changing frame | 98 µs, 288 allocs | 125 µs, 280 allocs |
+| full repaint (resize) | 96 µs | 94 µs |
+| first frame | 2,487 bytes | 2,467 bytes |
+
+The cell renderer pays about a quarter more CPU to write a tenth of the bytes,
+which is the right trade on a terminal over a network and costs nothing a
+person can see locally. `TestCellRendererWritesFarFewerBytesThanTheLineRenderer`
+keeps the byte figure from regressing. Use `WithCellRenderer(false)` to compare,
+or to rule the renderer out when debugging, not to ship.
+
 ## Frame budget
 
 Tests in the root package hold the cell renderer to a budget for a steady-state
