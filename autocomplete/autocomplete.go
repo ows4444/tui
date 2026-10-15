@@ -93,16 +93,6 @@ func (m Model) Bindings() []keymap.Binding {
 	return append([]keymap.Binding{km.Up, km.Down, km.Accept, km.Close}, m.Input.Bindings()...)
 }
 
-// Init returns the Cmd that starts the embedded input's cursor blink.
-// Without running it, the input still renders and accepts typing, just
-// with a static (non-blinking) cursor.
-//
-// Deprecated: use Focus, which returns the same Cmd. A component has no Init;
-// only a program's root model does.
-func (m Model) Init() tui.Cmd {
-	return m.Input.Focus()
-}
-
 // Focus and Blur delegate to the embedded Input, so a parent composing
 // several fields (some textinput.Model, some autocomplete.Model) can
 // drive focus across all of them the same way — see examples/form.

@@ -33,10 +33,10 @@ func TestNewFocusesInput(t *testing.T) {
 	}
 }
 
-func TestInitReturnsBlinkCmd(t *testing.T) {
+func TestFocusReturnsBlinkCmd(t *testing.T) {
 	m := New(Command{Name: "Open File"})
-	if cmd := m.Init(); cmd == nil {
-		t.Error("Init() should return a non-nil Cmd (starts the cursor blink)")
+	if cmd := m.Focus(); cmd == nil {
+		t.Error("Focus() should return a non-nil Cmd (starts the cursor blink)")
 	}
 }
 

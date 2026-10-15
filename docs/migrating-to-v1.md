@@ -43,6 +43,27 @@ Use `WithCellRenderer(false)`. The cell renderer is the default, and
 [rendering.md](rendering.md#cell-renderer-and-line-renderer) for how the two
 differ.
 
+## Components (packages autocomplete, commandpalette)
+
+### autocomplete.Model.Init, commandpalette.Model.Init
+
+Use `Focus`, which returns the same Cmd (the one that starts the cursor
+blink). A component has no `Init`; only a program's root model does. `Focus`
+has a pointer receiver, so call it on an addressable `Model`:
+`cmd := m.Focus()`.
+
+## Charts (package widgets)
+
+The chart functions moved to `widgets/chart` with the same signatures. Change
+the import and the package qualifier; nothing else changes.
+
+### BarItem, BarChart, Gauge, HeatMap, LineChart, Sparkline, SparklineWith
+
+Use `chart.BarItem`, `chart.BarChart`, `chart.Gauge`, `chart.HeatMap`,
+`chart.LineChart`, `chart.Sparkline` and `chart.SparklineWith`, imported from
+`github.com/ows4444/tui/widgets/chart`. `widgets.BarItem` was an alias for
+`chart.BarItem`, so a value of one is a value of the other.
+
 ## String layout helpers (package layout)
 
 The string join and grid helpers are replaced by Nodes. Wrap each

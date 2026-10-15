@@ -120,12 +120,18 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   its bottom border. Given the size it asks for, `BoxNode` now draws what
   `Box.Render` draws; a layout that allots less still wins. A box with any
   of the three set may take a different amount of room than before.
+- `commandpalette` is promoted from experimental to stable-ish, as
+  `docs/v1.md` decided once its deprecated `Init` was removed. ACLine is the
+  program outside this repository that uses it.
 
-### Deprecated
+### Removed
 
-- `autocomplete.Model.Init` and `commandpalette.Model.Init`: use `Focus`,
-  which returns the same Cmd. They were the only two components with an
-  `Init`; a component has none.
+- BREAKING: `autocomplete.Model.Init` and `commandpalette.Model.Init` are
+  removed. Use `Focus`, which returns the same Cmd. They were the only two
+  components with an `Init`; a component has none.
+- BREAKING: the chart functions in `widgets` are removed: `BarChart`, `Gauge`,
+  `HeatMap`, `LineChart`, `Sparkline`, `SparklineWith` and the `BarItem`
+  alias. Use the functions of the same names in `widgets/chart`.
 
 ### Fixed
 
