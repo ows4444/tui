@@ -8,7 +8,12 @@ a minor release may remove or change exported identifiers; each one is a
 A removed or changed exported identifier needs a `- BREAKING:` entry under
 Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
-## [Unreleased]
+## [0.2.0] - 2026-10-15
+
+The last v0 release before v1.0: every identifier deprecated in 0.1.0 is
+removed, so no exported identifier carries `Deprecated:`. Each removal is a
+`- BREAKING:` entry under Removed, with its replacement; `docs/migrating-to-v1.md`
+has one section per identifier.
 
 ### Added
 
