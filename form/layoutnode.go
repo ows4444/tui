@@ -60,9 +60,7 @@ func (n formNode) Render(s layout.Size) string {
 		if in.kind == FieldMultiSelect || in.kind == FieldTextArea {
 			body = strings.Count(in.view(n.m.themed()), "\n") + 1
 		}
-		for _, line := range strings.Split(n.child(i).Render(layout.Size{W: s.W, H: body}), "\n") {
-			rows = append(rows, line)
-		}
+		rows = append(rows, strings.Split(n.child(i).Render(layout.Size{W: s.W, H: body}), "\n")...)
 		if d := in.descLine(); d != "" {
 			rows = append(rows, layout.Block(d).Render(layout.Size{W: s.W, H: 1}))
 		}

@@ -133,7 +133,7 @@ func TestHiddenGroupIsSkippedAndItsValuesLeftOut(t *testing.T) {
 	if !strings.Contains(plain(m), "step 3 of 3") {
 		t.Errorf("view:\n%s", plain(m))
 	}
-	m, cmd := enter(m) // last group: submit
+	_, cmd := enter(m) // last group: submit
 	got, ok := cmd().(SubmittedMsg)
 	if !ok {
 		t.Fatalf("Enter on the last group produced %T", cmd())
