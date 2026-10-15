@@ -133,7 +133,7 @@ var fastPieces = []string{"", "a", "hello world", "x", "  ", "~", "\x7f", "\x1f"
 func checkFast(t testing.TB, s string, width int) {
 	t.Helper()
 	for _, on := range []bool{true, false} {
-		SetClusterWidth(on)
+		clusterWidthOn.Store(on)
 		if got, want := Truncate(s, width), slowTruncate(s, width); got != want {
 			t.Fatalf("clusters=%v Truncate(%q, %d) = %q, want %q", on, s, width, got, want)
 		}
@@ -141,11 +141,11 @@ func checkFast(t testing.TB, s string, width int) {
 			t.Fatalf("clusters=%v TrimLeftWidth(%q, %d) = %q, want %q", on, s, width, got, want)
 		}
 	}
-	SetClusterWidth(true)
+	clusterWidthOn.Store(true)
 }
 
 func TestASCIIFastPathMatchesSlowPath(t *testing.T) {
-	defer SetClusterWidth(true)
+	defer clusterWidthOn.Store(true)
 	r := rand.New(rand.NewSource(28))
 	for i := 0; i < 200000; i++ {
 		var sb strings.Builder

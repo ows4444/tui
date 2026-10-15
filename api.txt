@@ -531,7 +531,6 @@ func PlainASCIIWidth(s string) (int, bool)
 func SafeLinkTarget(url string) bool
 func Sanitize(s string) string
 func SanitizeKeepSGR(s string) string
-func SetClusterWidth(on bool)
 func StripANSI(s string) string
 func TrimLeftWidth(s string, width int) string
 func Truncate(s string, width int) string

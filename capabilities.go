@@ -78,7 +78,7 @@ const (
 // also sends ESC[?2027h (reset on exit) and turns cluster widths on; otherwise
 // widths are per codepoint. Either way the answer becomes Program.Measurer
 // and is delivered to Update as a second ResizeMsg carrying it; the
-// process-wide ansi.SetClusterWidth setting is left alone. Off by default;
+// process default is left alone. Off by default;
 // ignored under WithAccessible.
 func WithCapabilityProbe(timeout time.Duration) ProgramOption {
 	return func(p *Program) {

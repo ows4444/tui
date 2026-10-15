@@ -2,7 +2,7 @@ package ansi
 
 // Measurer measures text the way one particular terminal draws it. The
 // package-level Width, Truncate and TrimLeftWidth use a single process-wide
-// setting (SetClusterWidth); a Measurer carries its own, so two terminals in
+// default (clusters on unless TUI_NO_CLUSTERS is set); a Measurer carries its own, so two terminals in
 // one process (an SSH server, parallel tests) can disagree about grapheme
 // clusters without one changing the other's output.
 //
@@ -16,15 +16,15 @@ type Measurer struct {
 type measureMode uint8
 
 const (
-	measureDefault measureMode = iota // follow SetClusterWidth / TUI_NO_CLUSTERS
+	measureDefault measureMode = iota // follow the process default (TUI_NO_CLUSTERS)
 	measureClusters
 	measureRunes
 )
 
 // ClusterMeasurer returns a Measurer that treats an extended grapheme cluster
 // as one unit when clusters is true and counts each rune on its own when it is
-// false, whatever SetClusterWidth says. See SetClusterWidth for what a cluster
-// measures.
+// false, whatever the process default is. A cluster is measured as its widest
+// rune (at most 2 columns), except that an emoji followed by U+FE0F takes 2.
 func ClusterMeasurer(clusters bool) Measurer {
 	if clusters {
 		return Measurer{measureClusters}

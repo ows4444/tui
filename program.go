@@ -52,7 +52,7 @@ func (p *Program) applyTheme(t theme.Theme) {
 }
 
 // Measurer reports how this Program's terminal measures grapheme clusters: the
-// zero Measurer (the process-wide ansi.SetClusterWidth setting) until a
+// zero Measurer (the process default: clusters on unless TUI_NO_CLUSTERS is set) until a
 // capability probe (WithCapabilityProbe) has decided, then the probed answer.
 // It is the same value a ResizeMsg carries. Safe to call from any goroutine.
 func (p *Program) Measurer() ansi.Measurer {

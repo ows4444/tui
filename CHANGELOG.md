@@ -129,6 +129,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - BREAKING: `autocomplete.Model.Init` and `commandpalette.Model.Init` are
   removed. Use `Focus`, which returns the same Cmd. They were the only two
   components with an `Init`; a component has none.
+- BREAKING: `ansi.SetClusterWidth` is removed. Grapheme-cluster width is on
+  by default and `TUI_NO_CLUSTERS` set to a non-empty value turns it off for
+  the process, read once when the first width is measured. For one terminal use
+  an `ansi.Measurer`: `ansi.ClusterMeasurer(false)` counts each rune on its
+  own, and `Program.Measurer` and `ResizeMsg.Measurer` carry the probed answer.
 - BREAKING: `textinput.Model.ClipboardWrite` and
   `textarea.Model.ClipboardWrite` are removed. Copy and Cut always return
   `tui.WriteClipboard`, and Paste returns `tui.PasteCopied`, so the Program

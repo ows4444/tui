@@ -1,17 +1,17 @@
-package ansi
+package clusterwidth
 
 import "testing"
 
 // The default comes from TUI_NO_CLUSTERS when first read, not at import, and an
 // explicit Store always wins.
-func TestClusterSettingResolvesEnvironmentLazily(t *testing.T) {
+func TestSettingResolvesEnvironmentLazily(t *testing.T) {
 	t.Setenv("TUI_NO_CLUSTERS", "1")
-	var off clusterSetting
+	var off Setting
 	if off.Load() {
 		t.Error("TUI_NO_CLUSTERS=1: clusters on, want off")
 	}
 	t.Setenv("TUI_NO_CLUSTERS", "")
-	var on clusterSetting
+	var on Setting
 	if !on.Load() {
 		t.Error("TUI_NO_CLUSTERS empty: clusters off, want on")
 	}

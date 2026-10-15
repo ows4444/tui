@@ -119,8 +119,8 @@ func FuzzTruncateMatchesReference(f *testing.F) {
 	f.Add("\x1b[1mhello\x1b[0m world", 7)
 	f.Add("\x1b[31mred text that is cut", 5)
 	// The reference counts rune by rune, so compare with clusters off.
-	SetClusterWidth(false)
-	f.Cleanup(func() { SetClusterWidth(true) })
+	clusterWidthOn.Store(false)
+	f.Cleanup(func() { clusterWidthOn.Store(true) })
 	f.Fuzz(func(t *testing.T, s string, width int) {
 		width %= 200
 		if got, want := Truncate(s, width), refTruncate(s, width); got != want {

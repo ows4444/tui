@@ -9,8 +9,8 @@
 // Annex #29, tables from internal/tools/gengrapheme): a ZWJ sequence, a flag, an emoji
 // with a skin-tone modifier or a base letter with combining marks is one unit,
 // as wide as its widest rune, and Truncate never cuts inside one. For a
-// terminal that draws the parts separately, call SetClusterWidth(false) or set
-// TUI_NO_CLUSTERS=1 to count each rune on its own.
+// terminal that draws the parts separately, set TUI_NO_CLUSTERS=1 or use
+// ClusterMeasurer(false) to count each rune on its own.
 package ansi
 
 import (

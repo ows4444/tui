@@ -3,7 +3,7 @@ package ansi
 import "testing"
 
 func TestWidthKeycap(t *testing.T) {
-	SetClusterWidth(true)
+	clusterWidthOn.Store(true)
 	const k = "1️⃣"
 	for _, tc := range []struct {
 		name, in string
@@ -29,7 +29,7 @@ func TestWidthKeycap(t *testing.T) {
 }
 
 func TestKeycapTruncateAgreesWithWidth(t *testing.T) {
-	SetClusterWidth(true)
+	clusterWidthOn.Store(true)
 	const k = "1️⃣"
 	if got := Truncate("ab"+k+"cd", 4); got != "ab"+k {
 		t.Errorf("Truncate = %q", got)

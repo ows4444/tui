@@ -6,7 +6,8 @@ package ansi
 // unicodeVersion by internal/tools/genwidth (EastAsianWidth W/F, Emoji_Presentation,
 // general category Mn/Me/Cf); see runewidth_tables.go. It is the width of a
 // single rune: Width, Truncate and TrimLeftWidth combine runes into grapheme
-// clusters (see cluster.go) unless SetClusterWidth(false).
+// clusters (see cluster.go) unless TUI_NO_CLUSTERS is set or a Measurer says
+// otherwise.
 func runeWidth(r rune) int {
 	if r < 0x300 {
 		// Fast path: ASCII and Latin-1/Extended-A/B. C0 controls (including

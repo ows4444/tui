@@ -53,8 +53,8 @@ func FuzzWidthMatchesReference(f *testing.F) {
 	f.Add("\xe2\x1b[1m\x82\xac")
 	f.Add("\x1b[38;2;255;0;0mred\x1b[0m 你好")
 	// The reference counts rune by rune, so compare with clusters off.
-	SetClusterWidth(false)
-	f.Cleanup(func() { SetClusterWidth(true) })
+	clusterWidthOn.Store(false)
+	f.Cleanup(func() { clusterWidthOn.Store(true) })
 	f.Fuzz(func(t *testing.T, s string) {
 		if got, want := Width(s), refWidth(s); got != want {
 			t.Fatalf("Width(%q) = %d, want %d", s, got, want)

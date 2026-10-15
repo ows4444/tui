@@ -52,6 +52,18 @@ blink). A component has no `Init`; only a program's root model does. `Focus`
 has a pointer receiver, so call it on an addressable `Model`:
 `cmd := m.Focus()`.
 
+## Width (package ansi)
+
+### SetClusterWidth
+
+Use an `ansi.Measurer`. `ansi.ClusterMeasurer(false)` counts each rune on its
+own and `ansi.ClusterMeasurer(true)` treats a grapheme cluster as one unit;
+call its `Width`, `Truncate` and `TrimLeftWidth` where you called the
+package-level functions. A Program's own answer is `Program.Measurer()`, and
+every `ResizeMsg` carries it. To turn clusters off for a whole process, set
+`TUI_NO_CLUSTERS=1` in the environment before the first width is measured; there
+is no function to change the default at run time.
+
 ## Text fields (packages textinput, textarea)
 
 ### ClipboardWrite
