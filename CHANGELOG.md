@@ -18,6 +18,12 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `form.FieldMultiSelect` and `form.FieldTextArea`, `form.Selected`,
+  `Field.Description`, `Field.Height` and `KeyMap.SubmitInArea`: a list with
+  any number of options ticked (value: the ticked options joined by ","), a
+  multi-line text box (Enter adds a line; Ctrl+S submits from inside it), and a
+  line of help under any field. Both draw as several rows, and the mouse,
+  layout node and accessible output follow them.
 - `tui.ViewState` and `tui.ViewStater`: an optional `ViewState()` method beside
   `View() string` that states the alternate screen, the mouse mode and the
   window title for the frame, as `EnableMouse`, `EnterAltScreen`, `ExitAltScreen`

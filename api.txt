@@ -1836,6 +1836,10 @@ const (
 	FieldSelect
 
 	FieldCheckbox
+
+	FieldMultiSelect
+
+	FieldTextArea
 )
 const DefaultWidth = 30
 func (m *Model) Blur()
@@ -1866,6 +1870,7 @@ func New(fields ...Field) Model
 func NewGroups(groups ...Group) Model
 func Required() Validator
 func SelectOf[T any](name, label string, options ...Option[T]) Field
+func Selected(m Model, name string) []string
 func Value[T any](m Model, name string) (v T, ok bool)
 type Field struct {
 	Name	string
@@ -1885,6 +1890,10 @@ type Field struct {
 
 	Width		int
 	Validators	[]Validator
+
+	Description	string
+
+	Height	int
 	// contains filtered or unexported fields
 }
 type FieldKind int
@@ -1905,6 +1914,8 @@ type KeyMap struct {
 
 	NextGroup	keymap.Binding
 	PrevGroup	keymap.Binding
+
+	SubmitInArea	keymap.Binding
 }
 type Model struct {
 	Theme	theme.Theme

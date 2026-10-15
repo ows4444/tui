@@ -50,7 +50,7 @@ var composition = map[string][]string{
 	"menu":           {"picker"},
 	"menubar":        {"contextmenu"},
 	"logview":        {"viewport"},
-	"form":           {"textinput", "passwordinput"},
+	"form":           {"textinput", "passwordinput", "multiselect", "textarea"},
 	"appshell":       {"textinput", "viewport"},
 	"emailinput":     {"textinput"},
 	"inputgroup":     {"textinput"},
