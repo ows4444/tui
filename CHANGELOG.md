@@ -129,6 +129,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - BREAKING: `autocomplete.Model.Init` and `commandpalette.Model.Init` are
   removed. Use `Focus`, which returns the same Cmd. They were the only two
   components with an `Init`; a component has none.
+- BREAKING: `textinput.Model.ClipboardWrite` and
+  `textarea.Model.ClipboardWrite` are removed. Copy and Cut always return
+  `tui.WriteClipboard`, and Paste returns `tui.PasteCopied`, so the Program
+  writes the OSC 52 sequence to its output and holds the copied text. To direct
+  that output elsewhere use `tui.WithOutput`. A Model no longer holds its own
+  copy buffer: a second text field in the same Program pastes what the first
+  copied.
 - BREAKING: the chart functions in `widgets` are removed: `BarChart`, `Gauge`,
   `HeatMap`, `LineChart`, `Sparkline`, `SparklineWith` and the `BarItem`
   alias. Use the functions of the same names in `widgets/chart`.

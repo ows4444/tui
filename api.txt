@@ -3553,8 +3553,6 @@ type Model struct {
 
 	UndoLimit	int
 
-	ClipboardWrite	func(string) (int, error)
-
 	Mouse	bool
 
 	Bounds	hittest.Rect
@@ -3621,8 +3619,6 @@ type Model struct {
 	SelectionStyle	ansi.Style
 
 	UndoLimit	int
-
-	ClipboardWrite	func(string) (int, error)
 
 	DisableCopy	bool
 

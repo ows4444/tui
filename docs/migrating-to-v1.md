@@ -52,6 +52,21 @@ blink). A component has no `Init`; only a program's root model does. `Focus`
 has a pointer receiver, so call it on an addressable `Model`:
 `cmd := m.Focus()`.
 
+## Text fields (packages textinput, textarea)
+
+### ClipboardWrite
+
+Use `tui.WithOutput` to direct the Program's output. Copy and Cut now always
+return `tui.WriteClipboard`, which has the Program write the OSC 52 sequence
+and keep the text, and Paste returns `tui.PasteCopied`, which delivers that
+text as a `PasteEvent`. There is no field to set.
+
+Two things differ from a Model with `ClipboardWrite` set. Copy and Cut return a
+Cmd, so a parent must return it from its own `Update`. And the copy buffer
+belongs to the Program, not the Model, so two fields in one Program share it:
+what one copies the other pastes. A test that read the sequence from the
+function now runs the Cmd in a Program and reads that Program's output.
+
 ## Charts (package widgets)
 
 The chart functions moved to `widgets/chart` with the same signatures. Change
