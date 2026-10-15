@@ -9,6 +9,9 @@ The finished program is [examples/tutorial](../examples/tutorial), with the
 tests this page ends on. If a step does not behave as described, compare with
 it.
 
+> Short on time? `go run github.com/ows4444/tui/cmd/tui new tasks` writes a
+> small program with a test, and you can start from step 3.
+
 ## 1. A program that does nothing
 
 Make a directory and a module, and add tui:

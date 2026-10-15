@@ -138,6 +138,10 @@ has one section per identifier.
 
 ### Added
 
+- `cmd/tui`: `go run github.com/ows4444/tui/cmd/tui new myapp` writes a new
+  program (`go.mod`, `main.go`, a `tuitest` test, a README) that builds and
+  passes its own test; `-module` sets the module path. It adds no dependency
+  version: `go mod tidy` resolves the latest.
 - `docs/tutorial.md` and `examples/tutorial`: a first tutorial from an empty
   directory to a small task list with a text field, and a test of it with
   `tuitest`. The program and its test also compile against v0.1.0.

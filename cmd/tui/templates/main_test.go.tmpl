@@ -1,0 +1,22 @@
+package main
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/ows4444/tui/tuitest"
+)
+
+// The program runs headless against a virtual screen: send keys, read the
+// screen. Use s.Golden(t, "name") to compare a whole screen with
+// testdata/name.golden (create it with -update).
+func TestUpAndDown(t *testing.T) {
+	s := tuitest.New(model{}, 40, 8)
+	defer s.Close()
+
+	s.Keys("up", "up", "up", "down")
+	if got := strings.Join(s.Screen(), "\n"); !strings.Contains(got, "Count: 2") {
+		t.Fatalf("after up x3, down x1:\n%s", got)
+	}
+	s.Keys("q")
+}

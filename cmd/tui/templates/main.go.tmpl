@@ -1,0 +1,58 @@
+// Command {{.Name}} is a terminal program built on github.com/ows4444/tui.
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/ansi"
+)
+
+type model struct {
+	count int
+	width int
+}
+
+func (m model) Init() tui.Cmd { return nil }
+
+func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
+	switch msg := msg.(type) {
+	case tui.ResizeMsg:
+		m.width = msg.Width
+	case tui.Key:
+		switch msg.Type {
+		case tui.KeyCtrlC:
+			return m, tui.Quit()
+		case tui.KeyUp, tui.KeyRight:
+			m.count++
+		case tui.KeyDown, tui.KeyLeft:
+			m.count--
+		case tui.KeyRunes:
+			if msg.Text == "q" {
+				return m, tui.Quit()
+			}
+		}
+	}
+	return m, nil
+}
+
+var (
+	title = ansi.NewStyle().Bold().Foreground(ansi.BrightCyan)
+	help  = ansi.NewStyle().Faint()
+)
+
+func (m model) View() string {
+	hint := "up/down change   q quit"
+	if m.width > 0 {
+		hint = ansi.Wrap(hint, m.width)
+	}
+	return fmt.Sprintf("%s\n\n  Count: %d\n\n%s", title.Render("{{.Name}}"), m.count, help.Render(hint))
+}
+
+func main() {
+	if _, err := tui.NewProgram(model{}).Run(); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+}
