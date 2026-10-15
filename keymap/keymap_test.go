@@ -97,3 +97,28 @@ func TestMatchesDoesNotAllocateForPlainKeys(t *testing.T) {
 		}
 	}
 }
+
+// A modified key is matched by its full name, and a name that is not one of
+// the binding's keys does not match; a Registry skips bindings with no keys or
+// no description when it makes hints.
+func TestMatchesModifiedKeysAndHintsSkipIncompleteBindings(t *testing.T) {
+	b := NewBinding("save", "ctrl+s", "alt+s")
+	if !Matches(input.Key{Type: input.KeyRunes, Text: "s", Code: 's', Mod: input.ModCtrl}, b) {
+		t.Error("ctrl+s did not match")
+	}
+	if Matches(input.Key{Type: input.KeyRunes, Text: "s", Code: 's', Mod: input.ModCtrl | input.ModShift}, b) {
+		t.Error("ctrl+shift+s matched ctrl+s")
+	}
+	if Matches(input.Key{Type: input.KeyRunes, Text: "q", Code: 'q'}, b) {
+		t.Error("q matched")
+	}
+
+	var r Registry
+	r.Add(NewBinding("", "x"))     // no description
+	r.Add(NewBinding("nothing"))   // no keys
+	r.Add(NewBinding("quit", "q")) // complete
+	h := r.Hints("")
+	if len(h) != 1 || h[0].Key != "q" || h[0].Desc != "quit" {
+		t.Errorf("Hints = %+v, want only quit", h)
+	}
+}

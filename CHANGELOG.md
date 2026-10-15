@@ -18,6 +18,10 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- Tests that lift ten library packages (`passwordinput`, `maskedinput`,
+  `taginput`, `numberinput`, `spinner`, `wizard`, `loadingbar`, `motion`,
+  `keymap`, `layout`, `emailinput`, `commandpalette`, `toast`, `helpscreen`) past 90% on their own tests, and a note in
+  `CONTRIBUTING.md` on why `go test -cover` and the CI floor differ.
 - `docs/tutorial-2.md` and `examples/tutorial2`: a second tutorial that turns
   the task list into a searchable one with `picker.Filter`, with a test.
 - Seven cookbook recipes: a one-line prompt, a filtering list, a form in steps,
