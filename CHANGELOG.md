@@ -12,9 +12,27 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `fuzzy`, an experimental package that matches a typed query against text
+  (`Score`, `Find`) and marks the matched runes (`Highlight`). It ignores case,
+  prefers consecutive runes and word starts, and ranks best first.
+- `picker.Model.Filter`: type to narrow the list to the fuzzy matches, best
+  first, matched runes underlined; Backspace edits and Esc clears the query.
+  `Query` and `SetQuery` read and set it. Off by default, so existing lists do
+  not change. `fuzzy.Split` cuts a text into matched and unmatched runs.
+- `multiselect.Model.Filter` and `treeview.Model.Filter`, the same type-to-narrow
+  filter as `picker`. In `multiselect` checked items stay checked while hidden.
+  In `treeview` a match shows with its ancestors, opened for the query without
+  changing the expand state, and the tree keeps its order.
+- `autocomplete.Model.Fuzzy`: suggest every suggestion the text fuzzy-matches,
+  best first, instead of only those it is a prefix of. Off by default.
 - `ansi.RGB.Mix`, `Lighten` and `Darken`, and `ansi.Blend`: move a colour
   toward another, white or black by a fraction, and spread n colours along a
   list of stops. A translucent colour is a `Mix` with the background it sits on.
+
+### Changed
+
+- `commandpalette` lists matching commands best first instead of in the order
+  given, using `fuzzy`. The set of commands that match is unchanged.
 
 ## [0.2.0] - 2026-10-15
 

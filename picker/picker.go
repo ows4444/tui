@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/fuzzy"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/theme"
@@ -46,7 +48,16 @@ type Model struct {
 	// WheelStep is the rows the cursor moves per wheel notch; 0 means 3.
 	WheelStep int
 
+	// Filter, when true, lets the person type to narrow the list: printable
+	// keys that no binding in KeyMap uses are added to a query, Backspace
+	// removes the last rune and Esc clears the query. Items that fuzzy-match
+	// the query (see package fuzzy) stay, best first, with the matched runes
+	// underlined; the cursor moves to the best match as the query changes.
+	// Off (the default), the list is unchanged. A first line shows the query.
+	Filter bool
+
 	cursor int
+	query  string
 }
 
 // KeyMap is the set of keys Update reacts to.
@@ -124,6 +135,54 @@ func (m Model) Highlighted() Item {
 	return m.Items[m.cursor]
 }
 
+// Query returns the text the list is filtered by; always empty when Filter
+// is off.
+func (m Model) Query() string { return m.query }
+
+// SetQuery sets the filter text and puts the cursor on the best match. It has
+// no effect when Filter is off.
+func (m *Model) SetQuery(q string) {
+	if !m.Filter {
+		return
+	}
+	m.query = q
+	if v := m.visible(); len(v) > 0 {
+		m.cursor = v[0].Index
+	}
+}
+
+// visible lists the items that show, in order: every item when there is no
+// query, the fuzzy matches best first otherwise.
+func (m Model) visible() []fuzzy.Result {
+	if !m.Filter || m.query == "" {
+		out := make([]fuzzy.Result, len(m.Items))
+		for i := range out {
+			out[i].Index = i
+		}
+		return out
+	}
+	return fuzzy.Find(m.query, len(m.Items), func(i int) string { return m.Items[i].Label })
+}
+
+// rowOf is the row within vis that holds the cursor item, or -1.
+func (m Model) rowOf(vis []fuzzy.Result) int {
+	for i, r := range vis {
+		if r.Index == m.cursor {
+			return i
+		}
+	}
+	return -1
+}
+
+// moveTo puts the cursor on row r of vis, clamped; with nothing visible it
+// does nothing.
+func (m *Model) moveTo(vis []fuzzy.Result, r int) {
+	if len(vis) == 0 {
+		return
+	}
+	m.cursor = vis[clamp(r, 0, len(vis)-1)].Index
+}
+
 // SelectedMsg is delivered (via the Cmd Update returns) when the
 // highlighted item is confirmed with Enter.
 type SelectedMsg struct {
@@ -144,29 +203,54 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	}
 
 	k := m.keys()
+	vis := m.visible()
+	row := m.rowOf(vis)
 	switch {
 	case keymap.Matches(msg, k.Up):
-		if m.cursor > 0 {
-			m.cursor--
+		if row > 0 {
+			m.moveTo(vis, row-1)
+		} else if row < 0 {
+			m.moveTo(vis, 0)
 		}
 	case keymap.Matches(msg, k.Down):
-		if m.cursor < len(m.Items)-1 {
-			m.cursor++
-		}
+		m.moveTo(vis, row+1)
 	case keymap.Matches(msg, k.Top):
-		m.cursor = 0
+		m.moveTo(vis, 0)
 	case keymap.Matches(msg, k.Bottom):
-		if len(m.Items) > 0 {
-			m.cursor = len(m.Items) - 1
-		}
+		m.moveTo(vis, len(vis)-1)
 	case keymap.Matches(msg, k.Select):
-		if len(m.Items) == 0 {
+		if len(vis) == 0 || row < 0 {
 			return m, nil
 		}
 		idx, item := m.cursor, m.Items[m.cursor]
 		return m, func() tui.Msg { return SelectedMsg{Index: idx, Item: item} }
+	case m.Filter:
+		return m.editQuery(msg.(tui.Key)), nil
 	}
 	return m, nil
+}
+
+// editQuery applies a key to the filter text.
+func (m Model) editQuery(k tui.Key) Model {
+	q := m.query
+	switch {
+	case k.Type == tui.KeyEsc:
+		q = ""
+	case k.Type == tui.KeyBackspace:
+		if r := []rune(q); len(r) > 0 {
+			q = string(r[:len(r)-1])
+		}
+	case k.Type == tui.KeySpace:
+		q += " "
+	case k.Type == tui.KeyRunes && !k.Mod.Alt() && k.Text != "":
+		q += k.Text
+	default:
+		return m
+	}
+	if q != m.query {
+		m.SetQuery(q)
+	}
+	return m
 }
 
 // updateMouse applies a mouse event when Mouse is on and it is in Bounds.
@@ -178,33 +262,62 @@ func (m Model) updateMouse(ev tui.MouseEvent) Model {
 	if step <= 0 {
 		step = 3
 	}
+	vis := m.visible()
+	row := m.rowOf(vis)
 	switch ev.Button {
 	case tui.MouseButtonWheelUp:
-		m.SetCursor(m.cursor - step)
+		m.moveTo(vis, row-step)
 	case tui.MouseButtonWheelDown:
-		m.SetCursor(m.cursor + step)
+		m.moveTo(vis, row+step)
 	case tui.MouseButtonLeft:
-		_, row := m.Bounds.Local(ev.X, ev.Y)
-		if row < len(m.Items) {
-			m.SetCursor(row)
+		_, y := m.Bounds.Local(ev.X, ev.Y)
+		if m.Filter {
+			y-- // the query line
+		}
+		if y >= 0 && y < len(vis) {
+			m.moveTo(vis, y)
 		}
 	}
 	return m
 }
 
 // View renders the item list with the highlighted item marked by a cursor.
+// With Filter on, a first line shows the query and only the matching items
+// follow, matched runes underlined.
 func (m Model) View() string {
 	var b strings.Builder
-	cursorStyle := m.themed().ResolvedStates().Selected.Bold()
-	for i, item := range m.Items {
-		prefix := "  "
-		label := item.Label
-		if i == m.cursor {
-			prefix = "> "
-			label = cursorStyle.Render(label)
+	sel := m.themed().ResolvedStates().Selected.Bold()
+	plain := ansi.NewStyle()
+	if m.Filter {
+		b.WriteString("/ " + m.query)
+		if m.query != "" {
+			b.WriteString(plain.Faint().Render(" (" + strconv.Itoa(len(m.visible())) + ")"))
 		}
-		b.WriteString(prefix + label)
-		if i < len(m.Items)-1 {
+		b.WriteByte('\n')
+	}
+	vis := m.visible()
+	if m.Filter && len(vis) == 0 {
+		b.WriteString("  " + plain.Faint().Render("no matches"))
+		return b.String()
+	}
+	for n, r := range vis {
+		prefix, base := "  ", plain
+		if r.Index == m.cursor {
+			prefix, base = "> ", sel
+		}
+		b.WriteString(prefix)
+		for _, run := range fuzzy.Split(m.Items[r.Index].Label, r.Positions) {
+			st := base
+			if run.Match {
+				st = base.Underline()
+			}
+			if r.Index == m.cursor || run.Match {
+				b.WriteString(st.Render(run.Text))
+			} else {
+				b.WriteString(run.Text)
+			}
+		}
+		if n < len(vis)-1 {
 			b.WriteByte('\n')
 		}
 	}
@@ -233,12 +346,20 @@ func (m Model) Linearize() string {
 	if len(m.Items) == 0 {
 		return "No items"
 	}
-	lines := make([]string, len(m.Items))
-	for i, item := range m.Items {
-		lines[i] = item.Label + ", item " + strconv.Itoa(i+1) + " of " + strconv.Itoa(len(m.Items))
-		if i == m.cursor {
+	vis := m.visible()
+	var head []string
+	if m.Filter && m.query != "" {
+		if len(vis) == 0 {
+			return "Filter " + strconv.Quote(m.query) + ", no matches"
+		}
+		head = []string{"Filter " + strconv.Quote(m.query) + ", " + strconv.Itoa(len(vis)) + " of " + strconv.Itoa(len(m.Items)) + " items"}
+	}
+	lines := make([]string, len(vis))
+	for i, r := range vis {
+		lines[i] = m.Items[r.Index].Label + ", item " + strconv.Itoa(i+1) + " of " + strconv.Itoa(len(vis))
+		if r.Index == m.cursor {
 			lines[i] += ", selected"
 		}
 	}
-	return strings.Join(lines, "\n")
+	return strings.Join(append(head, lines...), "\n")
 }

@@ -48,12 +48,14 @@ func TestFilteredEmptyQuery(t *testing.T) {
 }
 
 // #538: fuzzy subsequence matching — every rune of the query appears in
-// order within the command name, not necessarily contiguously.
+// order within the command name, not necessarily contiguously. Matches are
+// listed best first: "Copy Path" has its second letter at a word start, close
+// to the first, so it ranks above "CommandPalette".
 func TestFilteredFuzzySubsequenceMatch(t *testing.T) {
 	m := New(cmds("CommandPalette", "Copy Path", "Close File")...)
 	typeString(&m, "cp")
 	got := m.filtered()
-	want := []Command{{Name: "CommandPalette"}, {Name: "Copy Path"}}
+	want := []Command{{Name: "Copy Path"}, {Name: "CommandPalette"}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("filtered() = %v, want %v", got, want)
 	}
@@ -63,7 +65,7 @@ func TestFilteredFuzzyMatchNonContiguous(t *testing.T) {
 	m := New(cmds("Save As...", "Save", "Quit")...)
 	typeString(&m, "sa")
 	got := m.filtered()
-	want := []Command{{Name: "Save As..."}, {Name: "Save"}}
+	want := []Command{{Name: "Save"}, {Name: "Save As..."}} // equal score: shorter first
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("filtered() = %v, want %v", got, want)
 	}

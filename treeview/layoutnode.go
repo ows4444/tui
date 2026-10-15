@@ -17,7 +17,7 @@ func (m Model) LayoutNode() layout.Node { return treeNode{m} }
 type treeNode struct{ m Model }
 
 func (n treeNode) Measure(c layout.Constraints) layout.Size {
-	if len(n.m.flatten()) == 0 {
+	if len(n.m.flatten()) == 0 && !n.m.Filter {
 		return c.Constrain(layout.Size{})
 	}
 	w := 0
@@ -34,14 +34,26 @@ func (n treeNode) Render(s layout.Size) string {
 	if s.W <= 0 || s.H <= 0 {
 		return ""
 	}
-	if len(n.m.flatten()) == 0 {
+	if len(n.m.flatten()) == 0 && !n.m.Filter {
 		return layout.Block("").Render(s)
 	}
 	lines := strings.Split(n.m.View(), "\n")
 	if len(lines) > s.H {
-		cursor := clamp(n.m.cursor, 0, len(lines)-1)
-		start := clamp(cursor-s.H/2, 0, len(lines)-s.H)
-		lines = lines[start : start+s.H]
+		// Keep the query line on top, window the rows under it.
+		var head []string
+		if n.m.Filter {
+			head, lines = lines[:1], lines[1:]
+		}
+		room := max(s.H-len(head), 1)
+		if len(lines) > room {
+			cursor := clamp(n.m.cursor, 0, len(lines)-1)
+			start := clamp(cursor-room/2, 0, len(lines)-room)
+			lines = lines[start : start+room]
+		}
+		lines = append(head, lines...)
+		if len(lines) > s.H {
+			lines = lines[:s.H]
+		}
 	}
 	return layout.Block(strings.Join(lines, "\n")).Render(s)
 }

@@ -16,13 +16,23 @@ func (m Model) LayoutNode() layout.Node { return listNode{m} }
 type listNode struct{ m Model }
 
 func (n listNode) Measure(c layout.Constraints) layout.Size {
-	w := 0
-	for _, it := range n.m.Items {
-		if lw := 2 + 3 + 1 + ansi.Width(it.Label); lw > w {
+	w, h := 0, 0
+	for _, r := range n.m.visible() {
+		if lw := 2 + 3 + 1 + ansi.Width(n.m.Items[r.Index].Label); lw > w {
 			w = lw
 		}
+		h++
 	}
-	return c.Constrain(layout.Size{W: w, H: len(n.m.Items)})
+	if n.m.Filter {
+		h++ // the query line
+		if h == 1 {
+			h = 2 // "no matches"
+		}
+		if qw := 2 + ansi.Width(n.m.query); qw > w {
+			w = qw
+		}
+	}
+	return c.Constrain(layout.Size{W: w, H: h})
 }
 
 func (n listNode) Render(s layout.Size) string {
@@ -30,8 +40,15 @@ func (n listNode) Render(s layout.Size) string {
 		return ""
 	}
 	var lines []string
-	if len(n.m.Items) > 0 {
-		lines = layout.Window(strings.Split(n.m.View(), "\n"), n.m.cursor, s.H)
+	if len(n.m.Items) > 0 || n.m.Filter {
+		all := strings.Split(n.m.View(), "\n")
+		if n.m.Filter && len(all) > 1 && s.H > 1 {
+			// Keep the query line on top, window the items under it.
+			row := n.m.rowOf(n.m.visible())
+			lines = append([]string{all[0]}, layout.Window(all[1:], max(row, 0), s.H-1)...)
+		} else {
+			lines = layout.Window(all, n.m.cursor, s.H)
+		}
 	}
 	return layout.Block(strings.Join(lines, "\n")).Render(s)
 }

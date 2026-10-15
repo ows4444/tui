@@ -23,7 +23,7 @@ const componentTier = 5
 
 // tiers maps a module-relative import path ("" is the root runtime) to its tier.
 var tiers = map[string]int{
-	"ansi": 0, "layout": 0, "theme": 0, "motion": 0, "term": 0,
+	"ansi": 0, "layout": 0, "theme": 0, "motion": 0, "term": 0, "fuzzy": 0,
 	"input": 1, "keymap": 1,
 	"hittest": 2, "cellbuf": 2,
 	"":        3,
