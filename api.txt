@@ -1422,16 +1422,22 @@ type SelectedMsg struct {
 
 ## github.com/ows4444/tui/datatable (package datatable)
 
+func (m *Model) ClearSort()
 func (m *Model) SetCursor(i int)
+func (m *Model) SetQuery(q string)
 func (m *Model) SetRows(rows [][]string)
+func (m *Model) SortBy(col int, desc bool)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
+func (m Model) Filtering() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) Offset() int
+func (m Model) Query() string
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Sorted() (col int, desc, ok bool)
+func (m Model) SourceRow(i int) int
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
@@ -1449,6 +1455,8 @@ type KeyMap struct {
 	Sort	keymap.Binding
 
 	Left, Right	keymap.Binding
+
+	Filter, ClearSort	keymap.Binding
 }
 type Model struct {
 	Headers	[]string
@@ -1471,12 +1479,16 @@ type Model struct {
 
 	WheelStep	int
 
+	Filter	bool
+
 	ColumnWidths	[]int
 	// contains filtered or unexported fields
 }
 type SelectedMsg struct {
 	Row	int
 	Cells	[]string
+
+	SourceRow	int
 }
 
 ## github.com/ows4444/tui/datepicker (package datepicker)

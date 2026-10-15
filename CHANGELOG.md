@@ -12,6 +12,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `datatable.Model.Filter`: "/" opens a filter line that keeps the rows whose
+  cells fuzzy-match the typed text; Enter closes the line and keeps the filter,
+  Esc clears it. `Query`, `SetQuery` and `Filtering` read and set it. Off by
+  default.
+- `datatable.Model.SortBy` and `ClearSort`, and `KeyMap.ClearSort` ("S"): sort
+  from code, and put the rows back in the order they were given. `SourceRow`
+  and `SelectedMsg.SourceRow` map a shown row to the row given to `New`.
 - `form.SelectOf`, `form.Option` and `form.Value`: a select whose options carry
   a value of any type, read back with `Value[T]`; `form.Bool` and `form.Int`
   read a checkbox and a number field. The string values in `Values` and
@@ -44,6 +51,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Changed
 
+- `datatable.Model.SetRows` applies the sort and filter that are active to the
+  new rows; before, a sorted table showed its sort arrow over rows in the given
+  order.
 - `commandpalette` lists matching commands best first instead of in the order
   given, using `fuzzy`. The set of commands that match is unchanged.
 
