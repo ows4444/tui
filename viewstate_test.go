@@ -110,3 +110,69 @@ func TestViewStateIgnoredInAccessibleMode(t *testing.T) {
 		t.Errorf("accessible mode entered the alt screen:\n%q", out.String())
 	}
 }
+
+func TestSetProgressWritesTheSequenceAndClearsItOnExit(t *testing.T) {
+	out := &bytes.Buffer{}
+	p := NewProgram(stateModel{}, WithOutput(out), WithAltScreen(false))
+	p.width, p.height = 20, 5
+	if m, ok := SetProgress(ProgressNormal, 42)().(modeMsg); ok {
+		m.apply(p)
+	}
+	if !strings.Contains(out.String(), "\x1b]9;4;1;42\x07") {
+		t.Fatalf("progress not written: %q", out.String())
+	}
+	p.outMu.Lock()
+	restore := p.titleAndShapeRestoreLocked()
+	p.outMu.Unlock()
+	if !strings.Contains(restore, "\x1b]9;4;0;0\x07") {
+		t.Errorf("exit does not clear the indicator: %q", restore)
+	}
+	// Clamped and zeroed where a percent means nothing.
+	for _, c := range []struct {
+		st   ProgressState
+		pct  int
+		want string
+	}{
+		{ProgressNormal, 250, "\x1b]9;4;1;100\x07"},
+		{ProgressError, -3, "\x1b]9;4;2;0\x07"},
+		{ProgressIndeterminate, 60, "\x1b]9;4;3;0\x07"},
+		{ProgressPaused, 7, "\x1b]9;4;4;7\x07"},
+		{ProgressNone, 50, "\x1b]9;4;0;0\x07"},
+		{ProgressState(99), 50, "\x1b]9;4;0;0\x07"},
+	} {
+		if got := progressSeq(c.st, c.pct); got != c.want {
+			t.Errorf("progressSeq(%d, %d) = %q, want %q", c.st, c.pct, got, c.want)
+		}
+	}
+}
+
+func TestViewStateProgressIsWrittenOncePerChange(t *testing.T) {
+	m := stateModel{}
+	pr := Progress{State: ProgressNormal, Percent: 10}
+	out := &bytes.Buffer{}
+	p := NewProgram(progressModel{m, &pr}, WithOutput(out), WithAltScreen(false))
+	p.width, p.height = 20, 5
+	p.render()
+	if !strings.Contains(out.String(), "\x1b]9;4;1;10\x07") {
+		t.Fatalf("not written: %q", out.String())
+	}
+	out.Reset()
+	p.render()
+	if strings.Contains(out.String(), "\x1b]9;4;") {
+		t.Errorf("rewritten while unchanged: %q", out.String())
+	}
+	pr.Percent = 55
+	out.Reset()
+	p.render()
+	if !strings.Contains(out.String(), "\x1b]9;4;1;55\x07") {
+		t.Errorf("a changed percent was not written: %q", out.String())
+	}
+}
+
+type progressModel struct {
+	stateModel
+	pr *Progress
+}
+
+func (m progressModel) ViewState() ViewState    { return ViewState{Progress: m.pr} }
+func (m progressModel) Update(Msg) (Model, Cmd) { return m, nil }

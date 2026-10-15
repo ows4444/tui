@@ -3,6 +3,7 @@ package tui
 import (
 	"encoding/base64"
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
@@ -36,6 +37,9 @@ func (p *Program) titleAndShapeRestoreLocked() string {
 	if p.titleSaved {
 		s += titlePop
 	}
+	if p.progressSet {
+		s += progressSeq(ProgressNone, 0)
+	}
 	return s
 }
 
@@ -46,7 +50,7 @@ func (p *Program) takeTitleAndShapeRestore() string {
 	p.outMu.Lock()
 	defer p.outMu.Unlock()
 	s := p.titleAndShapeRestoreLocked()
-	p.titleSaved, p.cursorShaped = false, false
+	p.titleSaved, p.cursorShaped, p.progressSet = false, false, false
 	return s
 }
 
@@ -83,6 +87,52 @@ func SetCursorShape(s CursorShape) Cmd {
 			p.cursorShaped = s != CursorShapeDefault
 			p.outMu.Unlock()
 			p.write(cursorShapeSeq(s))
+		}}
+	}
+}
+
+// ProgressState is what a terminal's progress indicator shows (OSC 9;4), which
+// terminals such as Windows Terminal, iTerm2, WezTerm and Ghostty draw in the
+// tab or the taskbar.
+type ProgressState int
+
+// The progress states, numbered as the sequence's state parameter.
+const (
+	// ProgressNone removes the indicator.
+	ProgressNone ProgressState = iota
+	// ProgressNormal shows a bar at the given percent.
+	ProgressNormal
+	// ProgressError shows a bar at the given percent in the error colour.
+	ProgressError
+	// ProgressIndeterminate shows a busy indicator with no value.
+	ProgressIndeterminate
+	// ProgressPaused shows a bar at the given percent in the warning colour.
+	ProgressPaused
+)
+
+// progressSeq is OSC 9;4;state;percent, percent clamped to 0..100.
+func progressSeq(st ProgressState, percent int) string {
+	if st < ProgressNone || st > ProgressPaused {
+		st = ProgressNone
+	}
+	if st == ProgressNone || st == ProgressIndeterminate {
+		percent = 0
+	}
+	percent = min(max(percent, 0), 100)
+	return "\x1b]9;4;" + strconv.Itoa(int(st)) + ";" + strconv.Itoa(percent) + "\x07"
+}
+
+// SetProgress returns a Cmd that sets the terminal's progress indicator (OSC
+// 9;4): a bar at percent (0 to 100), an error or paused bar, a busy indicator
+// with no value, or none. The Program removes the indicator on every exit
+// path. Terminals that do not know the sequence ignore it.
+func SetProgress(state ProgressState, percent int) Cmd {
+	return func() Msg {
+		return modeMsg{apply: func(p *Program) {
+			p.outMu.Lock()
+			p.progressSet = state != ProgressNone
+			p.outMu.Unlock()
+			p.write(progressSeq(state, percent))
 		}}
 	}
 }

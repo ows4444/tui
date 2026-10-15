@@ -98,6 +98,7 @@ goes to `Update`. A nil Cmd does nothing.
 | `Println(text)`, `Eprintln(text)` | Write text above the live region, into scrollback (see below) |
 | `Suspend(fn)` | Hands the terminal back while `fn` runs (see below) |
 | `EnableMouse(mode)`, `EnterAltScreen()`, `ExitAltScreen()`, `ClearScreen()` | Change a terminal mode while running |
+| `SetProgress(state, percent)` | Show a progress bar in the terminal's tab or taskbar (OSC 9;4); removed on exit |
 | `SetWindowTitle(s)`, `SetCursorShape(s)` | Both are undone on every exit path |
 | `ReadClipboard()` | Asks the terminal for the clipboard over OSC 52; many terminals refuse, so no reply may come |
 | `Announce(text)`, `AnnounceWith(text, level)` | See [accessibility.md](accessibility.md) |

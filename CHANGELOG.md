@@ -143,6 +143,9 @@ has one section per identifier.
 
 ### Added
 
+- `tui.SetProgress`, `ProgressState` and `ViewState.Progress`: the terminal's
+  progress indicator (OSC 9;4), as a bar at a percent, an error or paused bar, a
+  busy indicator, or none. The Program removes it on every exit path.
 - `cmd/tui`: `go run github.com/ows4444/tui/cmd/tui new myapp` writes a new
   program (`go.mod`, `main.go`, a `tuitest` test, a README) that builds and
   passes its own test; `-module` sets the module path. It adds no dependency

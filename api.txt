@@ -125,6 +125,17 @@ const (
 
 	Assertive
 )
+const (
+	ProgressNone	ProgressState	= iota
+
+	ProgressNormal
+
+	ProgressError
+
+	ProgressIndeterminate
+
+	ProgressPaused
+)
 const AnnounceTTL = announce.TTL
 const DefaultCapabilityProbeTimeout = 500 * time.Millisecond
 const InspectorOff = "off"
@@ -164,6 +175,7 @@ func ReadClipboard() Cmd
 func RunCmd(ctx context.Context, cmd Cmd) Msg
 func Sequence(cmds ...Cmd) Cmd
 func SetCursorShape(s CursorShape) Cmd
+func SetProgress(state ProgressState, percent int) Cmd
 func SetWindowTitle(title string) Cmd
 func Suspend(fn func() error) Cmd
 func Tick(d time.Duration, fn func(time.Time) Msg) Cmd
@@ -315,6 +327,11 @@ type Program struct {
 	// contains filtered or unexported fields
 }
 type ProgramOption func(*Program)
+type Progress struct {
+	State	ProgressState
+	Percent	int
+}
+type ProgressState int
 type QuitMsg struct{}
 type ReplyEvent = input.ReplyEvent
 type ResizeMsg struct {
@@ -352,6 +369,8 @@ type ViewState struct {
 	Mouse	*MouseMode
 
 	Title	*string
+
+	Progress	*Progress
 }
 type ViewStater interface {
 	ViewState() ViewState

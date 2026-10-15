@@ -14,7 +14,7 @@ package tui
 //	}
 //
 // It is the declarative counterpart of the EnableMouse, EnterAltScreen,
-// ExitAltScreen and SetWindowTitle Cmds, which stay available.
+// ExitAltScreen, SetWindowTitle and SetProgress Cmds, which stay available.
 type ViewState struct {
 	// AltScreen is whether the alternate screen is in use.
 	AltScreen *bool
@@ -22,6 +22,14 @@ type ViewState struct {
 	Mouse *MouseMode
 	// Title is the terminal window title.
 	Title *string
+	// Progress is the terminal's progress indicator (see SetProgress).
+	Progress *Progress
+}
+
+// Progress is a progress indicator state for ViewState.
+type Progress struct {
+	State   ProgressState
+	Percent int
 }
 
 // ViewStater is implemented by a Model that states a ViewState. The Program
@@ -62,6 +70,11 @@ func (p *Program) applyViewState() {
 	}
 	if st.Mouse != nil && *st.Mouse != mouse {
 		run(EnableMouse(*st.Mouse))
+	}
+	if st.Progress != nil && (p.viewProgress == nil || *st.Progress != *p.viewProgress) {
+		pr := *st.Progress
+		p.viewProgress = &pr
+		run(SetProgress(pr.State, pr.Percent))
 	}
 	if st.Title != nil && (!p.viewTitleSet || *st.Title != p.viewTitle) {
 		p.viewTitle, p.viewTitleSet = *st.Title, true
