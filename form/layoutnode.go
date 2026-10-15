@@ -23,7 +23,12 @@ func (n formNode) child(i int) layout.Node { return n.m.inputs[i].layoutNode(n.m
 
 func (n formNode) Measure(c layout.Constraints) layout.Size {
 	var size layout.Size
-	for i := range n.m.inputs {
+	for _, h := range n.m.headerRows() {
+		size.H++
+		size.W = max(size.W, ansi.Width(h))
+	}
+	lo, hi := n.m.span()
+	for i := lo; i < hi; i++ {
 		w := n.child(i).Measure(layout.Unconstrained()).W
 		size.H++
 		if e := n.m.errs[i]; e != "" {
@@ -41,8 +46,12 @@ func (n formNode) Render(s layout.Size) string {
 	}
 	errStyle := ansi.NewStyle().Foreground(n.m.themed().Error)
 	var rows []string
+	for _, h := range n.m.headerRows() {
+		rows = append(rows, layout.Block(h).Render(layout.Size{W: s.W, H: 1}))
+	}
 	focusEnd := 0 // index of the last row belonging to the focused field
-	for i := range n.m.inputs {
+	lo, hi := n.m.span()
+	for i := lo; i < hi; i++ {
 		rows = append(rows, n.child(i).Render(layout.Size{W: s.W, H: 1}))
 		if e := n.m.errs[i]; e != "" {
 			rows = append(rows, layout.Block("  "+errStyle.Render(e)).Render(layout.Size{W: s.W, H: 1}))

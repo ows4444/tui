@@ -60,7 +60,7 @@ func (n tableNode) Measure(c layout.Constraints) layout.Size {
 		return c.Constrain(layout.Size{})
 	}
 	w := n.naturalWidths()
-	return c.Constrain(layout.Size{W: cursorGutter + sum(w) + gap*(len(w)-1), H: len(n.m.Rows) + 2})
+	return c.Constrain(layout.Size{W: cursorGutter + sum(w) + gap*(len(w)-1), H: len(n.m.Rows) + 2 + n.m.top()})
 }
 
 // fitWidths shrinks the widest column one cell at a time until the columns
@@ -101,6 +101,17 @@ func (n tableNode) Render(s layout.Size) string {
 	m := n.m
 	if len(m.Headers) == 0 {
 		return layout.Block("").Render(s)
+	}
+	if m.top() > 0 {
+		line := layout.Block(m.filterLine()).Render(layout.Size{W: s.W, H: 1})
+		if s.H == 1 {
+			return line
+		}
+		below := s
+		below.H--
+		sub := m
+		sub.query, sub.editing = "", false // no second line from the node below
+		return line + "\n" + tableNode{sub}.Render(below)
 	}
 	ellipsis := m.themed().GlyphSet().Ellipsis
 	widths := fitWidths(n.naturalWidths(), s.W-cursorGutter)

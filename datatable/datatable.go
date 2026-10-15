@@ -1,12 +1,17 @@
 // Package datatable is widgets.Table plus row navigation — InkUI's
-// "DataTable". It doesn't own sorting or filtering (the same reasoning
-// tabs doesn't own tab content): the caller passes in already-sorted/
-// filtered Headers/Rows and DataTable only adds cursor-based row
-// highlighting and a SelectedMsg on top of that.
+// "DataTable": cursor-based row highlighting and a SelectedMsg on top of
+// widgets.Table, a column sort, and an optional filter line.
+//
+// The sort key orders the rows by the current column (numbers as numbers),
+// ascending then descending; SortBy and ClearSort do the same from code. With
+// Filter on, "/" opens a filter line: typed text keeps the rows whose cells
+// fuzzy-match it, Enter closes the line and keeps the filter, Esc clears it.
+// Rows is what is shown; SetRows replaces the rows given in, and SourceRow
+// maps a shown row back to its place in them. Assign Rows directly only when
+// no sort or filter is active.
 package datatable
 
 import (
-	"sort"
 	"strconv"
 	"strings"
 
@@ -66,6 +71,11 @@ type Model struct {
 	// WheelStep is the rows scrolled per wheel notch; zero means 3.
 	WheelStep int
 
+	// Filter, when true, lets KeyMap.Filter ("/") open a filter line above the
+	// table: see the package comment. Off (the default), no key opens it and
+	// the table is as before.
+	Filter bool
+
 	// ColumnWidths fixes column widths for LayoutNode: entry i, when positive,
 	// is the width of column i; zero, a negative entry or a missing entry
 	// leaves that column at its natural (content) width. Fixed widths do not
@@ -89,6 +99,14 @@ type Model struct {
 	sorted   bool
 	// resizeH is the last ResizeMsg height, used when Height == 0.
 	resizeH int
+
+	// query and editing are the filter line. src holds the rows in the
+	// caller's order while a sort or filter makes Rows a different slice, and
+	// idx maps each row of Rows to its place in src; both are nil otherwise.
+	query   string
+	editing bool
+	src     [][]string
+	idx     []int
 }
 
 // chrome is the header line plus the divider line above the data rows.
@@ -104,7 +122,7 @@ func (m Model) height() int {
 		return m.Height
 	}
 	if m.resizeH > 0 {
-		return max(m.resizeH-chrome, 1)
+		return max(m.resizeH-chrome-m.top(), 1)
 	}
 	return 0
 }
@@ -138,9 +156,19 @@ func New(headers []string, rows [][]string) Model {
 // SetRows replaces the rows and invalidates the cached natural column widths.
 // Call it (rather than assigning Rows) after editing cells in place, which
 // the cache cannot see. The cursor is clamped to the new rows.
+//
+// With a sort or filter active the new rows are sorted and filtered the same
+// way, and the cursor keeps its index.
 func (m *Model) SetRows(rows [][]string) {
-	m.Rows = rows
 	m.widths = &widthCache{}
+	if m.src != nil || m.sorted || m.query != "" {
+		keep := m.cursor
+		m.src = rows
+		m.rebuild(false)
+		m.SetCursor(keep)
+		return
+	}
+	m.Rows = rows
 	m.SetCursor(m.cursor)
 }
 
@@ -156,22 +184,27 @@ type KeyMap struct {
 	Sort keymap.Binding
 	// Left and Right move the current column, scrolling wide tables.
 	Left, Right keymap.Binding
+	// Filter opens the filter line, and ClearSort puts the rows back in their
+	// given order. Filter works only when Model.Filter is true.
+	Filter, ClearSort keymap.Binding
 }
 
 // DefaultKeyMap returns the default keys: arrows, PgUp/PgDn, Home/End,
 // Enter, "s" to sort, Left/Right for columns.
 func DefaultKeyMap() KeyMap {
 	return KeyMap{
-		Up:       keymap.NewBinding("up", "up"),
-		Down:     keymap.NewBinding("down", "down"),
-		PageUp:   keymap.NewBinding("page up", "pgup"),
-		PageDown: keymap.NewBinding("page down", "pgdown"),
-		Top:      keymap.NewBinding("top", "home"),
-		Bottom:   keymap.NewBinding("bottom", "end"),
-		Select:   keymap.NewBinding("select", "enter"),
-		Sort:     keymap.NewBinding("sort", "s"),
-		Left:     keymap.NewBinding("previous column", "left"),
-		Right:    keymap.NewBinding("next column", "right"),
+		Up:        keymap.NewBinding("up", "up"),
+		Down:      keymap.NewBinding("down", "down"),
+		PageUp:    keymap.NewBinding("page up", "pgup"),
+		PageDown:  keymap.NewBinding("page down", "pgdown"),
+		Top:       keymap.NewBinding("top", "home"),
+		Bottom:    keymap.NewBinding("bottom", "end"),
+		Select:    keymap.NewBinding("select", "enter"),
+		Sort:      keymap.NewBinding("sort", "s"),
+		Left:      keymap.NewBinding("previous column", "left"),
+		Right:     keymap.NewBinding("next column", "right"),
+		Filter:    keymap.NewBinding("filter", "/"),
+		ClearSort: keymap.NewBinding("unsort", "S"),
 	}
 }
 
@@ -179,7 +212,8 @@ func DefaultKeyMap() KeyMap {
 func (m Model) keys() KeyMap {
 	k := m.KeyMap
 	if len(k.Up.Keys)+len(k.Down.Keys)+len(k.PageUp.Keys)+len(k.PageDown.Keys)+len(k.Top.Keys)+
-		len(k.Bottom.Keys)+len(k.Select.Keys)+len(k.Sort.Keys)+len(k.Left.Keys)+len(k.Right.Keys) == 0 {
+		len(k.Bottom.Keys)+len(k.Select.Keys)+len(k.Sort.Keys)+len(k.Left.Keys)+len(k.Right.Keys)+
+		len(k.Filter.Keys)+len(k.ClearSort.Keys) == 0 {
 		return DefaultKeyMap()
 	}
 	return k
@@ -188,7 +222,11 @@ func (m Model) keys() KeyMap {
 // Bindings returns the active bindings, for help widgets.
 func (m Model) Bindings() []keymap.Binding {
 	k := m.keys()
-	return []keymap.Binding{k.Up, k.Down, k.PageUp, k.PageDown, k.Top, k.Bottom, k.Select, k.Sort, k.Left, k.Right}
+	out := []keymap.Binding{k.Up, k.Down, k.PageUp, k.PageDown, k.Top, k.Bottom, k.Select, k.Sort, k.Left, k.Right}
+	if m.Filter {
+		out = append(out, k.Filter)
+	}
+	return out
 }
 
 // Offset returns the index of the first visible row.
@@ -201,48 +239,10 @@ func (m Model) Offset() int {
 // rows are in the caller's order.
 func (m Model) Sorted() (col int, desc, ok bool) { return m.sortCol, m.sortDesc, m.sorted }
 
-// sortBy orders the rows by column c: ascending on first use, toggling
-// direction when c is already the sort column. Numeric cells compare as
-// numbers, others as strings; the sort is stable. The cursor follows its
-// row. Rows is replaced by a new slice, never mutated in place.
+// sortBy is the sort key's action: order the rows by column c, ascending on
+// first use, toggling direction when c is already the sort column.
 func (m *Model) sortBy(c int) {
-	m.sortDesc = m.sorted && m.sortCol == c && !m.sortDesc
-	m.sortCol, m.sorted = c, true
-	idx := make([]int, len(m.Rows))
-	for i := range idx {
-		idx[i] = i
-	}
-	cell := func(i int) string {
-		if c < len(m.Rows[i]) {
-			return m.Rows[i][c]
-		}
-		return ""
-	}
-	less := func(x, y string) bool {
-		fx, ex := strconv.ParseFloat(x, 64)
-		fy, ey := strconv.ParseFloat(y, 64)
-		if ex == nil && ey == nil {
-			return fx < fy
-		}
-		return x < y
-	}
-	sort.SliceStable(idx, func(a, b int) bool {
-		x, y := cell(idx[a]), cell(idx[b])
-		if m.sortDesc {
-			return less(y, x)
-		}
-		return less(x, y)
-	})
-	rows := make([][]string, len(m.Rows))
-	cursor := m.cursor
-	for i, j := range idx {
-		rows[i] = m.Rows[j]
-		if j == m.cursor {
-			cursor = i
-		}
-	}
-	m.Rows, m.cursor = rows, cursor
-	m.widths.rekey(m.Rows) // same cells, new order: the widths still hold
+	m.SortBy(c, m.sorted && m.sortCol == c && !m.sortDesc)
 }
 
 // fitCols returns how many columns, starting at first, fit in Width (at
@@ -323,7 +323,7 @@ func (m Model) mouse(ev tui.MouseEvent) Model {
 		m.cursor = clamp(m.cursor, start, start+n-1)
 	case tui.MouseButtonLeft:
 		_, ly := m.Bounds.Local(ev.X, ev.Y)
-		if row := start + ly - chrome; ly >= chrome && row < start+n {
+		if row := start + ly - chrome - m.top(); ly >= chrome+m.top() && row < start+n {
 			m.cursor = row
 			m.reveal()
 		}
@@ -350,6 +350,11 @@ func (m *Model) SetCursor(i int) {
 type SelectedMsg struct {
 	Row   int
 	Cells []string
+
+	// SourceRow is the row's index among the rows given to New or SetRows;
+	// Row is its index among those shown, which differs while the rows are
+	// sorted or filtered.
+	SourceRow int
 }
 
 // Update moves the cursor on Up/Down and confirms the row under it on
@@ -367,11 +372,29 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		}
 		return m.mouse(ev), nil
 	}
-	if _, ok := msg.(tui.Key); !ok || len(m.Rows) == 0 {
+	if _, ok := msg.(tui.Key); !ok {
 		return m, nil
 	}
-
 	k := m.keys()
+	if m.Filter {
+		// The filter line works with no rows too, so a query that matches
+		// nothing can still be edited away.
+		if m.editing {
+			if m.editFilter(msg, k) {
+				return m, nil
+			}
+		} else if keymap.Matches(msg, k.Filter) {
+			m.editing = true
+			return m, nil
+		} else if key := msg.(tui.Key); key.Type == tui.KeyEsc && m.query != "" {
+			m.query = ""
+			m.rebuild(false)
+			return m, nil
+		}
+	}
+	if len(m.Rows) == 0 {
+		return m, nil
+	}
 	page := m.height()
 	if page <= 0 {
 		page = defaultPage
@@ -395,11 +418,14 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.cursor = len(m.Rows) - 1
 	case keymap.Matches(msg, k.Select):
 		row, cells := m.cursor, m.Rows[m.cursor]
-		return m, func() tui.Msg { return SelectedMsg{Row: row, Cells: cells} }
+		src := m.SourceRow(row)
+		return m, func() tui.Msg { return SelectedMsg{Row: row, SourceRow: src, Cells: cells} }
 	case keymap.Matches(msg, k.Sort):
 		if m.col < len(m.Headers) {
 			m.sortBy(m.col)
 		}
+	case keymap.Matches(msg, k.ClearSort):
+		m.ClearSort()
 	case keymap.Matches(msg, k.Left):
 		m.moveCol(-1)
 	case keymap.Matches(msg, k.Right):
@@ -467,7 +493,11 @@ func (m Model) View() string {
 		}
 		return ansi.Style{}
 	}, m.themed())
-	return withGutter(table, start, m.cursor)
+	out := withGutter(table, start, m.cursor)
+	if m.top() > 0 {
+		out = m.filterLine() + "\n" + out
+	}
+	return out
 }
 
 // withGutter prefixes every line of table with the marker column: "> " on the

@@ -27,6 +27,13 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	if len(m.Headers) == 0 {
 		return
 	}
+	if m.top() > 0 {
+		tui.DrawView(buf, cellbuf.Rect{X: r.X, Y: r.Y, W: r.W, H: 1}, m.filterLine())
+		below := m
+		below.query, below.editing = "", false
+		below.DrawCells(buf, cellbuf.Rect{X: r.X, Y: r.Y + 1, W: r.W, H: max(r.H-1, 0)})
+		return
+	}
 	sub := buf.Sub(r)
 	hid, ok1 := styleID(sub, ansi.NewStyle().Bold().Foreground(m.themed().Primary))
 	did, ok2 := styleID(sub, ansi.NewStyle().Foreground(m.themed().Muted))

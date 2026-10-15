@@ -1422,16 +1422,22 @@ type SelectedMsg struct {
 
 ## github.com/ows4444/tui/datatable (package datatable)
 
+func (m *Model) ClearSort()
 func (m *Model) SetCursor(i int)
+func (m *Model) SetQuery(q string)
 func (m *Model) SetRows(rows [][]string)
+func (m *Model) SortBy(col int, desc bool)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
+func (m Model) Filtering() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) Offset() int
+func (m Model) Query() string
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Sorted() (col int, desc, ok bool)
+func (m Model) SourceRow(i int) int
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
@@ -1449,6 +1455,8 @@ type KeyMap struct {
 	Sort	keymap.Binding
 
 	Left, Right	keymap.Binding
+
+	Filter, ClearSort	keymap.Binding
 }
 type Model struct {
 	Headers	[]string
@@ -1471,12 +1479,16 @@ type Model struct {
 
 	WheelStep	int
 
+	Filter	bool
+
 	ColumnWidths	[]int
 	// contains filtered or unexported fields
 }
 type SelectedMsg struct {
 	Row	int
 	Cells	[]string
+
+	SourceRow	int
 }
 
 ## github.com/ows4444/tui/datepicker (package datepicker)
@@ -1820,8 +1832,10 @@ func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Current() string
+func (m Model) CurrentGroup() int
 func (m Model) Err(name string) string
 func (m Model) Focused() bool
+func (m Model) GroupCount() int
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -1831,13 +1845,18 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) Values() map[string]string
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
+func Bool(m Model, name string) bool
 func DefaultKeyMap() KeyMap
 func Email() Validator
+func Int(m Model, name string) (int, error)
 func Match(re *regexp.Regexp, msg string) Validator
 func MaxLen(n int) Validator
 func MinLen(n int) Validator
 func New(fields ...Field) Model
+func NewGroups(groups ...Group) Model
 func Required() Validator
+func SelectOf[T any](name, label string, options ...Option[T]) Field
+func Value[T any](m Model, name string) (v T, ok bool)
 type Field struct {
 	Name	string
 	Label	string
@@ -1845,6 +1864,8 @@ type Field struct {
 	Kind	FieldKind
 
 	Options	[]string
+
+	OptionsFunc	func(values map[string]string) []string
 
 	Placeholder	string
 
@@ -1854,13 +1875,26 @@ type Field struct {
 
 	Width		int
 	Validators	[]Validator
+	// contains filtered or unexported fields
 }
 type FieldKind int
+type Group struct {
+	Title	string
+
+	Description	string
+
+	Fields	[]Field
+
+	Hide	func(values map[string]string) bool
+}
 type KeyMap struct {
 	Submit		keymap.Binding
 	SelectPrev	keymap.Binding
 	SelectNext	keymap.Binding
 	Toggle		keymap.Binding
+
+	NextGroup	keymap.Binding
+	PrevGroup	keymap.Binding
 }
 type Model struct {
 	Theme	theme.Theme
@@ -1871,6 +1905,10 @@ type Model struct {
 
 	Bounds	hittest.Rect
 	// contains filtered or unexported fields
+}
+type Option[T any] struct {
+	Label	string
+	Value	T
 }
 type SubmittedMsg struct {
 	Values map[string]string
@@ -3524,16 +3562,21 @@ type State struct {
 
 func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
+func (m *Model) InsertString(s string)
 func (m *Model) Reset()
 func (m *Model) SelectAll()
 func (m *Model) SetCursor(pos int)
+func (m *Model) SetCursorPosition(line, col int)
 func (m *Model) SetValue(s string)
 func (m Model) Bindings() []keymap.Binding
+func (m Model) Column() int
 func (m Model) Cursor() int
 func (m Model) CursorCell() (x, y int, ok bool)
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Focused() bool
 func (m Model) LayoutNode() layout.Node
+func (m Model) Line() int
+func (m Model) LineCount() int
 func (m Model) Linearize() string
 func (m Model) SelectedText() string
 func (m Model) Selection() (lo, hi int, ok bool)
@@ -3580,6 +3623,10 @@ type Model struct {
 	CursorStyle		ansi.Style
 
 	SelectionStyle	ansi.Style
+
+	ShowLineNumbers	bool
+
+	LineNumberStyle	ansi.Style
 
 	UndoLimit	int
 
@@ -4497,12 +4544,34 @@ func LinearizeBarChart(items []BarItem) string
 func LinearizeGauge(percent float64) string
 func LinearizeHeatMap(values [][]float64) string
 func LinearizeLineChart(values []float64) string
+func LinearizePlot(series []Series, o PlotOptions) string
 func LinearizeSparkline(values []float64) string
+func Plot(series []Series, o PlotOptions, t theme.Theme) string
 func Sparkline(values []float64) string
 func SparklineWith(values []float64, t theme.Theme) string
 type BarItem struct {
 	Label	string
 	Value	float64
+}
+type PlotOptions struct {
+	Width, Height	int
+
+	Min, Max	float64
+
+	YTicks	int
+
+	XLabels	[]string
+
+	YFormat	func(float64) string
+
+	Legend	bool
+}
+type Series struct {
+	Name	string
+
+	Values	[]float64
+
+	Color	ansi.Color
 }
 
 ## github.com/ows4444/tui/wizard (package wizard)

@@ -49,3 +49,54 @@ func Example() {
 	// email: ada@example.com
 	// password entered: true
 }
+
+// Fields in groups: the form shows one group at a time, Enter checks it and
+// moves on, and a group can be hidden by what is already entered.
+func ExampleNewGroups() {
+	m := form.NewGroups(
+		form.Group{Title: "Account", Fields: []form.Field{
+			{Name: "email", Label: "Email", Value: "ada@example.com", Validators: []form.Validator{form.Required()}},
+		}},
+		form.Group{Title: "Company", Fields: []form.Field{
+			{Name: "company", Label: "Company", Validators: []form.Validator{form.Required()}},
+		}, Hide: func(v map[string]string) bool { return v["email"] != "" }},
+		form.Group{Title: "Done", Fields: []form.Field{
+			{Name: "terms", Label: "Accept terms", Kind: form.FieldCheckbox},
+		}},
+	)
+	m.Focus()
+	fmt.Println(m.GroupCount(), "groups, showing", m.CurrentGroup())
+
+	m, _ = m.Update(tui.Key{Type: tui.KeyEnter}) // Account is valid; Company is hidden
+	fmt.Println("now showing", m.CurrentGroup(), m.Current())
+
+	_, cmd := m.Update(tui.Key{Type: tui.KeyEnter}) // the last group submits
+	fmt.Println(cmd().(form.SubmittedMsg).Values)
+	// Output:
+	// 2 groups, showing 0
+	// now showing 2 terms
+	// map[email:ada@example.com terms:false]
+}
+
+// A select whose choices carry a typed value, and a select whose options come
+// from another field.
+func ExampleSelectOf() {
+	m := form.New(
+		form.SelectOf("size", "Size",
+			form.Option[int]{Label: "Small", Value: 1},
+			form.Option[int]{Label: "Large", Value: 10}),
+		form.Field{Name: "city", Label: "City", Kind: form.FieldSelect,
+			OptionsFunc: func(v map[string]string) []string {
+				if v["size"] == "Large" {
+					return []string{"Tokyo", "Lahore"}
+				}
+				return []string{"Kyoto"}
+			}},
+	)
+	m.Focus()
+	m, _ = m.Update(tui.Key{Type: tui.KeyRight}) // Small -> Large
+
+	size, _ := form.Value[int](m, "size")
+	fmt.Println(size, m.Values()["city"])
+	// Output: 10 Tokyo
+}

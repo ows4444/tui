@@ -12,6 +12,38 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `chart.Plot`, `chart.Series`, `chart.PlotOptions` and `chart.LinearizePlot`:
+  several series drawn as braille lines on a shared y axis with labelled ticks,
+  an x axis with optional labels and a legend. A fixed `Min` and `Max` or the
+  data's range; NaN and infinite values leave a gap; ASCII glyph sets draw
+  with `+`, `-` and `|`.
+- `textarea.Model.ShowLineNumbers` and `LineNumberStyle`: a right-aligned
+  line-number column left of the text, blank on soft-wrapped continuation rows.
+  The column is extra width, so `Width` still counts the text only; the cursor
+  cell, mouse clicks, `DrawCells` and `LayoutNode` account for it. Off by default.
+- `textarea.Model.Line`, `Column`, `LineCount`, `SetCursorPosition` and
+  `InsertString`: where the cursor is as a line and column, move it there, and
+  insert text at it as one undo step.
+- `datatable.Model.Filter`: "/" opens a filter line that keeps the rows whose
+  cells fuzzy-match the typed text; Enter closes the line and keeps the filter,
+  Esc clears it. `Query`, `SetQuery` and `Filtering` read and set it. Off by
+  default.
+- `datatable.Model.SortBy` and `ClearSort`, and `KeyMap.ClearSort` ("S"): sort
+  from code, and put the rows back in the order they were given. `SourceRow`
+  and `SelectedMsg.SourceRow` map a shown row to the row given to `New`.
+- `form.SelectOf`, `form.Option` and `form.Value`: a select whose options carry
+  a value of any type, read back with `Value[T]`; `form.Bool` and `form.Int`
+  read a checkbox and a number field. The string values in `Values` and
+  `SubmittedMsg` are unchanged.
+- `form.Field.OptionsFunc`: a select's options computed from the other fields'
+  values, asked after every change; the chosen option stays while still offered.
+- `form.NewGroups`, `form.Group` and the `form.KeyMap` fields `NextGroup` and
+  `PrevGroup`: a form of titled groups, one showing at a time under its title
+  and "step n of N". Enter checks the group and moves on, the last group's
+  Enter submits every field, Tab stays inside the group, and `Group.Hide`
+  drops a group (and its values) while the values entered say it does not
+  apply. `Model.CurrentGroup` and `Model.GroupCount` report where it is.
+  `form.New` is unchanged and shows no header.
 - `fuzzy`, an experimental package that matches a typed query against text
   (`Score`, `Find`) and marks the matched runes (`Highlight`). It ignores case,
   prefers consecutive runes and word starts, and ranks best first.
@@ -31,6 +63,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Changed
 
+- `datatable.Model.SetRows` applies the sort and filter that are active to the
+  new rows; before, a sorted table showed its sort arrow over rows in the given
+  order.
 - `commandpalette` lists matching commands best first instead of in the order
   given, using `fuzzy`. The set of commands that match is unchanged.
 

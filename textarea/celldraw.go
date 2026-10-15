@@ -51,6 +51,12 @@ func cellStyle(st ansi.Style) cellbuf.Style {
 // tui.DrawChild, a Model draws it straight into the frame's cell grid. Drawing
 // is clipped to r.
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
+	if m.gutter() > 0 {
+		inner := m.drawGutter(buf, r)
+		m.ShowLineNumbers = false
+		m.DrawCells(buf, inner)
+		return
+	}
 	sub := buf.Sub(r)
 	if sub.Width() == 0 || sub.Height() == 0 {
 		return

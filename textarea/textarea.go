@@ -55,6 +55,15 @@ type Model struct {
 	// zero value falls back to reverse video.
 	SelectionStyle ansi.Style
 
+	// ShowLineNumbers, when true, draws a column of line numbers to the left of
+	// the text: the number of each line, right-aligned, and a blank for each
+	// row a soft-wrapped line continues onto. The column is extra width: Width
+	// still counts the text only, so the area is Width plus the column wide.
+	// Off (the default), View is as before.
+	ShowLineNumbers bool
+	// LineNumberStyle styles the line numbers; the zero value is faint text.
+	LineNumberStyle ansi.Style
+
 	// tokens is the per-instance colour override set by WithTokens.
 	tokens theme.Tokens
 
@@ -894,6 +903,14 @@ func (m Model) clipPlaceholder(first int) string {
 // or, with SoftWrap, wrapped onto further rows. Text is handled as grapheme
 // clusters measured in display columns, as textinput does.
 func (m Model) View() string {
+	if m.ShowLineNumbers {
+		return m.withGutter(m.view())
+	}
+	return m.view()
+}
+
+// view is View without the line-number column.
+func (m Model) view() string {
 	if m.value.len() == 0 {
 		var b strings.Builder
 		room := m.Width // columns left on the first row; <= 0 means unbounded
@@ -948,6 +965,12 @@ func (m Model) View() string {
 // answer (after adding its own offset) and the terminal's real cursor follows
 // the field, which an IME or a screen magnifier needs.
 func (m Model) CursorCell() (x, y int, ok bool) {
+	x, y, ok = m.cursorCell()
+	return x + m.gutter(), y, ok
+}
+
+// cursorCell is CursorCell without the line-number column.
+func (m Model) cursorCell() (x, y int, ok bool) {
 	if m.value.len() == 0 {
 		return 0, 0, m.focused
 	}
