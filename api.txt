@@ -346,6 +346,16 @@ type Themeable interface {
 type Unwrapper interface {
 	Unwrap() Model
 }
+type ViewState struct {
+	AltScreen	*bool
+
+	Mouse	*MouseMode
+
+	Title	*string
+}
+type ViewStater interface {
+	ViewState() ViewState
+}
 var ErrInterrupted = errors.New("tui: interrupted by signal")
 var ErrProgramReused = errors.New("tui: Program.Run called more than once; build a new Program with NewProgram")
 

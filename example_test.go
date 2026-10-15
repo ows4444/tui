@@ -52,3 +52,21 @@ func ExampleTick() {
 	fmt.Println(tui.RunCmd(context.Background(), cmd))
 	// Output: tick
 }
+
+// A model states the terminal modes it wants beside its View: ViewState is
+// read before each frame, and a nil field leaves that mode alone.
+func ExampleViewStater() {
+	var m fullscreenModel
+	st := m.ViewState()
+	fmt.Println(*st.AltScreen, *st.Title, st.Mouse == nil)
+	// Output: true editing notes.txt true
+}
+
+type fullscreenModel struct{}
+
+func (fullscreenModel) Init() tui.Cmd                         { return nil }
+func (m fullscreenModel) Update(tui.Msg) (tui.Model, tui.Cmd) { return m, nil }
+func (fullscreenModel) View() string                          { return "" }
+func (fullscreenModel) ViewState() tui.ViewState {
+	return tui.ViewState{AltScreen: new(true), Title: new("editing notes.txt")}
+}

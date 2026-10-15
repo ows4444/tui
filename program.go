@@ -171,6 +171,8 @@ type Program struct {
 	msgOn, modelOn   bool         // the message and model panes are showing; loop goroutine only
 	msgLog           msgRing      // recent messages, for the inspector; loop goroutine only
 	titleSaved       bool         // SetWindowTitle pushed the title (CSI 22;0t); guarded by outMu
+	viewTitle        string       // the last title a ViewState set; event loop only
+	viewTitleSet     bool         // viewTitle holds one
 	cursorShaped     bool         // SetCursorShape changed the cursor shape; guarded by outMu
 	clipReads        atomic.Int32 // ReadClipboard queries not yet answered
 	copied           string       // text of the last WriteClipboard; loop goroutine only

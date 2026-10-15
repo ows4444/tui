@@ -18,6 +18,12 @@ is out would be a reason to cut an rc.2.
 
 ### Added
 
+- `tui.ViewState` and `tui.ViewStater`: an optional `ViewState()` method beside
+  `View() string` that states the alternate screen, the mouse mode and the
+  window title for the frame, as `EnableMouse`, `EnterAltScreen`, `ExitAltScreen`
+  and `SetWindowTitle` do from `Update`. A nil field has no opinion; a set one
+  is applied before the frame when it differs from the terminal's state. The
+  Cmds stay.
 - `DrawCells` on `picker`, `multiselect`, `treeview` and `spinner`: each draws
   its rows straight into the cell grid, as `viewport`, `datatable` and
   `textarea` already did, instead of building a string for the frame to parse.

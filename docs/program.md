@@ -48,9 +48,11 @@ model has to return `tui.Quit()` itself. Key decoding is covered in
 A model can implement optional interfaces that the Program looks for:
 `CursorPlacer` or `CursorProvider` for the hardware cursor, `Linearizer` for
 accessible output ([accessibility.md](accessibility.md)), `Themeable` for
-`WithTheme`, and `CellDrawer` for direct cell drawing. A model that wraps
+`WithTheme`, `CellDrawer` for direct cell drawing, and `ViewStater` to state
+the alternate screen, mouse mode and window title beside `View` (a nil field
+leaves that mode as the options and Cmds set it). A model that wraps
 another model can implement `Unwrapper`, and the Program then looks for the
-cursor interfaces, `Linearizer` and `Themeable` on the wrapped model too.
+cursor interfaces, `Linearizer`, `ViewStater` and `Themeable` on the wrapped model too.
 Themeable also needs the wrapper to implement `Rewrapper`. `CellDrawer` is
 used only on the root model itself.
 
