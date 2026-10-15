@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `docs/tutorial.md` and `examples/tutorial`: a first tutorial from an empty
+  directory to a small task list with a text field, and a test of it with
+  `tuitest`. The program and its test also compile against v0.1.0.
 - `button`, a new experimental package: a pressable button with five
   variants and three sizes. Enter or Space presses it when focused; with
   `Mouse` on, so does a left click that goes down and comes up inside it.
