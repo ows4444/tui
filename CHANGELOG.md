@@ -8,7 +8,13 @@ a minor release may remove or change exported identifiers; each one is a
 A removed or changed exported identifier needs a `- BREAKING:` entry under
 Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
-## [Unreleased]
+## [1.0.0-rc.1] - 2026-10-16
+
+Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking
+change since 0.2.0; everything in it is added or opt-in: a fuzzy filter, form
+groups and typed values, datatable filter and sort, text-area line numbers, a
+multi-series plot and a colour toolkit. A breaking change found in the week it
+is out would be a reason to cut an rc.2.
 
 ### Added
 
