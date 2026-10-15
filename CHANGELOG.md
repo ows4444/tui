@@ -8,6 +8,14 @@ a minor release may remove or change exported identifiers; each one is a
 A removed or changed exported identifier needs a `- BREAKING:` entry under
 Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
+## [Unreleased]
+
+### Added
+
+- `ansi.RGB.Mix`, `Lighten` and `Darken`, and `ansi.Blend`: move a colour
+  toward another, white or black by a fraction, and spread n colours along a
+  list of stops. A translucent colour is a `Mix` with the background it sits on.
+
 ## [0.2.0] - 2026-10-15
 
 The last v0 release before v1.0: every identifier deprecated in 0.1.0 is
