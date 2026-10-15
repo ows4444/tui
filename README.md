@@ -77,6 +77,12 @@ Every directory under [examples/](examples) is a runnable program, for instance
 `./examples/dashboard`, `./examples/form`, `./examples/signup`,
 `./examples/agentshell` and `./examples/probe`.
 
+## Help and community
+
+- **Questions and show-and-tell:** [GitHub Discussions](https://github.com/ows4444/tui/discussions).
+- **Bugs and feature requests:** [issues](https://github.com/ows4444/tui/issues), with the templates there. A failing `tuitest` test is the best bug report.
+- **What people have built:** [docs/built-with.md](docs/built-with.md), which takes pull requests.
+
 ## Packages
 
 API reference is the godoc of each package. The layering and stability levels

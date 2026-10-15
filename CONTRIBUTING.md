@@ -130,6 +130,11 @@ $ npm run dev     # http://localhost:4321, regenerates pages on start
 $ npm run build   # static site in site/dist/
 ```
 
+## Getting help
+
+Ask in [Discussions](https://github.com/ows4444/tui/discussions); open an issue for
+a bug or a concrete request, using its template.
+
 ## Coverage
 
 Each library package needs at least 90% statement coverage, counted per

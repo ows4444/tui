@@ -1,0 +1,15 @@
+name: Feature request
+description: Something tui should do that it does not
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to build?
+      description: The program you want to write, not the API you imagine. Other libraries that do it are useful to name.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What do you do today?

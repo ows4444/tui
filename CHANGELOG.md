@@ -143,6 +143,11 @@ has one section per identifier.
 
 ### Added
 
+- Three small complete programs as examples, each with tests: `examples/jsonview`
+  (search a JSON document as a tree), `examples/diskuse` (what takes the space in
+  a directory) and `examples/newproject` (a project skeleton from five prompts).
+  `docs/built-with.md` lists programs built with tui, and `.github` has issue and
+  pull-request templates and a link to Discussions.
 - `tui.SetProgress`, `ProgressState` and `ViewState.Progress`: the terminal's
   progress indicator (OSC 9;4), as a bar at a percent, an error or paused bar, a
   busy indicator, or none. The Program removes it on every exit path.
