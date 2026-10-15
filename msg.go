@@ -150,7 +150,7 @@ type BackgroundUnknownMsg = input.BackgroundUnknownMsg
 // Measurer says how this Program's terminal draws grapheme clusters, which a
 // capability probe (WithCapabilityProbe) can change after start-up; the Program
 // then sends the same size again with the new Measurer. It is the zero value,
-// which follows the process-wide ansi.SetClusterWidth setting, until a probe
+// which follows the process default (on unless TUI_NO_CLUSTERS is set), until a probe
 // says otherwise. A component that measures text for this terminal uses
 // msg.Measurer instead of the package-level ansi.Width, so two Programs in one
 // process (an SSH server, parallel tests) never measure for each other.

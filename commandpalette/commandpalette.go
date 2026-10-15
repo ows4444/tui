@@ -7,8 +7,6 @@
 // subsequence matching instead of prefix matching, and accepting a result
 // emits a Msg identifying the chosen Command instead of filling the input
 // value — a palette runs a command, it doesn't complete text.
-//
-// Stability: experimental. Its API may change in any minor release.
 package commandpalette
 
 import (
@@ -109,16 +107,6 @@ func (m Model) keys() KeyMap {
 
 // Bindings returns the active key bindings, with descriptions, for help text.
 func (m Model) Bindings() []keymap.Binding { return m.keys().all() }
-
-// Init returns the Cmd that starts the embedded input's cursor blink.
-// Without running it, the input still renders and accepts typing, just
-// with a static (non-blinking) cursor.
-//
-// Deprecated: use Focus, which returns the same Cmd. A component has no Init;
-// only a program's root model does.
-func (m Model) Init() tui.Cmd {
-	return m.Input.Focus()
-}
 
 // Focus and Blur delegate to the embedded Input, so a parent composing
 // several fields can drive focus across all of them the same way.

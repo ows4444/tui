@@ -1,75 +1,18 @@
 package ansi
 
-import (
-	"os"
-	"sync/atomic"
-)
+import "github.com/ows4444/tui/internal/clusterwidth"
 
-// clusterWidthOn reports whether Width, Truncate and TrimLeftWidth treat an
-// extended grapheme cluster as one unit. It is on unless SetClusterWidth(false)
-// was called or, if it never was, the TUI_NO_CLUSTERS environment variable is
-// set to a non-empty value the first time a width is measured. Nothing reads
-// the environment at import time.
-var clusterWidthOn clusterSetting
-
-// clusterSetting is an atomic bool whose default is resolved from the
-// environment on first use.
-type clusterSetting struct {
-	v atomic.Int32 // clustersUnset until decided
-}
-
-const (
-	clustersUnset int32 = iota
-	clustersOn
-	clustersOff
-)
-
-// Load reports whether cluster handling is on.
-func (c *clusterSetting) Load() bool {
-	switch c.v.Load() {
-	case clustersOn:
-		return true
-	case clustersOff:
-		return false
-	}
-	def := clustersOn
-	if os.Getenv("TUI_NO_CLUSTERS") != "" {
-		def = clustersOff
-	}
-	// An explicit Store that raced this read wins.
-	c.v.CompareAndSwap(clustersUnset, def)
-	return c.v.Load() == clustersOn
-}
-
-// Store sets cluster handling, overriding the environment.
-func (c *clusterSetting) Store(on bool) {
-	if on {
-		c.v.Store(clustersOn)
-	} else {
-		c.v.Store(clustersOff)
-	}
-}
-
-// SetClusterWidth turns grapheme-cluster handling on or off for Width,
-// Truncate, TrimLeftWidth and everything built on them. It is on by default:
-// a ZWJ emoji sequence, a flag, an emoji with a skin-tone modifier or a base
-// letter with combining marks is measured, truncated and trimmed as one unit,
-// the way current terminals draw it. Turn it off for a terminal that does not
-// join clusters, to count each rune on its own as before. The environment
-// variable TUI_NO_CLUSTERS=1 does the same, read when the first width is measured. It is safe to call from
-// any goroutine.
-//
-// Deprecated: for anything tied to one terminal use a Measurer. This function
-// stays as the process-wide default that the zero Measurer follows, for an
-// application to set once at start-up; a Program no longer calls it (the
-// capability probe's answer is Program.Measurer and ResizeMsg.Measurer), so
-// libraries must not either.
+// clusterWidthOn is the process-wide default for whether Width, Truncate and
+// TrimLeftWidth treat an extended grapheme cluster as one unit: on unless the
+// TUI_NO_CLUSTERS environment variable is set to a non-empty value the first
+// time a width is measured. Nothing reads the environment at import time.
+// There is no exported setter: measure for one terminal with a Measurer.
 //
 // A cluster is measured as its widest rune (at most 2 columns), except that an
 // emoji followed by U+FE0F (variation selector 16) takes 2. Segmentation
 // follows Unicode Standard Annex #29, except that CR LF is two clusters, so
 // text measures as it always did.
-func SetClusterWidth(on bool) { clusterWidthOn.Store(on) }
+var clusterWidthOn = &clusterwidth.Default
 
 // clusterState is the extended grapheme cluster segmenter (UAX #29) fed one
 // rune at a time. The zero value is the start of a string.

@@ -49,9 +49,9 @@ not module dependencies.
 - **File size.** A hand-written non-test source file over 800 lines fails
   `TestFileSize` unless it is listed in `oversize` in
   `internal/archtest/layers_test.go` with a reason. Generated files are exempt.
-- **No process-wide width toggle in library code.** Only an application may call
-  `ansi.SetClusterWidth`; pass an `ansi.Measurer` instead
-  (`TestNoGlobalWidthToggle`).
+- **No process-wide width toggle.** There is none to call: the default is set by
+  `TUI_NO_CLUSTERS` and read once (`internal/clusterwidth`). Pass an
+  `ansi.Measurer` for one terminal.
 
 ## Widget packages
 

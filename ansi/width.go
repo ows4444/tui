@@ -31,7 +31,7 @@ func StripANSI(s string) string {
 // occupies: 2 for East Asian Wide/Fullwidth and emoji, 0 for combining and
 // zero-width runes, 1 otherwise, and a ZWJ sequence, flag, emoji with a
 // skin-tone modifier or base with combining marks is one cluster, the widest of
-// its runes (see SetClusterWidth to count each rune on its own instead, and
+// its runes (see ClusterMeasurer to count each rune on its own instead, and
 // runeWidth for the per-rune widths).
 //
 // It measures in place, skipping CSI sequences as it goes, and allocates

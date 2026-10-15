@@ -31,7 +31,7 @@ func TestBoxNodeAsksForTheBoxesOwnSize(t *testing.T) {
 				t.Errorf("Measure = %+v, want %+v", s, tc.size)
 			}
 			// Box.Render is the reference BoxNode must match.
-			want := tc.box.Render(tc.content)
+			want := tc.box.render(tc.content)
 			if got := n.Render(tc.size); got != want {
 				t.Fatalf("Render(%+v) =\n%s\nwant, as Box.Render draws it,\n%s", tc.size, got, want)
 			}

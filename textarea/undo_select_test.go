@@ -1,8 +1,10 @@
 package textarea
 
 import (
+	"io"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
@@ -168,10 +170,33 @@ func TestUndoCopyIsolation(t *testing.T) {
 	}
 }
 
-func clip() (func(string) (int, error), *string) {
-	var out string
-	return func(s string) (int, error) { out += s; return len(s), nil }, &out
+// runCopy runs cmd, the Cmd a Copy or Cut returned, in a Program and returns
+// what the Program wrote: the OSC 52 sequence for the copied text.
+func runCopy(t *testing.T, cmd tui.Cmd) string {
+	t.Helper()
+	var out strings.Builder
+	// A reader that never reaches EOF, so the Program quits on the Tick, not
+	// on the end of its input.
+	in, w := io.Pipe()
+	defer w.Close()
+	p := tui.NewProgram(runAndQuit{cmd}, tui.WithInput(in),
+		tui.WithOutput(&out), tui.WithAltScreen(false))
+	if _, err := p.Run(); err != nil {
+		t.Fatal(err)
+	}
+	return out.String()
 }
+
+// runAndQuit is a Model that runs one Cmd and then quits.
+type runAndQuit struct{ cmd tui.Cmd }
+
+func (r runAndQuit) Init() tui.Cmd {
+	// The Cmd's mode change is applied by the loop, so quit a moment later
+	// rather than in sequence with it.
+	return tui.Batch(r.cmd, tui.Tick(100*time.Millisecond, func(time.Time) tui.Msg { return tui.Quit()() }))
+}
+func (r runAndQuit) Update(tui.Msg) (tui.Model, tui.Cmd) { return r, nil }
+func (r runAndQuit) View() string                        { return "" }
 
 func TestShiftArrowsSelectAndHighlight(t *testing.T) {
 	m := focusedWith("hello\nworld")
@@ -233,35 +258,38 @@ func TestDrawCellsSelectionMatchesView(t *testing.T) {
 // #72
 func TestCopySendsOSC52(t *testing.T) {
 	m := focusedWith("hello\nworld")
-	w, out := clip()
-	m.ClipboardWrite = w
 	m.SetCursor(3)
 	send(&m, shiftR, shiftR, shiftR, shiftR)
-	send(&m, ck('c'))
-	if *out != ansi.OSC52Copy("lo\nw") {
-		t.Fatalf("wrote %q", *out)
+	next, cmd := m.Update(ck('c'))
+	if cmd == nil {
+		t.Fatal("copy returned no Cmd")
 	}
-	if m.Value() != "hello\nworld" {
+	if out := runCopy(t, cmd); !strings.Contains(out, ansi.OSC52Copy("lo\nw")) {
+		t.Fatalf("wrote %q", out)
+	}
+	if next.Value() != "hello\nworld" {
 		t.Fatal("copy changed the value")
 	}
-	*out = ""
-	m.SetCursor(0)
-	send(&m, ck('c'))
-	if *out != "" {
-		t.Fatal("copy without a selection wrote")
+	next.SetCursor(0)
+	if _, cmd := next.Update(ck('c')); cmd != nil {
+		t.Fatal("copy without a selection returned a Cmd")
 	}
 }
 
 func TestCutAndPasteKey(t *testing.T) {
 	m := focusedWith("hello\nworld")
-	w, out := clip()
-	m.ClipboardWrite = w
 	m.SetCursor(3)
-	send(&m, shiftR, shiftR, shiftR, shiftR, ck('x'))
-	if m.Value() != "helorld" || *out != ansi.OSC52Copy("lo\nw") || m.Cursor() != 3 {
-		t.Fatalf("cut: %q %q %d", m.Value(), *out, m.Cursor())
+	send(&m, shiftR, shiftR, shiftR, shiftR)
+	next, cmd := m.Update(ck('x'))
+	m = next
+	if cmd == nil || m.Value() != "helorld" || m.Cursor() != 3 {
+		t.Fatalf("cut: cmd nil = %v, value %q, cursor %d", cmd == nil, m.Value(), m.Cursor())
 	}
-	send(&m, ck('v'))
+	if out := runCopy(t, cmd); !strings.Contains(out, ansi.OSC52Copy("lo\nw")) {
+		t.Fatalf("cut wrote %q", out)
+	}
+	// The Paste key asks the Program; its answer is a PasteEvent.
+	send(&m, ck('v'), tui.PasteEvent{Text: "lo\nw"})
 	if m.Value() != "hello\nworld" {
 		t.Fatalf("paste: %q", m.Value())
 	}
@@ -440,11 +468,12 @@ func TestMouseDragSelects(t *testing.T) {
 	if !strings.Contains(m.View(), m.SelectionStyle.Render("l")) {
 		t.Fatal("drag selection not highlighted")
 	}
-	w, out := clip()
-	m.ClipboardWrite = w
-	send(&m, ck('c'))
-	if *out != ansi.OSC52Copy("llo\nwor") {
-		t.Fatalf("wrote %q", *out)
+	_, cmd := m.Update(ck('c'))
+	if cmd == nil {
+		t.Fatal("copy after drag returned no Cmd")
+	}
+	if out := runCopy(t, cmd); !strings.Contains(out, ansi.OSC52Copy("llo\nwor")) {
+		t.Fatalf("wrote %q", out)
 	}
 	click(&m, 1, 0) // a plain click drops the selection
 	if m.SelectedText() != "" {
@@ -479,8 +508,8 @@ func TestWheelScrollsWindow(t *testing.T) {
 	}
 }
 
-// Without ClipboardWrite the Model does no I/O and holds no copied text: Copy
-// and Paste return Cmds for the Program, and the paste arrives as a PasteEvent.
+// The Model does no I/O and holds no copied text: Copy and Paste return Cmds
+// for the Program, and the paste arrives as a PasteEvent.
 func TestCopyAndPasteGoThroughTheProgram(t *testing.T) {
 	m := focusedWith("hello\nworld")
 	m.SetCursor(3)
@@ -503,19 +532,5 @@ func TestCopyAndPasteGoThroughTheProgram(t *testing.T) {
 	next, _ = next.Update(tui.PasteEvent{Text: "lo\nw"})
 	if next.Value() != "hello\nworld" {
 		t.Fatalf("after the PasteEvent: %q", next.Value())
-	}
-}
-
-// Two Models with their own ClipboardWrite do not see each other's copies.
-func TestDeprecatedClipboardWriteIsPerModel(t *testing.T) {
-	a, b := focusedWith("secret"), focusedWith("")
-	wa, _ := clip()
-	wb, _ := clip()
-	a.ClipboardWrite, b.ClipboardWrite = wa, wb
-	a.SetCursor(0)
-	send(&a, shiftR, shiftR, shiftR, shiftR, shiftR, shiftR, ck('c'))
-	send(&b, ck('v'))
-	if b.Value() != "" {
-		t.Fatalf("a second Model pasted %q, copied in the first", b.Value())
 	}
 }

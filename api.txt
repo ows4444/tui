@@ -531,7 +531,6 @@ func PlainASCIIWidth(s string) (int, bool)
 func SafeLinkTarget(url string) bool
 func Sanitize(s string) string
 func SanitizeKeepSGR(s string) string
-func SetClusterWidth(on bool)
 func StripANSI(s string) string
 func TrimLeftWidth(s string, width int) string
 func Truncate(s string, width int) string
@@ -604,7 +603,6 @@ type SubmitMsg struct {
 func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
 func (m Model) Bindings() []keymap.Binding
-func (m Model) Init() tui.Cmd
 func (m Model) IsOpen() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -1272,7 +1270,6 @@ type SelectedMsg struct {
 func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
 func (m Model) Bindings() []keymap.Binding
-func (m Model) Init() tui.Cmd
 func (m Model) IsOpen() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -2283,7 +2280,6 @@ func (b Box) Height(h int) Box
 func (b Box) Margin(top, right, bottom, left int) Box
 func (b Box) Padding(top, right, bottom, left int) Box
 func (b Box) PaddingAll(n int) Box
-func (b Box) Render(content string) string
 func (b Box) Title(s string, a Align) Box
 func (b Box) Width(w int) Box
 func (c Constraints) Constrain(s Size) Size
@@ -3555,8 +3551,6 @@ type Model struct {
 
 	UndoLimit	int
 
-	ClipboardWrite	func(string) (int, error)
-
 	Mouse	bool
 
 	Bounds	hittest.Rect
@@ -3623,8 +3617,6 @@ type Model struct {
 	SelectionStyle	ansi.Style
 
 	UndoLimit	int
-
-	ClipboardWrite	func(string) (int, error)
 
 	DisableCopy	bool
 
@@ -4368,7 +4360,6 @@ func (v Variant) Mark(g theme.Glyphs) string
 func Alert(message string, variant Variant, t theme.Theme, width int) string
 func Badge(text string, variant Variant, t theme.Theme) string
 func Banner(message string, variant Variant, t theme.Theme, width int) string
-func BarChart(items []BarItem, width int, t theme.Theme) string
 func BigText(text string, font Font, t theme.Theme) string
 func BigTextGradient(text string, font Font, t theme.Theme, from, to ansi.RGB) string
 func Box(title, content string, t theme.Theme, width int) string
@@ -4390,17 +4381,14 @@ func Empty(title, description, hint string, t theme.Theme, width int) string
 func ErrorBoundary(render func() string, fallback string, t theme.Theme) (out string)
 func Form(fields ...string) string
 func FormField(label string, fieldView string, err string, t theme.Theme) string
-func Gauge(percent float64, width int, t theme.Theme) string
 func Gradient(text string, colors []ansi.RGB, bold bool, t theme.Theme) string
 func Header(title string, t theme.Theme) string
 func HeaderWithAccessory(title, accessory string, width int, t theme.Theme) string
-func HeatMap(values [][]float64, t theme.Theme) string
 func HintsFromKeymap(reg *keymap.Registry, scope string) []Hint
 func InfoBox(title string, rows []TreeRow, t theme.Theme, width int) string
 func KeyHint(key, action string) string
 func KeyHints(sep string, hints ...Hint) string
 func KeyValue(pairs []KV, t theme.Theme) string
-func LineChart(values []float64, width, height int, t theme.Theme) string
 func Link(text, href string, showHref bool, t theme.Theme) string
 func List(items []string, marker Marker) string
 func ListWith(items []string, marker Marker, t theme.Theme) string
@@ -4412,8 +4400,6 @@ func Panel(title, content string, t theme.Theme, width int) string
 func ProgressBar(percent float64, width int, t theme.Theme) string
 func ProgressCircle(percent float64, width int, t theme.Theme) string
 func Spacer(width, height int) string
-func Sparkline(values []float64) string
-func SparklineWith(values []float64, t theme.Theme) string
 func StatusIndicator(label string, variant Variant, t theme.Theme) string
 func Stepper(steps []string, current int, t theme.Theme) string
 func Table(headers []string, rows [][]string, t theme.Theme) string
@@ -4426,7 +4412,6 @@ func TokenCounter(used, limit int, t theme.Theme) string
 func Tooltip(text string, t theme.Theme, width int) string
 func TooltipOverlay(base string, text string, anchorX, anchorY int, t theme.Theme) string
 func UsageMonitor(title string, stats []UsageStat, t theme.Theme) string
-type BarItem = chart.BarItem
 type Font int
 type Hint struct {
 	Key	string

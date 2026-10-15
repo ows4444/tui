@@ -90,9 +90,9 @@ func TestClusterWidths(t *testing.T) {
 	}
 }
 
-func TestSetClusterWidthOffCountsEachRune(t *testing.T) {
-	t.Cleanup(func() { SetClusterWidth(true) })
-	SetClusterWidth(false)
+func TestClusterWidthOffCountsEachRune(t *testing.T) {
+	t.Cleanup(func() { clusterWidthOn.Store(true) })
+	clusterWidthOn.Store(false)
 	for s, want := range map[string]int{
 		"👨‍👩‍👧‍👦": 8, // four wide runes, three zero-width joiners
 		"🇩🇪":      4,
@@ -107,7 +107,7 @@ func TestSetClusterWidthOffCountsEachRune(t *testing.T) {
 	if got := Truncate("👋🏽", 2); got != "👋" {
 		t.Errorf("clusters off: Truncate = %q, want the base only", got)
 	}
-	SetClusterWidth(true)
+	clusterWidthOn.Store(true)
 	if got := Truncate("👋🏽", 2); got != "👋🏽" {
 		t.Errorf("clusters on: Truncate = %q, want the whole cluster", got)
 	}

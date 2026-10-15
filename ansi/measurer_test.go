@@ -7,10 +7,10 @@ import "testing"
 const family = "👨‍👩‍👧"
 
 func TestMeasurerZeroFollowsTheProcessSetting(t *testing.T) {
-	t.Cleanup(func() { SetClusterWidth(true) })
+	t.Cleanup(func() { clusterWidthOn.Store(true) })
 	var m Measurer
 	for _, on := range []bool{true, false} {
-		SetClusterWidth(on)
+		clusterWidthOn.Store(on)
 		if m.Clusters() != on {
 			t.Fatalf("zero Measurer Clusters() = %v with the process setting %v", m.Clusters(), on)
 		}
@@ -21,8 +21,8 @@ func TestMeasurerZeroFollowsTheProcessSetting(t *testing.T) {
 }
 
 func TestMeasurersDisagreeWithoutTouchingEachOtherOrTheDefault(t *testing.T) {
-	t.Cleanup(func() { SetClusterWidth(true) })
-	SetClusterWidth(true)
+	t.Cleanup(func() { clusterWidthOn.Store(true) })
+	clusterWidthOn.Store(true)
 	on, off := ClusterMeasurer(true), ClusterMeasurer(false)
 	if !on.Clusters() || off.Clusters() {
 		t.Fatalf("Clusters: on=%v off=%v", on.Clusters(), off.Clusters())
@@ -38,15 +38,15 @@ func TestMeasurersDisagreeWithoutTouchingEachOtherOrTheDefault(t *testing.T) {
 		t.Fatalf("package Width = %d after using Measurers, want 2", w)
 	}
 	// And a pinned Measurer ignores a later change to the process setting.
-	SetClusterWidth(false)
+	clusterWidthOn.Store(false)
 	if w := on.Width(family); w != 2 {
 		t.Fatalf("pinned-on Measurer followed the process setting: Width = %d", w)
 	}
 }
 
 func TestMeasurerTruncateAndTrimLeftUseItsOwnSetting(t *testing.T) {
-	t.Cleanup(func() { SetClusterWidth(true) })
-	SetClusterWidth(true)
+	t.Cleanup(func() { clusterWidthOn.Store(true) })
+	clusterWidthOn.Store(true)
 	s := family + "abc"
 	if got := ClusterMeasurer(true).Truncate(s, 3); got != family+"a" {
 		t.Fatalf("clusters on: Truncate = %q, want the family and one letter", got)

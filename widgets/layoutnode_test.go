@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
+	"github.com/ows4444/tui/widgets/chart"
 )
 
 func TestNodeExactSize(t *testing.T) {
@@ -22,7 +23,7 @@ func TestNodeExactSize(t *testing.T) {
 		"Breadcrumb":      Breadcrumb([]string{"a", "b", "c"}, th),
 		"Badge":           Badge("new", VariantSuccess, th),
 		"Box":             Box("t", "content\nmore", th, 20),
-		"BarChart":        BarChart([]BarItem{{Label: "a", Value: 3}, {Label: "b", Value: 5}}, 30, th),
+		"BarChart":        chart.BarChart([]chart.BarItem{{Label: "a", Value: 3}, {Label: "b", Value: 5}}, 30, th),
 		"Center":          Center("mid", 10, 3),
 		"DiffView":        DiffView("@@ -1 +1 @@\n-a\n+b\n", 40, th),
 		"Gradient":        Gradient("gradient text", nil, true, th),
@@ -32,7 +33,7 @@ func TestNodeExactSize(t *testing.T) {
 		"CodeBlockLang":   CodeBlockLang("x := 1", "go", 30, true, th),
 		"Card":            Card("t", "body", th, 20),
 		"Checkbox":        Checkbox("ok", true, true, th),
-		"HeatMap":         HeatMap([][]float64{{0, 1}, {0.5, 0.2}}, th),
+		"HeatMap":         chart.HeatMap([][]float64{{0, 1}, {0.5, 0.2}}, th),
 		"ErrorBoundary":   ErrorBoundary(func() string { return "fine" }, "fallback", th),
 		"Pagination":      Pagination(2, 9, th),
 		"PaginationDots":  PaginationDots(2, 9, th),
@@ -40,20 +41,20 @@ func TestNodeExactSize(t *testing.T) {
 		"KeyHint":         KeyHint("q", "quit"),
 		"KeyHints":        KeyHints(" ", Hint{Key: "q", Action: "quit"}),
 		"InfoBox":         InfoBox("info", []TreeRow{{Key: "a", Value: "b"}}, th, 30),
-		"LineChart":       LineChart([]float64{1, 3, 2, 5}, 20, 4, th),
+		"LineChart":       chart.LineChart([]float64{1, 3, 2, 5}, 20, 4, th),
 		"Divider":         Divider(20),
 		"DividerWith":     DividerWith(20, th),
 		"DividerLabel":    DividerLabel(20, "lbl"),
 		"DividerLabelW":   DividerLabelWith(20, "lbl", th),
 		"Link":            Link("text", "http://x", true, th),
-		"Gauge":           Gauge(0.4, 20, th),
+		"Gauge":           chart.Gauge(0.4, 20, th),
 		"Spacer":          Spacer(4, 2),
 		"ProgressBar":     ProgressBar(0.4, 20, th),
 		"MultiProgress":   MultiProgress(items, 30, th),
 		"ProgressCircle":  ProgressCircle(0.4, 5, th),
 		"Stepper":         Stepper([]string{"a", "b", "c"}, 1, th),
-		"Sparkline":       Sparkline([]float64{1, 2, 3}),
-		"SparklineWith":   SparklineWith([]float64{1, 2, 3}, th),
+		"Sparkline":       chart.Sparkline([]float64{1, 2, 3}),
+		"SparklineWith":   chart.SparklineWith([]float64{1, 2, 3}, th),
 		"StatusIndicator": StatusIndicator("ok", VariantSuccess, th),
 		"Header":          Header("title", th),
 		"HeaderAccessory": HeaderWithAccessory("title", "acc", 30, th),

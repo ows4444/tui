@@ -2,8 +2,7 @@
 
 Each identifier removed before v1, and what to use instead. The `- BREAKING:`
 entries under Removed in [CHANGELOG.md](../CHANGELOG.md) list the same
-removals. Deprecated identifiers that still exist, such as `layout.Box.Render`,
-are listed under Deprecated there.
+removals. No deprecated identifier is exported at v1.0.0.
 
 ## Program options (package tui)
 
@@ -43,6 +42,54 @@ Use `WithCellRenderer(false)`. The cell renderer is the default, and
 [rendering.md](rendering.md#cell-renderer-and-line-renderer) for how the two
 differ.
 
+## Components (packages autocomplete, commandpalette)
+
+### autocomplete.Model.Init, commandpalette.Model.Init
+
+Use `Focus`, which returns the same Cmd (the one that starts the cursor
+blink). A component has no `Init`; only a program's root model does. `Focus`
+has a pointer receiver, so call it on an addressable `Model`:
+`cmd := m.Focus()`.
+
+## Width (package ansi)
+
+### SetClusterWidth
+
+Use an `ansi.Measurer`. `ansi.ClusterMeasurer(false)` counts each rune on its
+own and `ansi.ClusterMeasurer(true)` treats a grapheme cluster as one unit;
+call its `Width`, `Truncate` and `TrimLeftWidth` where you called the
+package-level functions. A Program's own answer is `Program.Measurer()`, and
+every `ResizeMsg` carries it. To turn clusters off for a whole process, set
+`TUI_NO_CLUSTERS=1` in the environment before the first width is measured; there
+is no function to change the default at run time.
+
+## Text fields (packages textinput, textarea)
+
+### ClipboardWrite
+
+Use `tui.WithOutput` to direct the Program's output. Copy and Cut now always
+return `tui.WriteClipboard`, which has the Program write the OSC 52 sequence
+and keep the text, and Paste returns `tui.PasteCopied`, which delivers that
+text as a `PasteEvent`. There is no field to set.
+
+Two things differ from a Model with `ClipboardWrite` set. Copy and Cut return a
+Cmd, so a parent must return it from its own `Update`. And the copy buffer
+belongs to the Program, not the Model, so two fields in one Program share it:
+what one copies the other pastes. A test that read the sequence from the
+function now runs the Cmd in a Program and reads that Program's output.
+
+## Charts (package widgets)
+
+The chart functions moved to `widgets/chart` with the same signatures. Change
+the import and the package qualifier; nothing else changes.
+
+### BarItem, BarChart, Gauge, HeatMap, LineChart, Sparkline, SparklineWith
+
+Use `chart.BarItem`, `chart.BarChart`, `chart.Gauge`, `chart.HeatMap`,
+`chart.LineChart`, `chart.Sparkline` and `chart.SparklineWith`, imported from
+`github.com/ows4444/tui/widgets/chart`. `widgets.BarItem` was an alias for
+`chart.BarItem`, so a value of one is a value of the other.
+
 ## String layout helpers (package layout)
 
 The string join and grid helpers are replaced by Nodes. Wrap each
@@ -57,6 +104,14 @@ removed.
 ### JoinHorizontal
 
 Use `layout.Row(gap, children...)`, with one `FlexChild` per block.
+
+### Box.Render
+
+Use `layout.BoxNode(box, layout.Block(content))`, or `BoxNode` with any Node as
+the child, and draw it with `layout.Draw` (or place it in a layout). The
+method is unexported, not deleted: `BoxNode` draws through it, so the cells are
+the ones `Box.Render` gave. A box with a `Width`, a `Height` or a title now
+takes the room it asks for, as the changelog says under Changed.
 
 ### JoinHorizontalAlign
 

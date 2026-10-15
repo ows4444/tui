@@ -51,20 +51,9 @@ type Model struct {
 	// one step. SetValue and Reset forget the history.
 	UndoLimit int
 
-	// ClipboardWrite, when set, receives the OSC 52 sequence that Copy and
-	// Cut send, in place of the Program's output, and Paste inserts only what
-	// this Model copied. Leave it nil: Copy and Cut then return
-	// tui.WriteClipboard and Paste returns tui.PasteCopied, so the Program
-	// writes the sequence and holds the copied text.
-	//
-	// Deprecated: use tui.WithOutput to direct the Program's output.
-	ClipboardWrite func(string) (int, error)
 	// DisableCopy makes Copy and Cut do nothing, for fields whose value must
 	// not reach the clipboard (passwordinput sets it).
 	DisableCopy bool
-
-	// clip is the last text copied through the deprecated ClipboardWrite.
-	clip string
 
 	// Mouse, when true, makes Update handle tui.MouseEvent: a left click inside
 	// Bounds moves the cursor to the clicked cell and a drag selects. Off (the
@@ -316,10 +305,6 @@ func (m *Model) handleKey(k tui.Key) tui.Cmd {
 		}
 		return cmd
 	case keymap.Matches(k, km.Paste):
-		if m.ClipboardWrite != nil {
-			m.insert(singleLine(m.clip))
-			return nil
-		}
 		return tui.PasteCopied()
 	}
 	move := func(f func()) {
@@ -365,17 +350,11 @@ func (m *Model) handleKey(k tui.Key) tui.Cmd {
 }
 
 // copy copies the selection and reports whether there was one. The Cmd it
-// returns has the Program write the OSC 52 sequence and keep the text; with
-// the deprecated ClipboardWrite set it writes there and returns no Cmd.
+// returns has the Program write the OSC 52 sequence and keep the text.
 func (m *Model) copy() (bool, tui.Cmd) {
 	t := m.ed.SelectedText()
 	if t == "" || m.DisableCopy {
 		return false, nil
-	}
-	if m.ClipboardWrite != nil {
-		_, _ = m.ClipboardWrite(ansi.OSC52Copy(t))
-		m.clip = t
-		return true, nil
 	}
 	return true, tui.WriteClipboard(t)
 }

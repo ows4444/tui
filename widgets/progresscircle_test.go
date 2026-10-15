@@ -8,6 +8,7 @@ import (
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/theme"
+	"github.com/ows4444/tui/widgets/chart"
 )
 
 // TestProgressCircleFullRing proves #419: filled dots appear both above
@@ -19,7 +20,7 @@ func TestProgressCircleFullRing(t *testing.T) {
 	th := theme.DarkTheme()
 	lines := strings.Split(ansi.StripANSI(ProgressCircle(1, width, th)), "\n")
 
-	gaugeLines := strings.Split(ansi.StripANSI(Gauge(1, width, th)), "\n")
+	gaugeLines := strings.Split(ansi.StripANSI(chart.Gauge(1, width, th)), "\n")
 	if len(lines) < 2*len(gaugeLines)-1 || len(lines) > 2*len(gaugeLines)+1 {
 		t.Errorf("ProgressCircle has %d rows, Gauge has %d rows at width %d; want roughly double", len(lines), len(gaugeLines), width)
 	}

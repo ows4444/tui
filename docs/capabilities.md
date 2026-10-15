@@ -82,18 +82,17 @@ output and styled underlines as the View asks.
 
 `ansi.Width` and the other package-level width functions count a grapheme
 cluster (a ZWJ emoji, a flag, a letter with combining marks) as one unit by
-default. `TUI_NO_CLUSTERS` set to any non-empty value, or
-`ansi.SetClusterWidth(false)`, counts each rune on its own instead. That
-setting is process-wide.
+default. `TUI_NO_CLUSTERS` set to any non-empty value counts each rune on its
+own instead. That default is process-wide and is read when the first width is
+measured; there is no function to change it afterwards. To measure differently
+for one terminal use `ansi.ClusterMeasurer`.
 
 Each Program also has its own `ansi.Measurer`, returned by `Program.Measurer`
-and carried in every `ResizeMsg`. It follows the process-wide setting until
+and carried in every `ResizeMsg`. It follows the process default until
 the probe decides. The probe then sends a second `ResizeMsg` with the new
 `Measurer` and repaints. A component that measures text for one terminal
 should use `msg.Measurer` rather than `ansi.Width`, so two Programs in one
-process (an SSH server, parallel tests) don't measure for each other. No
-library code calls `ansi.SetClusterWidth` (`TestNoGlobalWidthToggle` in
-`internal/archtest`).
+process (an SSH server, parallel tests) don't measure for each other.
 
 ## Background colour
 

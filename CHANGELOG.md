@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `docs/tutorial.md` and `examples/tutorial`: a first tutorial from an empty
+  directory to a small task list with a text field, and a test of it with
+  `tuitest`. The program and its test also compile against v0.1.0.
 - `button`, a new experimental package: a pressable button with five
   variants and three sizes. Enter or Space presses it when focused; with
   `Mouse` on, so does a left click that goes down and comes up inside it.
@@ -120,12 +123,33 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   its bottom border. Given the size it asks for, `BoxNode` now draws what
   `Box.Render` draws; a layout that allots less still wins. A box with any
   of the three set may take a different amount of room than before.
+- `commandpalette` is promoted from experimental to stable-ish, as
+  `docs/v1.md` decided once its deprecated `Init` was removed. ACLine is the
+  program outside this repository that uses it.
 
-### Deprecated
+### Removed
 
-- `autocomplete.Model.Init` and `commandpalette.Model.Init`: use `Focus`,
-  which returns the same Cmd. They were the only two components with an
-  `Init`; a component has none.
+- BREAKING: `autocomplete.Model.Init` and `commandpalette.Model.Init` are
+  removed. Use `Focus`, which returns the same Cmd. They were the only two
+  components with an `Init`; a component has none.
+- BREAKING: `layout.Box.Render` is removed from the exported API. Use
+  `layout.BoxNode(box, layout.Block(content))`, or `BoxNode` with any Node
+  child. `BoxNode` draws what `Render` drew.
+- BREAKING: `ansi.SetClusterWidth` is removed. Grapheme-cluster width is on
+  by default and `TUI_NO_CLUSTERS` set to a non-empty value turns it off for
+  the process, read once when the first width is measured. For one terminal use
+  an `ansi.Measurer`: `ansi.ClusterMeasurer(false)` counts each rune on its
+  own, and `Program.Measurer` and `ResizeMsg.Measurer` carry the probed answer.
+- BREAKING: `textinput.Model.ClipboardWrite` and
+  `textarea.Model.ClipboardWrite` are removed. Copy and Cut always return
+  `tui.WriteClipboard`, and Paste returns `tui.PasteCopied`, so the Program
+  writes the OSC 52 sequence to its output and holds the copied text. To direct
+  that output elsewhere use `tui.WithOutput`. A Model no longer holds its own
+  copy buffer: a second text field in the same Program pastes what the first
+  copied.
+- BREAKING: the chart functions in `widgets` are removed: `BarChart`, `Gauge`,
+  `HeatMap`, `LineChart`, `Sparkline`, `SparklineWith` and the `BarItem`
+  alias. Use the functions of the same names in `widgets/chart`.
 
 ### Fixed
 

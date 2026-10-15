@@ -6,16 +6,15 @@ import (
 	"time"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/clusterwidth"
 )
 
 const zwjFamily = "\U0001F468\u200d\U0001F469\u200d\U0001F467" // 3 emoji joined: 2 cols as a cluster, 6 per codepoint
 
 // setClusterWidth sets ansi's process-wide cluster width. The probe tests
-// exercise that switch and must put it back, and nothing else can set it.
-func setClusterWidth(on bool) {
-	//lint:ignore SA1019 the deprecated process-wide switch is what these tests cover and restore
-	ansi.SetClusterWidth(on)
-}
+// check that a probe leaves it alone, so they set it and must put it back; only
+// this module's tests can reach it (internal/clusterwidth).
+func setClusterWidth(on bool) { clusterwidth.Default.Store(on) }
 
 // probeResult is what a probe run left behind: the output the terminal saw,
 // the Program (for Measurer) and the ResizeMsgs the model received.

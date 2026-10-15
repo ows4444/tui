@@ -332,7 +332,7 @@ func (b boxNode) Render(s Size) string {
 	// the box asked for and even when that is none: Box.Render alone would
 	// give empty content one blank row and push the bottom border off the end.
 	box = box.exactRows(maxInt(inner.H, 0))
-	return Block(box.Render(content)).Render(s)
+	return Block(box.render(content)).Render(s)
 }
 
 // joinColumn stacks blocks with gap blank rows between neighbours, like

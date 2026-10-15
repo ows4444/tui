@@ -69,7 +69,7 @@ in `examples/` that imports the package.
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
 | [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `examples/timers` |
 | [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes  `examples/pickers` |
-| [commandpalette](../commandpalette) | A text input with a fuzzy-filtered dropdown of Commands ("Ctrl+K" style). Experimental | yes | |
+| [commandpalette](../commandpalette) | A text input with a fuzzy-filtered dropdown of Commands ("Ctrl+K" style) | yes | |
 | [confirm](../confirm) | A yes/no prompt | yes | `examples/form` |
 | [contextmenu](../contextmenu) | A popup menu opened at an anchor point | yes  `examples/menus` |
 | [datatable](../datatable) | `widgets.Table` plus row navigation | yes | `examples/table`, `examples/inspector` |

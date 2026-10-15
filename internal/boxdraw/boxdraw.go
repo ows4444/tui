@@ -1,8 +1,8 @@
 // Package boxdraw draws a bordered, padded layout.Box around pre-rendered
 // text and returns the string, for the components that build their frame from
 // a string instead of a layout.Node tree. It is the one place those components
-// go through layout.BoxNode, so none of them calls the deprecated
-// layout.Box.Render.
+// go through layout.BoxNode, as layout.Box.Render, now unexported, is not
+// available to them.
 package boxdraw
 
 import "github.com/ows4444/tui/layout"

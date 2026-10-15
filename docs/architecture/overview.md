@@ -117,8 +117,9 @@ Other rules in the same package:
   imports no component (`TestRootImportsNoComponent`).
 - No non-test file imports `internal/cellcheck` or `internal/testutil`
   (`TestTestHelpersStayOutOfProductionCode`).
-- No library code calls `ansi.SetClusterWidth`: width settings for one
-  terminal travel as an `ansi.Measurer` (`TestNoGlobalWidthToggle`).
+- There is no exported process-wide width toggle: width settings for one
+  terminal travel as an `ansi.Measurer`, and the default lives in
+  `internal/clusterwidth`.
 - Every public package has a runnable Example (`TestEveryPublicPackageHasExample`).
 - Every stateful widget has `Linearize` and `LayoutNode` methods
   (`TestEveryStatefulWidgetHasLinearizeAndLayoutNode`).
