@@ -16,8 +16,17 @@ groups and typed values, datatable filter and sort, text-area line numbers, a
 multi-series plot and a colour toolkit. A breaking change found in the week it
 is out would be a reason to cut an rc.2.
 
-### Added
+### Changed
 
+- The cell renderer reads a drawn frame 40% faster: a text-area keystroke through
+  `DrawCells` costs 64 µs instead of 107 µs. `internal/render` remembers the
+  style of the cell before and takes a printable ASCII cell without scanning
+  it; the cost was a map lookup and a rune slice for every one of the 1,920
+  cells of an 80x24 frame. The profile had pointed at the `write` system call,
+  which was the sampler's attribution, not the cost: with a no-op writer the
+  time was the same.
+
+### Added
 - `datatable.Model.CellMode`, `CellStyle`, `FrozenCols` and `SelectedMsg.Col`: a
   cursor that is one cell (Left and Right move it, only that cell is
   highlighted, Enter reports its column), a hook that styles any cell from its
