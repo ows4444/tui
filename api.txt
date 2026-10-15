@@ -636,6 +636,8 @@ type Model struct {
 	Mouse	bool
 
 	Bounds	hittest.Rect
+
+	Fuzzy	bool
 	// contains filtered or unexported fields
 }
 
@@ -2775,12 +2777,14 @@ type Tween struct {
 ## github.com/ows4444/tui/multiselect (package multiselect)
 
 func (m *Model) SetCursor(i int)
+func (m *Model) SetQuery(q string)
 func (m *Model) Toggle(i int)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) IsSelected(i int) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) Query() string
 func (m Model) SelectedIndexes() []int
 func (m Model) SelectedItems() []Item
 func (m Model) SetTheme(t theme.Theme) Model
@@ -2817,6 +2821,8 @@ type Model struct {
 	Bounds	hittest.Rect
 
 	WheelStep	int
+
+	Filter	bool
 	// contains filtered or unexported fields
 }
 
@@ -4126,11 +4132,13 @@ type Side int
 ## github.com/ows4444/tui/treeview (package treeview)
 
 func (m *Model) SetCursor(i int)
+func (m *Model) SetQuery(q string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) IsExpanded(path string) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) Query() string
 func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
@@ -4162,6 +4170,8 @@ type Model struct {
 	Bounds	hittest.Rect
 
 	WheelStep	int
+
+	Filter	bool
 	// contains filtered or unexported fields
 }
 type Node struct {

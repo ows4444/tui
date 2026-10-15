@@ -22,3 +22,16 @@ func Example() {
 	// true
 	// apple
 }
+
+// With Fuzzy on, the typed letters need only appear in order, so "cp" offers
+// "Copy Path" and "CommandPalette".
+func ExampleModel_fuzzy() {
+	m := autocomplete.New("CommandPalette", "Banana", "Copy Path")
+	m.Fuzzy = true
+	for _, r := range "cp" {
+		m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: string([]rune{r})})
+	}
+	_, cmd := m.Update(tui.Key{Type: tui.KeyEnter})
+	fmt.Println(cmd().(autocomplete.AcceptedMsg).Value)
+	// Output: Copy Path
+}

@@ -17,6 +17,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/fuzzy"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/textinput"
@@ -45,6 +46,13 @@ type Model struct {
 	// its first row and the suggestion rows below it, so make it tall enough for
 	// the dropdown. Clicks outside it are ignored.
 	Bounds hittest.Rect
+
+	// Fuzzy, when true, lists every suggestion the typed text fuzzy-matches
+	// (see package fuzzy), best first, with the matched runes underlined,
+	// instead of only those that start with it. "cp" then offers
+	// "CommandPalette". Accepting still replaces the input with the whole
+	// suggestion. Off (the default), suggestions are filtered by prefix.
+	Fuzzy bool
 
 	highlight    int
 	justAccepted bool // suppresses the dropdown right after Tab/Enter/Esc
@@ -106,22 +114,50 @@ func (m *Model) Blur() { m.Input.Blur() }
 // forwarded to accept a suggestion, or treated as "done with this field."
 func (m Model) IsOpen() bool { return len(m.filtered()) > 0 }
 
-// filtered returns the Suggestions whose text starts with the current
-// input value, case-insensitively. It returns nil (no dropdown) for an
-// empty value or right after an accept/close, until the next keystroke.
-func (m Model) filtered() []string {
+// matches returns the Suggestions that match the current input value, with
+// the matched rune offsets when Fuzzy is on. It returns nil (no dropdown) for
+// an empty value or right after an accept/close, until the next keystroke.
+// Without Fuzzy a suggestion matches when its text starts with the value,
+// ignoring case, and keeps the order it was given in.
+func (m Model) matches() []match {
 	if m.justAccepted {
 		return nil
 	}
-	q := strings.ToLower(m.Input.Value())
+	q := m.Input.Value()
 	if q == "" {
 		return nil
 	}
-	var out []string
-	for _, s := range m.Suggestions {
-		if strings.HasPrefix(strings.ToLower(s), q) {
-			out = append(out, s)
+	var out []match
+	if m.Fuzzy {
+		for _, r := range fuzzy.Find(q, len(m.Suggestions), func(i int) string { return m.Suggestions[i] }) {
+			out = append(out, match{text: m.Suggestions[r.Index], pos: r.Positions})
 		}
+		return out
+	}
+	lq := strings.ToLower(q)
+	for _, s := range m.Suggestions {
+		if strings.HasPrefix(strings.ToLower(s), lq) {
+			out = append(out, match{text: s})
+		}
+	}
+	return out
+}
+
+// match is one suggestion that passed the filter.
+type match struct {
+	text string
+	pos  []int
+}
+
+// filtered returns the text of the suggestions in matches.
+func (m Model) filtered() []string {
+	ms := m.matches()
+	if len(ms) == 0 {
+		return nil
+	}
+	out := make([]string, len(ms))
+	for i, x := range ms {
+		out[i] = x.text
 	}
 	return out
 }
@@ -223,8 +259,8 @@ func (m Model) updateMouse(ev tui.MouseEvent) (Model, tui.Cmd) {
 // View renders the embedded Input, plus a suggestion dropdown beneath it
 // while IsOpen.
 func (m Model) View() string {
-	filtered := m.filtered()
-	if len(filtered) == 0 {
+	ms := m.matches()
+	if len(ms) == 0 {
 		return m.Input.View()
 	}
 
@@ -233,12 +269,23 @@ func (m Model) View() string {
 
 	var b strings.Builder
 	b.WriteString(m.Input.View())
-	for i, s := range filtered {
+	for i, x := range ms {
 		b.WriteByte('\n')
+		base, prefix := dim, "  "
 		if i == m.highlight {
-			b.WriteString(highlight.Render("> " + s))
-		} else {
-			b.WriteString(dim.Render("  " + s))
+			base, prefix = highlight, "> "
+		}
+		if len(x.pos) == 0 {
+			b.WriteString(base.Render(prefix + x.text))
+			continue
+		}
+		b.WriteString(base.Render(prefix))
+		for _, run := range fuzzy.Split(x.text, x.pos) {
+			st := base
+			if run.Match {
+				st = base.Underline()
+			}
+			b.WriteString(st.Render(run.Text))
 		}
 	}
 	return b.String()

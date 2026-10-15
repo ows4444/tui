@@ -19,6 +19,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   first, matched runes underlined; Backspace edits and Esc clears the query.
   `Query` and `SetQuery` read and set it. Off by default, so existing lists do
   not change. `fuzzy.Split` cuts a text into matched and unmatched runs.
+- `multiselect.Model.Filter` and `treeview.Model.Filter`, the same type-to-narrow
+  filter as `picker`. In `multiselect` checked items stay checked while hidden.
+  In `treeview` a match shows with its ancestors, opened for the query without
+  changing the expand state, and the tree keeps its order.
+- `autocomplete.Model.Fuzzy`: suggest every suggestion the text fuzzy-matches,
+  best first, instead of only those it is a prefix of. Off by default.
 - `ansi.RGB.Mix`, `Lighten` and `Darken`, and `ansi.Blend`: move a colour
   toward another, white or black by a fraction, and spread n colours along a
   list of stops. A translucent colour is a `Mix` with the background it sits on.
