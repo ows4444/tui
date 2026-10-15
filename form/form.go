@@ -14,6 +14,11 @@
 // string in Values and SubmittedMsg.Values: a select's is its chosen option, a
 // checkbox's is "true" or "false", so one Validator type checks them all.
 //
+// Fields can be arranged in Groups (see NewGroups): the form shows one group
+// at a time under its title, Enter checks that group and moves on, and the
+// last group's Enter submits every field. A group can be hidden while the
+// values already entered say it does not apply.
+//
 // Model is a value type like the other widgets: Update and Submit return the
 // new Model and leave the receiver unchanged.
 package form
@@ -300,6 +305,10 @@ type Model struct {
 	errs    []string // current error per field, "" when none
 	ring    focus.Ring
 	focused bool
+	// groups is empty for a form built with New: one run of fields, no
+	// header. cur is the group showing.
+	groups []group
+	cur    int
 }
 
 // KeyMap names the keys of each action of a Model.
@@ -308,6 +317,10 @@ type KeyMap struct {
 	SelectPrev keymap.Binding // choose the previous option of a select
 	SelectNext keymap.Binding // choose the next option of a select
 	Toggle     keymap.Binding // tick or untick a checkbox
+	// NextGroup checks the group showing and moves to the next one; PrevGroup
+	// moves back without checking. Only a form built with NewGroups uses them.
+	NextGroup keymap.Binding
+	PrevGroup keymap.Binding
 }
 
 // DefaultKeyMap returns the keys a Model used before KeyMap existed.
@@ -317,12 +330,14 @@ func DefaultKeyMap() KeyMap {
 		SelectPrev: keymap.NewBinding("previous option", "left", "up"),
 		SelectNext: keymap.NewBinding("next option", "right", "down"),
 		Toggle:     keymap.NewBinding("toggle", "space"),
+		NextGroup:  keymap.NewBinding("next group", "pgdown"),
+		PrevGroup:  keymap.NewBinding("previous group", "pgup"),
 	}
 }
 
 func (m Model) keys() KeyMap {
 	km := m.KeyMap
-	if len(km.Submit.Keys)+len(km.SelectPrev.Keys)+len(km.SelectNext.Keys)+len(km.Toggle.Keys) == 0 {
+	if len(km.Submit.Keys)+len(km.SelectPrev.Keys)+len(km.SelectNext.Keys)+len(km.Toggle.Keys)+len(km.NextGroup.Keys)+len(km.PrevGroup.Keys) == 0 {
 		return DefaultKeyMap()
 	}
 	return km
@@ -338,6 +353,9 @@ func (m Model) Bindings() []keymap.Binding {
 		km.Submit,
 		keymap.NewBinding("next field", "tab"),
 		keymap.NewBinding("previous field", "shift+tab"),
+	}
+	if len(m.visibleGroups()) > 1 {
+		out = append(out, km.NextGroup, km.PrevGroup)
 	}
 	i := m.ring.Current()
 	if i < 0 || i >= len(m.inputs) {
@@ -456,12 +474,25 @@ func (m Model) Current() string {
 	return ""
 }
 
-// Values returns each field's current value, keyed by Name. A Secret field's
-// real value is included: it is what the application asked for.
+// Values returns each field's current value, keyed by Name, leaving out the
+// fields of a hidden group. A Secret field's real value is included: it is
+// what the application asked for.
 func (m Model) Values() map[string]string {
-	v := make(map[string]string, len(m.fields))
-	for i, f := range m.fields {
-		v[f.Name] = m.inputs[i].value()
+	v := m.allValues()
+	if len(m.groups) == 0 {
+		return v
+	}
+	hidden := map[int]bool{}
+	for _, g := range m.visibleGroups() {
+		hidden[g] = false
+	}
+	for g, gr := range m.groups {
+		if _, shown := hidden[g]; shown {
+			continue
+		}
+		for i := gr.lo; i < gr.hi; i++ {
+			delete(v, m.fields[i].Name)
+		}
 	}
 	return v
 }
@@ -500,7 +531,19 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if ev, ok := msg.(tui.MouseEvent); ok {
 		return m.updateMouse(ev)
 	}
-	if keymap.Matches(msg, m.keys().Submit) {
+	km := m.keys()
+	if len(m.groups) > 0 {
+		switch {
+		case keymap.Matches(msg, km.Submit) && m.neighbour(1) >= 0, keymap.Matches(msg, km.NextGroup):
+			return m.advance()
+		case keymap.Matches(msg, km.PrevGroup):
+			if prev := m.neighbour(-1); prev >= 0 {
+				return m.goTo(prev)
+			}
+			return m, nil
+		}
+	}
+	if keymap.Matches(msg, km.Submit) {
 		return m.Submit()
 	}
 	m = m.clone()
@@ -510,14 +553,28 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if edited >= 0 && m.errs[edited] != "" {
 		m.errs[edited] = m.check(edited)
 	}
+	if len(m.groups) > 0 {
+		// An edit can hide the group showing: move to the nearest one left.
+		if vis := m.visibleGroups(); len(vis) > 0 && !contains(vis, m.cur) {
+			to := m.neighbour(1)
+			if to < 0 {
+				to = m.neighbour(-1)
+			}
+			if to >= 0 {
+				next, c2 := m.goTo(to)
+				return next, tui.Batch(cmd, c2)
+			}
+		}
+	}
 	return m, cmd
 }
 
 // fieldAtRow maps a row of the rendered View (a field's line, or the error
 // line under it) to the field it belongs to, or -1 below the last field.
 func (m Model) fieldAtRow(row int) int {
-	y := 0
-	for i := range m.inputs {
+	lo, hi := m.span()
+	y := len(m.headerRows())
+	for i := lo; i < hi; i++ {
 		n := 1
 		if m.errs[i] != "" {
 			n = 2
@@ -583,22 +640,29 @@ func (in *fieldInput) step(next bool) {
 	}
 }
 
-// Submit checks every field. If any fails, each failing field shows its first
+// Submit checks every field, in every group that is not hidden. If any fails, each failing field shows its first
 // error, focus moves to the first invalid field and no SubmittedMsg is
 // produced. If all pass, the returned Cmd yields a SubmittedMsg with the
 // values.
 func (m Model) Submit() (Model, tui.Cmd) {
 	m = m.clone()
 	first := -1
-	for i := range m.fields {
-		m.errs[i] = m.check(i)
-		if m.errs[i] != "" && first < 0 {
-			first = i
+	if len(m.groups) == 0 {
+		first = m.checkSpan(0, len(m.fields))
+	} else {
+		for _, g := range m.visibleGroups() {
+			if f := m.checkSpan(m.groups[g].lo, m.groups[g].hi); f >= 0 && first < 0 {
+				first = f
+			}
 		}
 	}
 	if first < 0 {
 		values := m.Values()
 		return m, func() tui.Msg { return SubmittedMsg{Values: values} }
+	}
+	if len(m.groups) > 0 && m.groupOf(first) != m.cur {
+		m.cur = m.groupOf(first)
+		m.syncRing()
 	}
 	m.ring = m.ring.Set(first)
 	if !m.focused {
@@ -607,13 +671,17 @@ func (m Model) Submit() (Model, tui.Cmd) {
 	return m, m.ring.Sync(m.bindings()...)
 }
 
-// View renders each field on its own line, followed by its error, if any,
-// on the next line.
+// View renders each field of the group showing on its own line, followed by
+// its error, if any, on the next line, under the group's title when it has one.
 func (m Model) View() string {
 	errStyle := ansi.NewStyle().Foreground(m.themed().Error)
 	var b strings.Builder
-	for i := range m.inputs {
-		if i > 0 {
+	for _, h := range m.headerRows() {
+		b.WriteString(h + "\n")
+	}
+	lo, hi := m.span()
+	for i := lo; i < hi; i++ {
+		if i > lo {
 			b.WriteByte('\n')
 		}
 		b.WriteString(m.inputs[i].view(m.themed()))
@@ -621,7 +689,7 @@ func (m Model) View() string {
 			b.WriteString("\n  " + errStyle.Render(m.errs[i]))
 		}
 	}
-	return b.String()
+	return strings.TrimSuffix(b.String(), "\n")
 }
 
 // Compile-time proof that Model satisfies tui.Component[Model].

@@ -1820,8 +1820,10 @@ func (m *Model) Blur()
 func (m *Model) Focus() tui.Cmd
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Current() string
+func (m Model) CurrentGroup() int
 func (m Model) Err(name string) string
 func (m Model) Focused() bool
+func (m Model) GroupCount() int
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -1837,6 +1839,7 @@ func Match(re *regexp.Regexp, msg string) Validator
 func MaxLen(n int) Validator
 func MinLen(n int) Validator
 func New(fields ...Field) Model
+func NewGroups(groups ...Group) Model
 func Required() Validator
 type Field struct {
 	Name	string
@@ -1856,11 +1859,23 @@ type Field struct {
 	Validators	[]Validator
 }
 type FieldKind int
+type Group struct {
+	Title	string
+
+	Description	string
+
+	Fields	[]Field
+
+	Hide	func(values map[string]string) bool
+}
 type KeyMap struct {
 	Submit		keymap.Binding
 	SelectPrev	keymap.Binding
 	SelectNext	keymap.Binding
 	Toggle		keymap.Binding
+
+	NextGroup	keymap.Binding
+	PrevGroup	keymap.Binding
 }
 type Model struct {
 	Theme	theme.Theme

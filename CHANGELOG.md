@@ -12,6 +12,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `form.NewGroups`, `form.Group` and the `form.KeyMap` fields `NextGroup` and
+  `PrevGroup`: a form of titled groups, one showing at a time under its title
+  and "step n of N". Enter checks the group and moves on, the last group's
+  Enter submits every field, Tab stays inside the group, and `Group.Hide`
+  drops a group (and its values) while the values entered say it does not
+  apply. `Model.CurrentGroup` and `Model.GroupCount` report where it is.
+  `form.New` is unchanged and shows no header.
 - `fuzzy`, an experimental package that matches a typed query against text
   (`Score`, `Find`) and marks the matched runes (`Highlight`). It ignores case,
   prefers consecutive runes and word starts, and ranks best first.
