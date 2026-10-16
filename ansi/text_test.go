@@ -163,3 +163,20 @@ func TestWrapProperty(t *testing.T) {
 		}
 	}
 }
+
+func TestWrapStringAndWithDefault(t *testing.T) {
+	x := NewText("plain ", Style{}).Append("bold words here", bold)
+	if got, want := x.WrapString(10), x.Wrap(10)[0].String()+"\n"+x.Wrap(10)[1].String(); got != want {
+		t.Errorf("WrapString = %q, want %q", got, want)
+	}
+	if x.WrapString(0) != x.String() {
+		t.Error("a width under 1 should render unwrapped")
+	}
+	d := x.WithDefault(red)
+	if d[0].Style != red || d[1].Style != bold {
+		t.Errorf("WithDefault = %+v: the unstyled span takes red, the bold one keeps its own", d)
+	}
+	if x[0].Style != (Style{}) {
+		t.Error("WithDefault changed its receiver")
+	}
+}

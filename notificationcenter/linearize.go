@@ -23,7 +23,11 @@ func (m Model) Linearize() string {
 	n := strconv.Itoa(len(m.Notifications))
 	lines := []string{"Notifications, " + n}
 	for i, nt := range m.Notifications {
-		lines = append(lines, kinds[nt.Variant]+" "+strconv.Itoa(i+1)+" of "+n+": "+ansi.Clean(m.Raw, nt.Message))
+		text := ansi.Clean(m.Raw, nt.Message)
+		if len(nt.Text) > 0 {
+			text = nt.Text.Plain()
+		}
+		lines = append(lines, kinds[nt.Variant]+" "+strconv.Itoa(i+1)+" of "+n+": "+text)
 	}
 	return strings.Join(lines, "\n")
 }

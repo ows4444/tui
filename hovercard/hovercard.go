@@ -37,6 +37,9 @@ type Model struct {
 	// of lines. Its colours and attributes are kept and every other escape
 	// sequence is dropped.
 	Content string
+	// ContentText is Content as styled spans (ansi.Text). When it is set it is
+	// shown instead of Content, wrapped at Width with each span keeping its style.
+	ContentText ansi.Text
 	// Width, when above 0, wraps Content to that many cells. Zero or less
 	// keeps each line as it is.
 	Width int
@@ -162,7 +165,9 @@ func (m Model) body() string {
 	if title := ansi.Sanitize(m.Title); title != "" {
 		parts = append(parts, ansi.NewStyle().Bold().Foreground(t.Primary).Render(title))
 	}
-	if content := ansi.SanitizeKeepSGR(ansi.ExpandTabs(m.Content)); content != "" {
+	if len(m.ContentText) > 0 {
+		parts = append(parts, m.ContentText.WrapString(m.Width))
+	} else if content := ansi.SanitizeKeepSGR(ansi.ExpandTabs(m.Content)); content != "" {
 		if m.Width > 0 {
 			content = ansi.WrapStyled(content, m.Width)
 		}

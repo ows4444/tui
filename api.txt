@@ -575,7 +575,9 @@ func (t Text) Slice(from, to int) Text
 func (t Text) String() string
 func (t Text) Truncate(width int) Text
 func (t Text) Width() int
+func (t Text) WithDefault(style Style) Text
 func (t Text) Wrap(width int) []Text
+func (t Text) WrapString(width int) string
 func Blend(n int, stops ...RGB) []RGB
 func Clean(raw bool, s string) string
 func CleanAll(raw bool, in []string) []string
@@ -1640,6 +1642,8 @@ type Model struct {
 	Message	string
 	Theme	theme.Theme
 
+	MessageText	ansi.Text
+
 	Raw	bool
 
 	Width	int
@@ -2099,6 +2103,8 @@ type Model struct {
 	Title	string
 
 	Content	string
+
+	ContentText	ansi.Text
 
 	Width	int
 
@@ -2996,6 +3002,8 @@ type Model struct {
 }
 type Notification struct {
 	Message	string
+
+	Text	ansi.Text
 	Variant	widgets.Variant
 }
 
