@@ -9,3 +9,4 @@ src/content/docs/*
 public/*.md
 public/llms.txt
 public/llms-full.txt
+public/widgets/

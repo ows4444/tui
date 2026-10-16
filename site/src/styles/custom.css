@@ -1068,3 +1068,28 @@ section.ex-cat > p {
 	margin: 0.9rem 0 0;
 	max-width: none;
 }
+
+/* The widget gallery: a grid of component pictures. */
+.wg-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+	gap: 1.25rem;
+	margin-top: 1.5rem;
+}
+.wg-card {
+	margin: 0;
+	padding: 0.75rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 10px;
+	background: var(--sl-color-bg-nav);
+}
+.wg-card img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 6px;
+}
+.wg-card figcaption p {
+	margin: 0.6rem 0 0;
+	font-size: 0.9rem;
+}

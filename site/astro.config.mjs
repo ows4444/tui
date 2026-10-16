@@ -85,6 +85,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Overview', link: '/overview/' },
 						{ label: 'Examples', link: '/examples/' },
+						{ label: 'Widget gallery', link: '/widget-gallery/' },
 						{ label: 'Cookbook', link: '/cookbook/' },
 					],
 				},

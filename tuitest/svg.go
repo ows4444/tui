@@ -23,6 +23,9 @@ type SVGOptions struct {
 	FontSize   int
 	// Cursor draws the cursor cell when the program shows it.
 	Cursor bool
+	// TrimRows drops the blank rows at the bottom, so the image is as tall as
+	// what was drawn (at least one row).
+	TrimRows bool
 }
 
 // defaultPalette is the 16 ANSI colours of a dark editor terminal, as 0xRRGGBB.
@@ -54,6 +57,18 @@ func (s *Session) SVG(o SVGOptions) string {
 		for x := range cells[y] {
 			cells[y][x] = s.Cell(x, y)
 		}
+	}
+	if o.TrimRows {
+		keep := 1
+		for y, row := range cells {
+			for _, c := range row {
+				if (c.Grapheme != " " && c.Grapheme != "") || c.BG != nil || c.Reverse {
+					keep = y + 1
+					break
+				}
+			}
+		}
+		cells = cells[:keep]
 	}
 	cx, cy, cursor := s.Cursor()
 	return renderSVG(cells, cx, cy, cursor && o.Cursor, o)

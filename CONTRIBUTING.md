@@ -108,7 +108,14 @@ sync runs `go test -run 'TestSizeMatrix/^80x24$' ./examples/...` with
 `TUI_SCREENS_DIR` set, which makes `testutil.SizeMatrix` write each frame
 unstripped; a frame is used only if, stripped, it equals
 `testdata/size-80x24.golden`, and without Go the screens show without colour.
-Their categories are `EXAMPLE_CATEGORIES` in the sync script. Edit those
+Their categories are `EXAMPLE_CATEGORIES` in the sync script. The Widget gallery
+page is drawn the same way: the sync runs `internal/tools/widgetshots`, which
+shows one picture of each listed component (a small real program, the keys named
+in `shots_test.go`) and writes it as an SVG under `site/public/widgets/`. The
+same test compares each picture's text with `testdata/<package>.golden`, so a
+component that changes how it looks fails until you rewrite the golden with
+`TUITEST_UPDATE=1 go test ./internal/tools/widgetshots`. To add a component,
+add a line to `shots()`. Edit those
 sources, not the generated files, which are gitignored. A page added to `docs/`
 needs an entry in `pages` in the sync script and in the sidebar in
 `site/astro.config.mjs`. The sync fails on a relative link that points nowhere.

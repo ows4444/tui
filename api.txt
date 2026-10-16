@@ -4413,6 +4413,8 @@ type SVGOptions struct {
 	FontSize	int
 
 	Cursor	bool
+
+	TrimRows	bool
 }
 type Session struct {
 	// contains filtered or unexported fields
