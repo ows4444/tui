@@ -5,6 +5,7 @@ import (
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/keymap"
+	"github.com/ows4444/tui/theme"
 )
 
 var (
@@ -99,5 +100,5 @@ func Footer(width int, hints ...Hint) string {
 		}
 		return ansi.Truncate(parts[0], width)
 	}
-	return strings.Join(parts[:n], sep) + sep + keyHintDimStyle.Render("…")
+	return strings.Join(parts[:n], sep) + sep + keyHintDimStyle.Render(theme.Theme{}.GlyphSet().Ellipsis)
 }

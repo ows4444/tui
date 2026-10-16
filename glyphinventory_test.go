@@ -29,6 +29,7 @@ var glyphSources = map[string]string{
 	"layout/box.go":                  "the Border sets, including ASCIIBorder; Theme.Border selects one",
 	"spinner/spinner.go":             "the default frames, replaced by Theme.Glyphs.Spinner",
 	"widgets/bigtext.go":             "the block font, drawn with full blocks and swapped for Theme.Glyphs.BarFull at render",
+	"widgets/tree.go":                "the tree connectors, with an ASCII set chosen when Theme.Glyphs is the ASCII set",
 	"maskedinput/maskedinput.go":     "defaultMask, the documented default of the Mask field; it follows Theme.Glyphs.Mask",
 	"passwordinput/passwordinput.go": "the exported Mask constant, the documented default; drawn from Theme.Glyphs.Mask",
 }
