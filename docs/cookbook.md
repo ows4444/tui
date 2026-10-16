@@ -347,3 +347,23 @@ out := chart.Plot(s, chart.PlotOptions{
 
 Source: `ExamplePlot`, `widgets/chart/plot_test.go`. `chart.LinearizePlot` gives
 the same data as text for accessible output.
+
+## Ask a question in a shell script
+
+The `tui` command wraps the `prompt` package for scripts. The question is drawn
+on standard error and the answer is the only thing on standard output, so a
+command substitution captures just that.
+
+```sh
+tui=github.com/ows4444/tui/cmd/tui
+name=$(go run $tui prompt input -default guest "Your name:")
+region=$(go run $tui prompt select "Region" eu us ap)
+go run $tui prompt confirm "Deploy to $region?" || exit 1
+go run $tui prompt spin "Building" -- go build ./...
+```
+
+`confirm` answers with its exit code (0 for yes, 1 for no), `multiselect` prints
+one choice per line, and `spin` runs a command under a spinner, shows its
+output only if it fails, and exits with its code. Esc or Ctrl+C exits with 130
+and prints nothing. Source: `cmd/tui/prompt.go`; in a Go program call `prompt`
+directly.

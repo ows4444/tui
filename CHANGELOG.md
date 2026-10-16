@@ -27,6 +27,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `theme.Parse`, `theme.Preset` and `theme.PresetNames`: a theme from JSON, built
   on a named preset, and `tui theme check file.json` / `tui theme list` to lint
   one from the command line.
+- `tui prompt input|password|confirm|select|multiselect|spin`: the `prompt`
+  package from a shell script. The question is drawn on standard error, the
+  answer printed on standard output; `confirm` answers with its exit code.
 - `Map` and `MapAs[T]`: wrap the messages of a child's Cmd, through `Batch`,
   `Sequence`, `FromCtx`, `Tick` and `Every`, so a parent tags or converts them
   without a hand-written envelope Cmd.
