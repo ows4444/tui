@@ -26,3 +26,27 @@ func ExampleBreadcrumb() {
 	fmt.Println(ansi.StripANSI(widgets.Breadcrumb([]string{"home", "docs", "api"}, theme.DarkTheme())))
 	// Output: home / docs / api
 }
+
+// A footer lists the focused widget's bindings on one line and drops the last
+// hints, with a "…", when the line is too narrow.
+func ExampleFooter() {
+	hints := []widgets.Hint{{Key: "enter", Action: "submit"}, {Key: "esc", Action: "cancel"}, {Key: "?", Action: "help"}}
+	fmt.Println(ansi.StripANSI(widgets.Footer(80, hints...)))
+	fmt.Println(ansi.StripANSI(widgets.Footer(24, hints...)))
+	// Output:
+	// [enter] submit  [esc] cancel  [?] help
+	// [enter] submit  …
+}
+
+// Tree prints nested entries with connector lines, for output that is not
+// navigated.
+func ExampleTree() {
+	fmt.Println(widgets.Tree([]widgets.TreeNode{
+		{Label: "cmd", Children: []widgets.TreeNode{{Label: "tui"}}},
+		{Label: "go.mod"},
+	}))
+	// Output:
+	// ├── cmd
+	// │   └── tui
+	// └── go.mod
+}

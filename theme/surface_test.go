@@ -10,7 +10,8 @@ func allPresets() map[string]Theme {
 	return map[string]Theme{
 		"dark": DarkTheme(), "light": LightTheme(), "dracula": DraculaTheme(), "nord": NordTheme(),
 		"gruvbox": GruvboxTheme(), "tokyoNight": TokyoNightTheme(), "monokai": MonokaiTheme(),
-		"solarizedDark": SolarizedDarkTheme(), "solarizedLight": SolarizedLightTheme(),
+		"solarizedDark": SolarizedDarkTheme(), "solarizedLight": SolarizedLightTheme(), "catppuccinLatte": CatppuccinLatteTheme(),
+		"oneLight": OneLightTheme(), "rosePineDawn": RosePineDawnTheme(), "githubLight": GitHubLightTheme(),
 		"catppuccin": CatppuccinTheme(), "oneDark": OneDarkTheme(), "nightOwl": NightOwlTheme(),
 		"rosePine": RosePineTheme(), "everforest": EverforestDarkTheme(), "github": GitHubDarkTheme(),
 		"highContrast": HighContrastTheme(),

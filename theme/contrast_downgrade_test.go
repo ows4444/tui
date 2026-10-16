@@ -40,6 +40,8 @@ func TestContrastAfterForProfile(t *testing.T) {
 		{"Dark", DarkTheme()}, {"Light", LightTheme()}, {"Dracula", DraculaTheme()}, {"Nord", NordTheme()},
 		{"Gruvbox", GruvboxTheme()}, {"TokyoNight", TokyoNightTheme()}, {"Monokai", MonokaiTheme()},
 		{"SolarizedDark", SolarizedDarkTheme()}, {"SolarizedLight", SolarizedLightTheme()},
+		{"CatppuccinLatte", CatppuccinLatteTheme()}, {"OneLight", OneLightTheme()},
+		{"RosePineDawn", RosePineDawnTheme()}, {"GitHubLight", GitHubLightTheme()},
 		{"Catppuccin", CatppuccinTheme()}, {"OneDark", OneDarkTheme()}, {"NightOwl", NightOwlTheme()},
 		{"RosePine", RosePineTheme()}, {"EverforestDark", EverforestDarkTheme()},
 		{"GitHubDark", GitHubDarkTheme()}, {"HighContrast", HighContrastTheme()},

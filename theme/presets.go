@@ -310,3 +310,85 @@ var highContrast = Theme{
 	Selection:   ansi.RGB{R: 0xff, G: 0xff, B: 0x00}, // yellow
 	Border:      basetypes.NormalBorder,
 }
+
+// The four presets below are light counterparts of palettes above, added so an
+// app can offer a named light theme and not only LightTwin's derived one. Text,
+// TextInverse and Muted clear the 4.5:1 AA ratio (Muted on OneLight and GitHubLight
+// is a darker step than the published comment colour). The accents keep the
+// published values, as SolarizedLight's do, so some are paler than 4.5:1 on the
+// background (the lowest is RosePineDawn Warning, about 2.1:1); Theme.Check
+// lists them, and LightTwin is the choice when every accent must pass.
+//
+//   - Catppuccin Latte: https://github.com/catppuccin/catppuccin (Latte variant)
+//   - One Light:        Atom's One Light syntax palette
+//   - Rosé Pine Dawn:   https://rosepinetheme.com (Dawn variant)
+//   - GitHub Light:     https://primer.style/primitives (Primer's light color scales)
+
+// CatppuccinLatte is the Catppuccin theme's Latte variant, the light pastel
+// counterpart of Catppuccin (Mocha). Rounded borders match.
+var catppuccinLatte = Theme{
+	Primary:     ansi.RGB{R: 0x88, G: 0x39, B: 0xef}, // mauve
+	Secondary:   ansi.RGB{R: 0xea, G: 0x76, B: 0xcb}, // pink
+	Success:     ansi.RGB{R: 0x40, G: 0xa0, B: 0x2b}, // green
+	Warning:     ansi.RGB{R: 0xdf, G: 0x8e, B: 0x1d}, // yellow
+	Error:       ansi.RGB{R: 0xd2, G: 0x0f, B: 0x39}, // red
+	Info:        ansi.RGB{R: 0x04, G: 0xa5, B: 0xe5}, // sky
+	Muted:       ansi.RGB{R: 0x6c, G: 0x6f, B: 0x85}, // subtext0
+	Text:        ansi.RGB{R: 0x4c, G: 0x4f, B: 0x69}, // text
+	TextInverse: ansi.RGB{R: 0xef, G: 0xf1, B: 0xf5}, // base
+	BorderColor: ansi.RGB{R: 0xbc, G: 0xc0, B: 0xcc}, // surface1
+	Focus:       ansi.RGB{R: 0x88, G: 0x39, B: 0xef}, // mauve
+	Selection:   ansi.RGB{R: 0xcc, G: 0xd0, B: 0xda}, // surface0
+	Border:      basetypes.RoundedBorder,
+}
+
+// OneLight is Atom's One Light theme, the light counterpart of OneDark.
+var oneLight = Theme{
+	Primary:     ansi.RGB{R: 0x40, G: 0x78, B: 0xf2}, // blue
+	Secondary:   ansi.RGB{R: 0xa6, G: 0x26, B: 0xa4}, // purple
+	Success:     ansi.RGB{R: 0x50, G: 0xa1, B: 0x4f}, // green
+	Warning:     ansi.RGB{R: 0xc1, G: 0x84, B: 0x01}, // yellow
+	Error:       ansi.RGB{R: 0xe4, G: 0x56, B: 0x49}, // red
+	Info:        ansi.RGB{R: 0x01, G: 0x84, B: 0xbc}, // cyan
+	Muted:       ansi.RGB{R: 0x69, G: 0x6c, B: 0x77}, // comment, darkened for text use
+	Text:        ansi.RGB{R: 0x38, G: 0x3a, B: 0x42}, // foreground
+	TextInverse: ansi.RGB{R: 0xfa, G: 0xfa, B: 0xfa}, // background
+	BorderColor: ansi.RGB{R: 0xd3, G: 0xd3, B: 0xd3}, // gutter
+	Focus:       ansi.RGB{R: 0x40, G: 0x78, B: 0xf2}, // blue
+	Selection:   ansi.RGB{R: 0xe5, G: 0xe5, B: 0xe6}, // selection
+	Border:      basetypes.NormalBorder,
+}
+
+// RosePineDawn is the Dawn variant of Rosé Pine, its light counterpart.
+var rosePineDawn = Theme{
+	Primary:     ansi.RGB{R: 0x90, G: 0x7a, B: 0xa9}, // iris
+	Secondary:   ansi.RGB{R: 0xd7, G: 0x82, B: 0x7e}, // rose
+	Success:     ansi.RGB{R: 0x28, G: 0x69, B: 0x83}, // pine
+	Warning:     ansi.RGB{R: 0xea, G: 0x9d, B: 0x34}, // gold
+	Error:       ansi.RGB{R: 0xb4, G: 0x63, B: 0x7a}, // love
+	Info:        ansi.RGB{R: 0x56, G: 0x94, B: 0x9f}, // foam
+	Muted:       ansi.RGB{R: 0x79, G: 0x75, B: 0x93}, // subtle
+	Text:        ansi.RGB{R: 0x57, G: 0x52, B: 0x79}, // text
+	TextInverse: ansi.RGB{R: 0xfa, G: 0xf4, B: 0xed}, // base
+	BorderColor: ansi.RGB{R: 0xdf, G: 0xda, B: 0xd9}, // highlight med
+	Focus:       ansi.RGB{R: 0x90, G: 0x7a, B: 0xa9}, // iris
+	Selection:   ansi.RGB{R: 0xf2, G: 0xe9, B: 0xe1}, // overlay
+	Border:      basetypes.RoundedBorder,
+}
+
+// GitHubLight is GitHub's light theme, the light counterpart of GitHubDark.
+var githubLight = Theme{
+	Primary:     ansi.RGB{R: 0x09, G: 0x69, B: 0xda}, // accent
+	Secondary:   ansi.RGB{R: 0x82, G: 0x50, B: 0xdf}, // done
+	Success:     ansi.RGB{R: 0x1a, G: 0x7f, B: 0x37}, // success
+	Warning:     ansi.RGB{R: 0x9a, G: 0x67, B: 0x00}, // attention
+	Error:       ansi.RGB{R: 0xd1, G: 0x24, B: 0x2f}, // danger
+	Info:        ansi.RGB{R: 0x09, G: 0x69, B: 0xda}, // accent
+	Muted:       ansi.RGB{R: 0x59, G: 0x63, B: 0x6e}, // fg muted
+	Text:        ansi.RGB{R: 0x1f, G: 0x23, B: 0x28}, // fg default
+	TextInverse: ansi.RGB{R: 0xff, G: 0xff, B: 0xff}, // canvas default
+	BorderColor: ansi.RGB{R: 0xd1, G: 0xd9, B: 0xe0}, // border default
+	Focus:       ansi.RGB{R: 0x09, G: 0x69, B: 0xda}, // accent
+	Selection:   ansi.RGB{R: 0xdd, G: 0xf4, B: 0xff}, // accent subtle
+	Border:      basetypes.NormalBorder,
+}

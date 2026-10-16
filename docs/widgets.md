@@ -138,8 +138,8 @@ package: it sits below the components. Use `layout.Block(s)` (or
 | Separators and headings | `Divider`, `DividerLabel`, `DividerWith`, `DividerLabelWith`, `Header`, `HeaderWithAccessory`, `Breadcrumb` |
 | Progress and status | `ProgressBar`, `ProgressCircle`, `MultiProgress`, `StatusIndicator`, `Stepper`, `Timeline`, `Pagination`, `PaginationDots` |
 | Controls drawn as text | `Checkbox`, `Toggle`, `FormField`, `Form` |
-| Lists and tables | `List`, `ListWith`, `KeyValue`, `Table`, `TableRows`, `TableRowsWith` |
-| Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap` |
+| Lists and tables | `List`, `ListWith`, `Tree`, `TreeWith`, `KeyValue`, `Table`, `TableRows`, `TableRowsWith` |
+| Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap`, `HintsFromBindings`, `Footer` |
 | Text formatting | `CodeBlock`, `CodeBlockLang`, `DiffView`, `Gradient`, `BigText`, `BigTextGradient`, `Link` |
 | Chat and agent helpers | `ChatMessage`, `ChatMessageRaw`, `TokenCounter`, `UsageMonitor`, `CompactCount` |
 | Error isolation | `ErrorBoundary` renders a fallback if the render function panics |

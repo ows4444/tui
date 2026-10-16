@@ -133,7 +133,9 @@ $ npm run build   # static site in site/dist/
 ## Getting help
 
 Ask in [Discussions](https://github.com/ows4444/tui/discussions); open an issue for
-a bug or a concrete request, using its template.
+a bug or a concrete request, using its template. Report a security problem
+privately, as [SECURITY.md](SECURITY.md) describes; the rules for taking part are
+in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Coverage
 

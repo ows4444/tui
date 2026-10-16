@@ -145,3 +145,48 @@ func TestCliReturnsTheExitCode(t *testing.T) {
 		t.Errorf("good args: code %d, stderr %q", code, errOut.String())
 	}
 }
+
+func TestThemeList(t *testing.T) {
+	var out bytes.Buffer
+	if err := run([]string{"theme", "list"}, &out); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "nord\n") || !strings.Contains(out.String(), "catppuccin-latte\n") {
+		t.Errorf("list = %q", out.String())
+	}
+}
+
+func TestThemeCheck(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name, body string) string {
+		p := filepath.Join(dir, name)
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	var out bytes.Buffer
+	good := write("good.json", `{"base":"github-light"}`)
+	if err := run([]string{"theme", "check", good}, &out); err != nil {
+		t.Errorf("github-light should pass 4.5: %v\n%s", err, out.String())
+	}
+	out.Reset()
+	bad := write("bad.json", `{"base":"nord","text":"#4c566a"}`)
+	err := run([]string{"theme", "check", bad}, &out)
+	if err == nil || !strings.Contains(out.String(), "Text") {
+		t.Errorf("a dim Text on Nord passed: err=%v out=%q", err, out.String())
+	}
+	out.Reset()
+	if err := run([]string{"theme", "check", "-min", "1", bad}, &out); err != nil {
+		t.Errorf("-min 1 should pass: %v", err)
+	}
+	broken := write("broken.json", `{"primary":"red"}`)
+	if err := run([]string{"theme", "check", broken}, &out); err == nil || !strings.Contains(err.Error(), "primary") {
+		t.Errorf("broken file: %v", err)
+	}
+	for _, args := range [][]string{{"theme"}, {"theme", "nope"}, {"theme", "check"}, {"theme", "list", "x"}, {"theme", "check", filepath.Join(dir, "missing.json")}} {
+		if err := run(args, &out); err == nil {
+			t.Errorf("run(%q) did not fail", args)
+		}
+	}
+}

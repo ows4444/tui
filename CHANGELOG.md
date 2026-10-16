@@ -8,6 +8,47 @@ a minor release may remove or change exported identifiers; each one is a
 A removed or changed exported identifier needs a `- BREAKING:` entry under
 Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
+## [Unreleased]
+
+### Added
+
+- Community files: `SECURITY.md` (private reports through GitHub) and
+  `CODE_OF_CONDUCT.md`.
+- `Tasks`, `NewTasks` and `TaskDoneMsg`: background work by key. `Tasks.Start`
+  cancels the earlier run of the same key, so a search-as-you-type needs no
+  hand-written stale-result check; `Cancel`, `CancelAll` and `Running`.
+- `WithColorSchemeReports` (DECSET 2031) and `ColorSchemeEvent`: a terminal that
+  switches between dark and light while the program runs is followed. With
+  `WithTheme(theme.Auto{...})` the Program swaps the theme itself.
+- `WithInBandResize` (DECSET 2048) and `InBandResizeEvent`: the terminal reports
+  its size through the input stream, so a resize is seen where no window-size
+  signal arrives (over SSH, in some multiplexers). Both options are off by
+  default, so no output changes unless asked for.
+- `theme.Parse`, `theme.Preset` and `theme.PresetNames`: a theme from JSON, built
+  on a named preset, and `tui theme check file.json` / `tui theme list` to lint
+  one from the command line.
+- `tui prompt input|password|confirm|select|multiselect|spin`: the `prompt`
+  package from a shell script. The question is drawn on standard error, the
+  answer printed on standard output; `confirm` answers with its exit code.
+- `widgets.Tree` and `TreeWith`: a static tree with connector lines, for printed
+  output (the interactive one is `treeview`).
+- `layout.Ratio(n, d)`: a flex child sized to an exact fraction of the space after
+  gaps (`Pct(33)` is not a third); combine it with `Min` and `Max`.
+- Data table: `SetCell`, `InsertRow` and `RemoveRow` edit the source rows on a
+  copy and keep a sort or filter in force.
+- Text area: `MaxHeight` (grows with its content up to a cap), `LineInfo` (the
+  cursor's line, column and wrapped row) and `LineLabel` (your own text in the
+  left column in place of the line number).
+- `widgets.HintsFromBindings` and `widgets.Footer`: a one-line key-hint bar built
+  from a focused widget's `Bindings()`, cut to the width with a "…" when it does
+  not fit.
+- `Map` and `MapAs[T]`: wrap the messages of a child's Cmd, through `Batch`,
+  `Sequence`, `FromCtx`, `Tick` and `Every`, so a parent tags or converts them
+  without a hand-written envelope Cmd.
+- Four light themes: `CatppuccinLatteTheme`, `OneLightTheme`, `RosePineDawnTheme`
+  and `GitHubLightTheme`. Text and Muted pass AA; the accents keep each palette's
+  published values and some are paler than 4.5:1 (`Theme.Check` lists them).
+
 ## [1.0.0-rc.1] - 2026-10-16
 
 Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking

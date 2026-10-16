@@ -49,3 +49,14 @@ func ExampleModel_filter() {
 	// Bob was row 2
 	// Carol was row 0
 }
+
+// SetCell, InsertRow and RemoveRow edit the source rows and keep a sort or
+// filter in force; they never touch the slices the caller passed in.
+func ExampleModel_SetCell() {
+	m := datatable.New([]string{"name", "qty"}, [][]string{{"apple", "3"}, {"pear", "5"}})
+	m.SetCell(1, 1, "6")
+	m.InsertRow(0, []string{"fig", "1"})
+	m.RemoveRow(2)
+	fmt.Println(m.Rows)
+	// Output: [[fig 1] [apple 3]]
+}

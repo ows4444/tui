@@ -41,6 +41,12 @@ type Model struct {
 	Height    int
 	CharLimit int // 0 = unlimited length, in grapheme clusters (a '\n' counts as one)
 
+	// MaxHeight makes the view grow with its content: with Height 0 and
+	// MaxHeight > 0, View shows every line while there are MaxHeight or fewer
+	// (or visual rows, with SoftWrap), and a scrolling window of MaxHeight
+	// beyond that. A set Height wins. 0 (the default) leaves Height as it was.
+	MaxHeight int
+
 	// SoftWrap, when true and Width > 0, wraps a line longer than Width
 	// columns onto further visual rows at a cluster boundary instead of
 	// scrolling it horizontally. Up and Down then move between visual rows,
@@ -63,6 +69,14 @@ type Model struct {
 	ShowLineNumbers bool
 	// LineNumberStyle styles the line numbers; the zero value is faint text.
 	LineNumberStyle ansi.Style
+	// LineLabel, when set, replaces the line number in the left column, and
+	// turns the column on without ShowLineNumbers. It is called with the
+	// 1-based line and whether the row is a soft-wrapped continuation of it,
+	// and returns the text for that row: "> " for the cursor line, an error
+	// marker, a diff sign. The column is as wide as the wider of the labels of
+	// the first and last line, plus a space; a longer label is cut. It is
+	// drawn in LineNumberStyle.
+	LineLabel func(line int, continuation bool) string
 
 	// tokens is the per-instance colour override set by WithTokens.
 	tokens theme.Tokens
@@ -903,7 +917,7 @@ func (m Model) clipPlaceholder(first int) string {
 // or, with SoftWrap, wrapped onto further rows. Text is handled as grapheme
 // clusters measured in display columns, as textinput does.
 func (m Model) View() string {
-	if m.ShowLineNumbers {
+	if m.ShowLineNumbers || m.LineLabel != nil {
 		return m.withGutter(m.view())
 	}
 	return m.view()
@@ -930,7 +944,7 @@ func (m Model) view() string {
 		return m.wrappedView()
 	}
 
-	if m.Height > 0 {
+	if m.limit() > 0 {
 		return m.windowedView()
 	}
 
@@ -977,14 +991,14 @@ func (m Model) cursorCell() (x, y int, ok bool) {
 	if m.wrapping() {
 		rows, cur := m.allRows()
 		top := 0
-		if m.Height > 0 {
-			top = windowTop(m.top, cur, len(rows), m.Height)
+		if m.limit() > 0 {
+			top = windowTop(m.top, cur, len(rows), m.limit())
 		}
 		return m.colOf(rows[cur].s, m.cursor), cur - top, m.focused
 	}
 	line := m.value.lineOf(m.cursor)
-	if m.Height > 0 {
-		y = line - windowTop(m.top, line, m.value.lineCount(), m.Height)
+	if m.limit() > 0 {
+		y = line - windowTop(m.top, line, m.value.lineCount(), m.limit())
 	} else {
 		y = line
 	}
@@ -1023,9 +1037,9 @@ func (m Model) allRows() (rows []vrow, cursorRow int) {
 func (m Model) wrappedView() string {
 	rows, cur := m.allRows()
 	top, bottom := 0, len(rows)
-	if m.Height > 0 {
-		top = windowTop(m.top, cur, len(rows), m.Height)
-		bottom = min(top+m.Height, len(rows))
+	if m.limit() > 0 {
+		top = windowTop(m.top, cur, len(rows), m.limit())
+		bottom = min(top+m.limit(), len(rows))
 	}
 	out := make([]string, 0, bottom-top)
 	for i := top; i < bottom; i++ {
@@ -1063,8 +1077,8 @@ func (m Model) paint(cl []string, own bool, base int, lineEnd bool) string {
 func (m Model) windowedView() string {
 	total := m.value.lineCount()
 	cursorLine := m.value.lineOf(m.cursor)
-	top := windowTop(m.top, cursorLine, total, m.Height)
-	bottom := min(top+m.Height, total)
+	top := windowTop(m.top, cursorLine, total, m.limit())
+	bottom := min(top+m.limit(), total)
 
 	rendered := make([]string, 0, bottom-top)
 	for i := top; i < bottom; i++ {
@@ -1152,16 +1166,16 @@ func windowTop(top, cursorLine, total, height int) int {
 // scrollToCursor records the window's first line after the cursor or value
 // changed, so the next scroll is measured from where the window is now.
 func (m *Model) scrollToCursor() {
-	if m.Height <= 0 {
+	if m.limit() <= 0 {
 		m.top = 0
 		return
 	}
 	if m.wrapping() {
 		rows, cur := m.allRows()
-		m.top = windowTop(m.top, cur, len(rows), m.Height)
+		m.top = windowTop(m.top, cur, len(rows), m.limit())
 		return
 	}
-	m.top = windowTop(m.top, m.value.lineOf(m.cursor), m.value.lineCount(), m.Height)
+	m.top = windowTop(m.top, m.value.lineOf(m.cursor), m.value.lineCount(), m.limit())
 }
 
 // visibleWindow returns a [start, end) window of width w into a sequence

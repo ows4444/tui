@@ -153,6 +153,10 @@ func (p *Program) ReducedMotion() bool
 func (p *Program) Run() (Model, error)
 func (p *Program) Send(msg Msg)
 func (p *Program) TrySend(msg Msg) bool
+func (t *Tasks) Cancel(key string)
+func (t *Tasks) CancelAll()
+func (t *Tasks) Running(key string) bool
+func (t *Tasks) Start(key string, fn CtxCmd) Cmd
 func Announce(text string) Cmd
 func AnnounceWith(text string, level AnnounceLevel) Cmd
 func Batch(cmds ...Cmd) Cmd
@@ -167,7 +171,10 @@ func ExitAltScreen() Cmd
 func FromCtx(fn CtxCmd) Cmd
 func Go(fn func(ctx context.Context) Msg) Cmd
 func LogToFile(path, prefix string) (*os.File, error)
+func Map(cmd Cmd, f func(Msg) Msg) Cmd
+func MapAs[T any](cmd Cmd, f func(T) Msg) Cmd
 func NewProgram(m Model, opts ...ProgramOption) *Program
+func NewTasks() *Tasks
 func PasteCopied() Cmd
 func Println(text string) Cmd
 func Quit() Cmd
@@ -193,12 +200,14 @@ func WithChordTimeout(d time.Duration) ProgramOption
 func WithChords(defs ...ChordDef) ProgramOption
 func WithClock(c Clock) ProgramOption
 func WithColorProfile(p ansi.Profile) ProgramOption
+func WithColorSchemeReports(enabled bool) ProgramOption
 func WithContext(ctx context.Context) ProgramOption
 func WithErrOutput(w io.Writer) ProgramOption
 func WithEscTimeout(d time.Duration) ProgramOption
 func WithExitOnSignal(enabled bool) ProgramOption
 func WithFocusReporting(enabled bool) ProgramOption
 func WithFrameLog(w io.Writer) ProgramOption
+func WithInBandResize(enabled bool) ProgramOption
 func WithInput(r io.Reader) ProgramOption
 func WithInputCloser(c io.Closer) ProgramOption
 func WithInspector(keys InspectorKeys) ProgramOption
@@ -260,6 +269,7 @@ type Clock interface {
 	NewTicker(d time.Duration) (<-chan time.Time, func())
 }
 type Cmd func() Msg
+type ColorSchemeEvent = input.ColorSchemeEvent
 type Component[T any] interface {
 	Update(Msg) (T, Cmd)
 	View() string
@@ -276,6 +286,7 @@ type FocusEvent = input.FocusEvent
 type FocusInspector interface {
 	FocusedID() string
 }
+type InBandResizeEvent = input.InBandResizeEvent
 type InputErrorMsg struct {
 	Err error
 }
@@ -345,6 +356,14 @@ type Rewrapper interface {
 	Rewrap(inner Model) Model
 }
 type SuspendMsg struct{ Err error }
+type TaskDoneMsg struct {
+	Key		string
+	Msg		Msg
+	Canceled	bool
+}
+type Tasks struct {
+	// contains filtered or unexported fields
+}
 type Terminal interface {
 	IsTerminal() bool
 
@@ -494,6 +513,14 @@ const (
 	FocusReportingEnable	= CSI + "?1004h"
 
 	FocusReportingDisable	= CSI + "?1004l"
+
+	ColorSchemeReportingEnable	= CSI + "?2031h"
+
+	ColorSchemeReportingDisable	= CSI + "?2031l"
+
+	InBandResizeEnable	= CSI + "?2048h"
+
+	InBandResizeDisable	= CSI + "?2048l"
 
 	SyncOutputEnable	= CSI + "?2026h"
 
@@ -1452,6 +1479,9 @@ type SelectedMsg struct {
 ## github.com/ows4444/tui/datatable (package datatable)
 
 func (m *Model) ClearSort()
+func (m *Model) InsertRow(i int, cells []string)
+func (m *Model) RemoveRow(i int) bool
+func (m *Model) SetCell(row, col int, text string) bool
 func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m *Model) SetRows(rows [][]string)
@@ -2248,9 +2278,16 @@ type ChordResult struct {
 
 	Flush	[]Key
 }
+type ColorSchemeEvent struct {
+	Dark bool
+}
 type Event = any
 type FocusEvent struct {
 	Focused bool
+}
+type InBandResizeEvent struct {
+	Rows, Cols		int
+	HeightPx, WidthPx	int
 }
 type Key struct {
 	Type	KeyType
@@ -2429,6 +2466,7 @@ func NormalBorder() Border
 func Overlay(base, overlay string, x, y int) string
 func OverlayNode(base, over Node, x, y int) Node
 func Pct(n int) Length
+func Ratio(n, d int) Length
 func RectOf(root Node, s Size, name string) (Rect, bool)
 func Rects(root Node, s Size) []Placed
 func Responsive(breaks []Break, nodes ...Node) Node
@@ -3652,6 +3690,7 @@ func (m Model) Focused() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Line() int
 func (m Model) LineCount() int
+func (m Model) LineInfo() LineInfo
 func (m Model) Linearize() string
 func (m Model) SelectedText() string
 func (m Model) Selection() (lo, hi int, ok bool)
@@ -3684,12 +3723,23 @@ type KeyMap struct {
 	Cut		keymap.Binding
 	Paste		keymap.Binding
 }
+type LineInfo struct {
+	Line	int
+
+	Column	int
+
+	Row	int
+
+	Rows	int
+}
 type Model struct {
 	Placeholder	string
 	Width		int
 
 	Height		int
 	CharLimit	int
+
+	MaxHeight	int
 
 	SoftWrap	bool
 
@@ -3702,6 +3752,8 @@ type Model struct {
 	ShowLineNumbers	bool
 
 	LineNumberStyle	ansi.Style
+
+	LineLabel	func(line int, continuation bool) string
 
 	UndoLimit	int
 
@@ -3869,6 +3921,7 @@ func (t Theme) WithTokens(component string, tok Tokens) Theme
 func (tok Tokens) IsZero() bool
 func (tok Tokens) Over(o Tokens) Tokens
 func ASCIIGlyphSet() Glyphs
+func CatppuccinLatteTheme() Theme
 func CatppuccinTheme() Theme
 func Components() []string
 func Contrast(fg, bg ansi.Color) float64
@@ -3881,6 +3934,7 @@ func DraculaTheme() Theme
 func EverforestDarkTheme() Theme
 func ForBackground(bg ansi.RGB) Theme
 func GitHubDarkTheme() Theme
+func GitHubLightTheme() Theme
 func GruvboxTheme() Theme
 func HighContrastTheme() Theme
 func LightTheme() Theme
@@ -3890,7 +3944,12 @@ func NewPalette() *Palette
 func NightOwlTheme() Theme
 func NordTheme() Theme
 func OneDarkTheme() Theme
+func OneLightTheme() Theme
 func Pair(preset Theme) Auto
+func Parse(r io.Reader) (Theme, error)
+func Preset(name string) (Theme, bool)
+func PresetNames() []string
+func RosePineDawnTheme() Theme
 func RosePineTheme() Theme
 func SolarizedDarkTheme() Theme
 func SolarizedLightTheme() Theme
@@ -4538,11 +4597,13 @@ func DividerLabelWith(width int, label string, t theme.Theme) string
 func DividerWith(width int, t theme.Theme) string
 func Empty(title, description, hint string, t theme.Theme, width int) string
 func ErrorBoundary(render func() string, fallback string, t theme.Theme) (out string)
+func Footer(width int, hints ...Hint) string
 func Form(fields ...string) string
 func FormField(label string, fieldView string, err string, t theme.Theme) string
 func Gradient(text string, colors []ansi.RGB, bold bool, t theme.Theme) string
 func Header(title string, t theme.Theme) string
 func HeaderWithAccessory(title, accessory string, width int, t theme.Theme) string
+func HintsFromBindings(bs []keymap.Binding) []Hint
 func HintsFromKeymap(reg *keymap.Registry, scope string) []Hint
 func InfoBox(title string, rows []TreeRow, t theme.Theme, width int) string
 func KeyHint(key, action string) string
@@ -4570,6 +4631,8 @@ func Toggle(label string, on, focused bool, t theme.Theme) string
 func TokenCounter(used, limit int, t theme.Theme) string
 func Tooltip(text string, t theme.Theme, width int) string
 func TooltipOverlay(base string, text string, anchorX, anchorY int, t theme.Theme) string
+func Tree(nodes []TreeNode) string
+func TreeWith(nodes []TreeNode, t theme.Theme) string
 func UsageMonitor(title string, stats []UsageStat, t theme.Theme) string
 type Font int
 type Hint struct {
@@ -4598,6 +4661,10 @@ type TimelineItem struct {
 	Status	TimelineStatus
 }
 type TimelineStatus int
+type TreeNode struct {
+	Label		string
+	Children	[]TreeNode
+}
 type TreeRow struct {
 	Key		string
 	Value		string

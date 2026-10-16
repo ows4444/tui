@@ -47,6 +47,9 @@ func (m *Model) InsertString(s string) {
 // gutter is the width of the line-number column: the digits of the highest
 // line number and a space, or 0 when ShowLineNumbers is off.
 func (m Model) gutter() int {
+	if m.LineLabel != nil {
+		return m.labelWidth() + 1
+	}
 	if !m.ShowLineNumbers {
 		return 0
 	}
@@ -54,7 +57,7 @@ func (m Model) gutter() int {
 }
 
 // rowLines gives, for each row View shows, the 1-based line number it starts,
-// or 0 for a soft-wrapped continuation row.
+// or minus that number for a soft-wrapped continuation row.
 func (m Model) rowLines() []int {
 	if m.value.len() == 0 {
 		return []int{1}
@@ -62,9 +65,9 @@ func (m Model) rowLines() []int {
 	if m.wrapping() {
 		rows, cur := m.allRows()
 		top, bottom := 0, len(rows)
-		if m.Height > 0 {
-			top = windowTop(m.top, cur, len(rows), m.Height)
-			bottom = min(top+m.Height, len(rows))
+		if m.limit() > 0 {
+			top = windowTop(m.top, cur, len(rows), m.limit())
+			bottom = min(top+m.limit(), len(rows))
 		}
 		line := 0
 		for i := 0; i < top; i++ {
@@ -78,7 +81,7 @@ func (m Model) rowLines() []int {
 			if first {
 				out = append(out, line+1)
 			} else {
-				out = append(out, 0)
+				out = append(out, -(line + 1))
 			}
 			if rows[i].last {
 				line++
@@ -88,9 +91,9 @@ func (m Model) rowLines() []int {
 	}
 	total := m.value.lineCount()
 	top, bottom := 0, total
-	if m.Height > 0 {
-		top = windowTop(m.top, m.value.lineOf(m.cursor), total, m.Height)
-		bottom = min(top+m.Height, total)
+	if m.limit() > 0 {
+		top = windowTop(m.top, m.value.lineOf(m.cursor), total, m.limit())
+		bottom = min(top+m.limit(), total)
 	}
 	out := make([]int, 0, bottom-top)
 	for i := top; i < bottom; i++ {
@@ -99,14 +102,18 @@ func (m Model) rowLines() []int {
 	return out
 }
 
-// gutterText is row n's line-number cell: the number right-aligned in g-1
-// columns and a space, or blanks for a continuation row (n == 0).
-func gutterText(n, g int) string {
-	if n == 0 {
-		return strings.Repeat(" ", g)
+// gutterText is row n's cell of the left column, g columns wide: the line
+// number (or LineLabel's text) right-aligned in g-1 columns and a space, or
+// blanks for a continuation row (n < 0) unless LineLabel names one.
+func (m Model) gutterText(n, g int) string {
+	var s string
+	switch {
+	case m.LineLabel != nil && n != 0:
+		s = ansi.Truncate(m.LineLabel(max(n, -n), n < 0), g-1)
+	case n > 0:
+		s = strconv.Itoa(n)
 	}
-	s := strconv.Itoa(n)
-	return strings.Repeat(" ", max(g-1-len(s), 0)) + s + " "
+	return strings.Repeat(" ", max(g-1-ansi.Width(s), 0)) + s + " "
 }
 
 // withGutter prefixes each line of body with its line number.
@@ -120,7 +127,7 @@ func (m Model) withGutter(body string) string {
 		if i < len(nums) {
 			n = nums[i]
 		}
-		lines[i] = st.Render(gutterText(n, g)) + l
+		lines[i] = st.Render(m.gutterText(n, g)) + l
 	}
 	return strings.Join(lines, "\n")
 }
@@ -143,7 +150,64 @@ func (m Model) drawGutter(buf *cellbuf.Buffer, r cellbuf.Rect) cellbuf.Rect {
 		if y >= sub.Height() {
 			break
 		}
-		sub.SetString(0, y, gutterText(n, g), id)
+		sub.SetString(0, y, m.gutterText(n, g), id)
 	}
 	return cellbuf.Rect{X: r.X + g, Y: r.Y, W: max(r.W-g, 0), H: r.H}
+}
+
+// limit is the number of rows View shows at most: Height, or, with MaxHeight
+// and no Height, MaxHeight once the content has more rows than that. 0 means
+// every row is shown.
+func (m Model) limit() int {
+	if m.Height > 0 || m.MaxHeight <= 0 {
+		return m.Height
+	}
+	if m.value.lineCount() > m.MaxHeight {
+		return m.MaxHeight
+	}
+	if m.wrapping() {
+		if rows, _ := m.allRows(); len(rows) > m.MaxHeight {
+			return m.MaxHeight
+		}
+	}
+	return 0
+}
+
+// LineInfo says where the cursor is in the text as View lays it out.
+type LineInfo struct {
+	// Line is the 0-based line, as Line returns it.
+	Line int
+	// Column is the 0-based rune offset within the line, as Column returns it.
+	Column int
+	// Row is the 0-based visual row of the cursor within its line: always 0
+	// without SoftWrap.
+	Row int
+	// Rows is how many visual rows the cursor's line takes: 1 without SoftWrap.
+	Rows int
+}
+
+// LineInfo returns the cursor's line, column, and its visual row among the rows
+// its line wraps onto, for a status bar ("Ln 3, Col 14") or a gutter.
+func (m Model) LineInfo() LineInfo {
+	line, col := m.lineCol()
+	info := LineInfo{Line: line, Column: col, Rows: 1}
+	if m.value.len() == 0 || !m.wrapping() {
+		return info
+	}
+	rows, cur := m.allRows()
+	first := cur
+	for first > 0 && !rows[first-1].last {
+		first--
+	}
+	last := cur
+	for last < len(rows)-1 && !rows[last].last {
+		last++
+	}
+	info.Row, info.Rows = cur-first, last-first+1
+	return info
+}
+
+// labelWidth is the width of the LineLabel column without its trailing space.
+func (m Model) labelWidth() int {
+	return max(ansi.Width(m.LineLabel(1, false)), ansi.Width(m.LineLabel(m.value.lineCount(), false)))
 }

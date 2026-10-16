@@ -64,6 +64,8 @@ used only on the root model itself.
 | `Key`, `PasteEvent` | Key presses; a bracketed paste arrives as one `PasteEvent` unless `WithBracketedPaste(false)` |
 | `MouseEvent` | Only with `WithMouse` or after `EnableMouse` |
 | `FocusEvent` | Only with `WithFocusReporting(true)`; a repeat of the last state is dropped |
+| `ColorSchemeEvent` | Only with `WithColorSchemeReports(true)`: the terminal says dark or light, at start and on each switch |
+| `InBandResizeEvent` | Only with `WithInBandResize(true)`; the Program turns it into a `ResizeMsg` |
 | `KeyRepeatMsg`, `KeyReleaseMsg` | Only with `WithKeyboard(... \| KeyboardReportEvents)` |
 | `ChordMsg` | Only with `WithChords` |
 | `InputErrorMsg` | Once, if reading input fails. Input stops but the Program keeps running |
@@ -95,6 +97,8 @@ goes to `Update`. A nil Cmd does nothing.
 | `Tick(d, fn)` | Waits `d`, then sends `fn(t)`. The wait ends with no message if Run returns first |
 | `Every(d, fn)` | Returns a Cmd that sends `fn(t)` every `d`, plus a cancel func; no tick arrives after cancel returns |
 | `FromCtx(fn)`, `Go(fn)` | Run `fn` with `Program.Context`, which is cancelled when Run returns |
+| `Map(cmd, f)`, `MapAs[T](cmd, f)` | Wrap the messages a child's Cmd produces (through `Batch`, `Sequence`, `FromCtx`, `Tick`, `Every`); `Quit`, `Println` and mode Cmds pass through |
+| `Tasks.Start(key, fn)` | Like `FromCtx`, by key: starting a key cancels its earlier run, and the result arrives as `TaskDoneMsg` (`Canceled` marks a stale one). `Cancel`, `CancelAll` and `Running` manage the set |
 | `Println(text)`, `Eprintln(text)` | Write text above the live region, into scrollback (see below) |
 | `Suspend(fn)` | Hands the terminal back while `fn` runs (see below) |
 | `EnableMouse(mode)`, `EnterAltScreen()`, `ExitAltScreen()`, `ClearScreen()` | Change a terminal mode while running |
@@ -133,6 +137,8 @@ details.
 | `WithMouse(mode)` | `MouseOff` |
 | `WithBracketedPaste(bool)` | on |
 | `WithFocusReporting(bool)` | off |
+| `WithColorSchemeReports(bool)` | off |
+| `WithInBandResize(bool)` | off |
 | `WithKittyKeyboard(bool)`, `WithKeyboard(flags)` | off |
 | `WithChords(defs...)`, `WithChordTimeout(d)` | no chords; 500ms timeout |
 | `WithEscTimeout(d)` | `input.DefaultEscTimeout` (30ms) |

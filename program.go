@@ -132,57 +132,59 @@ type Program struct {
 	mouseMode     MouseMode
 	// resizeKick carries "the console reported a resize" from the input
 	// reader to watchResize (Windows); a size re-read follows each kick.
-	resizeKick       chan struct{}
-	bracketedPaste   bool
-	started          atomic.Bool           // set by the first Run; a second Run is ErrProgramReused
-	keymapModel      atomic.Pointer[Model] // the model as of the last frame, for Keymap
-	frameBuf         []byte                // render's reusable frame buffer; loop goroutine only
-	altPrints        []printMsg            // Println made on the alternate screen, held until it is left
-	kittyKeyboard    bool
-	keyboardFlags    KeyboardFlags
-	reducedMotion    bool
-	accessible       bool
-	modeSet          bool           // WithAltScreen or WithAccessible was given (see applyDumbTermDefaults)
-	polite           announce.Queue // accessible polite lines queued and de-duplicated; loop goroutine only
-	fullLine         bool           // WithLinearizeFullLine
-	announce         announce.Region
-	colorProfile     ansi.Profile
-	colorSet         bool // WithColorProfile was used, so NO_COLOR is not consulted
-	focusReporting   bool
-	bgTimeout        time.Duration
-	themeAuto        theme.Auto // WithTheme
-	themeSet         bool
-	theme            theme.Theme // the theme last given to the model
-	themeGiven       bool
-	bgSeen           atomic.Bool                   // a BackgroundColorEvent has been read
-	clusterMode      bool                          // mode 2027 set by applyCapabilities; guarded by outMu
-	measurer         atomic.Pointer[ansi.Measurer] // how this terminal measures clusters; nil until a probe says
-	sentMeasurer     ansi.Measurer                 // the Measurer last put in a ResizeMsg; loop goroutine only
-	inspectorKey     string                        // WithInspector Panel; "" means off
-	inspectorOn      bool                          // the overlay is showing; loop goroutine only
-	outlineKey       string                        // WithInspector Layout; "" means off
-	outlineOn        bool                          // the layout outlines are showing; loop goroutine only
-	lastFrameBytes   int                           // the last frame's size and duration, for the inspector
-	lastFrameDur     time.Duration
-	recCast, recSide io.Writer    // WithRecorder, WithRecorderSidecar
-	rec              *recorder    // non-nil while recording
-	tickSeq          int          // Every tickers started, for the recorder; loop goroutine only
-	msgKey, modelKey string       // WithInspector Messages / Model; "" means off
-	msgOn, modelOn   bool         // the message and model panes are showing; loop goroutine only
-	msgLog           msgRing      // recent messages, for the inspector; loop goroutine only
-	titleSaved       bool         // SetWindowTitle pushed the title (CSI 22;0t); guarded by outMu
-	viewTitle        string       // the last title a ViewState set; event loop only
-	viewTitleSet     bool         // viewTitle holds one
-	cursorShaped     bool         // SetCursorShape changed the cursor shape; guarded by outMu
-	progressSet      bool         // SetProgress left an indicator to remove on exit; guarded by outMu
-	viewProgress     *Progress    // the last Progress a ViewState set; event loop only
-	clipReads        atomic.Int32 // ReadClipboard queries not yet answered
-	copied           string       // text of the last WriteClipboard; loop goroutine only
-	capProbe         capProbe     // WithCapabilityProbe; see capabilities.go
-	chordDefs        []ChordDef
-	chordTimeout     time.Duration
-	chords           *input.ChordMatcher // nil unless WithChords was used
-	chordTimer       *time.Timer
+	resizeKick         chan struct{}
+	bracketedPaste     bool
+	started            atomic.Bool           // set by the first Run; a second Run is ErrProgramReused
+	keymapModel        atomic.Pointer[Model] // the model as of the last frame, for Keymap
+	frameBuf           []byte                // render's reusable frame buffer; loop goroutine only
+	altPrints          []printMsg            // Println made on the alternate screen, held until it is left
+	kittyKeyboard      bool
+	keyboardFlags      KeyboardFlags
+	reducedMotion      bool
+	accessible         bool
+	modeSet            bool           // WithAltScreen or WithAccessible was given (see applyDumbTermDefaults)
+	polite             announce.Queue // accessible polite lines queued and de-duplicated; loop goroutine only
+	fullLine           bool           // WithLinearizeFullLine
+	announce           announce.Region
+	colorProfile       ansi.Profile
+	colorSet           bool // WithColorProfile was used, so NO_COLOR is not consulted
+	focusReporting     bool
+	colorSchemeReports bool
+	inBandResize       bool
+	bgTimeout          time.Duration
+	themeAuto          theme.Auto // WithTheme
+	themeSet           bool
+	theme              theme.Theme // the theme last given to the model
+	themeGiven         bool
+	bgSeen             atomic.Bool                   // a BackgroundColorEvent has been read
+	clusterMode        bool                          // mode 2027 set by applyCapabilities; guarded by outMu
+	measurer           atomic.Pointer[ansi.Measurer] // how this terminal measures clusters; nil until a probe says
+	sentMeasurer       ansi.Measurer                 // the Measurer last put in a ResizeMsg; loop goroutine only
+	inspectorKey       string                        // WithInspector Panel; "" means off
+	inspectorOn        bool                          // the overlay is showing; loop goroutine only
+	outlineKey         string                        // WithInspector Layout; "" means off
+	outlineOn          bool                          // the layout outlines are showing; loop goroutine only
+	lastFrameBytes     int                           // the last frame's size and duration, for the inspector
+	lastFrameDur       time.Duration
+	recCast, recSide   io.Writer    // WithRecorder, WithRecorderSidecar
+	rec                *recorder    // non-nil while recording
+	tickSeq            int          // Every tickers started, for the recorder; loop goroutine only
+	msgKey, modelKey   string       // WithInspector Messages / Model; "" means off
+	msgOn, modelOn     bool         // the message and model panes are showing; loop goroutine only
+	msgLog             msgRing      // recent messages, for the inspector; loop goroutine only
+	titleSaved         bool         // SetWindowTitle pushed the title (CSI 22;0t); guarded by outMu
+	viewTitle          string       // the last title a ViewState set; event loop only
+	viewTitleSet       bool         // viewTitle holds one
+	cursorShaped       bool         // SetCursorShape changed the cursor shape; guarded by outMu
+	progressSet        bool         // SetProgress left an indicator to remove on exit; guarded by outMu
+	viewProgress       *Progress    // the last Progress a ViewState set; event loop only
+	clipReads          atomic.Int32 // ReadClipboard queries not yet answered
+	copied             string       // text of the last WriteClipboard; loop goroutine only
+	capProbe           capProbe     // WithCapabilityProbe; see capabilities.go
+	chordDefs          []ChordDef
+	chordTimeout       time.Duration
+	chords             *input.ChordMatcher // nil unless WithChords was used
+	chordTimer         *time.Timer
 
 	// parentCtx is WithContext's chosen parent (context.Background() if
 	// unset); ctx/cancel are derived from it in NewProgram, so ctx is valid
@@ -372,6 +374,12 @@ func (p *Program) enterModes() {
 	if p.focusReporting {
 		p.write(ansi.FocusReportingEnable)
 	}
+	if p.colorSchemeReports {
+		p.write(ansi.ColorSchemeReportingEnable)
+	}
+	if p.inBandResize {
+		p.write(ansi.InBandResizeEnable)
+	}
 	if p.clusterModeOn() {
 		p.write(clusterModeEnable)
 	}
@@ -386,6 +394,12 @@ func (p *Program) leaveModes() {
 	p.write(p.unparkCursor())
 	if p.clusterModeOn() {
 		p.write(clusterModeDisable)
+	}
+	if p.inBandResize {
+		p.write(ansi.InBandResizeDisable)
+	}
+	if p.colorSchemeReports {
+		p.write(ansi.ColorSchemeReportingDisable)
 	}
 	if p.focusReporting {
 		p.write(ansi.FocusReportingDisable)

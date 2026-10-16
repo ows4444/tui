@@ -28,6 +28,8 @@ var tiers = map[string]int{
 	"hittest": 2, "cellbuf": 2,
 	"":        3,
 	"widgets": 4, "widgets/chart": 4, "focus": 4, "markdown": 4, "tuitest": 4,
+	// the command-line program: an application above every library package
+	"cmd/tui": 6,
 }
 
 // internalTiers is the tier of every package under internal/ that is not a

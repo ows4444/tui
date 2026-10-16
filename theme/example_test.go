@@ -2,6 +2,7 @@ package theme_test
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/theme"
@@ -50,4 +51,15 @@ func ExampleDetect_switchTheme() {
 	// dark background  -> Text is Dark's: true
 	// no answer        -> Text is Dark's: true
 	// other message    -> unchanged: true
+}
+
+// A theme file starts from a built-in theme and changes what it names.
+func ExampleParse() {
+	t, err := theme.Parse(strings.NewReader(`{"base": "nord", "primary": "#ff8800"}`))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(t.Primary)
+	// Output: {255 136 0}
 }

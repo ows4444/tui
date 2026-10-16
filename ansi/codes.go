@@ -102,6 +102,23 @@ const (
 	// FocusReportingDisable reverses FocusReportingEnable.
 	FocusReportingDisable = CSI + "?1004l"
 
+	// ColorSchemeReportingEnable/Disable (DECSET 2031) make the terminal send
+	// ESC[?997;1n (dark) or ESC[?997;2n (light) now and whenever the user
+	// switches colour scheme, which input.Reader decodes as an
+	// input.ColorSchemeEvent. A terminal that doesn't support the mode ignores
+	// both sequences.
+	ColorSchemeReportingEnable = CSI + "?2031h"
+	// ColorSchemeReportingDisable reverses ColorSchemeReportingEnable.
+	ColorSchemeReportingDisable = CSI + "?2031l"
+
+	// InBandResizeEnable/Disable (DECSET 2048) make the terminal send its size
+	// as ESC[48;rows;cols;hpx;wpx t whenever it changes, which input.Reader
+	// decodes as an input.InBandResizeEvent. A terminal that doesn't support
+	// the mode ignores both sequences.
+	InBandResizeEnable = CSI + "?2048h"
+	// InBandResizeDisable reverses InBandResizeEnable.
+	InBandResizeDisable = CSI + "?2048l"
+
 	// SyncOutputEnable/Disable (mode 2026) bracket a frame write so the
 	// terminal buffers it and paints the whole thing atomically instead of
 	// character-by-character, preventing a torn/partial frame from being

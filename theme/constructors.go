@@ -52,3 +52,15 @@ func GitHubDarkTheme() Theme { return githubDark }
 
 // HighContrastTheme returns a copy of the HighContrast preset.
 func HighContrastTheme() Theme { return highContrast }
+
+// CatppuccinLatteTheme returns a copy of the CatppuccinLatte preset.
+func CatppuccinLatteTheme() Theme { return catppuccinLatte }
+
+// OneLightTheme returns a copy of the OneLight preset.
+func OneLightTheme() Theme { return oneLight }
+
+// RosePineDawnTheme returns a copy of the RosePineDawn preset.
+func RosePineDawnTheme() Theme { return rosePineDawn }
+
+// GitHubLightTheme returns a copy of the GitHubLight preset.
+func GitHubLightTheme() Theme { return githubLight }

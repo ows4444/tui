@@ -116,6 +116,18 @@ type PasteEvent = input.PasteEvent
 // repeat of the state last delivered is dropped by the Program.
 type FocusEvent = input.FocusEvent
 
+// ColorSchemeEvent says the terminal's colour scheme is dark or light. It
+// arrives only after WithColorSchemeReports(true), once at start-up on a
+// terminal that supports DECSET 2031 and again whenever the user switches
+// scheme. With WithTheme(theme.Auto) the Program has already swapped the theme
+// by the time Update sees it.
+type ColorSchemeEvent = input.ColorSchemeEvent
+
+// InBandResizeEvent is the terminal's own report of its size (DECSET 2048).
+// The Program turns it into a ResizeMsg; it is exported so a Terminal port or a
+// test can inject one.
+type InBandResizeEvent = input.InBandResizeEvent
+
 // ChordDef configures one multi-key chord for WithChords: Name is what
 // ChordMsg reports and Keys is the ordered sequence of Key.String() forms
 // (for example "g", "g" or "ctrl+x", "ctrl+s").

@@ -39,6 +39,8 @@ func TestPresetsCarryStates(t *testing.T) {
 	for name, th := range map[string]Theme{
 		"Dark": DarkTheme(), "Light": LightTheme(), "Dracula": DraculaTheme(), "Nord": NordTheme(), "Gruvbox": GruvboxTheme(),
 		"TokyoNight": TokyoNightTheme(), "Monokai": MonokaiTheme(), "SolarizedDark": SolarizedDarkTheme(),
+		"CatppuccinLatte": CatppuccinLatteTheme(), "OneLight": OneLightTheme(),
+		"RosePineDawn": RosePineDawnTheme(), "GitHubLight": GitHubLightTheme(),
 		"SolarizedLight": SolarizedLightTheme(), "Catppuccin": CatppuccinTheme(), "OneDark": OneDarkTheme(),
 		"NightOwl": NightOwlTheme(), "RosePine": RosePineTheme(), "EverforestDark": EverforestDarkTheme(),
 		"GitHubDark": GitHubDarkTheme(), "HighContrast": HighContrastTheme(),
