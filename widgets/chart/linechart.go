@@ -1,10 +1,6 @@
 package chart
 
 import (
-	"strings"
-
-	"github.com/ows4444/tui/ansi"
-	"github.com/ows4444/tui/internal/braille"
 	"github.com/ows4444/tui/theme"
 )
 
@@ -73,78 +69,15 @@ func LineChart(values []float64, width, height int, t theme.Theme) string {
 		}
 	}
 
-	// Mark every dot the line passes through, connecting consecutive
-	// points with a linear interpolation.
-	lit := make(map[[2]int]bool)
-	lit[[2]int{px[0], py[0]}] = true
+	// Draw the series on a canvas: one dot for a single value, otherwise a
+	// straight line between each pair of consecutive points, so the series
+	// reads as a continuous line.
+	c := NewCanvas(width, height)
+	if len(values) == 1 {
+		c.Set(px[0], py[0], t.Primary)
+	}
 	for i := 1; i < len(values); i++ {
-		plotLine(lit, px[i-1], py[i-1], px[i], py[i])
+		c.Line(px[i-1], py[i-1], px[i], py[i], t.Primary)
 	}
-
-	fill := ansi.NewStyle().Foreground(t.Primary)
-
-	lines := make([]string, height)
-	for r := 0; r < height; r++ {
-		cols := make([]string, width)
-		for c := 0; c < width; c++ {
-			var pattern rune
-			var any bool
-			for dx := 0; dx < 2; dx++ {
-				for dy := 0; dy < 4; dy++ {
-					col := c*2 + dx
-					row := r*4 + dy
-					if lit[[2]int{col, row}] {
-						pattern |= braille.Bit[dx][dy]
-						any = true
-					}
-				}
-			}
-			if any {
-				cols[c] = fill.Render(braille.DotCell(pattern, t.GlyphSet()))
-			} else {
-				cols[c] = " "
-			}
-		}
-		lines[r] = strings.Join(cols, "")
-	}
-	return strings.Join(lines, "\n")
-}
-
-// plotLine marks every dot on the straight line between (x0,y0) and
-// (x1,y1) as lit, stepping along whichever axis spans more dots so the
-// interpolation stays continuous (no gaps) in both directions.
-func plotLine(lit map[[2]int]bool, x0, y0, x1, y1 int) {
-	dx := x1 - x0
-	dy := y1 - y0
-	steps := abs(dx)
-	if abs(dy) > steps {
-		steps = abs(dy)
-	}
-	if steps == 0 {
-		lit[[2]int{x0, y0}] = true
-		return
-	}
-	for s := 0; s <= steps; s++ {
-		t := float64(s) / float64(steps)
-		x := x0 + int(float64(dx)*t+sign(float64(dx))*0.5)
-		y := y0 + int(float64(dy)*t+sign(float64(dy))*0.5)
-		lit[[2]int{x, y}] = true
-	}
-}
-
-func abs(n int) int {
-	if n < 0 {
-		return -n
-	}
-	return n
-}
-
-func sign(f float64) float64 {
-	if f < 0 {
-		return -1
-	}
-	if f > 0 {
-		return 1
-	}
-	return 0
+	return c.String(t)
 }

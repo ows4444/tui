@@ -132,3 +132,19 @@ func (c *Canvas) Rows(t theme.Theme) []string {
 
 // String is Rows joined by newlines.
 func (c *Canvas) String(t theme.Theme) string { return strings.Join(c.Rows(t), "\n") }
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
+func sign(f float64) float64 {
+	if f < 0 {
+		return -1
+	}
+	if f > 0 {
+		return 1
+	}
+	return 0
+}

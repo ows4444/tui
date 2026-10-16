@@ -567,6 +567,15 @@ func (s Style) Strikethrough() Style
 func (s Style) Underline() Style
 func (s Style) UnderlineColor(c Color) Style
 func (s Style) UnderlineStyle(style UnderlineStyle) Style
+func (t Text) Append(text string, style Style) Text
+func (t Text) Height() int
+func (t Text) Lines() []Text
+func (t Text) Plain() string
+func (t Text) Slice(from, to int) Text
+func (t Text) String() string
+func (t Text) Truncate(width int) Text
+func (t Text) Width() int
+func (t Text) Wrap(width int) []Text
 func Blend(n int, stops ...RGB) []RGB
 func Clean(raw bool, s string) string
 func CleanAll(raw bool, in []string) []string
@@ -585,6 +594,7 @@ func ExpandTabs(s string) string
 func Hyperlink(text, url string) string
 func KittyKeyboardEnableFlags(flags int) string
 func NewStyle() Style
+func NewText(text string, style Style) Text
 func OSC52Copy(text string) string
 func Passthrough(seq string, getenv func(string) string) string
 func PlainASCIIWidth(s string) (int, bool)
@@ -607,9 +617,14 @@ type Measurer struct {
 }
 type Profile uint8
 type RGB struct{ R, G, B uint8 }
+type Span struct {
+	Text	string
+	Style	Style
+}
 type Style struct {
 	// contains filtered or unexported fields
 }
+type Text []Span
 type UnderlineStyle uint8
 
 ## github.com/ows4444/tui/appshell (package appshell)
@@ -1144,6 +1159,7 @@ func (b *Buffer) SetMeasurer(m ansi.Measurer)
 func (b *Buffer) SetRunes(x, y int, r []rune, id StyleID) int
 func (b *Buffer) SetString(x, y int, s string, id StyleID) int
 func (b *Buffer) SetStyled(x, y int, s string) (int, error)
+func (b *Buffer) SetText(x, y int, t ansi.Text) int
 func (b *Buffer) String() string
 func (b *Buffer) Style(id StyleID) Style
 func (b *Buffer) StyleID(st Style) StyleID
@@ -2424,6 +2440,7 @@ const Unbounded = 1 << 30
 func (b Box) Background(c ansi.Color) Box
 func (b Box) Border(border Border) Box
 func (b Box) BorderColor(c ansi.Color) Box
+func (b Box) BorderGradient(from, to ansi.RGB) Box
 func (b Box) BorderSides(top, right, bottom, left bool) Box
 func (b Box) Height(h int) Box
 func (b Box) Margin(top, right, bottom, left int) Box
@@ -2471,6 +2488,7 @@ func Ratio(n, d int) Length
 func RectOf(root Node, s Size, name string) (Rect, bool)
 func Rects(root Node, s Size) []Placed
 func Responsive(breaks []Break, nodes ...Node) Node
+func RichText(t ansi.Text, wrap bool) Node
 func RoundedBorder() Border
 func Row(gap int, children ...FlexChild) Node
 func RowJustify(gap int, justify Justify, children ...FlexChild) Node

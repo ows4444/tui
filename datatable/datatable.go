@@ -84,8 +84,8 @@ type Model struct {
 	// should be cheap. The cell the cursor is on keeps its cursor style.
 	CellStyle func(row, col int, value string) ansi.Style
 	// FrozenCols is the number of leading columns that stay in view while the
-	// rest scroll sideways, when Width is smaller than the columns. 0 freezes
-	// none.
+	// rest scroll sideways, when Width (or, for LayoutNode, the allotted width)
+	// is smaller than the columns. 0 freezes none.
 	FrozenCols int
 
 	// Filter, when true, lets KeyMap.Filter ("/") open a filter line above the

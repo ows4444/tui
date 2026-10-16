@@ -10,6 +10,29 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+### Added
+
+- `ansi.Span` and `ansi.Text`: styled text as data. A `Text` is a list of spans
+  that can be measured (`Width`, `Height`), cut (`Slice`, `Truncate`), wrapped at
+  spaces (`Wrap`, which cuts a word wider than the line) and rendered (`String`),
+  with each piece keeping its style and nothing parsed back out of an escape
+  sequence. Text is sanitised when built, so a span cannot carry control codes.
+  `cellbuf.Buffer.SetText` writes one straight into the cell grid, and
+  `layout.RichText(t, wrap)` lays it out as a `Node`.
+- `layout.Box.BorderGradient(from, to)`: the border blends cell by cell around the
+  box, from one colour at the top-left corner to another half way round and back,
+  so the loop has no seam. It changes no dimensions and takes precedence over
+  `BorderColor`.
+
+### Changed
+
+- The data table's `LayoutNode` honours `FrozenCols`: when the columns do not fit
+  the allotted width it scrolls them, keeping the frozen ones, as `View` does.
+  Before, it shrank every column with an ellipsis. A table with `FrozenCols` of 0
+  is drawn as before.
+- `chart.LineChart` draws on a `chart.Canvas`, as `Plot` does. Its output is the
+  same: the chart tests and every example pass unchanged.
+
 ## [1.0.0-rc.1] - 2026-10-17
 
 Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking
