@@ -38,13 +38,14 @@ type Model struct {
 	// shown, as before Height existed. With Height > 0 View shows a window of
 	// at most Height lines that scrolls, by the least distance, to keep the
 	// cursor line visible.
-	Height int
+	Height    int
+	CharLimit int // 0 = unlimited length, in grapheme clusters (a '\n' counts as one)
+
 	// MaxHeight makes the view grow with its content: with Height 0 and
 	// MaxHeight > 0, View shows every line while there are MaxHeight or fewer
 	// (or visual rows, with SoftWrap), and a scrolling window of MaxHeight
 	// beyond that. A set Height wins. 0 (the default) leaves Height as it was.
 	MaxHeight int
-	CharLimit int // 0 = unlimited length, in grapheme clusters (a '\n' counts as one)
 
 	// SoftWrap, when true and Width > 0, wraps a line longer than Width
 	// columns onto further visual rows at a cluster boundary instead of

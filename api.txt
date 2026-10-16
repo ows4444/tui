@@ -3736,10 +3736,10 @@ type Model struct {
 	Placeholder	string
 	Width		int
 
-	Height	int
+	Height		int
+	CharLimit	int
 
 	MaxHeight	int
-	CharLimit	int
 
 	SoftWrap	bool
 
