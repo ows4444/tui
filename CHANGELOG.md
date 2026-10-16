@@ -51,7 +51,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   and `GitHubLightTheme`. Text and Muted pass AA; the accents keep each palette's
   published values and some are paler than 4.5:1 (`Theme.Check` lists them).
 - `tuitest.Session.SVG` and `tuitest.SVGOptions`: the screen as a standalone SVG
-  image, with colours, attributes, an optional title bar and cursor.
+  image, with colours, attributes, an optional title bar and cursor, and
+  `TrimRows` to cut the blank rows below what was drawn.
+- A Widget gallery page on the site: one picture of each of 31 components, drawn
+  by a small real program and checked against a golden file in
+  `internal/tools/widgetshots`.
 
 ## [1.0.0-rc.1] - 2026-10-16
 

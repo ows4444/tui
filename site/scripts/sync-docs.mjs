@@ -6,6 +6,8 @@
 //     relative links are rewritten to site routes or to GitHub).
 //   - examples/*/testdata/size-80x24.golden (screens the example tests check)
 //     become the /examples/ gallery and src/generated/screens.json.
+//   - internal/tools/widgetshots draws one picture per component (SVG, in
+//     public/widgets/) for the /widget-gallery/ page.
 //   - For search engines and AI assistants: each page gets a descriptive
 //     <title>, TechArticle JSON-LD and a plain Markdown copy at /<slug>.md;
 //     public/llms.txt indexes those copies and public/llms-full.txt joins them
@@ -364,6 +366,54 @@ function syncExamples() {
 	return withScreen.length;
 }
 
+// syncWidgetGallery runs internal/tools/widgetshots, which draws one picture of
+// each component with a small real program and writes it as an SVG into
+// public/widgets/, and builds the /widget-gallery/ page from the index it
+// writes. The pictures are checked against golden files in that package, so
+// they cannot drift from the code. Without Go, or if the run fails, the page is
+// skipped. Returns the number of widgets shown.
+function syncWidgetGallery() {
+	const dir = path.join(publicDir, 'widgets');
+	fs.rmSync(dir, { recursive: true, force: true });
+	const run = spawnSync('go', ['test', '-count=1', './internal/tools/widgetshots'], {
+		cwd: repoDir,
+		env: { ...process.env, TUI_WIDGET_SHOTS_DIR: dir, TERM: 'xterm-256color', COLORTERM: 'truecolor', LANG: 'en_US.UTF-8' },
+		encoding: 'utf8',
+	});
+	const indexFile = path.join(dir, 'index.json');
+	if (run.error || run.status !== 0 || !fs.existsSync(indexFile)) {
+		console.warn(`sync-docs: could not draw the widget gallery (${run.error?.message ?? (run.stdout + run.stderr).trim().split('\n').slice(-3).join(' | ')}); skipping the page`);
+		return 0;
+	}
+	const index = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
+	fs.rmSync(indexFile);
+	const meta = {
+		slug: 'widget-gallery',
+		title: 'Widget gallery',
+		seoTitle: 'Go terminal UI widget gallery: pictures of every tui component',
+		description: `A picture of ${index.length} tui components, each drawn by a small real program and checked by a test.`,
+	};
+	const head = frontmatter({ title: meta.title, description: meta.description, editUrl: false, head: pageHead(meta) });
+	const intro =
+		`Each picture is one component, drawn by a small real program (after the keys named in its test) and rendered from the cell grid the program produced, ` +
+		`so it shows what the component looks like and nothing else. A test compares the text of every picture with a golden file in ` +
+		`[internal/tools/widgetshots](${GITHUB}/tree/${BRANCH}/internal/tools/widgetshots), so the gallery cannot drift from the code. ` +
+		`Every package is documented at [pkg.go.dev](https://pkg.go.dev/github.com/ows4444/tui); [Widgets](/widgets/) says how they fit together.\n\n`;
+	let page = intro + `<div class="wg-grid">\n\n`;
+	let copy = intro;
+	for (const w of index) {
+		const doc = `https://pkg.go.dev/github.com/ows4444/tui/${w.package}`;
+		page += `<figure class="wg-card">\n\n<img src="/widgets/${w.svg}" alt="${mdx(w.title)}, as drawn in a terminal" loading="lazy" />\n\n<figcaption>\n\n**${mdx(w.title)}** · [\`${w.package}\`](${doc})\n\n</figcaption>\n\n</figure>\n\n`;
+		const golden = path.join(repoDir, 'internal/tools/widgetshots/testdata', `${w.package}.golden`);
+		const text = fs.existsSync(golden) ? fs.readFileSync(golden, 'utf8').replace(/\s+$/, '') : '';
+		copy += `## ${w.title}\n\nPackage [\`${w.package}\`](${doc}).\n\n` + (text ? '````text\n' + text + '\n````\n\n' : '');
+	}
+	page += `</div>\n`;
+	fs.writeFileSync(path.join(outDir, 'widget-gallery.mdx'), head + page);
+	addMarkdownCopy({ ...meta, body: copy });
+	return index.length;
+}
+
 // Clear previously generated output, keeping the hand-written landing page and
 // the committed files in public/.
 for (const entry of fs.readdirSync(outDir)) {
@@ -374,8 +424,9 @@ for (const entry of fs.readdirSync(publicDir)) {
 }
 for (const page of pages) syncPage(page);
 const n = syncExamples();
+const widgets = syncWidgetGallery();
 writeLlmsTxt();
-console.log(`sync-docs: ${pages.length} pages, ${n} example screens, ${mdCopies.length} Markdown copies, llms.txt`);
+console.log(`sync-docs: ${pages.length} pages, ${n} example screens, ${widgets} widget pictures, ${mdCopies.length} Markdown copies, llms.txt`);
 if (broken) {
 	console.error(`sync-docs: ${broken} broken link(s)`);
 	process.exit(1);

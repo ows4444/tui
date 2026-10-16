@@ -108,3 +108,18 @@ func TestSVGResolves256Colours(t *testing.T) {
 		}
 	}
 }
+
+func TestSVGTrimRows(t *testing.T) {
+	s := New(paint{"one\ntwo"}, 10, 6)
+	defer s.Close()
+	full, trimmed := s.SVG(SVGOptions{}), s.SVG(SVGOptions{TrimRows: true})
+	wellFormed(t, trimmed)
+	if !strings.Contains(full, `height="146"`) || !strings.Contains(trimmed, `height="67"`) {
+		t.Errorf("heights: full %q trimmed %q", full[:90], trimmed[:90])
+	}
+	blank := New(paint{""}, 10, 3)
+	defer blank.Close()
+	if !strings.Contains(blank.SVG(SVGOptions{TrimRows: true}), `height="48"`) {
+		t.Error("an empty screen is not kept at one row")
+	}
+}
