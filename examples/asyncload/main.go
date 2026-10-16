@@ -1,7 +1,9 @@
-// Command asyncload demonstrates the async-Cmd-resolves-into-a-Msg pattern:
-// a tui.Cmd is just a func() tui.Msg, and Program.dispatch (see program.go)
-// runs each Cmd on its own goroutine and feeds whatever Msg it returns back
-// into the event loop. That means a Cmd that blocks — here, time.Sleep to
+// Command asyncload demonstrates the async-Cmd-resolves-into-a-Msg pattern,
+// with tui.Tasks: a tui.Cmd is just a func() tui.Msg, and Program.dispatch (see
+// program.go) runs each Cmd on its own goroutine and feeds whatever Msg it
+// returns back into the event loop. Tasks.Start runs the fetch under a key, so
+// pressing r to reload cancels the load still in flight instead of racing it,
+// and the stale result arrives as a TaskDoneMsg with Canceled set. That means a Cmd that blocks — here, time.Sleep to
 // simulate a slow API call — does not block Update/View: the spinner keeps
 // animating (via its own self-rescheduling motion tick Cmd) while the slow
 // Cmd is still in flight on its goroutine. When the slow Cmd finally
@@ -12,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -31,19 +34,24 @@ type loadedMsg struct {
 	result string
 }
 
-// fetchCmd returns a tui.Cmd that blocks for loadDelay (standing in for a
-// slow network call, disk read, etc.) and then resolves into loadedMsg.
-// Because Program runs Cmds on their own goroutine, this blocking sleep
-// never freezes the UI: Update and View keep running against the model as
-// usual for every Msg that arrives while this Cmd is still sleeping.
-func fetchCmd() tui.Cmd {
-	return func() tui.Msg {
-		time.Sleep(loadDelay)
+// fetch blocks for loadDelay (standing in for a slow network call, disk read,
+// etc.) and then resolves into loadedMsg, or stops early when its context is
+// cancelled (a newer load started, or the program ended). Because Program runs
+// Cmds on their own goroutine, this wait never freezes the UI: Update and View
+// keep running against the model as usual for every Msg that arrives meanwhile.
+func fetch(ctx context.Context) tui.Msg {
+	select {
+	case <-time.After(loadDelay):
 		return loadedMsg{result: "42 widgets loaded from the warehouse"}
+	case <-ctx.Done():
+		return nil
 	}
 }
 
 type model struct {
+	// tasks runs the fetch by key; it is a pointer, so every copy of the model
+	// shares it.
+	tasks   *tui.Tasks
 	spinner spinner.Model
 	loading bool
 	result  string
@@ -56,7 +64,7 @@ type model struct {
 func initialModel() model {
 	s := spinner.New()
 	s.Label = "fetching data..."
-	m := model{spinner: s, loading: true}
+	m := model{tasks: tui.NewTasks(), spinner: s, loading: true}
 	m.start = m.spinner.Start()
 	return m
 }
@@ -67,7 +75,7 @@ func initialModel() model {
 // "loading -> resolved" transition below, while the spinner's tickMsg just
 // keeps the animation going in the meantime.
 func (m model) Init() tui.Cmd {
-	return tui.Batch(m.start, fetchCmd())
+	return tui.Batch(m.start, m.tasks.Start("load", fetch))
 }
 
 func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
@@ -80,7 +88,18 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 			(msg.Type == tui.KeyRunes && msg.Text == "q")) {
 			return m, tui.Quit()
 		}
+		if msg.Type == tui.KeyRunes && msg.Text == "r" {
+			// Start under the same key cancels a load still in flight.
+			m.loading, m.result = true, ""
+			return m, tui.Batch(m.spinner.Start(), m.tasks.Start("load", fetch))
+		}
 		return m, nil
+
+	case tui.TaskDoneMsg:
+		if msg.Canceled || msg.Msg == nil {
+			return m, nil // a load that a reload replaced: not the one on screen
+		}
+		return m.Update(msg.Msg)
 
 	case loadedMsg:
 		// The slow Cmd resolved: stop the spinner explicitly (rather than
@@ -113,7 +132,7 @@ func (m model) screen() layout.Node {
 		body = layout.Column(1,
 			child(layout.Block("Done!")),
 			child(layout.Block(m.result)),
-			child(layout.Block("enter/q to quit")),
+			child(layout.Block("r reload  enter/q quit")),
 		)
 	}
 	return layout.BoxNode(layout.NewBox().Border(layout.RoundedBorder()).PaddingAll(1), body)

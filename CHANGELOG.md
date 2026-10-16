@@ -12,6 +12,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `examples/asyncload` now runs its fetch with `Tasks` and has an `r` key that
+  reloads, cancelling the load still in flight.
 - `widgets.Calendar` and `LinearizeCalendar`: a month as a 20-column grid with a
   title, a chosen first weekday, today in the theme's selected style and days
   styled by day of the month, for printed output (`datepicker` is the interactive
