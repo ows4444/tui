@@ -25,7 +25,7 @@ type consoleScreenBufferInfo struct {
 // which Size/MaximumWindowSize describe instead).
 func GetSize(fd int) (width, height int, err error) {
 	var info consoleScreenBufferInfo
-	r, _, e := procGetConsoleScreenBufferInfo.Call(uintptr(fd), uintptr(unsafe.Pointer(&info)))
+	r, _, e := procGetConsoleScreenBufferInfo.Call(uintptr(fd), uintptr(unsafe.Pointer(&info))) // #nosec G103 -- the Win32 call needs a pointer to info, which outlives the call
 	if r == 0 {
 		return 0, 0, e
 	}

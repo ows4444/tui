@@ -21,7 +21,7 @@ var (
 
 func getConsoleMode(fd int) (uint32, error) {
 	var mode uint32
-	r, _, err := procGetConsoleMode.Call(uintptr(fd), uintptr(unsafe.Pointer(&mode)))
+	r, _, err := procGetConsoleMode.Call(uintptr(fd), uintptr(unsafe.Pointer(&mode))) // #nosec G103 -- the Win32 call needs a pointer to mode, which outlives the call
 	if r == 0 {
 		return 0, err
 	}
