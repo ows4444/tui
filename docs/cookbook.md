@@ -322,6 +322,11 @@ fmt.Println(ansi.StripANSI(m.View()))
 Source: `ExampleModel_ShowLineNumbers`, `textarea/example_test.go`. The number
 column is extra width: `Width` still counts the text only.
 
+`MaxHeight` makes the area grow with its text and scroll past that many rows
+(`Height` still wins when set), `LineInfo` gives the cursor's line, column and
+wrapped row for a status bar, and `LineLabel` replaces the number with your own
+text per line ("> " on the cursor line, an error mark).
+
 ## Several series on one chart
 
 `chart.Plot` draws lines on shared, labelled axes with a legend. Series are

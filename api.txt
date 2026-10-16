@@ -3686,6 +3686,7 @@ func (m Model) Focused() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Line() int
 func (m Model) LineCount() int
+func (m Model) LineInfo() LineInfo
 func (m Model) Linearize() string
 func (m Model) SelectedText() string
 func (m Model) Selection() (lo, hi int, ok bool)
@@ -3718,11 +3719,22 @@ type KeyMap struct {
 	Cut		keymap.Binding
 	Paste		keymap.Binding
 }
+type LineInfo struct {
+	Line	int
+
+	Column	int
+
+	Row	int
+
+	Rows	int
+}
 type Model struct {
 	Placeholder	string
 	Width		int
 
-	Height		int
+	Height	int
+
+	MaxHeight	int
 	CharLimit	int
 
 	SoftWrap	bool
@@ -3736,6 +3748,8 @@ type Model struct {
 	ShowLineNumbers	bool
 
 	LineNumberStyle	ansi.Style
+
+	LineLabel	func(line int, continuation bool) string
 
 	UndoLimit	int
 

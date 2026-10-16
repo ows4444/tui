@@ -14,14 +14,14 @@ const wheelRows = 3
 // firstRow returns the index of the first visible row: a visual row under soft
 // wrap, a line otherwise.
 func (m Model) firstRow() int {
-	if m.Height <= 0 {
+	if m.limit() <= 0 {
 		return 0
 	}
 	if m.wrapping() {
 		rows, cur := m.allRows()
-		return windowTop(m.top, cur, len(rows), m.Height)
+		return windowTop(m.top, cur, len(rows), m.limit())
 	}
-	return windowTop(m.top, m.value.lineOf(m.cursor), m.value.lineCount(), m.Height)
+	return windowTop(m.top, m.value.lineOf(m.cursor), m.value.lineCount(), m.limit())
 }
 
 // offsetAt returns the rune offset of the cluster boundary under the cell at

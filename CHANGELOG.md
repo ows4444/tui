@@ -30,6 +30,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `tui prompt input|password|confirm|select|multiselect|spin`: the `prompt`
   package from a shell script. The question is drawn on standard error, the
   answer printed on standard output; `confirm` answers with its exit code.
+- Text area: `MaxHeight` (grows with its content up to a cap), `LineInfo` (the
+  cursor's line, column and wrapped row) and `LineLabel` (your own text in the
+  left column in place of the line number).
 - `widgets.HintsFromBindings` and `widgets.Footer`: a one-line key-hint bar built
   from a focused widget's `Bindings()`, cut to the width with a "…" when it does
   not fit.

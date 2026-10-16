@@ -54,9 +54,9 @@ func (m Model) visibleRows() []srow {
 	if m.wrapping() {
 		rows, cur := m.allRows()
 		top, bottom := 0, len(rows)
-		if m.Height > 0 {
-			top = windowTop(m.top, cur, len(rows), m.Height)
-			bottom = min(top+m.Height, len(rows))
+		if m.limit() > 0 {
+			top = windowTop(m.top, cur, len(rows), m.limit())
+			bottom = min(top+m.limit(), len(rows))
 		}
 		out := make([]srow, 0, bottom-top)
 		for i := top; i < bottom; i++ {
@@ -68,9 +68,9 @@ func (m Model) visibleRows() []srow {
 	total := m.value.lineCount()
 	curLine := m.value.lineOf(m.cursor)
 	top, bottom := 0, total
-	if m.Height > 0 {
-		top = windowTop(m.top, curLine, total, m.Height)
-		bottom = min(top+m.Height, total)
+	if m.limit() > 0 {
+		top = windowTop(m.top, curLine, total, m.limit())
+		bottom = min(top+m.limit(), total)
 	}
 	out := make([]srow, 0, bottom-top)
 	for i := top; i < bottom; i++ {

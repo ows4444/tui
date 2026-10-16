@@ -53,7 +53,7 @@ func cellStyle(st ansi.Style) cellbuf.Style {
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	if m.gutter() > 0 {
 		inner := m.drawGutter(buf, r)
-		m.ShowLineNumbers = false
+		m.ShowLineNumbers, m.LineLabel = false, nil
 		m.DrawCells(buf, inner)
 		return
 	}
@@ -92,9 +92,9 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	if m.wrapping() {
 		rows, curRow := m.allRows()
 		top, bottom := 0, len(rows)
-		if m.Height > 0 {
-			top = windowTop(m.top, curRow, len(rows), m.Height)
-			bottom = min(top+m.Height, len(rows))
+		if m.limit() > 0 {
+			top = windowTop(m.top, curRow, len(rows), m.limit())
+			bottom = min(top+m.limit(), len(rows))
 		}
 		for i := top; i < bottom && i-top < sub.Height(); i++ {
 			row := rows[i]
@@ -118,9 +118,9 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	total := m.value.lineCount()
 	curLine := m.value.lineOf(m.cursor)
 	top, bottom := 0, total
-	if m.Height > 0 {
-		top = windowTop(m.top, curLine, total, m.Height)
-		bottom = min(top+m.Height, total)
+	if m.limit() > 0 {
+		top = windowTop(m.top, curLine, total, m.limit())
+		bottom = min(top+m.limit(), total)
 	}
 	for i := top; i < bottom && i-top < sub.Height(); i++ {
 		ls := m.value.lineStart(i)

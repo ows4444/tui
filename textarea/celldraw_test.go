@@ -1,6 +1,7 @@
 package textarea
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ows4444/tui/ansi"
@@ -51,6 +52,17 @@ func TestDrawCellsMatchesView(t *testing.T) {
 		{"wrapped", func(m *Model) { m.Width = 5; m.SoftWrap = true }, "abcdefghijkl\nxy\n" + family + family + "zz", []int{0, 4, 5, 9, 12, 13, 20}},
 		{"wrapped styled", func(m *Model) { m.Width = 4; m.SoftWrap = true; styled(m) }, "世界世界ab\nabcd", []int{0, 2, 4, 6, 8, 11}},
 		{"windowed", func(m *Model) { m.Height = 2 }, "a\nbb\nccc\ndddd\neeeee", []int{0, 2, 5, 9, 15}},
+		{"max height", func(m *Model) { m.MaxHeight = 3 }, "a\nbb\nccc\ndddd\neeeee", []int{0, 2, 5, 9, 15}},
+		{"max height wrapped", func(m *Model) { m.Width = 4; m.SoftWrap = true; m.MaxHeight = 3 }, "abcdefghijklmnop\nqrs", []int{0, 5, 9, 15, 17, 20}},
+		{"line label", func(m *Model) {
+			m.SoftWrap, m.Width = true, 4
+			m.LineLabel = func(line int, cont bool) string {
+				if cont {
+					return "·"
+				}
+				return fmt.Sprintf("L%d", line)
+			}
+		}, "abcdefgh\nij", []int{0, 4, 9}},
 		{"wrapped window", func(m *Model) { m.Width = 4; m.SoftWrap = true; m.Height = 3 }, "abcdefghijklmnop\nqrs", []int{0, 5, 9, 15, 17, 20}},
 	}
 	for _, c := range cases {
