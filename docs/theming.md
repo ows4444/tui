@@ -118,6 +118,29 @@ accent must pass.
 light mode, with different borders, glyph sets, colour depths, border colours,
 accent tokens and padding.
 
+## Theme files
+
+`theme.Parse` reads a theme from JSON, so the people who run your program can
+restyle it without a rebuild. A file starts from a built-in theme named by
+`base` (default `dark`; `theme.PresetNames` lists them) and changes what it
+names:
+
+```json
+{
+  "base": "nord",
+  "primary": "#ff8800",
+  "text_inverse": "#101820",
+  "border": "rounded"
+}
+```
+
+Colours are `#rrggbb` or `#rgb`; `border` is `normal`, `rounded` or `ascii`; an
+unknown field or a bad colour is an error that names it. Changing `text`,
+`text_inverse` or `background` derives the surface, overlay and state styles
+again. `Parse` does not judge contrast: `tui theme check file.json` (or
+`Theme.Check` on the result) lists every role below 4.5:1, and `tui theme list`
+prints the base names.
+
 ## Overriding colours for one widget
 
 Component tokens change some colour roles for one kind of widget, or one

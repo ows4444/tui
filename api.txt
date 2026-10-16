@@ -3928,6 +3928,9 @@ func NordTheme() Theme
 func OneDarkTheme() Theme
 func OneLightTheme() Theme
 func Pair(preset Theme) Auto
+func Parse(r io.Reader) (Theme, error)
+func Preset(name string) (Theme, bool)
+func PresetNames() []string
 func RosePineDawnTheme() Theme
 func RosePineTheme() Theme
 func SolarizedDarkTheme() Theme

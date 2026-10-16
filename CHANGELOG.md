@@ -24,6 +24,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   its size through the input stream, so a resize is seen where no window-size
   signal arrives (over SSH, in some multiplexers). Both options are off by
   default, so no output changes unless asked for.
+- `theme.Parse`, `theme.Preset` and `theme.PresetNames`: a theme from JSON, built
+  on a named preset, and `tui theme check file.json` / `tui theme list` to lint
+  one from the command line.
 - `Map` and `MapAs[T]`: wrap the messages of a child's Cmd, through `Batch`,
   `Sequence`, `FromCtx`, `Tick` and `Every`, so a parent tags or converts them
   without a hand-written envelope Cmd.
