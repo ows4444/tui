@@ -30,6 +30,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `tui prompt input|password|confirm|select|multiselect|spin`: the `prompt`
   package from a shell script. The question is drawn on standard error, the
   answer printed on standard output; `confirm` answers with its exit code.
+- `widgets.HintsFromBindings` and `widgets.Footer`: a one-line key-hint bar built
+  from a focused widget's `Bindings()`, cut to the width with a "…" when it does
+  not fit.
 - `Map` and `MapAs[T]`: wrap the messages of a child's Cmd, through `Batch`,
   `Sequence`, `FromCtx`, `Tick` and `Every`, so a parent tags or converts them
   without a hand-written envelope Cmd.

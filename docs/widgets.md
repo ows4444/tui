@@ -139,7 +139,7 @@ package: it sits below the components. Use `layout.Block(s)` (or
 | Progress and status | `ProgressBar`, `ProgressCircle`, `MultiProgress`, `StatusIndicator`, `Stepper`, `Timeline`, `Pagination`, `PaginationDots` |
 | Controls drawn as text | `Checkbox`, `Toggle`, `FormField`, `Form` |
 | Lists and tables | `List`, `ListWith`, `KeyValue`, `Table`, `TableRows`, `TableRowsWith` |
-| Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap` |
+| Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap`, `HintsFromBindings`, `Footer` |
 | Text formatting | `CodeBlock`, `CodeBlockLang`, `DiffView`, `Gradient`, `BigText`, `BigTextGradient`, `Link` |
 | Chat and agent helpers | `ChatMessage`, `ChatMessageRaw`, `TokenCounter`, `UsageMonitor`, `CompactCount` |
 | Error isolation | `ErrorBoundary` renders a fallback if the render function panics |

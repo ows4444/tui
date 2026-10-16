@@ -4579,11 +4579,13 @@ func DividerLabelWith(width int, label string, t theme.Theme) string
 func DividerWith(width int, t theme.Theme) string
 func Empty(title, description, hint string, t theme.Theme, width int) string
 func ErrorBoundary(render func() string, fallback string, t theme.Theme) (out string)
+func Footer(width int, hints ...Hint) string
 func Form(fields ...string) string
 func FormField(label string, fieldView string, err string, t theme.Theme) string
 func Gradient(text string, colors []ansi.RGB, bold bool, t theme.Theme) string
 func Header(title string, t theme.Theme) string
 func HeaderWithAccessory(title, accessory string, width int, t theme.Theme) string
+func HintsFromBindings(bs []keymap.Binding) []Hint
 func HintsFromKeymap(reg *keymap.Registry, scope string) []Hint
 func InfoBox(title string, rows []TreeRow, t theme.Theme, width int) string
 func KeyHint(key, action string) string
