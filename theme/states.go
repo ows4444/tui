@@ -62,7 +62,8 @@ func init() {
 	// carries all four and reads the same either way.
 	for _, t := range []*Theme{&dark, &light, &dracula, &nord, &gruvbox, &tokyoNight, &monokai,
 		&solarizedDark, &solarizedLight, &catppuccin, &oneDark, &nightOwl, &rosePine,
-		&everforestDark, &githubDark, &highContrast} {
+		&everforestDark, &githubDark, &highContrast,
+		&catppuccinLatte, &oneLight, &rosePineDawn, &githubLight} {
 		fillSurfaces(t)
 		t.States = t.ResolvedStates()
 	}

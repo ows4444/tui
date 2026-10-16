@@ -25,6 +25,8 @@ func TestPresetThemesRenderWidgetsWithoutPanicking(t *testing.T) {
 		{"Monokai", theme.MonokaiTheme()},
 		{"SolarizedDark", theme.SolarizedDarkTheme()},
 		{"SolarizedLight", theme.SolarizedLightTheme()},
+		{"CatppuccinLatte", theme.CatppuccinLatteTheme()}, {"OneLight", theme.OneLightTheme()},
+		{"RosePineDawn", theme.RosePineDawnTheme()}, {"GitHubLight", theme.GitHubLightTheme()},
 		{"Catppuccin", theme.CatppuccinTheme()},
 		{"OneDark", theme.OneDarkTheme()},
 		{"NightOwl", theme.NightOwlTheme()},

@@ -109,7 +109,11 @@ Example for it.
 `DarkTheme` (the default), `LightTheme`, `CatppuccinTheme`, `DraculaTheme`,
 `EverforestDarkTheme`, `GitHubDarkTheme`, `GruvboxTheme`, `HighContrastTheme`,
 `MonokaiTheme`, `NightOwlTheme`, `NordTheme`, `OneDarkTheme`, `RosePineTheme`,
-`SolarizedDarkTheme`, `SolarizedLightTheme`, `TokyoNightTheme`.
+`SolarizedDarkTheme`, `SolarizedLightTheme`, `TokyoNightTheme`, and the light
+ones `CatppuccinLatteTheme`, `GitHubLightTheme`, `OneLightTheme` and
+`RosePineDawnTheme`. Their accents keep the published palette, so some are paler
+than 4.5:1; `Theme.Check` lists them, and `LightTwin` is the choice when every
+accent must pass.
 `examples/login` has a design panel where you can try each preset in dark or
 light mode, with different borders, glyph sets, colour depths, border colours,
 accent tokens and padding.

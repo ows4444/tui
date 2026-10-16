@@ -23,7 +23,9 @@ func TestPresetConstructorsReturnIndependentCopies(t *testing.T) {
 		"SolarizedLight": theme.SolarizedLightTheme, "Catppuccin": theme.CatppuccinTheme,
 		"OneDark": theme.OneDarkTheme, "NightOwl": theme.NightOwlTheme, "RosePine": theme.RosePineTheme,
 		"EverforestDark": theme.EverforestDarkTheme, "GitHubDark": theme.GitHubDarkTheme,
-		"HighContrast": theme.HighContrastTheme,
+		"HighContrast":    theme.HighContrastTheme,
+		"CatppuccinLatte": theme.CatppuccinLatteTheme, "OneLight": theme.OneLightTheme,
+		"RosePineDawn": theme.RosePineDawnTheme, "GitHubLight": theme.GitHubLightTheme,
 	}
 	for name, ctor := range ctors {
 		want := ctor()

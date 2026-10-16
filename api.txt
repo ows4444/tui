@@ -3882,6 +3882,7 @@ func (t Theme) WithTokens(component string, tok Tokens) Theme
 func (tok Tokens) IsZero() bool
 func (tok Tokens) Over(o Tokens) Tokens
 func ASCIIGlyphSet() Glyphs
+func CatppuccinLatteTheme() Theme
 func CatppuccinTheme() Theme
 func Components() []string
 func Contrast(fg, bg ansi.Color) float64
@@ -3894,6 +3895,7 @@ func DraculaTheme() Theme
 func EverforestDarkTheme() Theme
 func ForBackground(bg ansi.RGB) Theme
 func GitHubDarkTheme() Theme
+func GitHubLightTheme() Theme
 func GruvboxTheme() Theme
 func HighContrastTheme() Theme
 func LightTheme() Theme
@@ -3903,7 +3905,9 @@ func NewPalette() *Palette
 func NightOwlTheme() Theme
 func NordTheme() Theme
 func OneDarkTheme() Theme
+func OneLightTheme() Theme
 func Pair(preset Theme) Auto
+func RosePineDawnTheme() Theme
 func RosePineTheme() Theme
 func SolarizedDarkTheme() Theme
 func SolarizedLightTheme() Theme

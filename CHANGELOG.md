@@ -17,6 +17,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `Tasks`, `NewTasks` and `TaskDoneMsg`: background work by key. `Tasks.Start`
   cancels the earlier run of the same key, so a search-as-you-type needs no
   hand-written stale-result check; `Cancel`, `CancelAll` and `Running`.
+- Four light themes: `CatppuccinLatteTheme`, `OneLightTheme`, `RosePineDawnTheme`
+  and `GitHubLightTheme`. Text and Muted pass AA; the accents keep each palette's
+  published values and some are paler than 4.5:1 (`Theme.Check` lists them).
 
 ## [1.0.0-rc.1] - 2026-10-16
 
