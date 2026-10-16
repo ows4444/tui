@@ -46,13 +46,14 @@ type Box struct {
 	padTop, padRight, padBottom, padLeft int
 	marginT, marginR, marginB, marginL   int
 	border                               Border
-	borderColor                          ansi.Color // nil = draw the border in the terminal's default colour
-	bg                                   ansi.Color // nil = no background
-	width                                int        // 0 = size to content
-	height                               int        // 0 = size to content
-	clip                                 bool       // width was set by Width: wider lines are cut to it
-	rows                                 int        // body rows when fixedRows is set; may be 0
-	fixedRows                            bool       // set by exactRows: draw rows body rows whatever the content
+	borderColor                          ansi.Color   // nil = draw the border in the terminal's default colour
+	gradient                             *[2]ansi.RGB // set by BorderGradient: the border blends from [0] to [1] and back around the box
+	bg                                   ansi.Color   // nil = no background
+	width                                int          // 0 = size to content
+	height                               int          // 0 = size to content
+	clip                                 bool         // width was set by Width: wider lines are cut to it
+	rows                                 int          // body rows when fixedRows is set; may be 0
+	fixedRows                            bool         // set by exactRows: draw rows body rows whatever the content
 	title                                string
 	titleAlign                           Align
 	noTop, noRight, noBottom, noLeft     bool // border sides switched off by BorderSides
@@ -113,6 +114,18 @@ func (b Box) Border(border Border) Box { b.border = border; return b }
 // default, leaves the border uncoloured; a box without a border ignores it.
 // Colour changes no dimensions: widths are measured without escape codes.
 func (b Box) BorderColor(c ansi.Color) Box { b.borderColor = c; return b }
+
+// BorderGradient draws the border in a colour that changes cell by cell around
+// the box: from the colour at the top-left corner it blends to to at the point
+// half way round, and back to from where it started, so the loop has no seam.
+// Each cell of the border is its own styled span (the title's cells too), so
+// every line of the result is self-contained. It takes precedence over
+// BorderColor, and a box without a border ignores it. Colour changes no
+// dimensions. A terminal below true colour shows the nearest colours.
+func (b Box) BorderGradient(from, to ansi.RGB) Box {
+	b.gradient = &[2]ansi.RGB{from, to}
+	return b
+}
 
 // Width sets a fixed content width (padding and border are drawn outside
 // it); the zero value sizes the box to its widest content line instead. A
@@ -241,6 +254,26 @@ func (b Box) render(content string) string {
 	if showRight {
 		right = paint(b.border.Right)
 	}
+	// With a gradient the border is painted a cell at a time along the loop
+	// top (left to right), right side (down), bottom (right to left) and left
+	// side (up). ring says how long the loop is, so a cell's place is a fraction.
+	var ring borderRing
+	if bordered && b.gradient != nil {
+		topW := ansi.Width(corner(b.border.TopLeft, showLeft)) + innerWidth + ansi.Width(corner(b.border.TopRight, showRight))
+		botW := ansi.Width(corner(b.border.BottomLeft, showLeft)) + innerWidth + ansi.Width(corner(b.border.BottomRight, showRight))
+		ring = borderRing{
+			from: b.gradient[0], to: b.gradient[1],
+			topW: topW, botW: botW,
+			side: b.padTop + bodyRows + b.padBottom,
+		}
+		if !showTop {
+			ring.topW = 0
+		}
+		if !showBottom {
+			ring.botW = 0
+		}
+		paint = func(s string) string { return s } // the ring paints the cells itself
+	}
 	rowCount := b.marginT + b.padTop + bodyRows + b.padBottom + b.marginB + 2
 	var out strings.Builder
 	out.Grow(rowCount*(innerWidth+len(left)+len(right)+b.marginL+b.marginR+1) + len(content))
@@ -265,11 +298,15 @@ func (b Box) render(content string) string {
 	if showTop {
 		newRow()
 		writeSpaces(&out, b.marginL)
-		out.WriteString(paint(corner(b.border.TopLeft, showLeft) +
-			b.edge(b.border.Top, innerWidth, b.title) +
-			corner(b.border.TopRight, showRight)))
+		topRow := corner(b.border.TopLeft, showLeft) + b.edge(b.border.Top, innerWidth, b.title) + corner(b.border.TopRight, showRight)
+		if ring.on() {
+			out.WriteString(ring.paintTop(topRow))
+		} else {
+			out.WriteString(paint(topRow))
+		}
 		writeSpaces(&out, b.marginR)
 	}
+	sideRow := 0
 	// row writes one body row: margin, side border, left pad, text, fill to
 	// contentWidth, right pad, side border, margin.
 	row := func(text string) {
@@ -282,11 +319,24 @@ func (b Box) render(content string) string {
 			w = ansi.Width(text)
 		}
 		writeSpaces(&out, b.marginL)
-		out.WriteString(left)
+		if ring.on() {
+			if showLeft {
+				out.WriteString(ring.paintSide(b.border.Left, sideRow, false))
+			}
+		} else {
+			out.WriteString(left)
+		}
 		out.WriteString(fillBG(b.padLeft))
 		out.WriteString(reBG(text))
 		out.WriteString(fillBG(contentWidth - w + b.padRight))
-		out.WriteString(right)
+		if ring.on() {
+			if showRight {
+				out.WriteString(ring.paintSide(b.border.Right, sideRow, true))
+			}
+		} else {
+			out.WriteString(right)
+		}
+		sideRow++
 		writeSpaces(&out, b.marginR)
 	}
 	for i := 0; i < b.padTop; i++ {
@@ -307,9 +357,12 @@ func (b Box) render(content string) string {
 	if showBottom {
 		newRow()
 		writeSpaces(&out, b.marginL)
-		out.WriteString(paint(corner(b.border.BottomLeft, showLeft) +
-			strings.Repeat(b.border.Bottom, innerWidth) +
-			corner(b.border.BottomRight, showRight)))
+		botRow := corner(b.border.BottomLeft, showLeft) + strings.Repeat(b.border.Bottom, innerWidth) + corner(b.border.BottomRight, showRight)
+		if ring.on() {
+			out.WriteString(ring.paintBottom(botRow))
+		} else {
+			out.WriteString(paint(botRow))
+		}
 		writeSpaces(&out, b.marginR)
 	}
 	for i := 0; i < b.marginB; i++ {

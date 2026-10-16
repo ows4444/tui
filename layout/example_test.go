@@ -262,3 +262,17 @@ func ExampleResponsive() {
 	// menu
 	// home | search | settings
 }
+
+// BorderGradient colours the border cell by cell around the box, from one colour
+// to another half way round and back, without changing its size.
+func ExampleBox_BorderGradient() {
+	box := layout.NewBox().Border(layout.RoundedBorder()).PaddingAll(1).
+		BorderGradient(ansi.RGB{R: 255, G: 90}, ansi.RGB{R: 90, G: 120, B: 255})
+	fmt.Println(ansi.StripANSI(layout.Draw(layout.BoxNode(box, layout.Block("gradient")), layout.Unconstrained())))
+	// Output:
+	// ╭──────────╮
+	// │          │
+	// │ gradient │
+	// │          │
+	// ╰──────────╯
+}

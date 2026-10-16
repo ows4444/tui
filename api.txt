@@ -2424,6 +2424,7 @@ const Unbounded = 1 << 30
 func (b Box) Background(c ansi.Color) Box
 func (b Box) Border(border Border) Box
 func (b Box) BorderColor(c ansi.Color) Box
+func (b Box) BorderGradient(from, to ansi.RGB) Box
 func (b Box) BorderSides(top, right, bottom, left bool) Box
 func (b Box) Height(h int) Box
 func (b Box) Margin(top, right, bottom, left int) Box

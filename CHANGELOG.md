@@ -10,6 +10,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+### Added
+
+- `layout.Box.BorderGradient(from, to)`: the border blends cell by cell around the
+  box, from one colour at the top-left corner to another half way round and back,
+  so the loop has no seam. It changes no dimensions and takes precedence over
+  `BorderColor`.
+
 ## [1.0.0-rc.1] - 2026-10-17
 
 Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking

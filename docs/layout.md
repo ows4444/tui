@@ -127,7 +127,7 @@ rendered.
 | Different trees for different terminal sizes | `Responsive` with `[]Break` (`ExampleResponsive`) |
 | A "terminal too small" screen | `MinSize(n, min, fallback)` |
 | An exact or bounded size | `Fixed` (`ExampleFixed`), `MinMax` |
-| Border, padding, title, background | `BoxNode(layout.NewBox()..., child)` |
+| Border, padding, title, background | `BoxNode(layout.NewBox()..., child)`; `BorderColor` for one colour, `BorderGradient(from, to)` for a blend around the box |
 | Wrapping or styled text | `Text` with `WithWrap`, `WithAlign`, `WithEllipsis`, `WithStyle`; `StyledText` |
 | A scrolled window onto a tall child | `Scroll(child, offset)`. Rows wrapped in `Sticky` pin to the top. A child implementing `Windowed` renders only the visible rows |
 | Layers | `Stack` with `Layer(z, n)` and `Absolute(x, y, n)`, or `OverlayNode(base, over, x, y)` |
