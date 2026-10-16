@@ -56,6 +56,16 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - A Widget gallery page on the site: one picture of each of 31 components, drawn
   by a small real program and checked against a golden file in
   `internal/tools/widgetshots`.
+- `DrawCells` on `textinput`: a 60-column field draws in 3.1 µs and 1 allocation
+  against 9.3 µs and 93 through `View` and parse. `passwordinput`, `maskedinput`
+  and `inputgroup` define their own, through `View`, so a mask or a prefix is not
+  bypassed (a test checks `passwordinput` never draws its secret).
+
+### Changed
+
+- `internal/celldraw.StyleID` remembers each style's conversion (up to 512), so
+  every `DrawCells` widget stops rendering and parsing a probe string per style
+  per frame.
 
 ## [1.0.0-rc.1] - 2026-10-16
 

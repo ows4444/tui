@@ -2334,6 +2334,7 @@ type ReplyEvent struct {
 ## github.com/ows4444/tui/inputgroup (package inputgroup)
 
 func (m Model) CursorCell() (x, y int, ok bool)
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) FullValue() string
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -2667,6 +2668,7 @@ type Stream struct {
 
 ## github.com/ows4444/tui/maskedinput (package maskedinput)
 
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -3101,6 +3103,7 @@ type Model struct {
 ## github.com/ows4444/tui/passwordinput (package passwordinput)
 
 const Mask = '•'
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -3779,6 +3782,7 @@ func (m *Model) SetValue(s string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) CursorCell() (x, y int, ok bool)
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Focused() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
