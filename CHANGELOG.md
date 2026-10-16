@@ -16,8 +16,68 @@ groups and typed values, datatable filter and sort, text-area line numbers, a
 multi-series plot and a colour toolkit. A breaking change found in the week it
 is out would be a reason to cut an rc.2.
 
-### Added
+### Changed
 
+- Documented which renderer is the renderer: the cell renderer (a tenth of the
+  bytes for a changing frame, 202 against 2,004 on an 80x24 view, for about a
+  quarter more CPU). `WithCellRenderer(false)` stays, for comparing and
+  debugging, since the line renderer is also the cell renderer's fallback. A
+  test keeps the byte figure from regressing.
+- The cell renderer reads a drawn frame 40% faster: a text-area keystroke through
+  `DrawCells` costs 64 µs instead of 107 µs. `internal/render` remembers the
+  style of the cell before and takes a printable ASCII cell without scanning
+  it; the cost was a map lookup and a rune slice for every one of the 1,920
+  cells of an 80x24 frame. The profile had pointed at the `write` system call,
+  which was the sampler's attribution, not the cost: with a no-op writer the
+  time was the same.
+
+### Added
+- `datatable.Model.CellMode`, `CellStyle`, `FrozenCols` and `SelectedMsg.Col`: a
+  cursor that is one cell (Left and Right move it, only that cell is
+  highlighted, Enter reports its column), a hook that styles any cell from its
+  row, column and value, and leading columns that stay in view while the rest
+  scroll sideways. All are off by default. `DrawCells` draws a table that uses
+  them through `View`.
+- `chart.Canvas`, `NewCanvas`: a public grid of braille dots (2 x 4 per
+  cell) with `Set`, `Line`, `Rect`, `Circle`, `Clear`, `Rows` and `String`, in
+  any colour per shape. `Plot` now draws on one.
+- `chart.Series.Kind` with `Line` (the zero value), `Scatter` and `Bars`: a
+  series drawn as joined lines, lone points, or columns that rise from the
+  bottom of the plot or from zero.
+- `form.FieldMultiSelect` and `form.FieldTextArea`, `form.Selected`,
+  `Field.Description`, `Field.Height` and `KeyMap.SubmitInArea`: a list with
+  any number of options ticked (value: the ticked options joined by ","), a
+  multi-line text box (Enter adds a line; Ctrl+S submits from inside it), and a
+  line of help under any field. Both draw as several rows, and the mouse,
+  layout node and accessible output follow them.
+- `tui.ViewState` and `tui.ViewStater`: an optional `ViewState()` method beside
+  `View() string` that states the alternate screen, the mouse mode and the
+  window title for the frame, as `EnableMouse`, `EnterAltScreen`, `ExitAltScreen`
+  and `SetWindowTitle` do from `Update`. A nil field has no opinion; a set one
+  is applied before the frame when it differs from the terminal's state. The
+  Cmds stay.
+- `DrawCells` on `picker`, `multiselect`, `treeview`, `spinner`, `tabs`, `menu`
+  and `filepicker`: each draws
+  its rows straight into the cell grid, as `viewport`, `datatable` and
+  `textarea` already did, instead of building a string for the frame to parse.
+  A 24-row list costs 47 µs and 131 allocations through `DrawCells` against
+  172 µs and 1,100 through `View` and parse. A test per package checks the cells
+  against `View`'s. `View` is unchanged.
+- Tests that lift ten library packages (`passwordinput`, `maskedinput`,
+  `taginput`, `numberinput`, `spinner`, `wizard`, `loadingbar`, `motion`,
+  `keymap`, `layout`, `emailinput`, `commandpalette`, `toast`, `helpscreen`) past 90% on their own tests, and a note in
+  `CONTRIBUTING.md` on why `go test -cover` and the CI floor differ.
+- `docs/tutorial-2.md` and `examples/tutorial2`: a second tutorial that turns
+  the task list into a searchable one with `picker.Filter`, with a test.
+- Seven cookbook recipes: a one-line prompt, a filtering list, a form in steps,
+  a sorted and filtered table, line numbers in a text area, and a multi-series
+  chart; and examples `datatable.ExampleModel_filter` and
+  `textarea.ExampleModel_ShowLineNumbers` behind them.
+- `prompt`, an experimental package that asks one question and returns the
+  answer without a `Model` of your own: `Input`, `Password`, `Confirm`,
+  `Select` (typing narrows), `MultiSelect` and `Spin`. They run an inline
+  program, return `ErrCanceled` on Esc or Ctrl+C, and take an optional
+  `prompt.Config` (`Default`, `Placeholder`, `Validate`, `NoFilter`, `Program`).
 - `chart.Plot`, `chart.Series`, `chart.PlotOptions` and `chart.LinearizePlot`:
   several series drawn as braille lines on a shared y axis with labelled ticks,
   an x axis with optional labels and a legend. A fixed `Min` and `Max` or the
@@ -84,6 +144,18 @@ has one section per identifier.
 
 ### Added
 
+- Three small complete programs as examples, each with tests: `examples/jsonview`
+  (search a JSON document as a tree), `examples/diskuse` (what takes the space in
+  a directory) and `examples/newproject` (a project skeleton from five prompts).
+  `docs/built-with.md` lists programs built with tui, and `.github` has issue and
+  pull-request templates and a link to Discussions.
+- `tui.SetProgress`, `ProgressState` and `ViewState.Progress`: the terminal's
+  progress indicator (OSC 9;4), as a bar at a percent, an error or paused bar, a
+  busy indicator, or none. The Program removes it on every exit path.
+- `cmd/tui`: `go run github.com/ows4444/tui/cmd/tui new myapp` writes a new
+  program (`go.mod`, `main.go`, a `tuitest` test, a README) that builds and
+  passes its own test; `-module` sets the module path. It adds no dependency
+  version: `go mod tidy` resolves the latest.
 - `docs/tutorial.md` and `examples/tutorial`: a first tutorial from an empty
   directory to a small task list with a text field, and a test of it with
   `tuitest`. The program and its test also compile against v0.1.0.

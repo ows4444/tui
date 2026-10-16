@@ -36,7 +36,9 @@ import (
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/layout"
+	"github.com/ows4444/tui/multiselect"
 	"github.com/ows4444/tui/passwordinput"
+	"github.com/ows4444/tui/textarea"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -63,6 +65,14 @@ const (
 	// FieldCheckbox is a yes/no box: Space toggles it. Its value is "true" or
 	// "false".
 	FieldCheckbox
+	// FieldMultiSelect is a list of Field.Options of which any number are
+	// ticked: Up and Down move, Space ticks. Its value is the ticked options in
+	// list order, joined with ","; read them apart with Selected.
+	FieldMultiSelect
+	// FieldTextArea is a multi-line text box of Field.Height rows: Enter adds a
+	// line, and Ctrl+S (KeyMap.SubmitInArea) submits the form from inside it.
+	// Its value is the text, with "\n" between lines.
+	FieldTextArea
 )
 
 // Field describes one form field.
@@ -91,6 +101,10 @@ type Field struct {
 	// Width is a text field's visible width; 0 = DefaultWidth. Text fields only.
 	Width      int
 	Validators []Validator
+	// Description is a line of help drawn under the field, before any error.
+	Description string
+	// Height is the rows of a FieldTextArea; 0 means 4. Text areas only.
+	Height int
 
 	// choices holds the []Option[T] a SelectOf field was built from.
 	choices any
@@ -114,13 +128,20 @@ type fieldInput struct {
 	choice  int      // FieldSelect: index into options
 	checked bool     // FieldCheckbox
 	focused bool     // FieldSelect and FieldCheckbox; text widgets track their own
+
+	multi multiselect.Model // FieldMultiSelect
+	area  textarea.Model    // FieldTextArea
+	desc  string            // Field.Description
 }
 
 func (in *fieldInput) focus() tui.Cmd {
 	switch in.kind {
-	case FieldSelect, FieldCheckbox:
+	case FieldSelect, FieldCheckbox, FieldMultiSelect:
 		in.focused = true
 		return nil
+	case FieldTextArea:
+		in.focused = true
+		return in.area.Focus()
 	}
 	if in.isPass {
 		return in.secret.Focus()
@@ -130,8 +151,12 @@ func (in *fieldInput) focus() tui.Cmd {
 
 func (in *fieldInput) blur() {
 	switch in.kind {
-	case FieldSelect, FieldCheckbox:
+	case FieldSelect, FieldCheckbox, FieldMultiSelect:
 		in.focused = false
+		return
+	case FieldTextArea:
+		in.focused = false
+		in.area.Blur()
 		return
 	}
 	if in.isPass {
@@ -160,6 +185,13 @@ func (in *fieldInput) update(msg tui.Msg, km KeyMap) tui.Cmd {
 			in.checked = !in.checked
 		}
 		return nil
+	case FieldMultiSelect:
+		in.multi, _ = in.multi.Update(msg)
+		return nil
+	case FieldTextArea:
+		var cmd tui.Cmd
+		in.area, cmd = in.area.Update(msg)
+		return cmd
 	}
 	var cmd tui.Cmd
 	if in.isPass {
@@ -208,6 +240,10 @@ func (in fieldInput) value() string {
 			return "true"
 		}
 		return "false"
+	case FieldMultiSelect:
+		return in.multiValue()
+	case FieldTextArea:
+		return in.area.Value()
 	}
 	if in.isPass {
 		return in.secret.Value()
@@ -221,6 +257,8 @@ func (in fieldInput) view(th theme.Theme) string {
 		return in.selectView(th)
 	case FieldCheckbox:
 		return widgets.Checkbox(in.label, in.checked, in.focused, th)
+	case FieldMultiSelect, FieldTextArea:
+		return in.blockView()
 	}
 	if in.isPass {
 		return in.secret.View()
@@ -255,6 +293,8 @@ func (in fieldInput) linearize() string {
 			return head("checkbox") + ", checked"
 		}
 		return head("checkbox") + ", unchecked"
+	case FieldMultiSelect, FieldTextArea:
+		return in.blockLinearize(head)
 	}
 	if in.isPass {
 		return in.secret.Linearize()
@@ -267,7 +307,7 @@ func (in fieldInput) linearize() string {
 // the width it is given.
 func (in fieldInput) layoutNode(th theme.Theme) layout.Node {
 	switch in.kind {
-	case FieldSelect, FieldCheckbox:
+	case FieldSelect, FieldCheckbox, FieldMultiSelect, FieldTextArea:
 		return layout.Block(in.view(th))
 	}
 	if in.isPass {
@@ -334,6 +374,9 @@ type KeyMap struct {
 	// moves back without checking. Only a form built with NewGroups uses them.
 	NextGroup keymap.Binding
 	PrevGroup keymap.Binding
+	// SubmitInArea submits the form from inside a text area, where Enter adds
+	// a line.
+	SubmitInArea keymap.Binding
 }
 
 // DefaultKeyMap returns the keys a Model used before KeyMap existed.
@@ -345,12 +388,14 @@ func DefaultKeyMap() KeyMap {
 		Toggle:     keymap.NewBinding("toggle", "space"),
 		NextGroup:  keymap.NewBinding("next group", "pgdown"),
 		PrevGroup:  keymap.NewBinding("previous group", "pgup"),
+
+		SubmitInArea: keymap.NewBinding("submit", "ctrl+s"),
 	}
 }
 
 func (m Model) keys() KeyMap {
 	km := m.KeyMap
-	if len(km.Submit.Keys)+len(km.SelectPrev.Keys)+len(km.SelectNext.Keys)+len(km.Toggle.Keys)+len(km.NextGroup.Keys)+len(km.PrevGroup.Keys) == 0 {
+	if len(km.Submit.Keys)+len(km.SelectPrev.Keys)+len(km.SelectNext.Keys)+len(km.Toggle.Keys)+len(km.NextGroup.Keys)+len(km.PrevGroup.Keys)+len(km.SubmitInArea.Keys) == 0 {
 		return DefaultKeyMap()
 	}
 	return km
@@ -379,6 +424,11 @@ func (m Model) Bindings() []keymap.Binding {
 		out = append(out, km.SelectPrev, km.SelectNext)
 	case FieldCheckbox:
 		out = append(out, km.Toggle)
+	case FieldMultiSelect:
+		out = append(out, in.multi.Bindings()...)
+	case FieldTextArea:
+		out = append(out, km.SubmitInArea)
+		out = append(out, in.area.Bindings()...)
 	default:
 		if in.isPass {
 			out = append(out, in.secret.Bindings()...)
@@ -418,6 +468,12 @@ func New(fields ...Field) Model {
 		case FieldCheckbox:
 			m.inputs[i] = fieldInput{kind: FieldCheckbox, label: f.Label, checked: strings.EqualFold(f.Value, "true")}
 			continue
+		case FieldMultiSelect:
+			m.inputs[i] = newMultiInput(f)
+			continue
+		case FieldTextArea:
+			m.inputs[i] = newAreaInput(f)
+			continue
 		}
 		w := f.Width
 		if w <= 0 {
@@ -435,6 +491,9 @@ func New(fields ...Field) Model {
 		t.Prompt, t.Placeholder, t.Width = prompt, f.Placeholder, w
 		t.SetValue(f.Value)
 		m.inputs[i] = fieldInput{text: t}
+	}
+	for i, f := range fields {
+		m.inputs[i].desc = f.Description
 	}
 	return m.refreshOptions()
 }
@@ -554,9 +613,11 @@ func (m Model) update(msg tui.Msg) (Model, tui.Cmd) {
 		return m.updateMouse(ev)
 	}
 	km := m.keys()
+	inArea := m.inArea()
+	submit := keymap.Matches(msg, km.Submit) && !(inArea && isEnter(msg)) || (inArea && keymap.Matches(msg, km.SubmitInArea))
 	if len(m.groups) > 0 {
 		switch {
-		case keymap.Matches(msg, km.Submit) && m.neighbour(1) >= 0, keymap.Matches(msg, km.NextGroup):
+		case submit && m.neighbour(1) >= 0, keymap.Matches(msg, km.NextGroup):
 			return m.advance()
 		case keymap.Matches(msg, km.PrevGroup):
 			if prev := m.neighbour(-1); prev >= 0 {
@@ -565,7 +626,7 @@ func (m Model) update(msg tui.Msg) (Model, tui.Cmd) {
 			return m, nil
 		}
 	}
-	if keymap.Matches(msg, km.Submit) {
+	if submit {
 		return m.Submit()
 	}
 	m = m.clone()
@@ -597,9 +658,9 @@ func (m Model) fieldAtRow(row int) int {
 	lo, hi := m.span()
 	y := len(m.headerRows())
 	for i := lo; i < hi; i++ {
-		n := 1
+		n := m.inputs[i].rows(m.themed())
 		if m.errs[i] != "" {
-			n = 2
+			n++
 		}
 		if row < y+n {
 			return i
@@ -707,6 +768,9 @@ func (m Model) View() string {
 			b.WriteByte('\n')
 		}
 		b.WriteString(m.inputs[i].view(m.themed()))
+		if d := m.inputs[i].descLine(); d != "" {
+			b.WriteString("\n" + d)
+		}
 		if m.errs[i] != "" {
 			b.WriteString("\n  " + errStyle.Render(m.errs[i]))
 		}

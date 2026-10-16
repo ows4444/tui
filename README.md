@@ -77,6 +77,12 @@ Every directory under [examples/](examples) is a runnable program, for instance
 `./examples/dashboard`, `./examples/form`, `./examples/signup`,
 `./examples/agentshell` and `./examples/probe`.
 
+## Help and community
+
+- **Questions and show-and-tell:** [GitHub Discussions](https://github.com/ows4444/tui/discussions).
+- **Bugs and feature requests:** [issues](https://github.com/ows4444/tui/issues), with the templates there. A failing `tuitest` test is the best bug report.
+- **What people have built:** [docs/built-with.md](docs/built-with.md), which takes pull requests.
+
 ## Packages
 
 API reference is the godoc of each package. The layering and stability levels
@@ -179,6 +185,7 @@ every widget implements `Linearize` for accessible mode; tests in
 | `notificationcenter` | Panel showing every queued notification at once | Experimental |
 | `commandpalette` | Text input with a fuzzy-filtered list of Commands | Stable-ish |
 | `fuzzy` | Rank and highlight text against a typed query; the filter behind `commandpalette` | Experimental |
+| `prompt` | Ask one question at the terminal and get the answer back, with no Model of your own | Experimental |
 | `errorretry` | An error with retry and dismiss keys | Experimental |
 | `faces` | 50 ready-made animated Braille characters and a widget that plays them; for a picture derived from a name, see `avatar` | Experimental |
 | `imageview` | PNG through the kitty graphics protocol, iTerm2 inline images or Sixel, with a text placeholder otherwise | Experimental |

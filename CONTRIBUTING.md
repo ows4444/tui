@@ -130,6 +130,11 @@ $ npm run dev     # http://localhost:4321, regenerates pages on start
 $ npm run build   # static site in site/dist/
 ```
 
+## Getting help
+
+Ask in [Discussions](https://github.com/ows4444/tui/discussions); open an issue for
+a bug or a concrete request, using its template.
+
 ## Coverage
 
 Each library package needs at least 90% statement coverage, counted per
@@ -137,6 +142,22 @@ package with coverage credited across packages (`-coverpkg=./...`).
 `internal/tools/covercheck` skips `examples/` and `internal/tools/`, and any
 `internal/` package whose non-test source has a
 `//covercheck:helper <reason>` line; the reason is required.
+
+Two numbers exist, and they differ. `go test -cover ./...` credits a package
+with its own tests only; the CI floor uses `-coverpkg=./...`, which also credits
+a package for what other packages' tests run (the theme and tokens sweeps in
+`theme/`, the escape and glyph sweeps at the root). On 2026-10-16 the CI method
+gave every library package at least 91.3% while own-test coverage had
+fourteen packages between 81% and 89%; those now also pass 90% on their own
+tests.
+Use the CI command when checking the floor, and the per-package command to see
+what a package's own tests miss:
+
+```console
+$ go test -coverprofile=cover.out -coverpkg=./... ./... && go run ./internal/tools/covercheck cover.out
+$ go test -cover ./picker
+```
+
 
 ## Generated files
 

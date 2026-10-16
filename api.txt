@@ -125,6 +125,17 @@ const (
 
 	Assertive
 )
+const (
+	ProgressNone	ProgressState	= iota
+
+	ProgressNormal
+
+	ProgressError
+
+	ProgressIndeterminate
+
+	ProgressPaused
+)
 const AnnounceTTL = announce.TTL
 const DefaultCapabilityProbeTimeout = 500 * time.Millisecond
 const InspectorOff = "off"
@@ -164,6 +175,7 @@ func ReadClipboard() Cmd
 func RunCmd(ctx context.Context, cmd Cmd) Msg
 func Sequence(cmds ...Cmd) Cmd
 func SetCursorShape(s CursorShape) Cmd
+func SetProgress(state ProgressState, percent int) Cmd
 func SetWindowTitle(title string) Cmd
 func Suspend(fn func() error) Cmd
 func Tick(d time.Duration, fn func(time.Time) Msg) Cmd
@@ -315,6 +327,11 @@ type Program struct {
 	// contains filtered or unexported fields
 }
 type ProgramOption func(*Program)
+type Progress struct {
+	State	ProgressState
+	Percent	int
+}
+type ProgressState int
 type QuitMsg struct{}
 type ReplyEvent = input.ReplyEvent
 type ResizeMsg struct {
@@ -345,6 +362,18 @@ type Themeable interface {
 }
 type Unwrapper interface {
 	Unwrap() Model
+}
+type ViewState struct {
+	AltScreen	*bool
+
+	Mouse	*MouseMode
+
+	Title	*string
+
+	Progress	*Progress
+}
+type ViewStater interface {
+	ViewState() ViewState
 }
 var ErrInterrupted = errors.New("tui: interrupted by signal")
 var ErrProgramReused = errors.New("tui: Program.Run called more than once; build a new Program with NewProgram")
@@ -1479,6 +1508,12 @@ type Model struct {
 
 	WheelStep	int
 
+	CellMode	bool
+
+	CellStyle	func(row, col int, value string) ansi.Style
+
+	FrozenCols	int
+
 	Filter	bool
 
 	ColumnWidths	[]int
@@ -1489,6 +1524,8 @@ type SelectedMsg struct {
 	Cells	[]string
 
 	SourceRow	int
+
+	Col	int
 }
 
 ## github.com/ows4444/tui/datepicker (package datepicker)
@@ -1732,6 +1769,7 @@ type Size int
 
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Entries() []fsutil.Entry
 func (m Model) Err() error
 func (m Model) LayoutNode() layout.Node
@@ -1826,6 +1864,10 @@ const (
 	FieldSelect
 
 	FieldCheckbox
+
+	FieldMultiSelect
+
+	FieldTextArea
 )
 const DefaultWidth = 30
 func (m *Model) Blur()
@@ -1856,6 +1898,7 @@ func New(fields ...Field) Model
 func NewGroups(groups ...Group) Model
 func Required() Validator
 func SelectOf[T any](name, label string, options ...Option[T]) Field
+func Selected(m Model, name string) []string
 func Value[T any](m Model, name string) (v T, ok bool)
 type Field struct {
 	Name	string
@@ -1875,6 +1918,10 @@ type Field struct {
 
 	Width		int
 	Validators	[]Validator
+
+	Description	string
+
+	Height	int
 	// contains filtered or unexported fields
 }
 type FieldKind int
@@ -1895,6 +1942,8 @@ type KeyMap struct {
 
 	NextGroup	keymap.Binding
 	PrevGroup	keymap.Binding
+
+	SubmitInArea	keymap.Binding
 }
 type Model struct {
 	Theme	theme.Theme
@@ -2599,6 +2648,7 @@ type Model struct {
 ## github.com/ows4444/tui/menu (package menu)
 
 func (m Model) Bindings() []keymap.Binding
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -2819,6 +2869,7 @@ func (m *Model) SetQuery(q string)
 func (m *Model) Toggle(i int)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) IsSelected(i int) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -3032,6 +3083,7 @@ func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Highlighted() Item
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -3110,6 +3162,27 @@ type Model struct {
 	Bounds	hittest.Rect
 	// contains filtered or unexported fields
 }
+
+## github.com/ows4444/tui/prompt (package prompt)
+
+func Confirm(label string, def bool, cfg ...Config) (bool, error)
+func Input(label string, cfg ...Config) (string, error)
+func MultiSelect(label string, choices []string, cfg ...Config) ([]int, error)
+func Password(label string, cfg ...Config) (string, error)
+func Select(label string, choices []string, cfg ...Config) (int, error)
+func Spin(label string, fn func(ctx context.Context) error, cfg ...Config) error
+type Config struct {
+	Program	[]tui.ProgramOption
+
+	Placeholder	string
+
+	Default	string
+
+	Validate	func(string) error
+
+	NoFilter	bool
+}
+var ErrCanceled = errors.New("prompt: canceled")
 
 ## github.com/ows4444/tui/radiogroup (package radiogroup)
 
@@ -3357,6 +3430,7 @@ type Model struct {
 
 func (m *Model) Start() tui.Cmd
 func (m *Model) Stop()
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) Running() bool
@@ -3479,6 +3553,7 @@ type Model struct {
 func (m *Model) SetActive(i int)
 func (m Model) Active() int
 func (m Model) Bindings() []keymap.Binding
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -4182,6 +4257,7 @@ func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) IsExpanded(path string) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
@@ -4536,6 +4612,22 @@ type Variant int
 
 ## github.com/ows4444/tui/widgets/chart (package chart)
 
+const (
+	Line	SeriesKind	= iota
+
+	Scatter
+
+	Bars
+)
+func (c *Canvas) Circle(cx, cy, r int, col ansi.Color)
+func (c *Canvas) Clear()
+func (c *Canvas) DotSize() (w, h int)
+func (c *Canvas) Line(x0, y0, x1, y1 int, col ansi.Color)
+func (c *Canvas) Rect(x, y, w, h int, col ansi.Color)
+func (c *Canvas) Rows(t theme.Theme) []string
+func (c *Canvas) Set(x, y int, col ansi.Color)
+func (c *Canvas) Size() (w, h int)
+func (c *Canvas) String(t theme.Theme) string
 func BarChart(items []BarItem, width int, t theme.Theme) string
 func Gauge(percent float64, width int, t theme.Theme) string
 func HeatMap(values [][]float64, t theme.Theme) string
@@ -4546,12 +4638,16 @@ func LinearizeHeatMap(values [][]float64) string
 func LinearizeLineChart(values []float64) string
 func LinearizePlot(series []Series, o PlotOptions) string
 func LinearizeSparkline(values []float64) string
+func NewCanvas(w, h int) *Canvas
 func Plot(series []Series, o PlotOptions, t theme.Theme) string
 func Sparkline(values []float64) string
 func SparklineWith(values []float64, t theme.Theme) string
 type BarItem struct {
 	Label	string
 	Value	float64
+}
+type Canvas struct {
+	// contains filtered or unexported fields
 }
 type PlotOptions struct {
 	Width, Height	int
@@ -4567,12 +4663,15 @@ type PlotOptions struct {
 	Legend	bool
 }
 type Series struct {
+	Kind	SeriesKind
+
 	Name	string
 
 	Values	[]float64
 
 	Color	ansi.Color
 }
+type SeriesKind int
 
 ## github.com/ows4444/tui/wizard (package wizard)
 

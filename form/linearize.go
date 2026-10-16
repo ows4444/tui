@@ -38,6 +38,9 @@ func (m Model) Linearize() string {
 	lo, hi := m.span()
 	for i := lo; i < hi; i++ {
 		line := m.inputs[i].linearize()
+		if d := m.inputs[i].desc; d != "" {
+			line += ", " + d
+		}
 		if m.errs[i] != "" {
 			line += ", error: " + m.errs[i]
 		}

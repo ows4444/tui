@@ -25,6 +25,7 @@ import (
 // "\r\n" to keep the sweep positioned for the next row.
 func (p *Program) render() {
 	p.publishKeymap()
+	p.applyViewState()
 	// Any render satisfies a throttled one still waiting.
 	p.stopFlushTimer()
 	if p.accessible {

@@ -90,7 +90,38 @@ uses it whenever the direct path is unavailable:
 - when the terminal size is unknown
 - once an inline frame has scrolled rows into scrollback
 
-`examples/canvas` is a `CellDrawer` widget.
+`examples/canvas` is a `CellDrawer` widget. Of the library's components,
+`viewport`, `logview`, `virtuallist`, `textarea`, `streamtext`, `datatable`,
+`picker`, `multiselect`, `treeview`, `spinner`, `tabs`, `menu` and `filepicker`
+implement it; each has a test
+that its cells equal its `View`'s. The rest are composed with `DrawView`, which
+parses their string. `textinput` does not, on purpose: wrappers such as `passwordinput` embed it and
+override `View` to mask the value, and a promoted `DrawCells` would draw the
+unmasked text past their `View`. A model that embeds a component and
+overrides `View` must override `DrawCells` too. A new component should
+implement `DrawCells` when it draws many rows, and use `internal/celldraw.StyleID` to turn an `ansi.Style` into a
+cell style.
+
+## Which renderer
+
+The cell renderer is the renderer. `WithCellRenderer(false)` selects the line
+renderer, which is also what the cell renderer falls back to for a frame it
+cannot draw (taller than the terminal, an unrepresentable row, see above), so
+it stays in the code. Measured on one laptop (Go 1.27, 80x24, a frame whose
+values change every time):
+
+| | line renderer | cell renderer |
+|---|---|---|
+| bytes written per changing frame | 2,004 | 202 |
+| CPU per changing frame | 98 µs, 288 allocs | 125 µs, 280 allocs |
+| full repaint (resize) | 96 µs | 94 µs |
+| first frame | 2,487 bytes | 2,467 bytes |
+
+The cell renderer pays about a quarter more CPU to write a tenth of the bytes,
+which is the right trade on a terminal over a network and costs nothing a
+person can see locally. `TestCellRendererWritesFarFewerBytesThanTheLineRenderer`
+keeps the byte figure from regressing. Use `WithCellRenderer(false)` to compare,
+or to rule the renderer out when debugging, not to ship.
 
 ## Frame budget
 

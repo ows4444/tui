@@ -329,7 +329,11 @@ func WithFrameLog(w io.Writer) ProgramOption {
 }
 
 // WithCellRenderer selects the cell-buffer renderer, which is the default
-// (WithCellRenderer(false) selects the line renderer).
+// (WithCellRenderer(false) selects the line renderer). The cell renderer is
+// the renderer: it writes about a tenth of the bytes of the line renderer for a
+// frame whose values change. The line renderer stays as the fallback the cell
+// renderer uses for a frame it cannot draw, so false is for comparing and for
+// debugging, not a mode to ship in.
 // Each frame's View is parsed once into a grid of cells and only
 // the cells that changed are written, with relative cursor movement, which
 // writes fewer bytes than rewriting whole changed rows. The screen it

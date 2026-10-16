@@ -30,7 +30,10 @@ func (n formNode) Measure(c layout.Constraints) layout.Size {
 	lo, hi := n.m.span()
 	for i := lo; i < hi; i++ {
 		w := n.child(i).Measure(layout.Unconstrained()).W
-		size.H++
+		size.H += n.m.inputs[i].rows(n.m.themed())
+		if d := n.m.inputs[i].desc; d != "" {
+			w = max(w, 2+ansi.Width(d))
+		}
 		if e := n.m.errs[i]; e != "" {
 			w = max(w, 2+ansi.Width(e))
 			size.H++
@@ -52,7 +55,15 @@ func (n formNode) Render(s layout.Size) string {
 	focusEnd := 0 // index of the last row belonging to the focused field
 	lo, hi := n.m.span()
 	for i := lo; i < hi; i++ {
-		rows = append(rows, n.child(i).Render(layout.Size{W: s.W, H: 1}))
+		in := n.m.inputs[i]
+		body := 1
+		if in.kind == FieldMultiSelect || in.kind == FieldTextArea {
+			body = strings.Count(in.view(n.m.themed()), "\n") + 1
+		}
+		rows = append(rows, strings.Split(n.child(i).Render(layout.Size{W: s.W, H: body}), "\n")...)
+		if d := in.descLine(); d != "" {
+			rows = append(rows, layout.Block(d).Render(layout.Size{W: s.W, H: 1}))
+		}
 		if e := n.m.errs[i]; e != "" {
 			rows = append(rows, layout.Block("  "+errStyle.Render(e)).Render(layout.Size{W: s.W, H: 1}))
 		}

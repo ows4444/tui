@@ -202,3 +202,148 @@ for _, h := range r.Hints("") {
 
 Source: `Example`, `keymap/example_test.go`. The second binding is still
 registered. `Add` reports the conflict and returns a non-nil error.
+
+## Ask one question without writing a Model
+
+`prompt` runs a small inline program, asks, and returns the answer. Esc or
+Ctrl+C returns `prompt.ErrCanceled`.
+
+```go
+name, err := prompt.Input("Your name:")
+ok, err := prompt.Confirm("Deploy?", false)
+i, err := prompt.Select("Region:", []string{"eu", "us", "ap"}) // typing narrows
+```
+
+Here the keys come from a string and the output is discarded, as a test would
+do; the answer is the same one a person types.
+
+```go
+keys := tui.WithInput(strings.NewReader("ap\r"))
+out := tui.WithOutput(io.Discard)
+
+i, _ := prompt.Select("Region:", []string{"eu", "us", "ap"},
+	prompt.Config{Program: []tui.ProgramOption{keys, out}})
+fmt.Println(i)
+// Output: 2
+```
+
+Source: `ExampleSelect`, `prompt/example_test.go`.
+
+## Narrow a list as you type
+
+Set `Filter` on a `picker`, `multiselect` or `treeview`. Typed keys that no
+binding uses go to a query line; matches stay, best first, with the matched
+letters underlined. Esc clears the query.
+
+```go
+m := picker.NewStrings("Go", "Rust", "Zig", "TypeScript")
+m.Filter = true
+for _, r := range "rs" {
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: string(r), Code: r})
+}
+fmt.Println(m.Query(), m.Highlighted().Label)
+// Output: rs Rust
+```
+
+Source: `ExampleModel_filter`, `picker/example_test.go`. The matching is the
+`fuzzy` package, which you can use on its own: `fuzzy.Find(query, n, text)`.
+
+## A form in steps, with a step that can be skipped
+
+`form.NewGroups` shows one group at a time. Enter checks the group and moves
+on, and a group's `Hide` is asked with every value entered so far.
+
+```go
+m := form.NewGroups(
+	form.Group{Title: "Account", Fields: []form.Field{
+		{Name: "email", Label: "Email", Value: "ada@example.com", Validators: []form.Validator{form.Required()}},
+	}},
+	form.Group{Title: "Company", Fields: []form.Field{
+		{Name: "company", Label: "Company", Validators: []form.Validator{form.Required()}},
+	}, Hide: func(v map[string]string) bool { return v["email"] != "" }},
+	form.Group{Title: "Done", Fields: []form.Field{
+		{Name: "terms", Label: "Accept terms", Kind: form.FieldCheckbox},
+	}},
+)
+m.Focus()
+m, _ = m.Update(tui.Key{Type: tui.KeyEnter}) // Account is valid; Company is hidden
+_, cmd := m.Update(tui.Key{Type: tui.KeyEnter}) // the last group submits
+fmt.Println(cmd().(form.SubmittedMsg).Values)
+// Output: map[email:ada@example.com terms:false]
+```
+
+Source: `ExampleNewGroups`, `form/example_test.go`. A `SelectOf[T]` field carries a
+typed value, read back with `form.Value[T](m, name)`; `Field.OptionsFunc`
+computes a select's options from the other fields.
+
+## Sort and filter a table
+
+`datatable` sorts by a column (`s` on the current column, or `SortBy` from
+code), puts the rows back with `ClearSort` (`S`), and with `Filter` on, `/`
+opens a filter line. `SourceRow` maps a shown row to the row you gave it.
+
+```go
+m := datatable.New(
+	[]string{"Name", "City"},
+	[][]string{{"Carol", "Lahore"}, {"alice", "Tokyo"}, {"Bob", "Lahore"}},
+)
+m.Filter = true
+m.SortBy(0, false)
+m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "/"})
+for _, r := range "lah" {
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: string(r)})
+}
+for i, row := range m.Rows {
+	fmt.Println(row[0], "was row", m.SourceRow(i))
+}
+// Output:
+// Bob was row 2
+// Carol was row 0
+```
+
+Source: `ExampleModel_filter`, `datatable/example_test.go`.
+
+## Line numbers and a cursor position in a text area
+
+```go
+m := textarea.New()
+m.ShowLineNumbers = true
+m.SetValue("first\nsecond")
+m.SetCursorPosition(0, 5)
+m.InsertString("!")
+fmt.Println(m.Line(), m.Column(), m.LineCount())
+fmt.Println(ansi.StripANSI(m.View()))
+// Output:
+// 0 6 2
+// 1 first!
+// 2 second
+```
+
+Source: `ExampleModel_ShowLineNumbers`, `textarea/example_test.go`. The number
+column is extra width: `Width` still counts the text only.
+
+## Several series on one chart
+
+`chart.Plot` draws lines on shared, labelled axes with a legend. Series are
+told apart by colour, so give each a `Name` and set `Legend`.
+
+```go
+s := []chart.Series{
+	{Name: "requests", Values: []float64{10, 40, 30, 80, 60, 100}},
+}
+out := chart.Plot(s, chart.PlotOptions{
+	Width: 16, Height: 5, YTicks: 3,
+	XLabels: []string{"00:00", "12:00"}, Legend: true,
+}, theme.DarkTheme())
+// 100─              ⡠⠊
+//    │        ⡰⠑⠢⣀⢀⠔⠁
+//  55─       ⡰⠁   ⠁
+//    │  ⡠⠒⠤⢄⡰⠁
+//  10─⡠⠊
+//    ─────────────────
+//     00:00      12:00
+//     ● requests
+```
+
+Source: `ExamplePlot`, `widgets/chart/plot_test.go`. `chart.LinearizePlot` gives
+the same data as text for accessible output.

@@ -48,9 +48,11 @@ model has to return `tui.Quit()` itself. Key decoding is covered in
 A model can implement optional interfaces that the Program looks for:
 `CursorPlacer` or `CursorProvider` for the hardware cursor, `Linearizer` for
 accessible output ([accessibility.md](accessibility.md)), `Themeable` for
-`WithTheme`, and `CellDrawer` for direct cell drawing. A model that wraps
+`WithTheme`, `CellDrawer` for direct cell drawing, and `ViewStater` to state
+the alternate screen, mouse mode and window title beside `View` (a nil field
+leaves that mode as the options and Cmds set it). A model that wraps
 another model can implement `Unwrapper`, and the Program then looks for the
-cursor interfaces, `Linearizer` and `Themeable` on the wrapped model too.
+cursor interfaces, `Linearizer`, `ViewStater` and `Themeable` on the wrapped model too.
 Themeable also needs the wrapper to implement `Rewrapper`. `CellDrawer` is
 used only on the root model itself.
 
@@ -96,6 +98,7 @@ goes to `Update`. A nil Cmd does nothing.
 | `Println(text)`, `Eprintln(text)` | Write text above the live region, into scrollback (see below) |
 | `Suspend(fn)` | Hands the terminal back while `fn` runs (see below) |
 | `EnableMouse(mode)`, `EnterAltScreen()`, `ExitAltScreen()`, `ClearScreen()` | Change a terminal mode while running |
+| `SetProgress(state, percent)` | Show a progress bar in the terminal's tab or taskbar (OSC 9;4); removed on exit |
 | `SetWindowTitle(s)`, `SetCursorShape(s)` | Both are undone on every exit path |
 | `ReadClipboard()` | Asks the terminal for the clipboard over OSC 52; many terminals refuse, so no reply may come |
 | `Announce(text)`, `AnnounceWith(text, level)` | See [accessibility.md](accessibility.md) |

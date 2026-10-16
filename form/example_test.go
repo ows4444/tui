@@ -100,3 +100,17 @@ func ExampleSelectOf() {
 	fmt.Println(size, m.Values()["city"])
 	// Output: 10 Tokyo
 }
+
+// A multi-select and a text area in a form, with a line of help under a field.
+// Enter adds a line in the text area, so Ctrl+S submits from inside it.
+func ExampleSelected() {
+	m := form.New(
+		form.Field{Name: "tags", Label: "Tags", Kind: form.FieldMultiSelect,
+			Options: []string{"go", "tui", "docs"}, Value: "tui", Description: "Space ticks"},
+		form.Field{Name: "notes", Label: "Notes", Kind: form.FieldTextArea, Height: 3},
+	)
+	m.Focus()
+	m, _ = m.Update(tui.Key{Type: tui.KeySpace}) // ticks "go", the first option
+	fmt.Println(form.Selected(m, "tags"), m.Values()["tags"])
+	// Output: [go tui] go,tui
+}

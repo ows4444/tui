@@ -26,3 +26,26 @@ func Example() {
 	//   plum   8
 	// cursor row: 1
 }
+
+// Sort by a column from code, then narrow the rows with the filter: "/" opens
+// the filter line, typed text keeps the rows that fuzzy-match, and SourceRow
+// says which of the rows you passed in a shown row is.
+func ExampleModel_filter() {
+	m := datatable.New(
+		[]string{"Name", "City"},
+		[][]string{{"Carol", "Lahore"}, {"alice", "Tokyo"}, {"Bob", "Lahore"}},
+	)
+	m.Filter = true
+	m.SortBy(0, false) // Bob, Carol, alice: capitals first, as bytes compare
+
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "/"})
+	for _, r := range "lah" {
+		m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: string(r)})
+	}
+	for i, row := range m.Rows {
+		fmt.Println(row[0], "was row", m.SourceRow(i))
+	}
+	// Output:
+	// Bob was row 2
+	// Carol was row 0
+}

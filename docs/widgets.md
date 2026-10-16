@@ -80,7 +80,7 @@ in `examples/` that imports the package.
 | [errorretry](../errorretry) | An error with retry (Enter or `r`, up to `MaxRetries`) and dismiss (Esc). Experimental | yes | |
 | [faces](../faces) | A catalog of 50 ready-made animated Braille characters and a widget that plays them. For a picture derived from a name, see avatar. Experimental | | `examples/faces` |
 | [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes  `examples/pickers` |
-| [form](../form) | A validating column of labelled fields with Submit, optionally in titled groups shown one at a time | yes | `examples/login`, `examples/signup` |
+| [form](../form) | A validating column of labelled fields (text, select, checkbox, multi-select, text area) with Submit, optionally in titled groups shown one at a time | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
 | [hovercard](../hovercard) | An overlay with a title and a body, drawn under its target while the pointer is on the target or the card; Esc closes it. Experimental | | `examples/gallery` |
 | [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |

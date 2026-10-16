@@ -150,11 +150,14 @@ func (n tableNode) Render(s layout.Size) string {
 		rows = append(rows, cells)
 	}
 
+	noop := func() {}
+	rows = m.styleCells(rows, start, &noop)
+
 	headerStyle := ansi.NewStyle().Bold().Foreground(m.themed().Primary)
 	dividerStyle := ansi.NewStyle().Foreground(m.themed().Muted)
 	cursorStyle := m.themed().ResolvedStates().Selected.Bold()
 	out := widgets.TableRowsWith(headers, rows, headerStyle, dividerStyle, func(i int) ansi.Style {
-		if start+i == m.cursor {
+		if !m.CellMode && start+i == m.cursor {
 			return cursorStyle
 		}
 		return ansi.Style{}

@@ -111,6 +111,7 @@ type RowFallback struct {
 }
 
 type Cells struct {
+	gridMemo  // the style gridRow resolved last (grid.go)
 	styles    []cellStyle
 	ids       map[cellStyle]uint16
 	links     []string // raw OSC 8 sequences (with terminator); links[0] unused
@@ -160,6 +161,7 @@ func New() *Cells {
 }
 
 func (c *Cells) resetStyles() {
+	c.gridHave = false
 	clear(c.trans)
 	c.clusters = c.clusters[:0]
 	c.clusterIDs = map[string]uint32{}

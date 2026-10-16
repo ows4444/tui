@@ -6,12 +6,26 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
-	"github.com/ows4444/tui/internal/braille"
 	"github.com/ows4444/tui/theme"
 )
 
-// Series is one line of a Plot.
+// SeriesKind is how a Series is drawn.
+type SeriesKind int
+
+const (
+	// Line joins the points with straight lines. It is the zero value.
+	Line SeriesKind = iota
+	// Scatter draws each point alone.
+	Scatter
+	// Bars draws a column from the bottom of the plot (or from zero, when the
+	// y range includes it) up to each value.
+	Bars
+)
+
+// Series is one line, set of points or set of bars of a Plot.
 type Series struct {
+	// Kind is how the values are drawn; the zero value is Line.
+	Kind SeriesKind
 	// Name labels the series in the legend and in Linearize.
 	Name string
 	// Values are plotted left to right, evenly spaced. NaN and infinite
@@ -65,21 +79,21 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 
 	dotCols, dotRows := o.Width*2, o.Height*4
 	palette := []ansi.Color{t.Primary, t.Secondary, t.Success, t.Warning, t.Error, t.Info}
-
-	// cells[row][col] is the dot pattern and the topmost series that has one.
-	type cell struct {
-		pattern rune
-		series  int
-	}
-	cells := make([][]cell, o.Height)
-	for r := range cells {
-		cells[r] = make([]cell, o.Width)
-		for c := range cells[r] {
-			cells[r][c].series = -1
+	color := func(si int) ansi.Color {
+		if c := series[si].Color; c != nil {
+			return c
 		}
+		return palette[si%len(palette)]
+	}
+
+	canvas := NewCanvas(o.Width, o.Height)
+	// Bars rise from the bottom of the plot, or from zero when the range
+	// includes it.
+	base := dotRows - 1
+	if lo < 0 && hi > 0 {
+		base = int((1-(0-lo)/(hi-lo))*float64(dotRows-1) + 0.5)
 	}
 	for si, s := range series {
-		lit := make(map[[2]int]bool)
 		prevX, prevY, have := 0, 0, false
 		for i, v := range s.Values {
 			if !finite(v) {
@@ -90,25 +104,27 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 			if n > 1 {
 				x = i * (dotCols - 1) / (n - 1)
 			}
-			frac := (v - lo) / (hi - lo)
-			frac = math.Min(math.Max(frac, 0), 1)
+			frac := math.Min(math.Max((v-lo)/(hi-lo), 0), 1)
 			y := int((1-frac)*float64(dotRows-1) + 0.5)
-			if have {
-				plotLine(lit, prevX, prevY, x, y)
-			} else {
-				lit[[2]int{x, y}] = true
+			switch s.Kind {
+			case Scatter:
+				canvas.Set(x, y, color(si))
+			case Bars:
+				canvas.Line(x, base, x, y, color(si))
+				if x+1 < dotCols {
+					canvas.Line(x+1, base, x+1, y, color(si))
+				}
+			default:
+				if have {
+					canvas.Line(prevX, prevY, x, y, color(si))
+				} else {
+					canvas.Set(x, y, color(si))
+				}
 			}
 			prevX, prevY, have = x, y, true
 		}
-		for p := range lit {
-			c, r := p[0]/2, p[1]/4
-			if c < 0 || c >= o.Width || r < 0 || r >= o.Height {
-				continue
-			}
-			cells[r][c].pattern |= braille.Bit[p[0]%2][p[1]%4]
-			cells[r][c].series = si
-		}
 	}
+	plotRows := canvas.Rows(t)
 
 	// y axis labels.
 	k := o.YTicks
@@ -134,14 +150,6 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 	axisV, axisH := g.RuleV, g.RuleH
 	tick, corner := axisH, axisH
 	muted := ansi.NewStyle().Foreground(t.Muted)
-	color := func(si int) ansi.Style {
-		s := series[si]
-		c := s.Color
-		if c == nil {
-			c = palette[si%len(palette)]
-		}
-		return ansi.NewStyle().Foreground(c)
-	}
 
 	var b strings.Builder
 	for r := 0; r < o.Height; r++ {
@@ -152,14 +160,7 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 		} else {
 			b.WriteString(muted.Render(axisV))
 		}
-		for c := 0; c < o.Width; c++ {
-			ce := cells[r][c]
-			if ce.series < 0 {
-				b.WriteByte(' ')
-				continue
-			}
-			b.WriteString(color(ce.series).Render(braille.DotCell(ce.pattern, g)))
-		}
+		b.WriteString(plotRows[r])
 		b.WriteByte('\n')
 	}
 	b.WriteString(strings.Repeat(" ", labelW) + muted.Render(corner+strings.Repeat(axisH, o.Width)))
@@ -190,7 +191,7 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 		var parts []string
 		for si, s := range series {
 			if s.Name != "" {
-				parts = append(parts, color(si).Render(g.Dot)+" "+s.Name)
+				parts = append(parts, ansi.NewStyle().Foreground(color(si)).Render(g.Dot)+" "+s.Name)
 			}
 		}
 		if len(parts) > 0 {

@@ -1,0 +1,30 @@
+name: Bug report
+description: Something does not work as the documentation says
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Smallest program that shows it
+      description: A `tuitest` test is ideal, because anyone can run it without a terminal.
+      render: go
+  - type: input
+    id: version
+    attributes:
+      label: tui version
+      description: The output of `go list -m github.com/ows4444/tui`.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Go version, OS and terminal
+      placeholder: go1.26, macOS 15, iTerm2 3.5
+    validations:
+      required: true
