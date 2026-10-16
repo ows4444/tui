@@ -15,7 +15,9 @@ func (m Model) LayoutNode() layout.Node {
 	}
 	title := m.themed().ResolvedTypography().H2
 	children := []layout.FlexChild{{Node: layout.StyledText(ansi.Clean(m.Raw, m.Title), title, false)}}
-	if m.Message != "" {
+	if len(m.MessageText) > 0 {
+		children = append(children, layout.FlexChild{Node: layout.Block("")}, layout.FlexChild{Node: layout.RichText(m.MessageText, true)})
+	} else if m.Message != "" {
 		children = append(children, layout.FlexChild{Node: layout.Block("")}, layout.FlexChild{Node: layout.StyledText(ansi.Clean(m.Raw, m.Message), ansi.Style{}, true)})
 	}
 	return layout.BoxNode(layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(1), layout.Column(0, children...))

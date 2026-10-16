@@ -254,3 +254,32 @@ func trimTrailingSpaces(a []atom) []atom {
 	}
 	return a
 }
+
+// WrapString renders the text wrapped to width columns (see Wrap) as one styled
+// string, lines joined with "\n". A width under 1 renders it unwrapped, as
+// String does.
+func (t Text) WrapString(width int) string {
+	if width < 1 {
+		return t.String()
+	}
+	lines := t.Wrap(width)
+	out := make([]string, len(lines))
+	for i, l := range lines {
+		out[i] = l.String()
+	}
+	return strings.Join(out, "\n")
+}
+
+// WithDefault returns t with style given to every span that has none, so text
+// built without styles takes a surrounding colour while spans that set their own
+// keep it.
+func (t Text) WithDefault(style Style) Text {
+	out := make(Text, len(t))
+	for i, sp := range t {
+		if sp.Style == (Style{}) {
+			sp.Style = style
+		}
+		out[i] = sp
+	}
+	return out
+}

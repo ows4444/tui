@@ -16,6 +16,10 @@ func (m Model) LayoutNode() layout.Node {
 	rows := make([]layout.FlexChild, len(m.Notifications))
 	for i, n := range m.Notifications {
 		style := ansi.NewStyle().Foreground(n.Variant.Color(m.themed()))
+		if len(n.Text) > 0 {
+			rows[i] = layout.FlexChild{Node: layout.RichText(n.Text.WithDefault(style), true)}
+			continue
+		}
 		rows[i] = layout.FlexChild{Node: layout.StyledText(ansi.Clean(m.Raw, n.Message), style, true)}
 	}
 	return layout.BoxNode(layout.NewBox().Border(m.themed().Border).BorderColor(m.themed().BorderColor).PaddingAll(1), layout.Column(0, rows...))

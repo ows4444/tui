@@ -12,6 +12,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Styled text as data in three overlays: `dialog.Model.MessageText`,
+  `notificationcenter.Notification.Text` and `hovercard.Model.ContentText` take an
+  `ansi.Text`. When set it is shown instead of the string field, wrapped at
+  `Width` with each span keeping its style (a notification's unstyled spans take
+  the variant's colour), and `Linearize` and `LayoutNode` follow it. The string
+  fields work as before. `ansi.Text` gains `WrapString` and `WithDefault`.
 - `ansi.Span` and `ansi.Text`: styled text as data. A `Text` is a list of spans
   that can be measured (`Width`, `Height`), cut (`Slice`, `Truncate`), wrapped at
   spaces (`Wrap`, which cuts a word wider than the line) and rendered (`String`),
