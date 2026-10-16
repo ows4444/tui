@@ -196,6 +196,7 @@ every widget implements `Linearize` for accessible mode; tests in
 | `radiogroup` | A set of options of which exactly one is chosen; the arrow keys move and choose | Experimental |
 | `slider` | A value in a range, set by moving a thumb along a track with keys or the pointer | Experimental |
 | `rating` | A score out of a small maximum, as a row of filled and empty marks | Experimental |
+| `hexview` | Bytes as a hex dump with an offset, an ASCII gutter, a cursor, a selection you copy as hex, and the mouse | Experimental |
 | `checkbox` | One box that is checked, unchecked or partly checked, with a label | Experimental |
 | `toggle` | An on/off switch with a label | Experimental |
 | `otpinput` | A short code typed one character to a cell, such as a one-time password | Experimental |

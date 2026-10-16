@@ -31,6 +31,7 @@ import (
 	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
+	"github.com/ows4444/tui/hexview"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/hovercard"
 	tuiimage "github.com/ows4444/tui/imageview"
@@ -214,6 +215,11 @@ var conformance = map[string]func() map[string]string{
 	"popover": func() map[string]string {
 		m := popover.New(evil, 2, 2)
 		return map[string]string{"Render": m.Render(strings.Repeat(strings.Repeat(".", 50)+"\n", 8))}
+	},
+	"hexview": func() map[string]string {
+		m := hexview.New(append([]byte{'.'}, evil...)) // the cursor styles the first byte, so MARK starts after it
+		m.BytesPerRow = 64                             // one row, so the gutter holds MARK and END whole
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"radiogroup": func() map[string]string {
 		m := radiogroup.New(evil, evil)

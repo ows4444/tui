@@ -49,6 +49,7 @@ const (
 	ComponentForm               = "form"
 	ComponentHoverCard          = "hovercard"
 	ComponentHelpScreen         = "helpscreen"
+	ComponentHexView            = "hexview"
 	ComponentImageView          = "imageview"
 	ComponentLoadingBar         = "loadingbar"
 	ComponentMarkdown           = "markdown"
@@ -91,7 +92,7 @@ func Components() []string {
 		ComponentConfirm, ComponentContextMenu, ComponentDataTable,
 		ComponentDatePicker, ComponentDialog, ComponentDrawer,
 		ComponentErrorRetry, ComponentFaces, ComponentFilePicker,
-		ComponentForm, ComponentHelpScreen, ComponentHoverCard, ComponentImageView,
+		ComponentForm, ComponentHelpScreen, ComponentHexView, ComponentHoverCard, ComponentImageView,
 		ComponentLoadingBar, ComponentMarkdown, ComponentMaskedInput, ComponentMenu,
 		ComponentMenuBar, ComponentMultiSelect, ComponentNotificationCenter,
 		ComponentOTPInput, ComponentPagination, ComponentPasswordInput, ComponentPicker, ComponentPopover,

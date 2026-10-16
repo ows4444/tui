@@ -29,6 +29,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   box, from one colour at the top-left corner to another half way round and back,
   so the loop has no seam. It changes no dimensions and takes precedence over
   `BorderColor`.
+- `hexview` (experimental): bytes as a hex dump with an offset column, hex in
+  groups, an ASCII gutter, a cursor, a selection copied as hex (`v` then `y`),
+  scrolling with `Height`, and mouse click, drag and wheel with `Mouse` on.
 
 ### Changed
 
