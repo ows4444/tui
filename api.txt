@@ -4432,6 +4432,7 @@ type TB interface {
 ## github.com/ows4444/tui/viewport (package viewport)
 
 func (m *Model) AppendLine(s string)
+func (m *Model) ClearSelection()
 func (m *Model) GotoBottom()
 func (m *Model) GotoTop()
 func (m *Model) HalfPageDown()
@@ -4445,6 +4446,7 @@ func (m *Model) PageDown()
 func (m *Model) PageUp()
 func (m *Model) PrevMatch() bool
 func (m *Model) Search(q string) int
+func (m *Model) SelectAll()
 func (m *Model) SetContent(s string)
 func (m *Model) TrimFront(max int) int
 func (m Model) AtBottom() bool
@@ -4458,6 +4460,7 @@ func (m Model) Linearize() string
 func (m Model) MatchCount() int
 func (m Model) ScrollPercent() float64
 func (m Model) SearchQuery() string
+func (m Model) SelectedText() string
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
 func DefaultKeyMap() KeyMap
@@ -4472,6 +4475,8 @@ type KeyMap struct {
 
 	NextMatch	keymap.Binding
 	PrevMatch	keymap.Binding
+
+	Copy	keymap.Binding
 }
 type Model struct {
 	Width	int
@@ -4482,6 +4487,12 @@ type Model struct {
 	KeyMap	KeyMap
 
 	SoftWrap	bool
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+
+	SelectionStyle	ansi.Style
 	// contains filtered or unexported fields
 }
 

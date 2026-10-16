@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/cellbuf"
+	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/keymap"
 )
 
@@ -51,6 +52,18 @@ type Model struct {
 	query  string
 	cur    matchRef
 	curSet bool
+
+	// Mouse, when true, lets the pointer select text: press and drag across the
+	// content, then Copy (or SelectedText) takes it. The wheel scrolls either
+	// way. Off by default.
+	Mouse bool
+	// Bounds is the screen rectangle where the app draws the viewport; presses
+	// outside it do not start a selection. The app sets it each frame it moves.
+	Bounds hittest.Rect
+	// SelectionStyle styles the selected text; the zero value is reverse video.
+	SelectionStyle ansi.Style
+
+	sel selection
 }
 
 // New returns a Model sized to width x height. Content is set separately
@@ -73,6 +86,10 @@ type KeyMap struct {
 	// not part of Bindings, which lists the scroll actions.
 	NextMatch keymap.Binding
 	PrevMatch keymap.Binding
+
+	// Copy returns the selected text as a tui.WriteClipboard Cmd. When empty it
+	// defaults to "y". It is not part of Bindings.
+	Copy keymap.Binding
 }
 
 // DefaultKeyMap returns the keys a Model used before KeyMap existed.
@@ -87,6 +104,7 @@ func DefaultKeyMap() KeyMap {
 
 		NextMatch: defaultNextMatch(),
 		PrevMatch: defaultPrevMatch(),
+		Copy:      keymap.NewBinding("copy selection", "y"),
 	}
 }
 
@@ -225,11 +243,13 @@ func (m *Model) TrimFront(max int) int {
 		dropped = rowsBefore - len(m.vrows())
 	}
 	compact := m.head > m.LineCount()
+	m.sel = m.sel.afterTrim(m.head)
 	if compact {
 		if m.curSet {
 			m.cur.line -= m.head
 			m.curSet = m.cur.line >= 0
 		}
+		m.sel = m.sel.shift(m.head)
 		m.lines = append([]string(nil), m.lines[m.head:]...)
 		m.head = 0
 		m.maxLineWidth = 0
@@ -323,7 +343,13 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		if len(next.Keys) == 0 && len(prev.Keys) == 0 {
 			next, prev = defaultNextMatch(), defaultPrevMatch()
 		}
+		copyKey := km.Copy
+		if len(copyKey.Keys) == 0 {
+			copyKey = keymap.NewBinding("copy selection", "y")
+		}
 		switch {
+		case m.sel.active && keymap.Matches(msg, copyKey):
+			return m, tui.WriteClipboard(m.SelectedText())
 		case m.query != "" && keymap.Matches(msg, next):
 			m.NextMatch()
 		case m.query != "" && keymap.Matches(msg, prev):
@@ -350,6 +376,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 				m.LineDown(3)
 			}
 		}
+		m = m.updateSelection(msg)
 	}
 	return m, nil
 }
@@ -405,7 +432,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 			break
 		}
 		var line string
-		if m.wrapOn() || m.query != "" {
+		if m.wrapOn() || m.query != "" || m.sel.active {
 			line = m.paint(vr, y)
 		} else {
 			line = m.lines[m.head+y]

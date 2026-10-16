@@ -372,3 +372,25 @@ one choice per line, and `spin` runs a command under a spinner, shows its
 output only if it fails, and exits with its code. Esc or Ctrl+C exits with 130
 and prints nothing. Source: `cmd/tui/prompt.go`; in a Go program call `prompt`
 directly.
+## Select and copy text in a viewport
+
+Terminals lose their own text selection once an app turns the mouse on. A
+viewport brings it back inside the app: with `Mouse` on and `Bounds` set to where
+it is drawn, a press and drag selects across lines (following soft wrap and
+scrolling at the edges), the `Copy` key (`y`) puts the selection on the clipboard
+with OSC 52, and `SelectedText` returns it as plain text.
+
+```go
+m := viewport.New(20, 3)
+m.Mouse = true
+m.Bounds = hittest.Rect{W: 20, H: 3}
+// ... after a drag from (6,0) to (4,1) over "alpha beta" and "gamma delta":
+fmt.Println(m.SelectedText())
+// Output:
+// beta
+// gamma
+```
+
+Source: `ExampleModel_SelectedText`, `viewport/example_test.go`. Clipboard writing
+is best effort: it needs a terminal that accepts OSC 52 (and `set-clipboard` in
+tmux).
