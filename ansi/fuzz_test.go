@@ -32,3 +32,21 @@ func FuzzStripANSI(f *testing.F) {
 		}
 	})
 }
+
+func FuzzTextWrap(f *testing.F) {
+	for _, s := range []string{"", "hello world", "a  b\n\nc", "世界 wide", "é 👨‍👩‍👧 x", "\x1b[31mred\x1b[0m"} {
+		f.Add(s, 3)
+	}
+	f.Fuzz(func(t *testing.T, s string, w int) {
+		w = (w%20+20)%20 + 1
+		text := NewText(s, NewStyle().Bold())
+		for _, l := range text.Wrap(w) {
+			if l.Width() > w && l.Width() > 2 {
+				t.Fatalf("line %q is %d wide, over %d", l.Plain(), l.Width(), w)
+			}
+			_ = l.String()
+		}
+		_ = text.Truncate(w).String()
+		_ = text.Slice(w/2, w).Width()
+	})
+}

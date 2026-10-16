@@ -276,3 +276,13 @@ func ExampleBox_BorderGradient() {
 	// │          │
 	// ╰──────────╯
 }
+
+// RichText lays out styled text held as data: it wraps to the width it is given
+// and each span keeps its style across the breaks.
+func ExampleRichText() {
+	t := ansi.NewText("plain ", ansi.Style{}).Append("bold words here", ansi.NewStyle().Bold())
+	fmt.Println(ansi.StripANSI(layout.RichText(t, true).Render(layout.Size{W: 10, H: 2})))
+	// Output:
+	// plain bold
+	// words here
+}

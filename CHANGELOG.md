@@ -12,6 +12,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `ansi.Span` and `ansi.Text`: styled text as data. A `Text` is a list of spans
+  that can be measured (`Width`, `Height`), cut (`Slice`, `Truncate`), wrapped at
+  spaces (`Wrap`, which cuts a word wider than the line) and rendered (`String`),
+  with each piece keeping its style and nothing parsed back out of an escape
+  sequence. Text is sanitised when built, so a span cannot carry control codes.
+  `cellbuf.Buffer.SetText` writes one straight into the cell grid, and
+  `layout.RichText(t, wrap)` lays it out as a `Node`.
 - `layout.Box.BorderGradient(from, to)`: the border blends cell by cell around the
   box, from one colour at the top-left corner to another half way round and back,
   so the loop has no seam. It changes no dimensions and takes precedence over
