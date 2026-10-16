@@ -15,6 +15,11 @@ import (
 // cells with an ellipsis, and when too short it pins the header and shows a
 // window of rows that keeps the cursor row visible. The cursor row keeps its
 // highlight; the Model is not changed.
+//
+// With FrozenCols set and the columns too wide for the Size, Render scrolls
+// them as View does, and does not shrink them: the frozen columns stay at the
+// left, and the others show from the column offset that keeps the current column
+// in sight.
 func (m Model) LayoutNode() layout.Node { return tableNode{m} }
 
 type tableNode struct{ m Model }
@@ -114,7 +119,23 @@ func (n tableNode) Render(s layout.Size) string {
 		return line + "\n" + tableNode{sub}.Render(below)
 	}
 	ellipsis := m.themed().GlyphSet().Ellipsis
-	widths := fitWidths(n.naturalWidths(), s.W-cursorGutter)
+	natural := n.naturalWidths()
+	cols := n.visibleCols(natural, s.W)
+	widths := natural
+	if len(cols) == len(natural) {
+		widths = fitWidths(natural, s.W-cursorGutter)
+	} else {
+		// Columns are scrolled, not shrunk: fit only the ones shown.
+		picked := make([]int, len(cols))
+		for i, c := range cols {
+			picked[i] = natural[c]
+		}
+		picked = fitWidths(picked, s.W-cursorGutter)
+		widths = append([]int(nil), natural...)
+		for i, c := range cols {
+			widths[c] = picked[i]
+		}
+	}
 
 	headers := make([]string, len(m.Headers))
 	for i, h := range m.Headers {
@@ -152,6 +173,9 @@ func (n tableNode) Render(s layout.Size) string {
 
 	noop := func() {}
 	rows = m.styleCells(rows, start, &noop)
+	if len(cols) != len(m.Headers) {
+		headers, rows = pickColumns(headers, rows, cols)
+	}
 
 	headerStyle := ansi.NewStyle().Bold().Foreground(m.themed().Primary)
 	dividerStyle := ansi.NewStyle().Foreground(m.themed().Muted)
@@ -163,4 +187,50 @@ func (n tableNode) Render(s layout.Size) string {
 		return ansi.Style{}
 	}, m.themed())
 	return layout.Block(strings.TrimRight(withGutter(out, start, m.cursor), "\n")).Render(s)
+}
+
+// visibleCols returns the columns Render draws at width w: all of them, unless
+// FrozenCols is set and they do not fit, when it is the frozen columns followed by
+// the scrolling ones from the offset that keeps the current column in sight (as
+// Update keeps it for View).
+func (n tableNode) visibleCols(natural []int, w int) []int {
+	m := n.m
+	all := make([]int, len(natural))
+	for i := range all {
+		all[i] = i
+	}
+	if m.frozen() == 0 || cursorGutter+sum(natural)+gap*(len(natural)-1) <= w {
+		return all
+	}
+	sub := m
+	sub.Width = w
+	f := sub.frozen()
+	off := max(sub.colOffset, f)
+	if sub.col >= f && sub.col < off {
+		off = sub.col
+	}
+	for off < sub.col && sub.col >= off+sub.fit(off) {
+		off++
+	}
+	sub.colOffset = off
+	return sub.colWindow()
+}
+
+// pickColumns keeps only the columns cols of the header and every row.
+func pickColumns(headers []string, rows [][]string, cols []int) ([]string, [][]string) {
+	h := make([]string, len(cols))
+	for i, c := range cols {
+		h[i] = headers[c]
+	}
+	out := make([][]string, len(rows))
+	for r, row := range rows {
+		cells := make([]string, len(cols))
+		for i, c := range cols {
+			if c < len(row) {
+				cells[i] = row[c]
+			}
+		}
+		out[r] = cells
+	}
+	return h, out
 }
