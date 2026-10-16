@@ -153,6 +153,10 @@ func (p *Program) ReducedMotion() bool
 func (p *Program) Run() (Model, error)
 func (p *Program) Send(msg Msg)
 func (p *Program) TrySend(msg Msg) bool
+func (t *Tasks) Cancel(key string)
+func (t *Tasks) CancelAll()
+func (t *Tasks) Running(key string) bool
+func (t *Tasks) Start(key string, fn CtxCmd) Cmd
 func Announce(text string) Cmd
 func AnnounceWith(text string, level AnnounceLevel) Cmd
 func Batch(cmds ...Cmd) Cmd
@@ -168,6 +172,7 @@ func FromCtx(fn CtxCmd) Cmd
 func Go(fn func(ctx context.Context) Msg) Cmd
 func LogToFile(path, prefix string) (*os.File, error)
 func NewProgram(m Model, opts ...ProgramOption) *Program
+func NewTasks() *Tasks
 func PasteCopied() Cmd
 func Println(text string) Cmd
 func Quit() Cmd
@@ -345,6 +350,14 @@ type Rewrapper interface {
 	Rewrap(inner Model) Model
 }
 type SuspendMsg struct{ Err error }
+type TaskDoneMsg struct {
+	Key		string
+	Msg		Msg
+	Canceled	bool
+}
+type Tasks struct {
+	// contains filtered or unexported fields
+}
 type Terminal interface {
 	IsTerminal() bool
 

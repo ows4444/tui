@@ -70,3 +70,16 @@ func (fullscreenModel) View() string                          { return "" }
 func (fullscreenModel) ViewState() tui.ViewState {
 	return tui.ViewState{AltScreen: new(true), Title: new("editing notes.txt")}
 }
+
+// A search box starts one task per keystroke under the same key: Tasks
+// cancels the run before it, so only the newest result is current.
+func ExampleTasks() {
+	tasks := tui.NewTasks()
+	cmd := tasks.Start("search", func(ctx context.Context) tui.Msg {
+		return "results for go"
+	})
+	msg := tui.RunCmd(context.Background(), cmd)
+	done := msg.(tui.TaskDoneMsg)
+	fmt.Println(done.Key, done.Msg, done.Canceled, tasks.Running("search"))
+	// Output: search results for go false false
+}

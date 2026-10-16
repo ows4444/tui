@@ -8,6 +8,16 @@ a minor release may remove or change exported identifiers; each one is a
 A removed or changed exported identifier needs a `- BREAKING:` entry under
 Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
+## [Unreleased]
+
+### Added
+
+- Community files: `SECURITY.md` (private reports through GitHub) and
+  `CODE_OF_CONDUCT.md`.
+- `Tasks`, `NewTasks` and `TaskDoneMsg`: background work by key. `Tasks.Start`
+  cancels the earlier run of the same key, so a search-as-you-type needs no
+  hand-written stale-result check; `Cancel`, `CancelAll` and `Running`.
+
 ## [1.0.0-rc.1] - 2026-10-16
 
 Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking
