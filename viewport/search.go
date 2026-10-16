@@ -100,7 +100,7 @@ func highlight(s string, rs []matchRef, cur int) string {
 // paint returns the text to draw for row i of the current mode (live line when
 // not wrapping, visual row when wrapping), before horizontal scrolling, with
 // search matches highlighted. vr is m.vrows() when wrapping.
-func (m Model) paint(vr []vrow, i int) string {
+func (m Model) paintSearch(vr []vrow, i int) string {
 	var text string
 	var idx, c0 int
 	if m.wrapOn() {

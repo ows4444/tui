@@ -60,6 +60,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   against 9.3 µs and 93 through `View` and parse. `passwordinput`, `maskedinput`
   and `inputgroup` define their own, through `View`, so a mask or a prefix is not
   bypassed (a test checks `passwordinput` never draws its secret).
+- Viewport text selection: with `Mouse` on, press and drag across the content,
+  `y` (the `Copy` key) copies the selection through `tui.WriteClipboard`;
+  `SelectedText`, `SelectAll` and `ClearSelection`. It follows soft wrap,
+  scrolls when dragged past the top or bottom, is drawn in `SelectionStyle`
+  (reverse video by default) over any search highlight, and `DrawCells` draws the
+  same cells. Set `Bounds` to where the viewport is drawn.
 
 ### Changed
 
