@@ -32,6 +32,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `hexview` (experimental): bytes as a hex dump with an offset column, hex in
   groups, an ASCII gutter, a cursor, a selection copied as hex (`v` then `y`),
   scrolling with `Height`, and mouse click, drag and wheel with `Mouse` on.
+- Seven more components in the Widget gallery, 48 in all: hex view, tooltip,
+  hover card, popover, menu bar, notification center and file picker.
 
 ### Changed
 
