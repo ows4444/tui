@@ -66,6 +66,11 @@ fmt.Printf("%q\n", s.Cell(2, 0).Grapheme)
 `tuitest.NewFakeClock` with `tuitest.WithClock` lets a test advance time by
 hand (`Session.Advance`) instead of waiting on the wall clock.
 `Session.Golden(t, name)` compares the screen with `testdata/<name>.golden`.
+`Session.SVG(tuitest.SVGOptions{Title: "..."})` draws the screen as a standalone
+SVG image (colours, bold, italic, underline, reverse, a title bar, an optional
+cursor), so a widget can be pictured in documentation or a pull request.
+Every glyph is placed at its own column, so the layout holds in any font. The
+emulator keeps one rune per cell, so a wide character takes one column.
 
 `Keys`, `Paste`, `Resize` and `Send` return once the model has received what
 they sent and the frame has settled. Output that a command or a tick draws

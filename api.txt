@@ -4385,6 +4385,7 @@ func (s *Session) Golden(t TB, name string)
 func (s *Session) Keys(keys ...string)
 func (s *Session) Paste(text string)
 func (s *Session) Resize(w, h int)
+func (s *Session) SVG(o SVGOptions) string
 func (s *Session) Screen() []string
 func (s *Session) Send(msg tui.Msg)
 func (s *Session) WaitForText(text string, timeout time.Duration) bool
@@ -4400,6 +4401,18 @@ type Cell struct {
 }
 type FakeClock struct {
 	// contains filtered or unexported fields
+}
+type SVGOptions struct {
+	Title	string
+
+	Foreground, Background	*ansi.RGB
+
+	Palette	*[16]ansi.RGB
+
+	FontFamily	string
+	FontSize	int
+
+	Cursor	bool
 }
 type Session struct {
 	// contains filtered or unexported fields

@@ -33,3 +33,13 @@ func Example() {
 	// > hi
 	// "h"
 }
+
+// SVG draws the screen as an image, for documentation or a pull request.
+func ExampleSession_SVG() {
+	s := tuitest.New(typer{}, 12, 2)
+	defer s.Close()
+	s.Keys("h", "i")
+	svg := s.SVG(tuitest.SVGOptions{Title: "typer"})
+	fmt.Println(strings.HasPrefix(svg, "<svg "), strings.Contains(svg, ">&gt;hi</text>") || strings.Contains(svg, ">&gt;</text>"))
+	// Output: true true
+}
