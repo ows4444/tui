@@ -97,6 +97,7 @@ goes to `Update`. A nil Cmd does nothing.
 | `Tick(d, fn)` | Waits `d`, then sends `fn(t)`. The wait ends with no message if Run returns first |
 | `Every(d, fn)` | Returns a Cmd that sends `fn(t)` every `d`, plus a cancel func; no tick arrives after cancel returns |
 | `FromCtx(fn)`, `Go(fn)` | Run `fn` with `Program.Context`, which is cancelled when Run returns |
+| `Map(cmd, f)`, `MapAs[T](cmd, f)` | Wrap the messages a child's Cmd produces (through `Batch`, `Sequence`, `FromCtx`, `Tick`, `Every`); `Quit`, `Println` and mode Cmds pass through |
 | `Tasks.Start(key, fn)` | Like `FromCtx`, by key: starting a key cancels its earlier run, and the result arrives as `TaskDoneMsg` (`Canceled` marks a stale one). `Cancel`, `CancelAll` and `Running` manage the set |
 | `Println(text)`, `Eprintln(text)` | Write text above the live region, into scrollback (see below) |
 | `Suspend(fn)` | Hands the terminal back while `fn` runs (see below) |

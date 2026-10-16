@@ -24,6 +24,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   its size through the input stream, so a resize is seen where no window-size
   signal arrives (over SSH, in some multiplexers). Both options are off by
   default, so no output changes unless asked for.
+- `Map` and `MapAs[T]`: wrap the messages of a child's Cmd, through `Batch`,
+  `Sequence`, `FromCtx`, `Tick` and `Every`, so a parent tags or converts them
+  without a hand-written envelope Cmd.
 - Four light themes: `CatppuccinLatteTheme`, `OneLightTheme`, `RosePineDawnTheme`
   and `GitHubLightTheme`. Text and Muted pass AA; the accents keep each palette's
   published values and some are paler than 4.5:1 (`Theme.Check` lists them).

@@ -171,6 +171,8 @@ func ExitAltScreen() Cmd
 func FromCtx(fn CtxCmd) Cmd
 func Go(fn func(ctx context.Context) Msg) Cmd
 func LogToFile(path, prefix string) (*os.File, error)
+func Map(cmd Cmd, f func(Msg) Msg) Cmd
+func MapAs[T any](cmd Cmd, f func(T) Msg) Cmd
 func NewProgram(m Model, opts ...ProgramOption) *Program
 func NewTasks() *Tasks
 func PasteCopied() Cmd

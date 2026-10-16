@@ -83,3 +83,13 @@ func ExampleTasks() {
 	fmt.Println(done.Key, done.Msg, done.Canceled, tasks.Running("search"))
 	// Output: search results for go false false
 }
+
+// A parent tags the messages of a child's Cmd once with Map, and tells them
+// apart in its own Update.
+func ExampleMap() {
+	type fromSidebar struct{ tui.Msg }
+	child := func() tui.Msg { return "selected" }
+	cmd := tui.Map(child, func(m tui.Msg) tui.Msg { return fromSidebar{m} })
+	fmt.Println(cmd().(fromSidebar).Msg)
+	// Output: selected
+}
