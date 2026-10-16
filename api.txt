@@ -4631,6 +4631,8 @@ func Toggle(label string, on, focused bool, t theme.Theme) string
 func TokenCounter(used, limit int, t theme.Theme) string
 func Tooltip(text string, t theme.Theme, width int) string
 func TooltipOverlay(base string, text string, anchorX, anchorY int, t theme.Theme) string
+func Tree(nodes []TreeNode) string
+func TreeWith(nodes []TreeNode, t theme.Theme) string
 func UsageMonitor(title string, stats []UsageStat, t theme.Theme) string
 type Font int
 type Hint struct {
@@ -4659,6 +4661,10 @@ type TimelineItem struct {
 	Status	TimelineStatus
 }
 type TimelineStatus int
+type TreeNode struct {
+	Label		string
+	Children	[]TreeNode
+}
 type TreeRow struct {
 	Key		string
 	Value		string

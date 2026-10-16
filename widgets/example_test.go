@@ -37,3 +37,16 @@ func ExampleFooter() {
 	// [enter] submit  [esc] cancel  [?] help
 	// [enter] submit  …
 }
+
+// Tree prints nested entries with connector lines, for output that is not
+// navigated.
+func ExampleTree() {
+	fmt.Println(widgets.Tree([]widgets.TreeNode{
+		{Label: "cmd", Children: []widgets.TreeNode{{Label: "tui"}}},
+		{Label: "go.mod"},
+	}))
+	// Output:
+	// ├── cmd
+	// │   └── tui
+	// └── go.mod
+}
