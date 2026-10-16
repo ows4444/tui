@@ -10,6 +10,37 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+## [1.0.0-rc.1] - 2026-10-17
+
+Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking
+change since 0.2.0; everything in it is added, opt-in or internal. It holds a
+fuzzy filter, form groups and typed values, data table filter, sort, cell mode and
+editing, text-area line numbers, `MaxHeight` and `LineInfo`, a multi-series plot
+and a public canvas, a colour toolkit, background tasks by key, `Map`, opt-in
+colour-scheme and in-band resize reports, themes from JSON and four light
+themes, `tui prompt` for shell scripts, a key-hint footer, a static tree, a
+calendar and two more charts, a session screenshot as SVG and a gallery of 41
+components, and text selection in the viewport. A breaking change found in the
+week it is out would be a reason to cut an rc.2.
+
+### Changed
+
+- Documented which renderer is the renderer: the cell renderer (a tenth of the
+  bytes for a changing frame, 202 against 2,004 on an 80x24 view, for about a
+  quarter more CPU). `WithCellRenderer(false)` stays, for comparing and
+  debugging, since the line renderer is also the cell renderer's fallback. A
+  test keeps the byte figure from regressing.
+- The cell renderer reads a drawn frame 40% faster: a text-area keystroke through
+  `DrawCells` costs 64 µs instead of 107 µs. `internal/render` remembers the
+  style of the cell before and takes a printable ASCII cell without scanning
+  it; the cost was a map lookup and a rune slice for every one of the 1,920
+  cells of an 80x24 frame. The profile had pointed at the `write` system call,
+  which was the sampler's attribution, not the cost: with a no-op writer the
+  time was the same.
+- `internal/celldraw.StyleID` remembers each style's conversion (up to 512), so
+  every `DrawCells` widget stops rendering and parsing a probe string per style
+  per frame.
+
 ### Added
 
 - `examples/asyncload` now runs its fetch with `Tasks` and has an `r` key that
@@ -76,37 +107,6 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   scrolls when dragged past the top or bottom, is drawn in `SelectionStyle`
   (reverse video by default) over any search highlight, and `DrawCells` draws the
   same cells. Set `Bounds` to where the viewport is drawn.
-
-### Changed
-
-- `internal/celldraw.StyleID` remembers each style's conversion (up to 512), so
-  every `DrawCells` widget stops rendering and parsing a probe string per style
-  per frame.
-
-## [1.0.0-rc.1] - 2026-10-16
-
-Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It has no breaking
-change since 0.2.0; everything in it is added or opt-in: a fuzzy filter, form
-groups and typed values, datatable filter and sort, text-area line numbers, a
-multi-series plot and a colour toolkit. A breaking change found in the week it
-is out would be a reason to cut an rc.2.
-
-### Changed
-
-- Documented which renderer is the renderer: the cell renderer (a tenth of the
-  bytes for a changing frame, 202 against 2,004 on an 80x24 view, for about a
-  quarter more CPU). `WithCellRenderer(false)` stays, for comparing and
-  debugging, since the line renderer is also the cell renderer's fallback. A
-  test keeps the byte figure from regressing.
-- The cell renderer reads a drawn frame 40% faster: a text-area keystroke through
-  `DrawCells` costs 64 µs instead of 107 µs. `internal/render` remembers the
-  style of the cell before and takes a printable ASCII cell without scanning
-  it; the cost was a map lookup and a rune slice for every one of the 1,920
-  cells of an 80x24 frame. The profile had pointed at the `write` system call,
-  which was the sampler's attribution, not the cost: with a no-op writer the
-  time was the same.
-
-### Added
 - `datatable.Model.CellMode`, `CellStyle`, `FrozenCols` and `SelectedMsg.Col`: a
   cursor that is one cell (Left and Right move it, only that cell is
   highlighted, Enter reports its column), a hook that styles any cell from its
