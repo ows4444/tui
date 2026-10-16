@@ -50,6 +50,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - Four light themes: `CatppuccinLatteTheme`, `OneLightTheme`, `RosePineDawnTheme`
   and `GitHubLightTheme`. Text and Muted pass AA; the accents keep each palette's
   published values and some are paler than 4.5:1 (`Theme.Check` lists them).
+- `tuitest.Session.SVG` and `tuitest.SVGOptions`: the screen as a standalone SVG
+  image, with colours, attributes, an optional title bar and cursor.
 
 ## [1.0.0-rc.1] - 2026-10-16
 
