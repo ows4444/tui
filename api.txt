@@ -1479,6 +1479,9 @@ type SelectedMsg struct {
 ## github.com/ows4444/tui/datatable (package datatable)
 
 func (m *Model) ClearSort()
+func (m *Model) InsertRow(i int, cells []string)
+func (m *Model) RemoveRow(i int) bool
+func (m *Model) SetCell(row, col int, text string) bool
 func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m *Model) SetRows(rows [][]string)
