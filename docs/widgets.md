@@ -142,7 +142,7 @@ package: it sits below the components. Use `layout.Block(s)` (or
 | Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap`, `HintsFromBindings`, `Footer` |
 | Text formatting | `CodeBlock`, `CodeBlockLang`, `DiffView`, `Gradient`, `BigText`, `BigTextGradient`, `Link` |
 | Chat and agent helpers | `ChatMessage`, `ChatMessageRaw`, `TokenCounter`, `UsageMonitor`, `CompactCount` |
-| Error isolation | `ErrorBoundary` renders a fallback if the render function panics |
+| Error isolation | `ErrorBoundary` renders a fallback if the render function panics; `ErrorTrace` and `ErrorTraceWith` show a wrapped error and its causes as a tree |
 
 `widgets/chart` holds the data plots: `Sparkline`, `SparklineWith`,
 `BarChart`, `LineChart`, `HeatMap` and `Gauge`, each with a `Linearize...`

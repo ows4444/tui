@@ -1,6 +1,7 @@
 package widgets_test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ows4444/tui/ansi"
@@ -49,4 +50,13 @@ func ExampleTree() {
 	// ├── cmd
 	// │   └── tui
 	// └── go.mod
+}
+
+// ErrorTrace shows what each layer of a wrapped error added, and its type.
+func ExampleErrorTrace() {
+	err := fmt.Errorf("save: %w", errors.New("disk full"))
+	fmt.Println(ansi.StripANSI(widgets.ErrorTrace(err)))
+	// Output:
+	// ✗ save (*fmt.wrapError)
+	// └── disk full (*errors.errorString)
 }

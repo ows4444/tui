@@ -39,6 +39,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - Text area: `MaxHeight` (grows with its content up to a cap), `LineInfo` (the
   cursor's line, column and wrapped row) and `LineLabel` (your own text in the
   left column in place of the line number).
+- `widgets.ErrorTrace` and `ErrorTraceWith`: a wrapped or joined error as a tree of
+  what each layer added and its Go type, sanitised.
 - `widgets.HintsFromBindings` and `widgets.Footer`: a one-line key-hint bar built
   from a focused widget's `Bindings()`, cut to the width with a "…" when it does
   not fit.

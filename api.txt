@@ -4597,6 +4597,8 @@ func DividerLabelWith(width int, label string, t theme.Theme) string
 func DividerWith(width int, t theme.Theme) string
 func Empty(title, description, hint string, t theme.Theme, width int) string
 func ErrorBoundary(render func() string, fallback string, t theme.Theme) (out string)
+func ErrorTrace(err error) string
+func ErrorTraceWith(err error, t theme.Theme) string
 func Footer(width int, hints ...Hint) string
 func Form(fields ...string) string
 func FormField(label string, fieldView string, err string, t theme.Theme) string
