@@ -12,6 +12,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `widgets.Calendar` and `LinearizeCalendar`: a month as a 20-column grid with a
+  title, a chosen first weekday, today in the theme's selected style and days
+  styled by day of the month, for printed output (`datepicker` is the interactive
+  one).
+- `chart.BreakdownBar` and `chart.Histogram`, each with a `Linearize...`: a
+  stacked one-row bar with a legend (segments differ by colour and by shade), and
+  a count of values into equal-width bins drawn as bars.
 - Community files: `SECURITY.md` (private reports through GitHub) and
   `CODE_OF_CONDUCT.md`.
 - `Tasks`, `NewTasks` and `TaskDoneMsg`: background work by key. `Tasks.Start`

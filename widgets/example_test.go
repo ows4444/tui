@@ -3,6 +3,7 @@ package widgets_test
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/theme"
@@ -59,4 +60,17 @@ func ExampleErrorTrace() {
 	// Output:
 	// ✗ save (*fmt.wrapError)
 	// └── disk full (*errors.errorString)
+}
+
+// Calendar prints a month, with days marked by style and a title.
+func ExampleCalendar() {
+	month := time.Date(2026, time.February, 1, 0, 0, 0, 0, time.UTC)
+	fmt.Println(ansi.StripANSI(widgets.Calendar(month, widgets.CalendarOptions{}, theme.DarkTheme())))
+	// Output:
+	//    February 2026
+	// Su Mo Tu We Th Fr Sa
+	//  1  2  3  4  5  6  7
+	//  8  9 10 11 12 13 14
+	// 15 16 17 18 19 20 21
+	// 22 23 24 25 26 27 28
 }
