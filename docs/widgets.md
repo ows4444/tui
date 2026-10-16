@@ -33,7 +33,7 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, breadcrumb, button, buttongroup, carousel, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, pagination, passwordinput, picker, radiogroup, rating, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, transferlist, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, breadcrumb, button, buttongroup, carousel, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, pagination, passwordinput, picker, radiogroup, rating, hexview, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, transferlist, treeview, viewport, virtuallist |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | backdrop, contextmenu, dialog, drawer, helpscreen, hovercard, menubar, popover, toast, tooltip |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
@@ -100,6 +100,7 @@ in `examples/` that imports the package.
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
 | [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | `examples/controls` |
+| [hexview](../hexview) | Bytes as a hex dump: offset, hex in groups, an ASCII gutter, a cursor, a selection copied as hex (`y`), and the mouse. Experimental | | `examples/` none yet; see `hexview` `Example` |
 | [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | `examples/controls` |
 | [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/panes` |
 | [skeleton](../skeleton) | A loading placeholder block |  `examples/timers` |

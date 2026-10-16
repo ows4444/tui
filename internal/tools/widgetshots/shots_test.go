@@ -34,6 +34,7 @@ import (
 	"github.com/ows4444/tui/emailinput"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
+	"github.com/ows4444/tui/hexview"
 	"github.com/ows4444/tui/loadingbar"
 	"github.com/ows4444/tui/logview"
 	"github.com/ows4444/tui/menu"
@@ -192,6 +193,9 @@ func shots() []shot {
 			{Name: "role", Label: "Role", Kind: form.FieldSelect, Options: []string{"admin", "viewer"}},
 		}})
 	})
+	add(&s, "hexview", "Hex view", 76, 4, func() hexview.Model {
+		return hexview.New([]byte("tui: a Go terminal UI library\x00\x01\x02 hex view\n"))
+	}, "v", "right", "right", "right", "down")
 	addOverlay(&s, "dialog", "Dialog", 44, 9, func() dialog.Model { m := dialog.New("Delete file", "This cannot be undone."); m.Show(); return m })
 	addOverlay(&s, "toast", "Toast", 44, 9, func() toast.Model { m := toast.New("Saved successfully"); m.Show(); return m })
 	addOverlay(&s, "contextmenu", "Context menu", 44, 9, func() contextmenu.Model {
