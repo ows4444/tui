@@ -118,3 +118,32 @@ func TestQuitKeys(t *testing.T) {
 		}
 	}
 }
+
+// Pressing r while a load is in flight starts a new one under the same key; the
+// replaced load's result, delivered as a canceled TaskDoneMsg, is not shown.
+func TestReloadReplacesTheLoadInFlight(t *testing.T) {
+	m := initialModel()
+	next, cmd := m.Update(tui.Key{Type: tui.KeyRunes, Text: "r", Code: 'r'})
+	m = next.(model)
+	if !m.loading || cmd == nil {
+		t.Fatalf("r did not start a reload: loading=%v cmd=%v", m.loading, cmd != nil)
+	}
+	stale, _ := m.Update(tui.TaskDoneMsg{Key: "load", Msg: loadedMsg{result: "old"}, Canceled: true})
+	if s := stale.(model); !s.loading || s.result != "" {
+		t.Errorf("a canceled load changed the screen: loading=%v result=%q", s.loading, s.result)
+	}
+	fresh, _ := m.Update(tui.TaskDoneMsg{Key: "load", Msg: loadedMsg{result: "new"}})
+	if f := fresh.(model); f.loading || f.result != "new" {
+		t.Errorf("the current load did not show: loading=%v result=%q", f.loading, f.result)
+	}
+}
+
+// The fetch stops at once when its context is cancelled, instead of sleeping out
+// the delay.
+func TestFetchStopsWhenCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if msg := fetch(ctx); msg != nil {
+		t.Errorf("a cancelled fetch returned %#v", msg)
+	}
+}

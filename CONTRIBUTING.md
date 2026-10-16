@@ -218,3 +218,11 @@ go run ./internal/tools/benchgate -base bench/baseline.txt -new bench/new.txt
 ```
 
 `bench/new.txt` is git-ignored.
+
+Two kinds of benchmark report numbers that are not time per operation.
+`BenchmarkStartup` (root package) is the whole life of a program that draws one
+frame and quits. The `BenchmarkHeap...` ones (`datatable`, `textarea`,
+`viewport`) report live heap for 100,000 rows or lines as custom metrics
+(`rows-B` or `text-B` for the data itself, `model-B` for what the component adds
+on top, after drawing a frame); read them with `-benchtime=5x`. They are new, so
+`benchgate` notes them as missing from the baseline.

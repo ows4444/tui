@@ -22,12 +22,20 @@ import (
 	"github.com/ows4444/tui/buttongroup"
 	"github.com/ows4444/tui/carousel"
 	"github.com/ows4444/tui/checkbox"
+	"github.com/ows4444/tui/clockview"
 	"github.com/ows4444/tui/colorpicker"
+	"github.com/ows4444/tui/commandpalette"
 	"github.com/ows4444/tui/confirm"
+	"github.com/ows4444/tui/contextmenu"
 	"github.com/ows4444/tui/datatable"
 	"github.com/ows4444/tui/datepicker"
+	"github.com/ows4444/tui/dialog"
+	"github.com/ows4444/tui/drawer"
 	"github.com/ows4444/tui/emailinput"
+	"github.com/ows4444/tui/form"
+	"github.com/ows4444/tui/helpscreen"
 	"github.com/ows4444/tui/loadingbar"
+	"github.com/ows4444/tui/logview"
 	"github.com/ows4444/tui/menu"
 	"github.com/ows4444/tui/multiselect"
 	"github.com/ows4444/tui/numberinput"
@@ -43,10 +51,13 @@ import (
 	"github.com/ows4444/tui/tabs"
 	"github.com/ows4444/tui/taginput"
 	"github.com/ows4444/tui/textinput"
+	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/tuitest"
+	"github.com/ows4444/tui/viewport"
+	"github.com/ows4444/tui/widgets"
 )
 
 // comp is the shape of a component Model: it updates into its own type.
@@ -77,6 +88,31 @@ type shot struct {
 
 func add[T comp[T]](out *[]shot, pkg, title string, w, h int, m func() T, keys ...string) {
 	*out = append(*out, shot{pkg: pkg, title: title, w: w, h: h, keys: keys, model: func() tui.Model { return host[T]{m()} }})
+}
+
+// overlay is a component drawn over a screen it does not own: Render takes the
+// base and returns it with the component on top.
+type overlay[T any] interface {
+	Update(tui.Msg) (T, tui.Cmd)
+	Render(base string) string
+}
+
+// overlayHost draws an overlay over a fixed sample screen.
+type overlayHost[T overlay[T]] struct{ m T }
+
+func (overlayHost[T]) Init() tui.Cmd { return nil }
+func (h overlayHost[T]) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
+	var c tui.Cmd
+	h.m, c = h.m.Update(msg)
+	return h, c
+}
+func (h overlayHost[T]) View() string { return h.m.Render(sampleScreen) }
+
+// sampleScreen is what an overlay covers: a few lines of ordinary content.
+const sampleScreen = "Project settings\n\nName      tui\nLicense   MIT\nLanguage  Go\nTarget    terminals\nStatus    stable\nOwner     you\nBranch    code"
+
+func addOverlay[T overlay[T]](out *[]shot, pkg, title string, w, h int, m func() T, keys ...string) {
+	*out = append(*out, shot{pkg: pkg, title: title, w: w, h: h, keys: keys, model: func() tui.Model { return overlayHost[T]{m()} }})
 }
 
 func shots() []shot {
@@ -132,6 +168,48 @@ func shots() []shot {
 	add(&s, "menu", "Menu", 30, 6, func() menu.Model {
 		return menu.New([]menu.Item{{Label: "File", Value: "f"}, {Label: "Edit", Value: "e"}, {Label: "View", Value: "v"}})
 	}, "down")
+	add(&s, "commandpalette", "Command palette", 44, 8, func() commandpalette.Model {
+		m := commandpalette.New(commandpalette.Command{Name: "Open file", Description: "ctrl+p"}, commandpalette.Command{Name: "Toggle theme", Description: "ctrl+t"}, commandpalette.Command{Name: "Quit", Description: "ctrl+q"})
+		m.Focus()
+		return m
+	}, "o")
+	add(&s, "clockview", "Stopwatch", 30, 4, func() clockview.Model { return clockview.New(clockview.ModeStopwatch) })
+	add(&s, "viewport", "Viewport", 40, 5, func() viewport.Model {
+		m := viewport.New(40, 5)
+		m.SetContent("line one\nline two\nline three\nline four\nline five\nline six")
+		return m
+	}, "down")
+	add(&s, "logview", "Log view", 44, 5, func() logview.Model {
+		m := logview.New(44, 5)
+		m.Append("12:00:01 INFO  server started")
+		m.Append("12:00:02 WARN  slow request /api/items")
+		m.Append("12:00:03 ERROR upstream timed out")
+		return m
+	})
+	add(&s, "form", "Form", 44, 9, func() form.Model {
+		return form.NewGroups(form.Group{Title: "Account", Fields: []form.Field{
+			{Name: "user", Label: "User", Placeholder: "ada"},
+			{Name: "role", Label: "Role", Kind: form.FieldSelect, Options: []string{"admin", "viewer"}},
+		}})
+	})
+	addOverlay(&s, "dialog", "Dialog", 44, 9, func() dialog.Model { m := dialog.New("Delete file", "This cannot be undone."); m.Show(); return m })
+	addOverlay(&s, "toast", "Toast", 44, 9, func() toast.Model { m := toast.New("Saved successfully"); m.Show(); return m })
+	addOverlay(&s, "contextmenu", "Context menu", 44, 9, func() contextmenu.Model {
+		m := contextmenu.New(contextmenu.Item{Label: "Copy", Shortcut: "ctrl+c"}, contextmenu.Item{Label: "Paste", Shortcut: "ctrl+v"}, contextmenu.Item{Separator: true}, contextmenu.Item{Label: "Delete", Disabled: true})
+		m.Show(4, 2)
+		return m
+	}, "down")
+	addOverlay(&s, "drawer", "Drawer", 44, 9, func() drawer.Model {
+		m := drawer.New("Filters\n  [x] open\n  [ ] closed")
+		m.Width, m.Height = 24, 6
+		m.Show()
+		return m
+	})
+	addOverlay(&s, "helpscreen", "Help screen", 44, 9, func() helpscreen.Model {
+		m := helpscreen.New(widgets.Hint{Key: "enter", Action: "submit"}, widgets.Hint{Key: "esc", Action: "cancel"}, widgets.Hint{Key: "?", Action: "help"})
+		m.Show()
+		return m
+	})
 	return s
 }
 

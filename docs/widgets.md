@@ -138,17 +138,16 @@ package: it sits below the components. Use `layout.Block(s)` (or
 | Separators and headings | `Divider`, `DividerLabel`, `DividerWith`, `DividerLabelWith`, `Header`, `HeaderWithAccessory`, `Breadcrumb` |
 | Progress and status | `ProgressBar`, `ProgressCircle`, `MultiProgress`, `StatusIndicator`, `Stepper`, `Timeline`, `Pagination`, `PaginationDots` |
 | Controls drawn as text | `Checkbox`, `Toggle`, `FormField`, `Form` |
-| Lists and tables | `List`, `ListWith`, `Tree`, `TreeWith`, `KeyValue`, `Table`, `TableRows`, `TableRowsWith` |
+| Lists and tables | `List`, `ListWith`, `Tree`, `TreeWith`, `Calendar`, `KeyValue`, `Table`, `TableRows`, `TableRowsWith` |
 | Key hints | `KeyHint`, `KeyHints`, `HintsFromKeymap`, `HintsFromBindings`, `Footer` |
 | Text formatting | `CodeBlock`, `CodeBlockLang`, `DiffView`, `Gradient`, `BigText`, `BigTextGradient`, `Link` |
 | Chat and agent helpers | `ChatMessage`, `ChatMessageRaw`, `TokenCounter`, `UsageMonitor`, `CompactCount` |
 | Error isolation | `ErrorBoundary` renders a fallback if the render function panics; `ErrorTrace` and `ErrorTraceWith` show a wrapped error and its causes as a tree |
 
 `widgets/chart` holds the data plots: `Sparkline`, `SparklineWith`,
-`BarChart`, `LineChart`, `HeatMap` and `Gauge`, each with a `Linearize...`
-function for accessible output. The functions of the same names in `widgets`
-are deprecated wrappers for the chart versions. `examples/chat` and
-`examples/dashboard` use `widgets/chart`.
+`BarChart`, `BreakdownBar`, `Histogram`, `LineChart`, `Plot`, `HeatMap` and
+`Gauge`, each with a `Linearize...` function for accessible output.
+`examples/chat` and `examples/dashboard` use `widgets/chart`.
 
 `examples/welcomescreen`, `examples/splashscreen`, `examples/loginflow` and
 `examples/setupflow` build whole screens from `widgets` functions and a

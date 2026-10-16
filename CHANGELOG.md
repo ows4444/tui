@@ -12,6 +12,15 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `examples/asyncload` now runs its fetch with `Tasks` and has an `r` key that
+  reloads, cancelling the load still in flight.
+- `widgets.Calendar` and `LinearizeCalendar`: a month as a 20-column grid with a
+  title, a chosen first weekday, today in the theme's selected style and days
+  styled by day of the month, for printed output (`datepicker` is the interactive
+  one).
+- `chart.BreakdownBar` and `chart.Histogram`, each with a `Linearize...`: a
+  stacked one-row bar with a legend (segments differ by colour and by shade), and
+  a count of values into equal-width bins drawn as bars.
 - Community files: `SECURITY.md` (private reports through GitHub) and
   `CODE_OF_CONDUCT.md`.
 - `Tasks`, `NewTasks` and `TaskDoneMsg`: background work by key. `Tasks.Start`
@@ -53,9 +62,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `tuitest.Session.SVG` and `tuitest.SVGOptions`: the screen as a standalone SVG
   image, with colours, attributes, an optional title bar and cursor, and
   `TrimRows` to cut the blank rows below what was drawn.
-- A Widget gallery page on the site: one picture of each of 31 components, drawn
-  by a small real program and checked against a golden file in
-  `internal/tools/widgetshots`.
+- A Widget gallery page on the site: one picture of each of 41 components (31 at
+  first; a dialog, toast, context menu, command palette, stopwatch, viewport, log
+  view, form, drawer and help screen were added), each drawn by a small real
+  program and checked against a golden file in `internal/tools/widgetshots`.
 - `DrawCells` on `textinput`: a 60-column field draws in 3.1 µs and 1 allocation
   against 9.3 µs and 93 through `View` and parse. `passwordinput`, `maskedinput`
   and `inputgroup` define their own, through `View`, so a mask or a prefix is not

@@ -1,0 +1,5 @@
+12:00:01 INFO  server started
+12:00:02 WARN  slow request /api/items
+12:00:03 ERROR upstream timed out
+
+
