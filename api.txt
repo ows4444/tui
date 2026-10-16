@@ -198,12 +198,14 @@ func WithChordTimeout(d time.Duration) ProgramOption
 func WithChords(defs ...ChordDef) ProgramOption
 func WithClock(c Clock) ProgramOption
 func WithColorProfile(p ansi.Profile) ProgramOption
+func WithColorSchemeReports(enabled bool) ProgramOption
 func WithContext(ctx context.Context) ProgramOption
 func WithErrOutput(w io.Writer) ProgramOption
 func WithEscTimeout(d time.Duration) ProgramOption
 func WithExitOnSignal(enabled bool) ProgramOption
 func WithFocusReporting(enabled bool) ProgramOption
 func WithFrameLog(w io.Writer) ProgramOption
+func WithInBandResize(enabled bool) ProgramOption
 func WithInput(r io.Reader) ProgramOption
 func WithInputCloser(c io.Closer) ProgramOption
 func WithInspector(keys InspectorKeys) ProgramOption
@@ -265,6 +267,7 @@ type Clock interface {
 	NewTicker(d time.Duration) (<-chan time.Time, func())
 }
 type Cmd func() Msg
+type ColorSchemeEvent = input.ColorSchemeEvent
 type Component[T any] interface {
 	Update(Msg) (T, Cmd)
 	View() string
@@ -281,6 +284,7 @@ type FocusEvent = input.FocusEvent
 type FocusInspector interface {
 	FocusedID() string
 }
+type InBandResizeEvent = input.InBandResizeEvent
 type InputErrorMsg struct {
 	Err error
 }
@@ -507,6 +511,14 @@ const (
 	FocusReportingEnable	= CSI + "?1004h"
 
 	FocusReportingDisable	= CSI + "?1004l"
+
+	ColorSchemeReportingEnable	= CSI + "?2031h"
+
+	ColorSchemeReportingDisable	= CSI + "?2031l"
+
+	InBandResizeEnable	= CSI + "?2048h"
+
+	InBandResizeDisable	= CSI + "?2048l"
 
 	SyncOutputEnable	= CSI + "?2026h"
 
@@ -2261,9 +2273,16 @@ type ChordResult struct {
 
 	Flush	[]Key
 }
+type ColorSchemeEvent struct {
+	Dark bool
+}
 type Event = any
 type FocusEvent struct {
 	Focused bool
+}
+type InBandResizeEvent struct {
+	Rows, Cols		int
+	HeightPx, WidthPx	int
 }
 type Key struct {
 	Type	KeyType

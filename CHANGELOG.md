@@ -17,6 +17,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `Tasks`, `NewTasks` and `TaskDoneMsg`: background work by key. `Tasks.Start`
   cancels the earlier run of the same key, so a search-as-you-type needs no
   hand-written stale-result check; `Cancel`, `CancelAll` and `Running`.
+- `WithColorSchemeReports` (DECSET 2031) and `ColorSchemeEvent`: a terminal that
+  switches between dark and light while the program runs is followed. With
+  `WithTheme(theme.Auto{...})` the Program swaps the theme itself.
+- `WithInBandResize` (DECSET 2048) and `InBandResizeEvent`: the terminal reports
+  its size through the input stream, so a resize is seen where no window-size
+  signal arrives (over SSH, in some multiplexers). Both options are off by
+  default, so no output changes unless asked for.
 - Four light themes: `CatppuccinLatteTheme`, `OneLightTheme`, `RosePineDawnTheme`
   and `GitHubLightTheme`. Text and Muted pass AA; the accents keep each palette's
   published values and some are paler than 4.5:1 (`Theme.Check` lists them).

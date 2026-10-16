@@ -182,6 +182,28 @@ func WithFocusReporting(enabled bool) ProgramOption {
 	return func(p *Program) { p.focusReporting = enabled }
 }
 
+// WithColorSchemeReports turns colour-scheme reporting (DECSET 2031) on for
+// the life of the Program. A supporting terminal then tells it whether the
+// scheme is dark or light, once and again each time the user switches, and
+// Update receives a ColorSchemeEvent. With WithTheme(theme.Auto{...}) the
+// Program also swaps to the Auto's Dark or Light theme before Update sees the
+// event, so a theme follows a terminal that changes mid-session; the one-off
+// WithBackgroundDetection query does not. A terminal without the mode ignores
+// it. Off by default: without it no sequence is emitted.
+func WithColorSchemeReports(enabled bool) ProgramOption {
+	return func(p *Program) { p.colorSchemeReports = enabled }
+}
+
+// WithInBandResize turns in-band resize reporting (DECSET 2048) on for the life
+// of the Program. A supporting terminal then sends its size through the input
+// stream on every change, and the Program turns each report into a ResizeMsg
+// using that size. That works where a window-size signal does not arrive (over
+// SSH, in some multiplexers); the signal path stays on, so a terminal without
+// the mode behaves as before. Off by default: without it no sequence is emitted.
+func WithInBandResize(enabled bool) ProgramOption {
+	return func(p *Program) { p.inBandResize = enabled }
+}
+
 // WithBackgroundDetection asks the terminal for its background colour
 // (OSC 11, ansi.QueryBackgroundColor) once, at startup. A supporting
 // terminal answers and Update receives a BackgroundColorEvent, which

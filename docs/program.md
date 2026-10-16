@@ -64,6 +64,8 @@ used only on the root model itself.
 | `Key`, `PasteEvent` | Key presses; a bracketed paste arrives as one `PasteEvent` unless `WithBracketedPaste(false)` |
 | `MouseEvent` | Only with `WithMouse` or after `EnableMouse` |
 | `FocusEvent` | Only with `WithFocusReporting(true)`; a repeat of the last state is dropped |
+| `ColorSchemeEvent` | Only with `WithColorSchemeReports(true)`: the terminal says dark or light, at start and on each switch |
+| `InBandResizeEvent` | Only with `WithInBandResize(true)`; the Program turns it into a `ResizeMsg` |
 | `KeyRepeatMsg`, `KeyReleaseMsg` | Only with `WithKeyboard(... \| KeyboardReportEvents)` |
 | `ChordMsg` | Only with `WithChords` |
 | `InputErrorMsg` | Once, if reading input fails. Input stops but the Program keeps running |
@@ -134,6 +136,8 @@ details.
 | `WithMouse(mode)` | `MouseOff` |
 | `WithBracketedPaste(bool)` | on |
 | `WithFocusReporting(bool)` | off |
+| `WithColorSchemeReports(bool)` | off |
+| `WithInBandResize(bool)` | off |
 | `WithKittyKeyboard(bool)`, `WithKeyboard(flags)` | off |
 | `WithChords(defs...)`, `WithChordTimeout(d)` | no chords; 500ms timeout |
 | `WithEscTimeout(d)` | `input.DefaultEscTimeout` (30ms) |

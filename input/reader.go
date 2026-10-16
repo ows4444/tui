@@ -454,6 +454,11 @@ func (rd *Reader) parseCSI() (Event, error) {
 			return rd.rxvtKey(params, m)
 		}
 	}
+	if !inter {
+		if ev, ok := privateReply(final, params); ok {
+			return ev, nil
+		}
+	}
 	// Private-parameter prefixes (? > < =) and intermediates mark replies
 	// and commands that are not keys.
 	if inter || (len(params) > 0 && params[0] >= '<' && params[0] <= '?') {
@@ -522,6 +527,10 @@ func (rd *Reader) csiFinal(final byte, params []byte, groups [][]int) (Event, er
 	p0 := groups[0][0]
 
 	switch final {
+	case 't':
+		if ev, ok := inBandResize(groups); ok {
+			return ev, nil
+		}
 	case 'I':
 		if nparams == 0 {
 			return FocusEvent{Focused: true}, nil

@@ -234,12 +234,24 @@ func (p *Program) runLoop() (_ Model, err error) {
 		if ev, ok := msg.(BackgroundColorEvent); ok && p.themeSet {
 			p.applyTheme(p.themeAuto.For(ansi.RGB{R: ev.R, G: ev.G, B: ev.B}))
 		}
+		if ev, ok := msg.(ColorSchemeEvent); ok && p.themeSet {
+			if ev.Dark {
+				p.applyTheme(p.themeAuto.Dark)
+			} else {
+				p.applyTheme(p.themeAuto.Light)
+			}
+		}
+		reported := false
+		if ev, ok := msg.(InBandResizeEvent); ok && ev.Cols > 0 && ev.Rows > 0 {
+			msg, reported = ResizeMsg{Width: ev.Cols, Height: ev.Rows}, true
+		}
 		rm, isResize := msg.(ResizeMsg)
 		if isResize {
 			// The size that triggered this message may already be stale
 			// (a drag sends many SIGWINCHes, and watchResize coalesces them
 			// while the queue is full), so trust the terminal's current size.
-			if w, h, ok := p.termSize(); ok {
+			// A size the terminal reported in band is its own answer.
+			if w, h, ok := p.termSize(); ok && !reported {
 				rm = ResizeMsg{Width: w, Height: h}
 			}
 			rm.Measurer = p.Measurer()
@@ -446,7 +458,7 @@ func (p *Program) allowRenderFor(done <-chan struct{}, input bool) bool {
 // the default frame cap never delays.
 func isInputMsg(msg Msg) bool {
 	switch msg.(type) {
-	case Key, MouseEvent, PasteEvent, FocusEvent, ChordMsg:
+	case Key, MouseEvent, PasteEvent, FocusEvent, ChordMsg, ColorSchemeEvent, InBandResizeEvent:
 		return true
 	}
 	return false
