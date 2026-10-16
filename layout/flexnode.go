@@ -131,7 +131,7 @@ func (f flexNode) Measure(c Constraints) Size {
 		if k.BasisLen.kind == lenFr {
 			km = 0
 		} else if k.BasisLen.kind == lenPct {
-			km = pctOf(c.MaxW, c.MaxH, f.row, k.BasisLen.n)
+			km = pctOf(c.MaxW, c.MaxH, f.row, k.BasisLen)
 		} else if k.Basis > 0 {
 			km = k.Basis
 		}
@@ -179,7 +179,7 @@ func (f flexNode) plan(s Size) flexPlan {
 		basis, grow, shrink := k.Basis, k.Grow, k.Shrink
 		switch k.BasisLen.kind {
 		case lenPct:
-			basis = int(int64(avail) * int64(k.BasisLen.n) / 100)
+			basis = k.BasisLen.share(avail)
 			if basis <= 0 {
 				basis = 0
 			}
@@ -444,14 +444,38 @@ const (
 )
 
 // Length is a flexible main-axis size for FlexChild.BasisLen. The zero value
-// is unset. Build one with Pct or Fr.
+// is unset. Build one with Pct, Ratio or Fr.
 type Length struct {
 	kind lenKind
 	n    int
+	d    int // denominator of a lenPct share; 0 means 100 (a percentage)
 }
 
 // Pct is a Length of n percent of the container's main-axis space after gaps.
 func Pct(n int) Length { return Length{kind: lenPct, n: n} }
+
+// Ratio is a Length of n/d of the container's main-axis space after gaps: an
+// exact fraction, where Pct(33) is not a third. Pair it with FlexChild.Min and
+// Max for "a third of the row, but at least 10 cells". A d below 1, or an n
+// below 1, gives 0 cells.
+func Ratio(n, d int) Length {
+	if n < 1 || d < 1 {
+		return Length{kind: lenPct, n: 0, d: 1}
+	}
+	return Length{kind: lenPct, n: n, d: d}
+}
+
+// share is l's part of total cells, rounded down.
+func (l Length) share(total int) int {
+	d := l.d
+	if d == 0 {
+		d = 100
+	}
+	if total <= 0 || l.n <= 0 {
+		return 0
+	}
+	return int(int64(total) * int64(l.n) / int64(d))
+}
 
 // Fr is a Length that shares the space left after fixed and percentage
 // children in proportion to n (a value below 1 counts as 1).
@@ -464,15 +488,15 @@ func Fr(n int) Length {
 
 // pctOf resolves a percentage against a Measure bound; an unbounded axis
 // resolves to 0 since there is nothing to take a percentage of.
-func pctOf(maxW, maxH int, row bool, pct int) int {
+func pctOf(maxW, maxH int, row bool, l Length) int {
 	m := maxH
 	if row {
 		m = maxW
 	}
-	if m >= Unbounded || m <= 0 || pct <= 0 {
+	if m >= Unbounded || m <= 0 {
 		return 0
 	}
-	return int(int64(m) * int64(pct) / 100)
+	return l.share(m)
 }
 
 // Windowed is implemented by a Node that can render a slice of its rows

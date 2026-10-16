@@ -2466,6 +2466,7 @@ func NormalBorder() Border
 func Overlay(base, overlay string, x, y int) string
 func OverlayNode(base, over Node, x, y int) Node
 func Pct(n int) Length
+func Ratio(n, d int) Length
 func RectOf(root Node, s Size, name string) (Rect, bool)
 func Rects(root Node, s Size) []Placed
 func Responsive(breaks []Break, nodes ...Node) Node

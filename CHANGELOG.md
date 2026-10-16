@@ -30,6 +30,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 - `tui prompt input|password|confirm|select|multiselect|spin`: the `prompt`
   package from a shell script. The question is drawn on standard error, the
   answer printed on standard output; `confirm` answers with its exit code.
+- `layout.Ratio(n, d)`: a flex child sized to an exact fraction of the space after
+  gaps (`Pct(33)` is not a third); combine it with `Min` and `Max`.
 - Data table: `SetCell`, `InsertRow` and `RemoveRow` edit the source rows on a
   copy and keep a sort or filter in force.
 - Text area: `MaxHeight` (grows with its content up to a cap), `LineInfo` (the

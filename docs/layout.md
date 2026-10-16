@@ -57,7 +57,7 @@ exactly that size, so `Fill` children take all the remaining space.
 `Row` and `Column` take a gap and a list of
 [`FlexChild`](https://pkg.go.dev/github.com/ows4444/tui/layout#FlexChild)
 values. The zero `FlexChild` is sized to its content and neither grows nor
-shrinks. `Basis`, `BasisLen` (`Pct`, `Fr`), `Grow`, `Shrink`, `Min`, `Max` and
+shrinks. `Basis`, `BasisLen` (`Pct`, `Ratio`, `Fr`), `Grow`, `Shrink`, `Min`, `Max` and
 `CrossAlign` are documented on the type. The behaviours that catch people:
 
 - **A growing child that measures taller than the screen pushes its siblings

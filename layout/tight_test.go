@@ -73,3 +73,33 @@ func TestScrollWindowsChild(t *testing.T) {
 	out := DrawTight(Column(0, Fill(Scroll(child, 1))), Size{3, 3})
 	assertExact(t, out, Size{3, 3})
 }
+
+func TestRatioIsAnExactFractionOfTheSpaceAfterGaps(t *testing.T) {
+	// A third is exact where Pct(33) is not.
+	r := Row(0,
+		FlexChild{Node: Block("a"), BasisLen: Ratio(1, 3)},
+		FlexChild{Node: Block("b"), BasisLen: Ratio(2, 3)},
+	)
+	if s := r.(flexNode).plan(Size{90, 1}).sizes; s[0] != 30 || s[1] != 60 {
+		t.Errorf("1/3 and 2/3 of 90 = %v", s)
+	}
+	// Gaps come out first, as for Pct.
+	g := Row(2, FlexChild{Node: Block("a"), BasisLen: Ratio(1, 4)}, FlexChild{Node: Block("b"), BasisLen: Ratio(3, 4)})
+	if s := g.(flexNode).plan(Size{42, 1}).sizes; s[0] != 10 || s[1] != 30 {
+		t.Errorf("gap ratio = %v", s)
+	}
+	// Min lifts a small share: "a tenth of the row, at least 10".
+	m := Row(0, FlexChild{Node: Block("a"), BasisLen: Ratio(1, 10), Min: 10}, FlexChild{Node: Block("b"), Grow: 1})
+	if s := m.(flexNode).plan(Size{50, 1}).sizes; s[0] != 10 {
+		t.Errorf("min with ratio = %v", s)
+	}
+	// Invalid fractions give no cells; Pct(n) and Ratio(n, 100) agree.
+	for _, l := range []Length{Ratio(0, 3), Ratio(1, 0), Ratio(-1, 2)} {
+		if got := l.share(90); got != 0 {
+			t.Errorf("%+v gave %d cells", l, got)
+		}
+	}
+	if Pct(37).share(1000) != Ratio(37, 100).share(1000) {
+		t.Error("Pct and Ratio(n, 100) disagree")
+	}
+}
