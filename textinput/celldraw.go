@@ -26,7 +26,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	cur, ok2 := celldraw.StyleID(sub, m.CursorStyle)
 	hint, ok3 := celldraw.StyleID(sub, m.PlaceholderStyle)
 	selID, ok4 := celldraw.StyleID(sub, m.selStyle())
-	if !ok1 || !ok2 || !ok3 || !ok4 || !celldraw.Plain(m.Prompt, m.Placeholder, m.Value()) {
+	if !ok1 || !ok2 || !ok3 || !ok4 || !celldraw.Plain(m.Prompt, m.Placeholder, m.Value()) || m.suggestionRest() != "" {
 		tui.DrawView(buf, r, m.View())
 		return
 	}

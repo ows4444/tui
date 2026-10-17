@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `textinput` history and suggestions: `Model.History` with Up and Down (and Ctrl+R to
+  search it), and `Model.Suggestion` or `SuggestFromHistory` for grey text after the
+  cursor that Right, End or Ctrl+E takes (`KeyMap.HistoryPrev`, `HistoryNext`,
+  `HistorySearch`, `AcceptSuggestion`). With no history and no suggestion nothing changes.
 - Double and triple click: the Program counts presses of the same button on the same
   cell within 400 ms into `MouseEvent.Clicks` (`WithMultiClick` sets or turns off the
   interval). In `textinput` a double click selects the word and a triple click the

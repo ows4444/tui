@@ -4077,6 +4077,8 @@ type KeyMap struct {
 	Copy		keymap.Binding
 	Cut		keymap.Binding
 	Paste		keymap.Binding
+
+	HistoryPrev, HistoryNext, HistorySearch, AcceptSuggestion	keymap.Binding
 }
 type Model struct {
 	Placeholder	string
@@ -4099,6 +4101,12 @@ type Model struct {
 	Bounds	hittest.Rect
 
 	Motion	motion.Preference
+
+	History	[]string
+
+	Suggestion	string
+
+	SuggestFromHistory	bool
 
 	KeyMap	KeyMap
 	// contains filtered or unexported fields
