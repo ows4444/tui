@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `tuitest.Session.Find`, `ClickText` and `CursorOn`: a test finds text on the
+  screen and clicks it or checks the cursor is on it, without knowing the
+  column and row the layout drew it at.
 - Styled text as data in three overlays: `dialog.Model.MessageText`,
   `notificationcenter.Notification.Text` and `hovercard.Model.ContentText` take an
   `ansi.Text`. When set it is shown instead of the string field, wrapped at

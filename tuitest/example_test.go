@@ -43,3 +43,14 @@ func ExampleSession_SVG() {
 	fmt.Println(strings.HasPrefix(svg, "<svg "), strings.Contains(svg, ">&gt;hi</text>") || strings.Contains(svg, ">&gt;</text>"))
 	// Output: true true
 }
+
+// Find and ClickText locate text on the screen, so a test does not depend on
+// where a layout draws it.
+func ExampleSession_Find() {
+	s := tuitest.New(typer{}, 20, 3)
+	defer s.Close()
+	s.Keys("h", "i")
+	x, y, ok := s.Find("hi")
+	fmt.Println(x, y, ok)
+	// Output: 2 0 true
+}

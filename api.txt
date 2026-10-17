@@ -4459,9 +4459,12 @@ func (c *FakeClock) Now() time.Time
 func (s *Session) Advance(d time.Duration)
 func (s *Session) Cell(x, y int) Cell
 func (s *Session) Click(x, y int)
+func (s *Session) ClickText(text string) bool
 func (s *Session) Close()
 func (s *Session) Cursor() (x, y int, visible bool)
+func (s *Session) CursorOn(text string) bool
 func (s *Session) Done() bool
+func (s *Session) Find(text string) (x, y int, ok bool)
 func (s *Session) Golden(t TB, name string)
 func (s *Session) Keys(keys ...string)
 func (s *Session) Paste(text string)
