@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Key bindings from a file: `keymap.Parse` reads `{"action": ["key", ...]}` JSON
+  (every key name is checked, with `keymap.ValidKey`), and `keymap.Apply` swaps
+  those keys into a list of bindings by their description, returning the names
+  that matched nothing. `tui keys check <file.json>` lints such a file.
 - `widgets.ProgressStats` and `widgets.ProgressBarStats`: elapsed time, rate (over
   the last ten seconds) and ETA for a progress bar, from the counts the caller
   feeds in with `Update`. It takes the time as an argument and never reads the

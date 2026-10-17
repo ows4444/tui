@@ -2436,8 +2436,11 @@ func (r *Registry) Bindings(scope string) []Binding
 func (r *Registry) Conflicts() []Conflict
 func (r *Registry) Hints(scope string) []Hint
 func (r *Registry) SetEnabled(scope, key string, on bool) int
+func Apply(bindings []Binding, overrides Overrides) ([]Binding, []string)
 func Matches(msg any, b Binding) bool
 func NewBinding(desc string, keys ...string) Binding
+func Parse(r io.Reader) (Overrides, error)
+func ValidKey(name string) bool
 type Binding struct {
 	Keys	[]string
 
@@ -2457,6 +2460,7 @@ type Hint struct {
 	Key	string
 	Desc	string
 }
+type Overrides map[string][]string
 type Registry struct {
 	// contains filtered or unexported fields
 }

@@ -190,3 +190,33 @@ func TestThemeCheck(t *testing.T) {
 		}
 	}
 }
+
+func TestKeysCheck(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name, body string) string {
+		p := filepath.Join(dir, name)
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	var out bytes.Buffer
+	good := write("good.json", `{"quit":["q","ctrl+c"],"help":[],"down":"q"}`)
+	if err := run([]string{"keys", "check", good}, &out); err != nil {
+		t.Fatalf("a good file failed: %v\n%s", err, out.String())
+	}
+	for _, want := range []string{"help: unbound", "quit: q, ctrl+c", "q is given to down and quit", "3 action(s)"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("output lacks %q:\n%s", want, out.String())
+		}
+	}
+	bad := write("bad.json", `{"quit":["Ctrl+Q"]}`)
+	if err := run([]string{"keys", "check", bad}, &out); err == nil || !strings.Contains(err.Error(), "Ctrl+Q") {
+		t.Errorf("a bad key passed: %v", err)
+	}
+	for _, args := range [][]string{{"keys"}, {"keys", "nope", good}, {"keys", "check"}, {"keys", "check", filepath.Join(dir, "missing.json")}} {
+		if err := run(args, &out); err == nil {
+			t.Errorf("run(%q) did not fail", args)
+		}
+	}
+}
