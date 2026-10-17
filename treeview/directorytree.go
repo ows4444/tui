@@ -34,3 +34,28 @@ func directoryChildren(dir string) []Node {
 	}
 	return children
 }
+
+// LazyDirectoryTree is DirectoryTree that lists a directory only when it is
+// opened: each directory is a Node with a Load, so opening a big tree reads one
+// directory at a time instead of the whole disk first. Pair it with a Model's
+// Update, which runs the Loads and applies their LoadedMsg.
+func LazyDirectoryTree(root string) Node {
+	return Node{Label: filepath.Base(root), Load: func() []Node { return lazyChildren(root) }}
+}
+
+func lazyChildren(dir string) []Node {
+	entries, err := fsutil.ListDir(dir)
+	if err != nil {
+		return nil
+	}
+	children := make([]Node, 0, len(entries))
+	for _, e := range entries {
+		path := filepath.Join(dir, e.Name)
+		if e.IsDir {
+			children = append(children, Node{Label: e.Name, Load: func() []Node { return lazyChildren(path) }})
+			continue
+		}
+		children = append(children, Node{Label: e.Name})
+	}
+	return children
+}

@@ -65,7 +65,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 			prefix, base, hl = "> ", selID, selUL
 		}
 		marker := " "
-		if len(item.node.Children) > 0 {
+		if item.branch {
 			marker = glyphs.Collapsed
 			if item.open {
 				marker = glyphs.Expanded

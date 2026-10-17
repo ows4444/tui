@@ -4423,14 +4423,28 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func DirectoryTree(root string) Node
 func FromJSON(data []byte) (Model, error)
+func LazyDirectoryTree(root string) Node
 func New(roots ...Node) Model
 func Sidebar(title string, tv Model, activeKey string, icons, badges map[string]string, t theme.Theme, width int) string
+type CollapsedMsg struct {
+	Node	*Node
+	Path	string
+}
+type ExpandedMsg struct {
+	Node	*Node
+	Path	string
+}
 type KeyMap struct {
 	Up, Down	keymap.Binding
 
 	Select	keymap.Binding
 
 	Expand, Collapse	keymap.Binding
+}
+type LoadedMsg struct {
+	Name		string
+	Path		string
+	Children	[]Node
 }
 type Model struct {
 	Roots	[]Node
@@ -4447,11 +4461,17 @@ type Model struct {
 	WheelStep	int
 
 	Filter	bool
+
+	Name	string
+
+	Notify	bool
 	// contains filtered or unexported fields
 }
 type Node struct {
 	Label		string
 	Children	[]Node
+
+	Load	func() []Node
 }
 type SelectedMsg struct {
 	Node	*Node

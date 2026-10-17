@@ -12,6 +12,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Lazy trees: `treeview.Node.Load` makes a node a branch whose children are
+  fetched the first time it opens (`Update` returns a Cmd that runs it, and the
+  `LoadedMsg` it delivers goes back through `Update`); `treeview.LazyDirectoryTree`
+  lists one directory at a time. `Model.Notify` makes opening and closing a
+  branch deliver `ExpandedMsg` and `CollapsedMsg`; `Model.Name` keeps two lazy
+  trees' messages apart.
 - `datatable.Source` and `datatable.NewSource`: a table over rows read on demand
   (`Rows() int`, `Row(i) []string`), so a database cursor or a million-row log
   loads only the rows in view. Sort, filter and editing are off for it;
