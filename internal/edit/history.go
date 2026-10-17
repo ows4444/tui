@@ -16,6 +16,11 @@ type Step struct {
 	Pos, Del int
 	Ins      string
 	Cursor   int
+	// Join says the step below this one on its stack belongs with it: a widget
+	// undoes or redoes steps until it meets one without Join. History sets it on
+	// the steps recorded inside a group (see BeginGroup); a widget that undoes
+	// a group sets it on the steps it pushes back, all but the first it applied.
+	Join bool
 }
 
 type node struct {
@@ -33,6 +38,8 @@ type History struct {
 	undo, redo *node
 	floor      int // undo nodes of depth <= floor are out of reach
 	pool       *slab
+	grouping   bool // Record joins steps into the group begun by BeginGroup
+	fresh      bool // the next Record opens the group
 }
 
 // slab hands out nodes in batches so recording a step does not allocate every
@@ -74,6 +81,13 @@ func (h *History) Record(s Step, coalesce bool, max int) {
 	}
 	max = bound(max)
 	h.redo = nil
+	if h.grouping {
+		s.Join = !h.fresh
+		coalesce = coalesce && !h.fresh
+		h.fresh = false
+	} else if h.fresh {
+		coalesce, h.fresh = false, false
+	}
 	// A step with Ins == "" undoes a pure insertion of Del runes at Pos.
 	if t := h.undo; coalesce && t != nil && t.depth > h.floor && s.Ins == "" && t.step.Ins == "" &&
 		t.step.Pos+t.step.Del == s.Pos {
@@ -125,6 +139,16 @@ func (h *History) trim(max int) {
 		h.undo = n
 	}
 }
+
+// BeginGroup makes the steps recorded from now until EndGroup one unit: the
+// first starts a new unit (it never merges into a typing run before it) and
+// the rest join it. A widget that undoes steps until one has no Join then
+// undoes the whole group at once.
+func (h *History) BeginGroup() { h.grouping, h.fresh = true, true }
+
+// EndGroup ends the group begun by BeginGroup. The next step starts a unit of
+// its own and does not merge into the group's last step.
+func (h *History) EndGroup() { h.grouping, h.fresh = false, true }
 
 // CanUndo reports whether an undo step is available.
 func (h *History) CanUndo() bool { return h.undo != nil && h.undo.depth > h.floor }

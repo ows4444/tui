@@ -238,3 +238,11 @@ output VT processing) with your own `Terminal`. Use it with `WithInput` and
 `WithOutput` for a remote session such as SSH. A `Terminal` that also
 implements `ResizeNotifier` delivers resizes through the same port. The
 headless test harness is described in [testing.md](testing.md).
+
+`examples/ssh` is a working SSH server built this way: each connection gets its
+own Program, with the SSH channel as input and output and a `Terminal` that
+answers `Size` from the client's pty request and signals `Resizes` on each
+window-change request. It is a separate module because it needs
+`golang.org/x/crypto/ssh`, and the library has no dependencies. It accepts any
+client; set a `PublicKeyCallback` before exposing it.
+

@@ -134,12 +134,35 @@ names:
 }
 ```
 
-Colours are `#rrggbb` or `#rgb`; `border` is `normal`, `rounded` or `ascii`; an
-unknown field or a bad colour is an error that names it. Changing `text`,
+Colours are `#rrggbb` or `#rgb`; `border` is `normal`, `rounded`, `ascii`,
+`double`, `thick` or `hidden`; an unknown field or a bad colour is an error that
+names it. Changing `text`,
 `text_inverse` or `background` derives the surface, overlay and state styles
 again. `Parse` does not judge contrast: `tui theme check file.json` (or
 `Theme.Check` on the result) lists every role below 4.5:1, and `tui theme list`
 prints the base names.
+
+A file can also change what a colour cannot, and restyle one kind of widget:
+
+```json
+{
+  "base": "nord",
+  "glyphs": "ascii",
+  "spacing": { "xs": 1, "s": 2, "m": 3, "l": 4 },
+  "states": { "focus": { "fg": "#ffcc00", "bold": true } },
+  "typography": { "h1": { "fg": "#88c0d0", "underline": true } },
+  "components": { "tabs": { "accent": "#ff8800" }, "toast": { "error": "#ff5555" } }
+}
+```
+
+`glyphs` is `unicode`, `ascii` or `nerd`. `states` (`focus`, `hover`,
+`disabled`, `selected`) and `typography` (`h1`, `h2`, `emphasis`, `strong`,
+`code`, `link`) take a style: `fg` and `bg` colours and the flags `bold`,
+`faint`, `italic`, `underline`, `reverse` and `strike`. `components` is keyed by
+widget name (`theme.Components()`) and holds the roles of `theme.Tokens` in lower
+case (`text`, `muted`, `accent`, `focus`, `selection`, `border`, `background`,
+`surface`, `success`, `warning`, `error`, `info`, `overlay`, `text_inverse`).
+These apply after the colours, so they are not derived again.
 
 ## Overriding colours for one widget
 
@@ -204,7 +227,7 @@ Code that reads glyphs from the theme:
 
 - Component packages: accordion, avatar, commandpalette, contextmenu, datatable,
   errorretry, faces, loadingbar, markdown, maskedinput, passwordinput,
-  scrollbar, skeleton, spinner, splitpane, streamtext, toast, treeview.
+  scrollbar, skeleton, spinner, splitpane, streamtext, toast, treeview, window.
 - layout: the `Text` ellipsis.
 - widgets files: alert, bigtext, chatmessage, codeblock, codeblock_lang,
   divider, infobox, list, pagination, panel, progressbar, progresscircle,

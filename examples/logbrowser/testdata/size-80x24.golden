@@ -1,0 +1,24 @@
+filter>                                                                         
+────────────────────────────────────────────────────────────────────────────────
+00:00:00 INFO  api     request 0 handled                                        
+00:00:01 WARN  worker  request 1 handled                                        
+00:00:02 ERROR gateway request 2 handled                                        
+00:00:03 INFO  api     request 3 handled                                        
+00:00:04 INFO  worker  request 4 handled                                        
+00:00:05 INFO  gateway request 5 handled                                        
+00:00:06 WARN  api     request 6 handled                                        
+00:00:07 ERROR worker  request 7 handled                                        
+00:00:08 INFO  gateway request 8 handled                                        
+00:00:09 INFO  api     request 9 handled                                        
+00:00:10 INFO  worker  request 10 handled                                       
+00:00:11 WARN  gateway request 11 handled                                       
+00:00:12 ERROR api     request 12 handled                                       
+00:00:13 INFO  worker  request 13 handled                                       
+00:00:14 INFO  gateway request 14 handled                                       
+00:00:15 INFO  api     request 15 handled                                       
+00:00:16 WARN  worker  request 16 handled                                       
+00:00:17 ERROR gateway request 17 handled                                       
+00:00:18 INFO  api     request 18 handled                                       
+00:00:19 INFO  worker  request 19 handled                                       
+00:00:20 INFO  gateway request 20 handled                                       
+200 of 200 lines   up/down: history   ctrl+r: search   pgup/pgdn: scroll   esc:…

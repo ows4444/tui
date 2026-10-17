@@ -67,13 +67,12 @@ The cell renderer falls back in two ways:
 - **A row it can't represent** (a control character, an unknown escape or
   SGR code) is drawn alone with the line strategy. The rest of the frame stays
   a cell frame.
-- **A whole frame** goes to the line renderer in a few cases. One is a View
-  taller than the terminal. The frame log names the reason.
-
-The current godoc of `WithCellRenderer` lists tabs, control characters and
-non-SGR escapes as whole-frame fallbacks. In the current code, tabs are
-expanded before rendering, and the other two trigger only the per-row
-fallback (`TestCellRendererFallsBackForUnsupportedRowOnly`).
+- **A whole frame** goes to the line renderer in two cases: a View taller than
+  the terminal (`view_taller_than_terminal`), and a View with more distinct
+  styles than the renderer's table holds, 4,096 (`style_table_full`; the table is
+  then cleared, so the next frame is a cell frame again). The frame log names the
+  reason. `TestWholeFrameFallbackCases` lists them, and `TestCovParseRowCases`
+  lists the reasons a single row is drawn alone.
 
 ## Drawing cells directly
 

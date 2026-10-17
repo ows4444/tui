@@ -62,7 +62,7 @@
 // errorretry, faces, imageview, clipboard, avatar, button, buttongroup,
 // radiogroup, slider, rating, checkbox, toggle, otpinput, inputgroup,
 // pagination, breadcrumb, transferlist, carousel, tooltip, hovercard,
-// backdrop, fuzzy, prompt, hexview.
+// backdrop, fuzzy, prompt, hexview, rangeslider, timepicker, markdownview, window, motion/fx, termpane.
 //
 // Terminals other than the local one (an SSH session, a test) plug in through
 // the Terminal and Clock ports (WithTerminal, WithClock), plus ResizeNotifier

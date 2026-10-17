@@ -1,10 +1,8 @@
 package imageview
 
 import (
-	"bytes"
 	"image"
 	"image/color"
-	"image/png"
 	"sort"
 	"strconv"
 	"strings"
@@ -39,14 +37,12 @@ func Sixel(pngData []byte, cols, rows, cellW, cellH int) string {
 	if cols <= 0 || rows <= 0 {
 		return ""
 	}
-	img, err := decodePNG(pngData)
+	img, err := decodeImage(pngData)
 	if err != nil {
 		return ""
 	}
 	return encodeSixel(img, cols*cellW, rows*cellH)
 }
-
-func decodePNG(b []byte) (image.Image, error) { return png.Decode(bytes.NewReader(b)) }
 
 // px is one scaled pixel: its colour in 8 bits per channel, and whether it is
 // drawn at all.

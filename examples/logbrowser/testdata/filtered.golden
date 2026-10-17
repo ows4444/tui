@@ -1,0 +1,24 @@
+filter> ERROR                                                                   
+────────────────────────────────────────────────────────────────────────────────
+00:00:02 ERROR gateway request 2 handled                                        
+00:00:07 ERROR worker  request 7 handled                                        
+00:00:12 ERROR api     request 12 handled                                       
+00:00:17 ERROR gateway request 17 handled                                       
+00:00:22 ERROR worker  request 22 handled                                       
+00:00:27 ERROR api     request 27 handled                                       
+00:00:32 ERROR gateway request 32 handled                                       
+00:00:37 ERROR worker  request 37 handled                                       
+00:00:42 ERROR api     request 42 handled                                       
+00:00:47 ERROR gateway request 47 handled                                       
+00:00:52 ERROR worker  request 52 handled                                       
+00:00:57 ERROR api     request 57 handled                                       
+00:01:02 ERROR gateway request 62 handled                                       
+00:01:07 ERROR worker  request 67 handled                                       
+00:01:12 ERROR api     request 72 handled                                       
+00:01:17 ERROR gateway request 77 handled                                       
+00:01:22 ERROR worker  request 82 handled                                       
+00:01:27 ERROR api     request 87 handled                                       
+00:01:32 ERROR gateway request 92 handled                                       
+00:01:37 ERROR worker  request 97 handled                                       
+00:01:42 ERROR api     request 102 handled                                      
+40 of 200 lines   up/down: history   ctrl+r: search   pgup/pgdn: scroll   esc: …

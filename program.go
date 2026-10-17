@@ -130,6 +130,10 @@ type Program struct {
 	inCloseOnce   sync.Once
 	altScreen     bool
 	mouseMode     MouseMode
+	selOn         bool       // WithTextSelection
+	selStyle      ansi.Style // how the selection is drawn
+	sel           selection
+	selDirty      bool // the selection went away and the next frame must show it
 	// resizeKick carries "the console reported a resize" from the input
 	// reader to watchResize (Windows); a size re-read follows each kick.
 	resizeKick         chan struct{}
@@ -141,6 +145,16 @@ type Program struct {
 	kittyKeyboard      bool
 	keyboardFlags      KeyboardFlags
 	reducedMotion      bool
+	reducedSet         bool     // WithReducedMotion chose it; otherwise the environment does
+	accessibleAuto     bool     // WithAccessibleAuto: decided from the environment after every option
+	env                []string // WithEnvironment; nil means the process environment
+	envSet             bool
+	filter             func(Model, Msg) Msg // WithFilter
+	multiClick         time.Duration        // WithMultiClick; the default applies unless multiClickSet
+	multiClickSet      bool
+	clicks             clickCounter
+	noRender           bool // WithoutRenderer
+	initW, initH       int  // WithWindowSize: the size when the terminal reports none
 	accessible         bool
 	modeSet            bool           // WithAltScreen or WithAccessible was given (see applyDumbTermDefaults)
 	polite             announce.Queue // accessible polite lines queued and de-duplicated; loop goroutine only
@@ -168,21 +182,23 @@ type Program struct {
 	outlineOn          bool   // the layout outlines are showing; loop goroutine only
 	lastFrameBytes     int    // the last frame's size and duration, for the inspector
 	lastFrameDur       time.Duration
-	recCast, recSide   io.Writer    // WithRecorder, WithRecorderSidecar
-	rec                *recorder    // non-nil while recording
-	tickSeq            int          // Every tickers started, for the recorder; loop goroutine only
-	msgKey, modelKey   string       // WithInspector Messages / Model; "" means off
-	msgOn, modelOn     bool         // the message and model panes are showing; loop goroutine only
-	msgLog             msgRing      // recent messages, for the inspector; loop goroutine only
-	titleSaved         bool         // SetWindowTitle pushed the title (CSI 22;0t); guarded by outMu
-	viewTitle          string       // the last title a ViewState set; event loop only
-	viewTitleSet       bool         // viewTitle holds one
-	cursorShaped       bool         // SetCursorShape changed the cursor shape; guarded by outMu
-	progressSet        bool         // SetProgress left an indicator to remove on exit; guarded by outMu
-	viewProgress       *Progress    // the last Progress a ViewState set; event loop only
-	clipReads          atomic.Int32 // ReadClipboard queries not yet answered
-	copied             string       // text of the last WriteClipboard; loop goroutine only
-	capProbe           capProbe     // WithCapabilityProbe; see capabilities.go
+	recCast, recSide   io.Writer     // WithRecorder, WithRecorderSidecar
+	rec                *recorder     // non-nil while recording
+	tickSeq            int           // Every tickers started, for the recorder; loop goroutine only
+	msgKey, modelKey   string        // WithInspector Messages / Model; "" means off
+	msgOn, modelOn     bool          // the message and model panes are showing; loop goroutine only
+	msgLog             msgRing       // recent messages, for the inspector; loop goroutine only
+	pointerSet         bool          // SetPointerShape changed the pointer; guarded by outMu
+	viewPointer        *PointerShape // the shape ViewState last asked for
+	titleSaved         bool          // SetWindowTitle pushed the title (CSI 22;0t); guarded by outMu
+	viewTitle          string        // the last title a ViewState set; event loop only
+	viewTitleSet       bool          // viewTitle holds one
+	cursorShaped       bool          // SetCursorShape changed the cursor shape; guarded by outMu
+	progressSet        bool          // SetProgress left an indicator to remove on exit; guarded by outMu
+	viewProgress       *Progress     // the last Progress a ViewState set; event loop only
+	clipReads          atomic.Int32  // ReadClipboard queries not yet answered
+	copied             string        // text of the last WriteClipboard; loop goroutine only
+	capProbe           capProbe      // WithCapabilityProbe; see capabilities.go
 	chordDefs          []ChordDef
 	chordTimeout       time.Duration
 	chords             *input.ChordMatcher // nil unless WithChords was used
@@ -454,27 +470,32 @@ func (p *Program) restoreTerminal() {
 // alternate screen buffer by default; opts override those defaults.
 func NewProgram(m Model, opts ...ProgramOption) *Program {
 	p := &Program{
-		model:         m,
-		initModel:     m,
-		output:        os.Stdout,
-		errOutput:     os.Stderr,
-		input:         os.Stdin,
-		altScreen:     true,
-		parentCtx:     context.Background(),
-		reducedMotion: motion.Detect().Reduced(),
-		msgs:          make(chan Msg, 64),
-		resizeKick:    make(chan struct{}, 1),
-		loopStarted:   make(chan struct{}),
-		exitOnSignal:  true,
-		cellRender:    true, // the default renderer; WithCellRenderer(false) opts out
+		model:        m,
+		initModel:    m,
+		output:       os.Stdout,
+		errOutput:    os.Stderr,
+		input:        os.Stdin,
+		altScreen:    true,
+		parentCtx:    context.Background(),
+		msgs:         make(chan Msg, 64),
+		resizeKick:   make(chan struct{}, 1),
+		loopStarted:  make(chan struct{}),
+		exitOnSignal: true,
+		cellRender:   true, // the default renderer; WithCellRenderer(false) opts out
 
 		bracketedPaste: true,
 	}
 	for _, opt := range opts {
 		opt(p)
 	}
+	if !p.reducedSet {
+		p.reducedMotion = motion.DetectEnv(p.Getenv).Reduced()
+	}
+	if p.accessibleAuto {
+		p.accessible = p.accessibleFromEnv()
+	}
 	if !p.colorSet {
-		p.colorProfile = ansi.DetectColorProfileFor(p.output, os.Getenv)
+		p.colorProfile = ansi.DetectColorProfileFor(p.output, p.Getenv)
 	}
 	p.applyDumbTermDefaults()
 	p.setupRecorder()
@@ -589,6 +610,8 @@ func (p *Program) Run() (Model, error) {
 
 	if w, h, ok := p.termSize(); ok {
 		p.width, p.height = w, h
+	} else if p.initW > 0 && p.initH > 0 {
+		p.width, p.height = p.initW, p.initH
 	} else if _, isFile := p.output.(*os.File); !isFile {
 		p.width, p.height = 80, 24 // a plain writer has no terminal to ask
 	}

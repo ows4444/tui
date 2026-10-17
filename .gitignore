@@ -37,3 +37,4 @@ bench/new.txt
 
 # acline: per-machine state
 .claude/vault/.state/
+examples/ssh/ssh

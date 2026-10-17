@@ -20,7 +20,9 @@
 // reduced motion with zero changes to spinner.go, streamtext.go, or
 // skeleton.go. See decision #11 for the full rationale.
 //
-// The package also has easing functions (Ease, from Linear to OutBack) and
+// The package also has 31 easing functions (Ease: Linear and the Quad, Cubic,
+// Quart, Quint, Sine, Expo, Circ, Back, Elastic and Bounce families, each in,
+// out and in-out; ByName finds one by its name) and
 // Tween, which interpolates a value over time and skips straight to the end
 // value under a Reduced preference.
 package motion
@@ -60,8 +62,12 @@ func (p Preference) Reduced() bool {
 
 // Detect returns Reduced if the NO_ANIMATION or REDUCE_MOTION environment
 // variable is set to a non-empty value, and Normal otherwise.
-func Detect() Preference {
-	if os.Getenv(reducedMotionEnvVar) != "" || os.Getenv(standardReducedMotionEnvVar) != "" {
+func Detect() Preference { return DetectEnv(os.Getenv) }
+
+// DetectEnv is Detect reading the variables through getenv, for a program that
+// has an environment of its own (see tui.WithEnvironment).
+func DetectEnv(getenv func(string) string) Preference {
+	if getenv(reducedMotionEnvVar) != "" || getenv(standardReducedMotionEnvVar) != "" {
 		return Reduced
 	}
 	return Normal

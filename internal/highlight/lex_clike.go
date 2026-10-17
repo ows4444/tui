@@ -270,190 +270,221 @@ func lineEnd(s string, i int) int {
 	return len(s)
 }
 
+// clikeScan is the state of lexClike: where it is, and what the last
+// significant token was (which decides whether a "/" starts a regex).
+type clikeScan struct {
+	s         string
+	cfg       *clikeCfg
+	e         emitter
+	i         int
+	lastSig   byte
+	lastWord  string
+	lineStart bool // only blanks seen on this line so far
+}
+
+func (l *clikeScan) sig(b byte, word string) { l.lastSig, l.lastWord, l.lineStart = b, word, false }
+
+// take emits s[i:j] as c and moves to j, without counting it as a token.
+func (l *clikeScan) take(j int, c Class) {
+	l.e.add(l.s[l.i:j], c)
+	l.i = j
+}
+
 func lexClike(s string, cfg *clikeCfg) []Span {
-	var e emitter
-	var lastSig byte
-	lastWord := ""
-	lineStart := true // only blanks seen on this line so far
-	sig := func(b byte, word string) { lastSig, lastWord, lineStart = b, word, false }
-	for i := 0; i < len(s); {
-		c := s[i]
+	l := &clikeScan{s: s, cfg: cfg, lineStart: true}
+	for l.i < len(s) {
+		l.next()
+	}
+	return l.e.result()
+}
+
+// next lexes one token.
+func (l *clikeScan) next() {
+	s, i, cfg := l.s, l.i, l.cfg
+	c := s[i]
+	switch {
+	case c == '\n':
+		l.e.add("\n", Plain)
+		l.i++
+		l.lineStart = true
+	case c == ' ' || c == '\t' || c == '\r':
+		l.e.add(s[i:i+1], Plain)
+		l.i++
+	case c == '/' && i+1 < len(s) && s[i+1] == '/':
+		l.take(lineEnd(s, i), Comment)
+		l.lineStart = false
+	case c == '/' && i+1 < len(s) && s[i+1] == '*':
+		l.take(scanBlockComment(s, i, cfg.rust || cfg.nestComments), Comment)
+		l.lineStart = false
+	case cfg.php && l.phpToken(c):
+	case cfg.csStrings && (c == '@' || c == '$') && csStringStart(s, i) > i:
+		k := csStringStart(s, i)
+		j := scanQuoted(s, k, '"', false)
+		if strings.Contains(s[i:k], "@") {
+			j = scanVerbatim(s, k)
+		}
+		l.take(j, String)
+		l.sig('"', "")
+	case c == '#' && cfg.preproc && l.lineStart:
+		l.preprocessor()
+	case c == '"' && cfg.textBlock && strings.HasPrefix(s[i:], `"""`):
+		l.take(scanPyString(s, i), String)
+		l.sig(c, "")
+	case c == '"' || c == '\'' && !cfg.rust:
+		l.take(scanQuoted(s, i, c, false), String)
+		l.sig(c, "")
+	case c == '\'' && cfg.rust:
+		j, isChar := scanRustQuote(s, i)
+		if isChar {
+			l.take(j, String)
+		} else {
+			l.take(j, Type)
+		}
+		l.sig(c, "")
+	case c == '`' && cfg.backtick:
+		l.take(scanQuoted(s, i, c, true), String)
+		l.sig(c, "")
+	case c == '/' && cfg.regex && regexAllowed(l.lastSig, l.lastWord):
+		if j := scanRegex(s, i); j >= 0 {
+			l.take(j, String)
+			l.sig('/', "")
+			return
+		}
+		l.e.add("/", Plain)
+		l.i++
+		l.sig(c, "")
+	case c == '@' && cfg.annotation && i+1 < len(s) && isIdentStart(s[i+1]):
+		j := i + 1
+		for j < len(s) && (isIdentPart(s[j]) || s[j] == '.') {
+			j++
+		}
+		l.take(j, Keyword)
+		l.sig('a', "")
+	case isDigit(c) || c == '.' && i+1 < len(s) && isDigit(s[i+1]):
+		l.number()
+	case isIdentStart(c):
+		l.word()
+	default:
+		l.e.add(s[i:i+1], Plain)
+		l.i++
+		l.sig(c, "")
+	}
+}
+
+// phpToken lexes what only PHP has: "#" comments and attributes, the open and
+// close tags, and variables. It reports whether c began one.
+func (l *clikeScan) phpToken(c byte) bool {
+	s, i := l.s, l.i
+	switch {
+	case c == '#':
+		if i+1 < len(s) && s[i+1] == '[' {
+			l.e.add("#[", Keyword) // a PHP 8 attribute
+			l.i += 2
+			l.sig('[', "")
+			return true
+		}
+		l.take(lineEnd(s, i), Comment)
+		l.lineStart = false
+		return true
+	case strings.HasPrefix(s[i:], "<?php") || strings.HasPrefix(s[i:], "<?=") || strings.HasPrefix(s[i:], "?>"):
+		n := 2
 		switch {
-		case c == '\n':
-			e.add("\n", Plain)
-			i++
-			lineStart = true
-		case c == ' ' || c == '\t' || c == '\r':
-			e.add(s[i:i+1], Plain)
-			i++
-		case c == '/' && i+1 < len(s) && s[i+1] == '/':
-			j := lineEnd(s, i)
-			e.add(s[i:j], Comment)
-			i = j
-			lineStart = false
-		case c == '/' && i+1 < len(s) && s[i+1] == '*':
-			j := scanBlockComment(s, i, cfg.rust || cfg.nestComments)
-			e.add(s[i:j], Comment)
-			i = j
-			lineStart = false
-		case cfg.php && c == '#':
-			if i+1 < len(s) && s[i+1] == '[' {
-				e.add("#[", Keyword) // a PHP 8 attribute
-				i += 2
-				sig('[', "")
-				break
+		case strings.HasPrefix(s[i:], "<?php"):
+			n = 5
+		case strings.HasPrefix(s[i:], "<?="):
+			n = 3
+		}
+		l.take(i+n, Keyword)
+		l.sig(';', "")
+		return true
+	case c == '$' && i+1 < len(s) && isIdentStart(s[i+1]):
+		j := i + 1
+		for j < len(s) && isIdentPart(s[j]) {
+			j++
+		}
+		l.take(j, Variable)
+		l.sig('a', "")
+		return true
+	}
+	return false
+}
+
+// preprocessor lexes a "#" directive at the start of a line, and the <header>
+// of an include or import.
+func (l *clikeScan) preprocessor() {
+	s, i := l.s, l.i
+	j := i + 1
+	for j < len(s) && (s[j] == ' ' || s[j] == '\t') {
+		j++
+	}
+	for j < len(s) && isIdentPart(s[j]) {
+		j++
+	}
+	word := strings.TrimLeft(s[i+1:j], " \t")
+	l.take(j, Keyword)
+	if word == "include" || word == "import" {
+		k := l.i
+		for k < len(s) && (s[k] == ' ' || s[k] == '\t') {
+			k++
+		}
+		if k < len(s) && s[k] == '<' {
+			if end := strings.IndexAny(s[k:], ">\n"); end >= 0 && s[k+end] == '>' {
+				l.e.add(s[l.i:k], Plain)
+				l.e.add(s[k:k+end+1], String)
+				l.i = k + end + 1
 			}
-			j := lineEnd(s, i)
-			e.add(s[i:j], Comment)
-			i = j
-			lineStart = false
-		case cfg.php && (strings.HasPrefix(s[i:], "<?php") || strings.HasPrefix(s[i:], "<?=") || strings.HasPrefix(s[i:], "?>")):
-			n := 2
-			switch {
-			case strings.HasPrefix(s[i:], "<?php"):
-				n = 5
-			case strings.HasPrefix(s[i:], "<?="):
-				n = 3
-			}
-			e.add(s[i:i+n], Keyword)
-			i += n
-			sig(';', "")
-		case cfg.php && c == '$' && i+1 < len(s) && isIdentStart(s[i+1]):
-			j := i + 1
-			for j < len(s) && isIdentPart(s[j]) {
-				j++
-			}
-			e.add(s[i:j], Variable)
-			i = j
-			sig('a', "")
-		case cfg.csStrings && (c == '@' || c == '$') && csStringStart(s, i) > i:
-			k := csStringStart(s, i)
-			var j int
-			if strings.Contains(s[i:k], "@") {
-				j = scanVerbatim(s, k)
-			} else {
-				j = scanQuoted(s, k, '"', false)
-			}
-			e.add(s[i:j], String)
-			i = j
-			sig('"', "")
-		case c == '#' && cfg.preproc && lineStart:
-			j := i + 1
-			for j < len(s) && (s[j] == ' ' || s[j] == '\t') {
-				j++
-			}
-			for j < len(s) && isIdentPart(s[j]) {
-				j++
-			}
-			word := strings.TrimLeft(s[i+1:j], " \t")
-			e.add(s[i:j], Keyword)
-			i = j
-			if word == "include" || word == "import" {
-				k := i
-				for k < len(s) && (s[k] == ' ' || s[k] == '\t') {
-					k++
-				}
-				if k < len(s) && s[k] == '<' {
-					if end := strings.IndexAny(s[k:], ">\n"); end >= 0 && s[k+end] == '>' {
-						e.add(s[i:k], Plain)
-						e.add(s[k:k+end+1], String)
-						i = k + end + 1
-					}
-				}
-			}
-			lineStart = false
-		case c == '"' && cfg.textBlock && strings.HasPrefix(s[i:], `"""`):
-			j := scanPyString(s, i)
-			e.add(s[i:j], String)
-			i = j
-			sig(c, "")
-		case c == '"' || c == '\'' && !cfg.rust:
-			j := scanQuoted(s, i, c, false)
-			e.add(s[i:j], String)
-			i = j
-			sig(c, "")
-		case c == '\'' && cfg.rust:
-			j, isChar := scanRustQuote(s, i)
-			if isChar {
-				e.add(s[i:j], String)
-			} else {
-				e.add(s[i:j], Type)
-			}
-			i = j
-			sig(c, "")
-		case c == '`' && cfg.backtick:
-			j := scanQuoted(s, i, c, true)
-			e.add(s[i:j], String)
-			i = j
-			sig(c, "")
-		case c == '/' && cfg.regex && regexAllowed(lastSig, lastWord):
-			if j := scanRegex(s, i); j >= 0 {
-				e.add(s[i:j], String)
-				i = j
-				sig('/', "")
-				break
-			}
-			e.add("/", Plain)
-			i++
-			sig(c, "")
-		case c == '@' && cfg.annotation && i+1 < len(s) && isIdentStart(s[i+1]):
-			j := i + 1
-			for j < len(s) && (isIdentPart(s[j]) || s[j] == '.') {
-				j++
-			}
-			e.add(s[i:j], Keyword)
-			i = j
-			sig('a', "")
-		case isDigit(c) || c == '.' && i+1 < len(s) && isDigit(s[i+1]):
-			j := scanNumber(s, i)
-			if cfg.rust {
-				if k := strings.Index(s[i:j], ".."); k >= 0 {
-					j = i + k
-				}
-			}
-			if cfg.digitSep {
-				for j+1 < len(s) && s[j] == '\'' && isIdentPart(s[j+1]) {
-					j = scanNumber(s, j+1)
-				}
-			}
-			e.add(s[i:j], Number)
-			i = j
-			sig('0', "")
-		case isIdentStart(c):
-			j := i
-			for j < len(s) && isIdentPart(s[j]) {
-				j++
-			}
-			word := s[i:j]
-			if end := scanPrefixedString(s, i, j, cfg); end > 0 {
-				e.add(s[i:end], String)
-				i = end
-				sig('"', "")
-				break
-			}
-			key := word
-			if cfg.foldCase {
-				key = strings.ToLower(word)
-			}
-			switch {
-			case cfg.keywords[key]:
-				e.add(word, Keyword)
-			case cfg.types[key] || cfg.capsTypes && isCapsType(word) && !(cfg.capsNotCalls && j < len(s) && s[j] == '('):
-				e.add(word, Type)
-			case cfg.literals[key]:
-				e.add(word, Literal)
-			default:
-				e.add(word, Plain)
-			}
-			i = j
-			sig('a', word)
-		default:
-			e.add(s[i:i+1], Plain)
-			i++
-			sig(c, "")
 		}
 	}
-	return e.result()
+	l.lineStart = false
+}
+
+// number lexes a numeric literal.
+func (l *clikeScan) number() {
+	s, i, cfg := l.s, l.i, l.cfg
+	j := scanNumber(s, i)
+	if cfg.rust {
+		if k := strings.Index(s[i:j], ".."); k >= 0 {
+			j = i + k
+		}
+	}
+	if cfg.digitSep {
+		for j+1 < len(s) && s[j] == '\'' && isIdentPart(s[j+1]) {
+			j = scanNumber(s, j+1)
+		}
+	}
+	l.take(j, Number)
+	l.sig('0', "")
+}
+
+// word lexes an identifier, keyword or prefixed string.
+func (l *clikeScan) word() {
+	s, i, cfg := l.s, l.i, l.cfg
+	j := i
+	for j < len(s) && isIdentPart(s[j]) {
+		j++
+	}
+	word := s[i:j]
+	if end := scanPrefixedString(s, i, j, cfg); end > 0 {
+		l.take(end, String)
+		l.sig('"', "")
+		return
+	}
+	key := word
+	if cfg.foldCase {
+		key = strings.ToLower(word)
+	}
+	switch {
+	case cfg.keywords[key]:
+		l.e.add(word, Keyword)
+	case cfg.types[key] || cfg.capsTypes && isCapsType(word) && !(cfg.capsNotCalls && j < len(s) && s[j] == '('):
+		l.e.add(word, Type)
+	case cfg.literals[key]:
+		l.e.add(word, Literal)
+	default:
+		l.e.add(word, Plain)
+	}
+	l.i = j
+	l.sig('a', word)
 }
 
 // scanPrefixedString handles string forms that begin with a word: Rust raw

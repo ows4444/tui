@@ -246,6 +246,26 @@ func (e *Editor) wordStart() int {
 // WordLeft moves to the start of the previous word.
 func (e *Editor) WordLeft() { e.cursor = e.wordStart() }
 
+// SelectRunAt selects the run of clusters around cluster pos that are all spaces
+// or all not spaces: the word under a double click, or the gap between two. A pos
+// past the end counts as the last cluster. It does nothing on empty text.
+func (e *Editor) SelectRunAt(pos int) {
+	n := len(e.cl)
+	if n == 0 {
+		return
+	}
+	i := min(max(pos, 0), n-1)
+	class := e.space(i)
+	lo, hi := i, i+1
+	for lo > 0 && e.space(lo-1) == class {
+		lo--
+	}
+	for hi < n && e.space(hi) == class {
+		hi++
+	}
+	e.anchor, e.cursor = lo+1, hi
+}
+
 // WordRight moves to the end of the next word.
 func (e *Editor) WordRight() {
 	i := e.cursor

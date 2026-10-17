@@ -22,6 +22,7 @@ import (
 	"github.com/ows4444/tui/input"
 	"github.com/ows4444/tui/internal/a11y"
 	"github.com/ows4444/tui/internal/edit"
+	"github.com/ows4444/tui/internal/vi"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/theme"
@@ -51,6 +52,15 @@ type Model struct {
 	// one step. SetValue and Reset forget the history.
 	UndoLimit int
 
+	// Vi, when true, makes the field modal like vi: it starts in Normal mode
+	// (keys are commands: h l w b e 0 ^ $ f t, d c y with motions and text
+	// objects, x p P r ~ u . and counts), i a I A enter Insert mode, where
+	// typing, History and suggestions work as usual until Esc, and v selects.
+	// Up, Down and Enter are left to the field in every mode, and Ctrl+R redoes
+	// in Normal mode (it searches History in Insert mode). y copies with OSC 52
+	// as Copy does unless DisableCopy is set. ViMode and SetViMode read and set
+	// the mode, for a status line or to start in Insert.
+	Vi bool
 	// DisableCopy makes Copy and Cut do nothing, for fields whose value must
 	// not reach the clipboard (passwordinput sets it).
 	DisableCopy bool
@@ -70,6 +80,21 @@ type Model struct {
 	// schedules no tick.
 	Motion motion.Preference
 
+	// History is the entries the person can recall, oldest first, with
+	// KeyMap.HistoryPrev (Up) and HistoryNext (Down): Up shows the newest entry,
+	// again an older one, and Down comes back to a newer one and finally to what
+	// was being typed. HistorySearch (Ctrl+R) finds the newest entry older than
+	// the last that contains what was typed. The app keeps the list: append the
+	// value when it is submitted. Empty (the default), those keys do nothing.
+	History []string
+	// Suggestion is text offered after the cursor in the placeholder style,
+	// when the value is the start of it and the cursor is at the end; Right,
+	// End or Ctrl+E (KeyMap.AcceptSuggestion) takes it.
+	Suggestion string
+	// SuggestFromHistory takes the suggestion from History instead: the newest
+	// entry that starts with the value.
+	SuggestFromHistory bool
+
 	// KeyMap holds the keys for the editing actions. New fills it with
 	// DefaultKeyMap; a Model built as a struct literal with a zero KeyMap
 	// behaves as if it held DefaultKeyMap. Typed characters are not actions:
@@ -77,10 +102,12 @@ type Model struct {
 	KeyMap KeyMap
 
 	ed            edit.Editor
+	hist          historyState
 	focused       bool
 	cursorVisible bool
 	blinkID       uint64 // id of the one live blink loop; stale ticks are dropped
-	dragging      bool   // a left-button drag that began inside Bounds is under way
+	vi            vi.State
+	dragging      bool // a left-button drag that began inside Bounds is under way
 }
 
 // New returns a Model with sane default styling: a faint placeholder and a
@@ -114,6 +141,10 @@ type KeyMap struct {
 	Copy           keymap.Binding // copy the selection with OSC 52
 	Cut            keymap.Binding // copy the selection with OSC 52 and delete it
 	Paste          keymap.Binding // insert the text of the last Copy or Cut
+	// HistoryPrev and HistoryNext recall older and newer entries of History,
+	// HistorySearch searches it, and AcceptSuggestion takes the suggestion. A
+	// KeyMap that leaves them empty gets the defaults.
+	HistoryPrev, HistoryNext, HistorySearch, AcceptSuggestion keymap.Binding
 }
 
 // DefaultKeyMap returns the keys a Model used before KeyMap existed.
@@ -135,6 +166,11 @@ func DefaultKeyMap() KeyMap {
 		Copy:           keymap.NewBinding("copy", "ctrl+c"),
 		Cut:            keymap.NewBinding("cut", "ctrl+x"),
 		Paste:          keymap.NewBinding("paste", "ctrl+v"),
+
+		HistoryPrev:      keymap.NewBinding("previous entry", "up"),
+		HistoryNext:      keymap.NewBinding("next entry", "down"),
+		HistorySearch:    keymap.NewBinding("search history", "ctrl+r"),
+		AcceptSuggestion: keymap.NewBinding("accept suggestion", "right", "end", "ctrl+e"),
 	}
 }
 
@@ -157,12 +193,14 @@ func (m Model) keys() KeyMap {
 	if m.KeyMap.zero() {
 		return DefaultKeyMap()
 	}
-	return m.KeyMap
+	return m.KeyMap.withHistoryDefaults()
 }
 
 // Bindings returns the editing actions the Model currently honours, with
 // descriptions, for help text. Typed characters are not listed.
-func (m Model) Bindings() []keymap.Binding { return m.keys().list() }
+func (m Model) Bindings() []keymap.Binding {
+	return append(m.keys().list(), m.historyBindings()...)
+}
 
 // keyHit reports whether k triggers b, ignoring Shift and Super so that, as
 // before KeyMap existed, Shift+Left still moves left.
@@ -183,11 +221,13 @@ func (m Model) Value() string { return m.ed.String() }
 // SetValue replaces the current value and moves the cursor to its end,
 // truncating to CharLimit if set.
 func (m *Model) SetValue(s string) {
+	m.hist = historyState{}
 	m.ed.Set(s, m.CharLimit)
 }
 
 // Reset clears the value and moves the cursor to the start.
 func (m *Model) Reset() {
+	m.hist = historyState{}
 	m.ed.Reset()
 }
 
@@ -270,6 +310,9 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.cursorVisible = true
 		return m, cmd
 	case tui.PasteEvent:
+		if m.Vi && m.vi.Mode() != vi.Insert {
+			return m, nil // a command mode takes keys, not text
+		}
 		// This is a single-line field, so newlines in a multi-line paste
 		// are dropped rather than inserted literally.
 		// Untrusted: tabs become one space, then escape sequences and
@@ -286,6 +329,11 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 func (m *Model) handleKey(k tui.Key) tui.Cmd {
 	km := m.keys()
 	m.ed.SetHistoryLimit(m.UndoLimit)
+	if m.Vi {
+		if handled, cmd := m.viKey(k); handled {
+			return cmd
+		}
+	}
 	// Redo is tested before Undo and neither ignores Shift: ctrl+shift+z must
 	// not be taken for ctrl+z.
 	switch {
@@ -314,6 +362,9 @@ func (m *Model) handleKey(k tui.Key) tui.Cmd {
 			m.ed.ClearSelection()
 		}
 		f()
+	}
+	if m.handleHistoryKey(k, km) {
+		return nil
 	}
 	switch {
 	case keyHit(k, km.WordLeft):
@@ -427,7 +478,13 @@ func (m Model) updateMouse(ev tui.MouseEvent) Model {
 		m.ed.SetCursor(m.indexAt(ev.X - m.Bounds.X))
 		m.ed.ClearSelection()
 		m.ed.SetAnchor()
-		m.dragging = true
+		switch {
+		case ev.Clicks >= 3:
+			m.ed.SelectAll() // a triple click takes the whole line
+		case ev.Clicks == 2:
+			m.ed.SelectRunAt(m.ed.Cursor()) // a double click takes the word
+		}
+		m.dragging = ev.Clicks < 2
 		m.cursorVisible = true
 	case tui.MouseActionMotion:
 		if m.dragging {
@@ -484,6 +541,9 @@ func (m Model) View() string {
 	}
 	if m.focused && m.cursorVisible && cur == n && cur == end {
 		b.WriteString(m.CursorStyle.Render(" "))
+	}
+	if cur == n && cur == end {
+		b.WriteString(m.ghost(min(m.ed.Width(), max(m.Width, m.ed.Width()))))
 	}
 	return b.String()
 }

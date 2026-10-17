@@ -65,6 +65,12 @@ type fileTheme struct {
 	Surface     string `json:"surface"`
 	Overlay     string `json:"overlay"`
 	Border      string `json:"border"`
+	// The rest changes what a colour alone cannot: see applyExtras.
+	Glyphs     string                `json:"glyphs"`
+	Spacing    *fileSpacing          `json:"spacing"`
+	States     *fileStates           `json:"states"`
+	Typography *fileTypography       `json:"typography"`
+	Components map[string]fileTokens `json:"components"`
 }
 
 // Parse reads a theme from JSON, so the people who run a program can restyle it
@@ -81,11 +87,19 @@ type fileTheme struct {
 // The colour fields are primary, secondary, success, warning, error, info,
 // muted, text, text_inverse, border_color, focus, selection, background,
 // surface and overlay, each "#rrggbb" or "#rgb". "border" is "normal",
-// "rounded" or "ascii". An unknown field, an unknown base or a bad colour is an
+// "rounded", "ascii", "double", "thick" or "hidden". An unknown field, an unknown base or a bad colour is an
 // error that names it. When text, text_inverse or background changes, the
 // surface, overlay and the focus, hover, disabled and selected states are
 // derived again from the new colours, except for a surface or overlay the file
 // sets. Parse does not judge contrast: call Theme.Check on the result.
+//
+// Beyond colours a file can set "glyphs" ("unicode", "ascii" or "nerd"),
+// "spacing" ({"xs": 1, "s": 2, "m": 3, "l": 4}), the four interactive
+// "states" and the six "typography" styles, each a style like {"fg": "#ff8800",
+// "bg": "#101820", "bold": true} (also faint, italic, underline, reverse,
+// strike), and "components": per-widget colours by widget name (see
+// Components), like {"tabs": {"accent": "#ff8800"}} with the roles of Tokens in
+// lower case. These apply after the colours, so they are not derived again.
 func Parse(r io.Reader) (Theme, error) {
 	raw, err := io.ReadAll(r)
 	if err != nil {
@@ -153,8 +167,14 @@ func Parse(r io.Reader) (Theme, error) {
 		t.Border = basetypes.RoundedBorder
 	case "ascii":
 		t.Border = basetypes.ASCIIBorder
+	case "double":
+		t.Border = basetypes.DoubleBorder
+	case "thick":
+		t.Border = basetypes.ThickBorder
+	case "hidden":
+		t.Border = basetypes.HiddenBorder
 	default:
-		return Theme{}, fmt.Errorf("theme: border: %q is not normal, rounded or ascii", f.Border)
+		return Theme{}, fmt.Errorf("theme: border: %q is not normal, rounded, ascii, double, thick or hidden", f.Border)
 	}
 	if changed {
 		if f.Background == "" {
@@ -170,6 +190,9 @@ func Parse(r io.Reader) (Theme, error) {
 		}
 		t.States = States{}
 		t.States = t.ResolvedStates()
+	}
+	if err := applyExtras(&t, f); err != nil {
+		return Theme{}, err
 	}
 	return t, nil
 }
@@ -187,5 +210,5 @@ func parseHex(s string) (ansi.Color, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%q is not a colour like #rrggbb", s)
 	}
-	return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, nil
+	return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, nil // #nosec G115 -- n was parsed from six hex digits
 }

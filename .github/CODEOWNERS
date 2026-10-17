@@ -1,0 +1,5 @@
+# Every change is reviewed by the owner; the public API listing and the
+# promise it backs get an explicit line so a rename never goes unseen.
+*            @ows4444
+/api.txt     @ows4444
+/docs/v1.md  @ows4444

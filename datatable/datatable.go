@@ -100,6 +100,15 @@ type Model struct {
 	// nil; only the rows in view are read. Sort, Filter and editing are off.
 	Source Source
 
+	// Multi, when true, lets KeyMap.Mark and MarkAll mark rows; a marked row shows
+	// a check in the gutter and Marked lists them. Selecting with Enter is
+	// unchanged. Off (the default), no key marks.
+	Multi bool
+
+	// Columns sets how each column is aligned, bounded, formatted and ordered;
+	// see Column. Columns[i] is for Headers[i].
+	Columns []Column
+
 	// ColumnWidths fixes column widths for LayoutNode: entry i, when positive,
 	// is the width of column i; zero, a negative entry or a missing entry
 	// leaves that column at its natural (content) width. Fixed widths do not
@@ -129,8 +138,10 @@ type Model struct {
 	// idx maps each row of Rows to its place in src; both are nil otherwise.
 	query   string
 	editing bool
-	src     [][]string
-	idx     []int
+	// marked holds the marked source rows, replaced and not edited.
+	marked map[int]bool
+	src    [][]string
+	idx    []int
 }
 
 // chrome is the header line plus the divider line above the data rows.
@@ -189,6 +200,7 @@ func New(headers []string, rows [][]string) Model {
 func (m *Model) SetRows(rows [][]string) {
 	m.widths = &widthCache{}
 	m.Source = nil
+	m.dropStaleMarks(len(rows))
 	if m.src != nil || m.sorted || m.query != "" {
 		keep := m.cursor
 		m.src = rows
@@ -215,6 +227,10 @@ type KeyMap struct {
 	// Filter opens the filter line, and ClearSort puts the rows back in their
 	// given order. Filter works only when Model.Filter is true.
 	Filter, ClearSort keymap.Binding
+	// Mark marks or unmarks the row under the cursor, and MarkAll marks every
+	// row shown (or unmarks them when all are marked). They work only when
+	// Model.Multi is true.
+	Mark, MarkAll keymap.Binding
 }
 
 // DefaultKeyMap returns the default keys: arrows, PgUp/PgDn, Home/End,
@@ -233,6 +249,8 @@ func DefaultKeyMap() KeyMap {
 		Right:     keymap.NewBinding("next column", "right"),
 		Filter:    keymap.NewBinding("filter", "/"),
 		ClearSort: keymap.NewBinding("unsort", "S"),
+		Mark:      keymap.NewBinding("mark", "space", " "),
+		MarkAll:   keymap.NewBinding("mark all", "ctrl+a"),
 	}
 }
 
@@ -253,6 +271,9 @@ func (m Model) Bindings() []keymap.Binding {
 	out := []keymap.Binding{k.Up, k.Down, k.PageUp, k.PageDown, k.Top, k.Bottom, k.Select, k.Sort, k.Left, k.Right}
 	if m.Filter {
 		out = append(out, k.Filter)
+	}
+	if m.Multi {
+		out = append(out, k.Mark, k.MarkAll)
 	}
 	return out
 }
@@ -454,6 +475,10 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		src := m.SourceRow(row)
 		col := m.col
 		return m, func() tui.Msg { return SelectedMsg{Row: row, SourceRow: src, Cells: cells, Col: col} }
+	case m.Multi && keymap.Matches(msg, k.Mark):
+		m.toggleCursorMark()
+	case m.Multi && keymap.Matches(msg, k.MarkAll):
+		m.toggleAllMarks()
 	case keymap.Matches(msg, k.Sort):
 		if m.col < len(m.Headers) {
 			m.sortBy(m.col)
@@ -512,7 +537,9 @@ func (m Model) View() string {
 		}
 		headers[m.sortCol] += arrow
 	}
+	rows = m.displayRows(rows, &own)
 	rows = m.styleCells(rows, start, &own)
+	headers, rows = m.alignRows(headers, rows, nil)
 	if m.Width > 0 && len(headers) > 0 {
 		cols := m.colWindow()
 		nh := make([]string, len(cols))
@@ -537,7 +564,7 @@ func (m Model) View() string {
 		}
 		return ansi.Style{}
 	}, m.themed())
-	out := withGutter(table, start, m.cursor)
+	out := withGutterMarks(table, start, m.cursor, m.markedRow, m.markGlyph())
 	if m.top() > 0 {
 		out = m.filterLine() + "\n" + out
 	}
@@ -548,6 +575,12 @@ func (m Model) View() string {
 // cursor row (table's data row i is row start+i), blanks elsewhere, so the
 // cursor row shows without colour.
 func withGutter(table string, start, cursor int) string {
+	return withGutterMarks(table, start, cursor, nil, "")
+}
+
+// withGutterMarks is withGutter with a second marker column: mark is drawn in it
+// for the data rows marked reports true for (row numbers as for start).
+func withGutterMarks(table string, start, cursor int, marked func(row int) bool, mark string) string {
 	if table == "" {
 		return ""
 	}
@@ -555,9 +588,17 @@ func withGutter(table string, start, cursor int) string {
 	b.Grow(len(table) + cursorGutter*(strings.Count(table, "\n")+1))
 	for i, rest := 0, table; ; i++ {
 		line, next, more := strings.Cut(rest, "\n")
-		if i >= chrome && i-chrome+start == cursor {
+		row := i - chrome + start
+		cur := i >= chrome && row == cursor
+		isMarked := i >= chrome && marked != nil && marked(row)
+		switch {
+		case cur && isMarked:
+			b.WriteString(">" + mark)
+		case cur:
 			b.WriteString("> ")
-		} else {
+		case isMarked:
+			b.WriteString(" " + mark)
+		default:
 			b.WriteString("  ")
 		}
 		b.WriteString(line)
@@ -606,9 +647,12 @@ func (m Model) Linearize() string {
 			if j < len(m.Headers) {
 				header = ansi.Clean(m.Raw, m.Headers[j])
 			}
-			cells[j] = header + ": " + ansi.Clean(m.Raw, cell)
+			cells[j] = header + ": " + ansi.Clean(m.Raw, m.display(j, cell))
 		}
 		line := "Row " + strconv.Itoa(i+1) + " of " + strconv.Itoa(m.rowCount()) + ": " + strings.Join(cells, ", ")
+		if m.markedRow(i) {
+			line += ", marked"
+		}
 		if i == m.cursor {
 			line += ", selected"
 		}

@@ -268,6 +268,9 @@ func (b boxNode) chrome() Size {
 			}
 		}
 	}
+	if b.box.shadow != "" {
+		w, h = w+1, h+1
+	}
 	return Size{W: w, H: h}
 }
 

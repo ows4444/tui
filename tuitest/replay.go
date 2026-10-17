@@ -122,91 +122,121 @@ func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tu
 			return
 		}
 	}
+	r := startReplay(t, newModel, hdr, steps, opts)
+	if r.drive() {
+		r.finish(wantFrames, wantShas)
+	}
+}
 
+// replayRun is a Program being driven through a recording.
+type replayRun struct {
+	t     TB
+	steps []step
+	pw    *io.PipeWriter
+	done  chan struct{}
+	term  *termio.Fake
+	clock *FakeClock
+	obs   *observer
+	out   *capture
+	// hint is added to a failure when the recording cannot be driven in order.
+	hint    string
+	pending [][]byte // chunks read in the recording, not yet fed
+}
+
+// startReplay starts newModel() in a Program fed by a pipe, on a fake clock and
+// terminal, and watched by an observer of its updates and writes.
+func startReplay(t TB, newModel func() tui.Model, hdr sidecarLine, steps []step, opts []tui.ProgramOption) *replayRun {
 	pr, pw := io.Pipe()
-	clock := NewFakeClock()
-	term := &termio.Fake{W: hdr.W, H: hdr.H, SizeKnown: true}
-	obs := &observer{}
-	cap := &capture{}
+	r := &replayRun{
+		t: t, steps: steps, pw: pw, done: make(chan struct{}),
+		clock: NewFakeClock(), term: &termio.Fake{W: hdr.W, H: hdr.H, SizeKnown: true},
+		obs: &observer{}, out: &capture{},
+	}
 	all := append([]tui.ProgramOption{
 		tui.WithAltScreen(true),
 		tui.WithColorProfile(ansi.TrueColor),
 	}, opts...)
 	all = append(all,
 		tui.WithInput(pr),
-		tui.WithOutput(cap),
+		tui.WithOutput(r.out),
 		tui.WithErrOutput(io.Discard),
-		tui.WithTerminal(term),
-		tui.WithClock(clock),
-		tui.WithRecorderSidecar(obs),
+		tui.WithTerminal(r.term),
+		tui.WithClock(r.clock),
+		tui.WithRecorderSidecar(r.obs),
 	)
 	prog := tui.NewProgram(newModel(), all...)
-	done := make(chan struct{})
 	go func() {
-		defer close(done)
+		defer close(r.done)
 		_, _ = prog.Run()
 		_ = pr.Close()
 	}()
-
-	fail := func(format string, args ...any) {
-		_ = pw.Close()
-		t.Fatalf("tuitest: replay: "+format, args...)
-	}
-	waitFor := func(upd, out int64) bool {
-		deadline := time.Now().Add(replayWait)
-		for obs.upd.Load() < upd || obs.out.Load() < out {
-			select {
-			case <-done:
-				return obs.upd.Load() >= upd && obs.out.Load() >= out
-			default:
-			}
-			if time.Now().After(deadline) {
-				return false
-			}
-			time.Sleep(50 * time.Microsecond)
-		}
-		return true
-	}
-
 	// Replay feeds each recorded read whole. A recording in which a tick or a
 	// resize was handled between two messages of one read cannot be driven in
 	// that order, so a failure of such a recording says so.
-	hint := ""
 	if i := interleavedRead(steps); i >= 0 {
-		hint = fmt.Sprintf("\n  note: at step %d the recording handled a tick or resize between two messages that came from one input read. "+
+		r.hint = fmt.Sprintf("\n  note: at step %d the recording handled a tick or resize between two messages that came from one input read. "+
 			"Replay feeds a read whole and cannot reproduce that order; record again, or send those keys in separate writes", i)
 	}
+	return r
+}
 
-	var pending [][]byte // chunks read in the recording, not yet fed
-	skipUpd := false     // the next upd belongs to a tick or size just driven
-	flush := func(i int) bool {
-		for _, b := range pending {
-			if _, err := pw.Write(b); err != nil {
-				fail("the program stopped reading input at step %d", i)
-				return false
-			}
-		}
-		pending = nil
-		return true
-	}
-	stalled := func(i int, st step, wantUpd int64) {
+func (r *replayRun) fail(format string, args ...any) {
+	_ = r.pw.Close()
+	r.t.Fatalf("tuitest: replay: "+format, args...)
+}
+
+// waitFor waits until the program has made upd updates and out writes.
+func (r *replayRun) waitFor(upd, out int64) bool {
+	deadline := time.Now().Add(replayWait)
+	for r.obs.upd.Load() < upd || r.obs.out.Load() < out {
 		select {
-		case <-done:
-			fail("the program exited at step %d (%s) before the recording did", i, st.line.K)
+		case <-r.done:
+			return r.obs.upd.Load() >= upd && r.obs.out.Load() >= out
 		default:
-			fail("stalled before step %d (%s): the model made %d updates and %d writes, the recording %d and %d%s",
-				i, st.line.K, obs.upd.Load(), obs.out.Load(), wantUpd, st.out, hint)
+		}
+		if time.Now().After(deadline) {
+			return false
+		}
+		time.Sleep(50 * time.Microsecond)
+	}
+	return true
+}
+
+// flush feeds the input read so far.
+func (r *replayRun) flush(i int) bool {
+	for _, b := range r.pending {
+		if _, err := r.pw.Write(b); err != nil {
+			r.fail("the program stopped reading input at step %d", i)
+			return false
 		}
 	}
-	for i, st := range steps {
+	r.pending = nil
+	return true
+}
+
+func (r *replayRun) stalled(i int, st step, wantUpd int64) {
+	select {
+	case <-r.done:
+		r.fail("the program exited at step %d (%s) before the recording did", i, st.line.K)
+	default:
+		r.fail("stalled before step %d (%s): the model made %d updates and %d writes, the recording %d and %d%s",
+			i, st.line.K, r.obs.upd.Load(), r.obs.out.Load(), wantUpd, st.out, r.hint)
+	}
+}
+
+// drive plays the recorded steps, in order, and ends the input. It reports
+// false after a failure.
+func (r *replayRun) drive() bool {
+	skipUpd := false // the next upd belongs to a tick or size just driven
+	for i, st := range r.steps {
 		switch st.line.K {
 		case "in":
 			b, err := base64.StdEncoding.DecodeString(st.line.B)
 			if err != nil {
-				fail("step %d: bad input bytes: %v", i, err)
-				return
+				r.fail("step %d: bad input bytes: %v", i, err)
+				return false
 			}
-			pending = append(pending, b)
+			r.pending = append(r.pending, b)
 		case "upd":
 			if skipUpd {
 				skipUpd = false
@@ -214,49 +244,62 @@ func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tu
 			}
 			// A message the loop took that is not a tick or size: it came from
 			// input read before it, so feed that now.
-			if !flush(i) {
-				return
+			if !r.flush(i) {
+				return false
 			}
-			if !waitFor(st.upd+1, st.out) {
-				stalled(i, st, st.upd+1)
-				return
+			if !r.waitFor(st.upd+1, st.out) {
+				r.stalled(i, st, st.upd+1)
+				return false
 			}
 		case "size", "tick":
-			if !waitFor(st.upd, st.out) {
-				stalled(i, st, st.upd)
-				return
+			if !r.tickOrSize(i, st) {
+				return false
 			}
 			skipUpd = true
-			if st.line.K == "size" {
-				term.Resize(st.line.W, st.line.H)
-			} else if st.line.ID == nil || !clock.fire(*st.line.ID, done) {
-				fail("step %d: the recording ticked Every #%v but the replayed model has no such ticker", i, st.line.ID)
-				return
-			}
-			// Let the loop take it before anything else is fed, so the two
-			// cannot swap places on the way in.
-			if !waitFor(st.upd+1, st.out) {
-				stalled(i, st, st.upd+1)
-				return
-			}
 		}
 	}
-	if !flush(len(steps)) {
-		return
+	if !r.flush(len(r.steps)) {
+		return false
 	}
 	// Let the last event finish, then end the input: EOF quits the program.
-	waitFor(totalUpd(steps), 0)
-	_ = pw.Close()
+	r.waitFor(totalUpd(r.steps), 0)
+	_ = r.pw.Close()
 	select {
-	case <-done:
+	case <-r.done:
+		return true
 	case <-time.After(replayWait):
-		t.Fatalf("tuitest: replay: the program did not exit after the recorded input ended")
-		return
+		r.t.Fatalf("tuitest: replay: the program did not exit after the recorded input ended")
+		return false
 	}
+}
 
-	cap.mu.Lock()
-	got := append([]string(nil), cap.frames...)
-	cap.mu.Unlock()
+// tickOrSize drives a recorded resize or Every tick and waits for the loop to
+// take it.
+func (r *replayRun) tickOrSize(i int, st step) bool {
+	if !r.waitFor(st.upd, st.out) {
+		r.stalled(i, st, st.upd)
+		return false
+	}
+	if st.line.K == "size" {
+		r.term.Resize(st.line.W, st.line.H)
+	} else if st.line.ID == nil || !r.clock.fire(*st.line.ID, r.done) {
+		r.fail("step %d: the recording ticked Every #%v but the replayed model has no such ticker", i, st.line.ID)
+		return false
+	}
+	// Let the loop take it before anything else is fed, so the two cannot swap
+	// places on the way in.
+	if !r.waitFor(st.upd+1, st.out) {
+		r.stalled(i, st, st.upd+1)
+		return false
+	}
+	return true
+}
+
+// finish compares what the replay wrote with the recording.
+func (r *replayRun) finish(wantFrames, wantShas []string) {
+	r.out.mu.Lock()
+	got := append([]string(nil), r.out.frames...)
+	r.out.mu.Unlock()
 	for i := 0; i < len(got) && i < len(wantShas); i++ {
 		sum := sha256.Sum256([]byte(got[i]))
 		if hex.EncodeToString(sum[:]) != wantShas[i] {
@@ -264,16 +307,16 @@ func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tu
 			if wantFrames != nil {
 				want = fmt.Sprintf("%q", clip(wantFrames[i]))
 			}
-			t.Errorf("tuitest: replay: write %d differs from the recording:\n  want %s\n  got  %q%s", i, want, clip(got[i]), hint)
+			r.t.Errorf("tuitest: replay: write %d differs from the recording:\n  want %s\n  got  %q%s", i, want, clip(got[i]), r.hint)
 			return
 		}
 		if wantFrames != nil && string([]rune(got[i])) != wantFrames[i] {
-			t.Errorf("tuitest: replay: write %d differs from the cast:\n  want %q\n  got  %q%s", i, clip(wantFrames[i]), clip(got[i]), hint)
+			r.t.Errorf("tuitest: replay: write %d differs from the cast:\n  want %q\n  got  %q%s", i, clip(wantFrames[i]), clip(got[i]), r.hint)
 			return
 		}
 	}
 	if len(got) != len(wantShas) {
-		t.Errorf("tuitest: replay: the replay made %d writes to the terminal, the recording %d%s", len(got), len(wantShas), hint)
+		r.t.Errorf("tuitest: replay: the replay made %d writes to the terminal, the recording %d%s", len(got), len(wantShas), r.hint)
 	}
 }
 

@@ -122,7 +122,7 @@ func runSpin(args []string) error {
 	var captured strings.Builder
 	code := 0
 	err := prompt.Spin(label, func(ctx context.Context) error {
-		c := exec.CommandContext(ctx, command[0], command[1:]...) // #nosec G204 -- the command the user asked to run
+		c := exec.CommandContext(ctx, command[0], command[1:]...) // #nosec G204 G702 -- the command the user asked to run
 		c.Stdout, c.Stderr = &captured, &captured
 		runErr := c.Run()
 		var ee *exec.ExitError

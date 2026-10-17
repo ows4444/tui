@@ -124,8 +124,8 @@ func renderSVG(cells [][]Cell, cx, cy int, showCursor bool, o SVGOptions) string
 
 	// Backgrounds first, one rect per run of equal colour, then the text.
 	type look struct {
-		fg, bg                                        ansi.RGB
-		bold, dim, italic, underline, strike, hasText bool
+		fg, bg                               ansi.RGB
+		bold, dim, italic, underline, strike bool
 	}
 	lookOf := func(c Cell) look {
 		f, g := colorOrDefault(c.FG, fg, pal), colorOrDefault(c.BG, bg, pal)

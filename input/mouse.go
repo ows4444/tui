@@ -41,6 +41,13 @@ type MouseEvent struct {
 	Button MouseButton
 	Action MouseAction
 	Mod    Mod
+	// Clicks is how many presses of the same button, on the same cell and each
+	// within the multi-click interval of the last, this press makes: 1 for a
+	// single click, 2 for a double click, 3 for a triple click, then 1 again. A
+	// release or a drag carries the count of the press it follows. The Program
+	// fills it in (see tui.WithMultiClick); it is 0 for the wheel, for events
+	// that were not counted and for events built by hand.
+	Clicks int
 }
 
 // decodeSGRMouse decodes an SGR mouse report's Cb (button+modifier byte),

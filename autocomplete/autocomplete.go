@@ -54,8 +54,17 @@ type Model struct {
 	// suggestion. Off (the default), suggestions are filtered by prefix.
 	Fuzzy bool
 
+	// Source adds suggestions that depend on the typed text (see Source). It
+	// runs on Tasks each time the text changes and its answer joins the dropdown
+	// when the tui.TaskDoneMsg comes back through Update. Tasks is made on first
+	// use when nil. Name tells two fields apart when both have a Source.
+	Source Source
+	Tasks  *tui.Tasks
+	Name   string
+
 	highlight    int
-	justAccepted bool // suppresses the dropdown right after Tab/Enter/Esc
+	justAccepted bool          // suppresses the dropdown right after Tab/Enter/Esc
+	result       *sourceResult // the Source's latest answer
 }
 
 // New returns a focused Model (typing works immediately) with an
@@ -132,13 +141,16 @@ func (m Model) matches() []match {
 		for _, r := range fuzzy.Find(q, len(m.Suggestions), func(i int) string { return m.Suggestions[i] }) {
 			out = append(out, match{text: m.Suggestions[r.Index], pos: r.Positions})
 		}
-		return out
-	}
-	lq := strings.ToLower(q)
-	for _, s := range m.Suggestions {
-		if strings.HasPrefix(strings.ToLower(s), lq) {
-			out = append(out, match{text: s})
+	} else {
+		lq := strings.ToLower(q)
+		for _, s := range m.Suggestions {
+			if strings.HasPrefix(strings.ToLower(s), lq) {
+				out = append(out, match{text: s})
+			}
 		}
+	}
+	for _, s := range m.fromSource(q) {
+		out = append(out, match{text: s})
 	}
 	return out
 }
@@ -177,6 +189,11 @@ type AcceptedMsg struct {
 // Autocomplete consumes it whenever the dropdown is open. With Mouse on, a
 // tui.MouseEvent is handled as described on Mouse.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
+	if d, ok := msg.(tui.TaskDoneMsg); ok {
+		if m, mine := m.taskDone(d); mine {
+			return m, nil
+		}
+	}
 	if ev, ok := msg.(tui.MouseEvent); ok && m.Mouse {
 		return m.updateMouse(ev)
 	}
@@ -213,8 +230,16 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 
 	m.justAccepted = false
 	m.highlight = 0
+	before := m.Input.Value()
 	var cmd tui.Cmd
 	m.Input, cmd = m.Input.Update(msg)
+	if m.Input.Value() != before {
+		var run tui.Cmd
+		m, run = m.restart()
+		if run != nil {
+			cmd = tui.Batch(cmd, run)
+		}
+	}
 	return m, cmd
 }
 

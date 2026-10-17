@@ -64,6 +64,7 @@ const (
 	ComponentPicker             = "picker"
 	ComponentPopover            = "popover"
 	ComponentRadioGroup         = "radiogroup"
+	ComponentRangeSlider        = "rangeslider"
 	ComponentRating             = "rating"
 	ComponentScrollbar          = "scrollbar"
 	ComponentSkeleton           = "skeleton"
@@ -75,12 +76,14 @@ const (
 	ComponentTagInput           = "taginput"
 	ComponentTextArea           = "textarea"
 	ComponentTextInput          = "textinput"
+	ComponentTimePicker         = "timepicker"
 	ComponentToast              = "toast"
 	ComponentToggle             = "toggle"
 	ComponentToolApproval       = "toolapproval"
 	ComponentTooltip            = "tooltip"
 	ComponentTransferList       = "transferlist"
 	ComponentTreeView           = "treeview"
+	ComponentWindow             = "window"
 	ComponentWizard             = "wizard"
 )
 
@@ -96,12 +99,12 @@ func Components() []string {
 		ComponentLoadingBar, ComponentMarkdown, ComponentMaskedInput, ComponentMenu,
 		ComponentMenuBar, ComponentMultiSelect, ComponentNotificationCenter,
 		ComponentOTPInput, ComponentPagination, ComponentPasswordInput, ComponentPicker, ComponentPopover,
-		ComponentRadioGroup, ComponentRating,
+		ComponentRadioGroup, ComponentRangeSlider, ComponentRating,
 		ComponentScrollbar, ComponentSkeleton, ComponentSlider, ComponentSpinner,
 		ComponentSplitPane, ComponentStreamText, ComponentTabs,
-		ComponentTagInput, ComponentTextArea, ComponentTextInput,
+		ComponentTagInput, ComponentTextArea, ComponentTextInput, ComponentTimePicker,
 		ComponentToast, ComponentToggle, ComponentToolApproval, ComponentTooltip, ComponentTransferList, ComponentTreeView,
-		ComponentWizard,
+		ComponentWindow, ComponentWizard,
 	}
 }
 

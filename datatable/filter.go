@@ -124,12 +124,13 @@ func (m *Model) rebuild(follow bool) {
 			}
 			return ""
 		}
+		less := m.lessFor(c)
 		sort.SliceStable(idx, func(a, b int) bool {
 			x, y := cell(idx[a]), cell(idx[b])
 			if m.sortDesc {
-				return lessCell(y, x)
+				return less(y, x)
 			}
-			return lessCell(x, y)
+			return less(x, y)
 		})
 	}
 

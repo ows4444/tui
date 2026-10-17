@@ -121,6 +121,29 @@ const (
 	MouseAllMotion
 )
 const (
+	PointerDefault	PointerShape	= "default"
+
+	PointerPointer	PointerShape	= "pointer"
+
+	PointerText	PointerShape	= "text"
+
+	PointerCrosshair	PointerShape	= "crosshair"
+
+	PointerWait	PointerShape	= "wait"
+
+	PointerHelp	PointerShape	= "help"
+
+	PointerNotAllowed	PointerShape	= "not-allowed"
+
+	PointerGrab	PointerShape	= "grab"
+	PointerGrabbing	PointerShape	= "grabbing"
+
+	PointerMove	PointerShape	= "move"
+
+	PointerEWResize	PointerShape	= "ew-resize"
+	PointerNSResize	PointerShape	= "ns-resize"
+)
+const (
 	Polite	AnnounceLevel	= iota
 
 	Assertive
@@ -146,6 +169,7 @@ func (p *Program) CapabilitiesKnown() bool
 func (p *Program) Clock() Clock
 func (p *Program) ColorProfile() ansi.Profile
 func (p *Program) Context() context.Context
+func (p *Program) Getenv(key string) string
 func (p *Program) Keymap() *keymap.Registry
 func (p *Program) Measurer() ansi.Measurer
 func (p *Program) Quit()
@@ -183,6 +207,7 @@ func RunCmd(ctx context.Context, cmd Cmd) Msg
 func ScreenshotCmd(wrap func(Screenshot) Msg) Cmd
 func Sequence(cmds ...Cmd) Cmd
 func SetCursorShape(s CursorShape) Cmd
+func SetPointerShape(s PointerShape) Cmd
 func SetProgress(state ProgressState, percent int) Cmd
 func SetWindowTitle(title string) Cmd
 func Suspend(fn func() error) Cmd
@@ -203,9 +228,11 @@ func WithClock(c Clock) ProgramOption
 func WithColorProfile(p ansi.Profile) ProgramOption
 func WithColorSchemeReports(enabled bool) ProgramOption
 func WithContext(ctx context.Context) ProgramOption
+func WithEnvironment(env []string) ProgramOption
 func WithErrOutput(w io.Writer) ProgramOption
 func WithEscTimeout(d time.Duration) ProgramOption
 func WithExitOnSignal(enabled bool) ProgramOption
+func WithFilter(filter func(Model, Msg) Msg) ProgramOption
 func WithFocusReporting(enabled bool) ProgramOption
 func WithFrameLog(w io.Writer) ProgramOption
 func WithInBandResize(enabled bool) ProgramOption
@@ -218,6 +245,7 @@ func WithLinearizeFullLine() ProgramOption
 func WithMaxConcurrentCmds(n int) ProgramOption
 func WithMaxFPS(fps int) ProgramOption
 func WithMouse(mode MouseMode) ProgramOption
+func WithMultiClick(interval time.Duration) ProgramOption
 func WithOutput(w io.Writer) ProgramOption
 func WithRecorder(w io.Writer) ProgramOption
 func WithRecorderSidecar(w io.Writer) ProgramOption
@@ -227,7 +255,10 @@ func WithResizePoll(d time.Duration) ProgramOption
 func WithScreenshot(key string, save func(Screenshot)) ProgramOption
 func WithSuspendOnCtrlZ(enabled bool) ProgramOption
 func WithTerminal(t Terminal) ProgramOption
+func WithTextSelection(style ansi.Style) ProgramOption
 func WithTheme(auto theme.Auto) ProgramOption
+func WithWindowSize(width, height int) ProgramOption
+func WithoutRenderer() ProgramOption
 func WriteClipboard(text string) Cmd
 type AnnounceLevel int
 type BackgroundColorEvent = input.BackgroundColorEvent
@@ -336,6 +367,7 @@ type PanicError struct {
 	Stack	[]byte
 }
 type PasteEvent = input.PasteEvent
+type PointerShape string
 type Program struct {
 	// contains filtered or unexported fields
 }
@@ -364,6 +396,7 @@ type Screenshot struct {
 
 	Width, Height	int
 }
+type SelectionMsg struct{ Text string }
 type SuspendMsg struct{ Err error }
 type TaskDoneMsg struct {
 	Key		string
@@ -399,6 +432,8 @@ type ViewState struct {
 	Title	*string
 
 	Progress	*Progress
+
+	Pointer	*PointerShape
 }
 type ViewStater interface {
 	ViewState() ViewState
@@ -553,9 +588,15 @@ const (
 )
 const QueryBackgroundColor = "\x1b]11;?\x1b\\"
 const QueryPalette = "\x1b]4;0;?;1;?;2;?;3;?;4;?;5;?;6;?;7;?;8;?;9;?;10;?;11;?;12;?;13;?;14;?;15;?\x1b\\"
+func (c BasicColor) RGB() RGB
+func (c Color256) RGB() RGB
+func (c RGB) Complement() RGB
 func (c RGB) Darken(t float64) RGB
+func (c RGB) HSL() (h, s, l float64)
 func (c RGB) Lighten(t float64) RGB
+func (c RGB) Luminance() float64
 func (c RGB) Mix(other RGB, t float64) RGB
+func (c RGB) Readable() RGB
 func (m Measurer) Clusters() bool
 func (m Measurer) TrimLeftWidth(s string, w int) string
 func (m Measurer) Truncate(s string, w int) string
@@ -602,7 +643,9 @@ func DetectColorProfileFor(out io.Writer, getenv func(string) string) Profile
 func Downgrade(c Color, p Profile) Color
 func DowngradeString(s string, p Profile) string
 func ExpandTabs(s string) string
+func FromHSL(h, s, l float64) RGB
 func Hyperlink(text, url string) string
+func Justify(line string, width int) string
 func KittyKeyboardEnableFlags(flags int) string
 func NewStyle() Style
 func NewText(text string, style Style) Text
@@ -615,6 +658,8 @@ func SanitizeKeepSGR(s string) string
 func StripANSI(s string) string
 func TrimLeftWidth(s string, width int) string
 func Truncate(s string, width int) string
+func TruncateMiddle(s string, width int, glyph string) string
+func TruncateStart(s string, width int, glyph string) string
 func Width(s string) int
 func Wrap(s string, width int) string
 func WrapStyled(s string, width int) string
@@ -717,6 +762,7 @@ func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func New(suggestions ...string) Model
+func PathSource() Source
 type AcceptedMsg struct {
 	Value string
 }
@@ -738,8 +784,13 @@ type Model struct {
 	Bounds	hittest.Rect
 
 	Fuzzy	bool
+
+	Source	Source
+	Tasks	*tui.Tasks
+	Name	string
 	// contains filtered or unexported fields
 }
+type Source func(ctx context.Context, text string) []string
 
 ## github.com/ows4444/tui/avatar (package avatar)
 
@@ -1194,6 +1245,7 @@ func (b *Buffer) Style(id StyleID) Style
 func (b *Buffer) StyleID(st Style) StyleID
 func (b *Buffer) Sub(r Rect) *Buffer
 func (b *Buffer) Width() int
+func (c Color) RGB() (rgb ansi.RGB, ok bool)
 func (s *Surface) Clip() layout.Rect
 func (s *Surface) Put(x, y int, str string) int
 func (s *Surface) Repeat(x, y, n int, cluster string)
@@ -1528,8 +1580,10 @@ type SelectedMsg struct {
 
 ## github.com/ows4444/tui/datatable (package datatable)
 
+func (m *Model) ClearMarks()
 func (m *Model) ClearSort()
 func (m *Model) InsertRow(i int, cells []string)
+func (m *Model) Mark(r int, on bool)
 func (m *Model) RemoveRow(i int) bool
 func (m *Model) SetCell(row, col int, text string) bool
 func (m *Model) SetCursor(i int)
@@ -1541,8 +1595,10 @@ func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Filtering() bool
+func (m Model) IsMarked(r int) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) Marked() []int
 func (m Model) Offset() int
 func (m Model) Query() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -1556,6 +1612,15 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func New(headers []string, rows [][]string) Model
 func NewSource(headers []string, src Source) Model
+type Column struct {
+	Align	layout.Align
+
+	Min, Max	int
+
+	Format	func(cell string) string
+
+	Less	func(a, b string) bool
+}
 type KeyMap struct {
 	Up, Down		keymap.Binding
 	PageUp, PageDown	keymap.Binding
@@ -1568,6 +1633,8 @@ type KeyMap struct {
 	Left, Right	keymap.Binding
 
 	Filter, ClearSort	keymap.Binding
+
+	Mark, MarkAll	keymap.Binding
 }
 type Model struct {
 	Headers	[]string
@@ -1600,6 +1667,10 @@ type Model struct {
 
 	Source	Source
 
+	Multi	bool
+
+	Columns	[]Column
+
 	ColumnWidths	[]int
 	// contains filtered or unexported fields
 }
@@ -1623,6 +1694,7 @@ func (m Model) Cursor() time.Time
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Title() string
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
@@ -1638,6 +1710,18 @@ type KeyMap struct {
 	MonthEnd	keymap.Binding
 	Select		keymap.Binding
 }
+type Labels struct {
+	Weekdays	[7]string
+
+	WeekdayNames	[7]string
+	MonthNames	[12]string
+
+	WeekStart	time.Weekday
+
+	Spoken	func(weekday, month string, day, year int) string
+
+	Picker, Unavailable, Selected, Earliest, Latest	string
+}
 type Model struct {
 	Value	time.Time
 	MinDate	time.Time
@@ -1647,6 +1731,8 @@ type Model struct {
 	KeyMap	KeyMap
 
 	Mouse	bool
+
+	Labels	Labels
 
 	Bounds	hittest.Rect
 	// contains filtered or unexported fields
@@ -2232,11 +2318,20 @@ func (m Model) Tokens() theme.Tokens
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func Delete(id uint32) string
+func EncodePNG(img image.Image) ([]byte, error)
+func Frames(data []byte) ([]Frame, error)
+func FromImage(img image.Image, width, height int, alt string) (Model, error)
+func HalfBlocks(data []byte, cols, rows int) string
 func Inline(png []byte, cols, rows int) string
 func New(png []byte, width, height int, alt string) Model
 func Sixel(pngData []byte, cols, rows, cellW, cellH int) string
+func ToPNG(data []byte) ([]byte, error)
 func Transmit(png []byte, cols, rows int) string
 func TransmitID(id uint32, png []byte, cols, rows int) string
+type Frame struct {
+	PNG	[]byte
+	Delay	time.Duration
+}
 type Model struct {
 	PNG	[]byte
 
@@ -2254,6 +2349,8 @@ type Model struct {
 
 	ID	uint32
 	Theme	theme.Theme
+
+	PlaceholderOnly	bool
 
 	Getenv	func(string) string
 	// contains filtered or unexported fields
@@ -2432,6 +2529,8 @@ type MouseEvent struct {
 	Button	MouseButton
 	Action	MouseAction
 	Mod	Mod
+
+	Clicks	int
 }
 type PaletteColorEvent struct {
 	Index	uint8
@@ -2545,16 +2644,33 @@ const (
 
 	JustifySpaceEvenly
 )
+const (
+	OverflowEnd	Overflow	= iota
+
+	OverflowStart
+
+	OverflowMiddle
+)
+const (
+	TopLeft	Corner	= iota
+	TopRight
+	BottomLeft
+	BottomRight
+	Center
+)
 const Unbounded = 1 << 30
 func (b Box) Background(c ansi.Color) Box
 func (b Box) Border(border Border) Box
 func (b Box) BorderColor(c ansi.Color) Box
+func (b Box) BorderColors(top, right, bottom, left ansi.Color) Box
 func (b Box) BorderGradient(from, to ansi.RGB) Box
 func (b Box) BorderSides(top, right, bottom, left bool) Box
 func (b Box) Height(h int) Box
 func (b Box) Margin(top, right, bottom, left int) Box
 func (b Box) Padding(top, right, bottom, left int) Box
 func (b Box) PaddingAll(n int) Box
+func (b Box) Shadow(c ansi.Color) Box
+func (b Box) ShadowGlyph(glyph string, c ansi.Color) Box
 func (b Box) Title(s string, a Align) Box
 func (b Box) Width(w int) Box
 func (c Constraints) Constrain(s Size) Size
@@ -2567,10 +2683,14 @@ func (r Rect) Empty() bool
 func (r Rect) Local(x, y int) (lx, ly int)
 func ASCIIBorder() Border
 func Absolute(x, y int, n Node) Node
+func Anchor(c Corner, dx, dy int, n Node) Node
+func Aspect(w, h int, n Node) Node
 func Block(s string) Node
+func BlockBorder() Border
 func BoxNode(box Box, child Node) Node
 func Column(gap int, children ...FlexChild) Node
 func ColumnJustify(gap int, justify Justify, children ...FlexChild) Node
+func DashedBorder() Border
 func DoubleBorder() Border
 func Draw(root Node, c Constraints) string
 func DrawTight(root Node, size Size) string
@@ -2581,15 +2701,20 @@ func Fixed(n Node, size Size) Node
 func Fr(n int) Length
 func GridNode(tracks []Track, gap int, cells ...Node) Node
 func GridNodeGaps(tracks []Track, colGap, rowGap int, cells ...Node) Node
+func HeavyDashedBorder() Border
+func HiddenBorder() Border
+func InnerHalfBlockBorder() Border
 func JoinHorizontalJustify(width int, justify Justify, blocks ...string) string
 func Layer(z int, n Node) Node
 func Loose(max Size) Constraints
+func MarkdownBorder() Border
 func MinMax(n Node, min, max Size) Node
 func MinSize(n Node, min Size, fallback Node) Node
 func Named(name string, n Node) Node
 func NamedAt(root Node, s Size, x, y int) (name string, relX, relY int, ok bool)
 func NewBox() Box
 func NormalBorder() Border
+func OuterHalfBlockBorder() Border
 func Overlay(base, overlay string, x, y int) string
 func OverlayNode(base, over Node, x, y int) Node
 func Pct(n int) Length
@@ -2615,8 +2740,11 @@ func Window(lines []string, cursor, h int) []string
 func WindowRange(total, cursor, h int) (start, end int)
 func WithAlign(a Align) TextOpt
 func WithEllipsis(glyph string) TextOpt
+func WithJustify() TextOpt
+func WithOverflow(o Overflow, glyph string) TextOpt
 func WithStyle(st ansi.Style) TextOpt
 func WithWrap() TextOpt
+func Wrap(colGap, rowGap int, children ...Node) Node
 type Align int
 type Border = basetypes.Border
 type Box struct {
@@ -2637,6 +2765,7 @@ type CellSurface interface {
 	Repeat(x, y, n int, cluster string)
 }
 type Constraints struct{ MinW, MaxW, MinH, MaxH int }
+type Corner int
 type CrossAlign int
 type FlexChild struct {
 	Node	Node
@@ -2663,6 +2792,7 @@ type Node interface {
 	Measure(c Constraints) Size
 	Render(s Size) string
 }
+type Overflow int
 type Placed struct {
 	Node	Node
 
@@ -2791,6 +2921,61 @@ type Span struct {
 	Class	Class
 }
 type Stream struct {
+	// contains filtered or unexported fields
+}
+
+## github.com/ows4444/tui/markdownview (package markdownview)
+
+func (m *Model) GoTo(anchor string) bool
+func (m *Model) SetSize(width, height int)
+func (m *Model) SetSource(md string)
+func (m Model) Active() (Link, bool)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Headings() []Heading
+func (m Model) Height() int
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Links() []Link
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) YOffset() int
+func DefaultKeyMap() KeyMap
+func New(md string, width, height int) Model
+type Heading struct {
+	Level	int
+
+	Text	string
+
+	Anchor	string
+
+	Line	int
+}
+type KeyMap struct {
+	NextLink	keymap.Binding
+	PrevLink	keymap.Binding
+	Follow		keymap.Binding
+	NextHeading	keymap.Binding
+	PrevHeading	keymap.Binding
+	Back		keymap.Binding
+	Forward		keymap.Binding
+}
+type Link struct {
+	Text, URL	string
+
+	Line	int
+}
+type LinkMsg struct{ Text, URL string }
+type Model struct {
+	Theme	theme.Theme
+
+	Options	markdown.Options
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
 	// contains filtered or unexported fields
 }
 
@@ -2957,20 +3142,46 @@ func (tw Tween) At(elapsed time.Duration) float64
 func (tw Tween) Done(elapsed time.Duration) bool
 func AfterOn[T any](c *Clock, d time.Duration, fn func(time.Time) T) func(context.Context) T
 func After[T any](d time.Duration, fn func(time.Time) T) func(context.Context) T
+func ByName(name string) (Ease, bool)
 func Detect() Preference
+func DetectEnv(getenv func(string) string) Preference
+func EaseNames() []string
 func FrameInterval(fps int) time.Duration
+func InBack(t float64) float64
+func InBounce(t float64) float64
+func InCirc(t float64) float64
 func InCubic(t float64) float64
+func InElastic(t float64) float64
+func InExpo(t float64) float64
+func InOutBack(t float64) float64
+func InOutBounce(t float64) float64
+func InOutCirc(t float64) float64
 func InOutCubic(t float64) float64
+func InOutElastic(t float64) float64
+func InOutExpo(t float64) float64
 func InOutQuad(t float64) float64
+func InOutQuart(t float64) float64
+func InOutQuint(t float64) float64
+func InOutSine(t float64) float64
 func InQuad(t float64) float64
+func InQuart(t float64) float64
+func InQuint(t float64) float64
+func InSine(t float64) float64
 func Linear(t float64) float64
 func NewClock(interval time.Duration) *Clock
 func NewFrameClock(fps int) *Clock
 func NewSpring(value, stiffness float64) *Spring
 func NewTransition(value float64, duration time.Duration, motion Preference) *Transition
 func OutBack(t float64) float64
+func OutBounce(t float64) float64
+func OutCirc(t float64) float64
 func OutCubic(t float64) float64
+func OutElastic(t float64) float64
+func OutExpo(t float64) float64
 func OutQuad(t float64) float64
+func OutQuart(t float64) float64
+func OutQuint(t float64) float64
+func OutSine(t float64) float64
 type Clock struct {
 	Interval	time.Duration
 
@@ -3028,6 +3239,42 @@ type Tween struct {
 	Duration	time.Duration
 	Ease		Ease
 	Motion		Preference
+}
+
+## github.com/ows4444/tui/motion/fx (package fx)
+
+const (
+	FromLeft	Direction	= iota
+	FromRight
+	FromTop
+	FromBottom
+)
+func (d Dissolve) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func (f Fade) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func (s Slide) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func (s Sweep) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func Out(e Effect) Effect
+func Progress(elapsed, d time.Duration, ease func(float64) float64, pref motion.Preference) float64
+func Wrap(node layout.Node, e Effect, p float64) layout.Node
+type Direction int
+type Dissolve struct {
+	Seed uint64
+}
+type Effect interface {
+	Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+}
+type Fade struct {
+	To ansi.RGB
+}
+type Slide struct {
+	From Direction
+}
+type Sweep struct {
+	From	Direction
+
+	Soft	int
+
+	To	ansi.RGB
 }
 
 ## github.com/ows4444/tui/multiselect (package multiselect)
@@ -3336,12 +3583,22 @@ type Model struct {
 
 ## github.com/ows4444/tui/prompt (package prompt)
 
+func Choose[T any](label string, choices []Choice[T], cfg ...Config) (T, error)
 func Confirm(label string, def bool, cfg ...Config) (bool, error)
 func Input(label string, cfg ...Config) (string, error)
 func MultiSelect(label string, choices []string, cfg ...Config) ([]int, error)
 func Password(label string, cfg ...Config) (string, error)
+func Progress(label string, total int, fn func(ctx context.Context, report func(done int)) error, cfg ...Config) error
 func Select(label string, choices []string, cfg ...Config) (int, error)
 func Spin(label string, fn func(ctx context.Context) error, cfg ...Config) error
+func Track[T any](label string, items []T, fn func(ctx context.Context, item T) error, cfg ...Config) error
+type Choice[T any] struct {
+	Label	string
+
+	Value	T
+
+	Group	string
+}
 type Config struct {
 	Program	[]tui.ProgramOption
 
@@ -3352,6 +3609,10 @@ type Config struct {
 	Validate	func(string) error
 
 	NoFilter	bool
+
+	Start	int
+
+	PageSize	int
 }
 var ErrCanceled = errors.New("prompt: canceled")
 
@@ -3411,6 +3672,67 @@ type Option struct {
 	Value	string
 
 	Disabled	bool
+}
+
+## github.com/ows4444/tui/rangeslider (package rangeslider)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetRange(low, high float64)
+func (m Model) Active() int
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) High() float64
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Low() float64
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(min, max float64) Model
+type ChangedMsg struct {
+	ID	string
+
+	Low, High	float64
+}
+type KeyMap struct {
+	Dec	keymap.Binding
+	Inc	keymap.Binding
+	DecBig	keymap.Binding
+	IncBig	keymap.Binding
+	ToMin	keymap.Binding
+	ToMax	keymap.Binding
+	Switch	keymap.Binding
+	Low	keymap.Binding
+	High	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Min, Max	float64
+
+	Step	float64
+
+	BigStep	float64
+
+	Width	int
+
+	ShowValue	bool
+
+	Format	func(float64) string
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
 }
 
 ## github.com/ows4444/tui/rating (package rating)
@@ -3804,8 +4126,65 @@ type State struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/termpane (package termpane)
+
+func (m *Model) Blur()
+func (m *Model) Focus()
+func (m *Model) SetSize(cols, rows int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Close() error
+func (m Model) Focused() bool
+func (m Model) Init() tui.Cmd
+func (m Model) Input(text string)
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Running() bool
+func (m Model) Scrolled() int
+func (m Model) Size() (cols, rows int)
+func (m Model) Title() string
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func DefaultKeyMap() KeyMap
+func New(command string, args ...string) Model
+type ExitedMsg struct {
+	ID	string
+	Code	int
+	Err	error
+}
+type KeyMap struct {
+	ScrollUp, ScrollDown, ScrollEnd keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Command	string
+	Args	[]string
+
+	Dir	string
+
+	Env	[]string
+
+	Cols, Rows	int
+
+	Scrollback	int
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type OutputMsg struct{ ID string }
+
 ## github.com/ows4444/tui/textarea (package textarea)
 
+const (
+	ViNormal	ViMode	= iota
+	ViInsert
+	ViVisual
+	ViVisualLine
+)
 func (m *Model) Blur()
 func (m *Model) Find(q string) int
 func (m *Model) FindNext(q string) bool
@@ -3818,6 +4197,7 @@ func (m *Model) SelectAll()
 func (m *Model) SetCursor(pos int)
 func (m *Model) SetCursorPosition(line, col int)
 func (m *Model) SetValue(s string)
+func (m *Model) SetViMode(mode ViMode)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Column() int
 func (m Model) Cursor() int
@@ -3835,6 +4215,8 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) Value() string
+func (m Model) ViMode() ViMode
+func (m Model) ViPending() string
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
@@ -3905,11 +4287,19 @@ type Model struct {
 	Highlighter	func(line string) ansi.Text
 
 	AutoIndent	bool
+
+	Vi	bool
 	// contains filtered or unexported fields
 }
+type ViMode int
 
 ## github.com/ows4444/tui/textinput (package textinput)
 
+const (
+	ViNormal	ViMode	= iota
+	ViInsert
+	ViVisual
+)
 func (m *Model) Blur()
 func (m *Model) CursorEnd()
 func (m *Model) CursorStart()
@@ -3917,6 +4307,7 @@ func (m *Model) Focus() tui.Cmd
 func (m *Model) Reset()
 func (m *Model) SetCursor(pos int)
 func (m *Model) SetValue(s string)
+func (m *Model) SetViMode(mode ViMode)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) CursorCell() (x, y int, ok bool)
@@ -3928,6 +4319,8 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) Value() string
+func (m Model) ViMode() ViMode
+func (m Model) ViPending() string
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
@@ -3951,6 +4344,8 @@ type KeyMap struct {
 	Copy		keymap.Binding
 	Cut		keymap.Binding
 	Paste		keymap.Binding
+
+	HistoryPrev, HistoryNext, HistorySearch, AcceptSuggestion	keymap.Binding
 }
 type Model struct {
 	Placeholder	string
@@ -3966,6 +4361,8 @@ type Model struct {
 
 	UndoLimit	int
 
+	Vi	bool
+
 	DisableCopy	bool
 
 	Mouse	bool
@@ -3974,9 +4371,16 @@ type Model struct {
 
 	Motion	motion.Preference
 
+	History	[]string
+
+	Suggestion	string
+
+	SuggestFromHistory	bool
+
 	KeyMap	KeyMap
 	// contains filtered or unexported fields
 }
+type ViMode int
 
 ## github.com/ows4444/tui/theme (package theme)
 
@@ -4018,6 +4422,7 @@ const (
 	ComponentPicker			= "picker"
 	ComponentPopover		= "popover"
 	ComponentRadioGroup		= "radiogroup"
+	ComponentRangeSlider		= "rangeslider"
 	ComponentRating			= "rating"
 	ComponentScrollbar		= "scrollbar"
 	ComponentSkeleton		= "skeleton"
@@ -4029,12 +4434,14 @@ const (
 	ComponentTagInput		= "taginput"
 	ComponentTextArea		= "textarea"
 	ComponentTextInput		= "textinput"
+	ComponentTimePicker		= "timepicker"
 	ComponentToast			= "toast"
 	ComponentToggle			= "toggle"
 	ComponentToolApproval		= "toolapproval"
 	ComponentTooltip		= "tooltip"
 	ComponentTransferList		= "transferlist"
 	ComponentTreeView		= "treeview"
+	ComponentWindow			= "window"
 	ComponentWizard			= "wizard"
 )
 func (a Auto) For(bg ansi.RGB) Theme
@@ -4209,6 +4616,49 @@ type Typography struct {
 
 	Code, Link	ansi.Style
 }
+
+## github.com/ows4444/tui/timepicker (package timepicker)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetValue(t time.Time)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) Value() time.Time
+func (m Model) View() string
+func (m Model) WithTokens(tok theme.Tokens) Model
+func DefaultKeyMap() KeyMap
+func New(t time.Time) Model
+type KeyMap struct {
+	PrevField	keymap.Binding
+	NextField	keymap.Binding
+	Up		keymap.Binding
+	Down		keymap.Binding
+	Select		keymap.Binding
+}
+type Model struct {
+	ShowSeconds	bool
+
+	Hour12	bool
+
+	Step	int
+
+	AM, PM	string
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type SelectedMsg struct{ Value time.Time }
 
 ## github.com/ows4444/tui/toast (package toast)
 
@@ -4473,9 +4923,11 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func DirectoryTree(root string) Node
 func FromJSON(data []byte) (Model, error)
+func FromValue(v any, opts ...ValueOptions) Model
 func LazyDirectoryTree(root string) Node
 func New(roots ...Node) Model
 func Sidebar(title string, tv Model, activeKey string, icons, badges map[string]string, t theme.Theme, width int) string
+func ValueNode(label string, v any, opts ...ValueOptions) Node
 type CollapsedMsg struct {
 	Node	*Node
 	Path	string
@@ -4526,6 +4978,11 @@ type Node struct {
 type SelectedMsg struct {
 	Node	*Node
 	Path	string
+}
+type ValueOptions struct {
+	MaxDepth	int
+
+	MaxItems	int
 }
 type VisibleRow struct {
 	Label		string
@@ -4611,6 +5068,7 @@ func (m *Model) PrevMatch() bool
 func (m *Model) Search(q string) int
 func (m *Model) SelectAll()
 func (m *Model) SetContent(s string)
+func (m *Model) SetYOffset(y int)
 func (m *Model) TrimFront(max int) int
 func (m Model) AtBottom() bool
 func (m Model) AtTop() bool
@@ -4626,6 +5084,7 @@ func (m Model) SearchQuery() string
 func (m Model) SelectedText() string
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
+func (m Model) YOffset() int
 func DefaultKeyMap() KeyMap
 func New(width, height int) Model
 type KeyMap struct {
@@ -4690,6 +5149,8 @@ type Model struct {
 	Overscan	int
 
 	RenderItem	func(i int) string
+
+	HeightOf	func(i int) int
 
 	Theme	theme.Theme
 
@@ -4960,6 +5421,89 @@ type Series struct {
 	Color	ansi.Color
 }
 type SeriesKind int
+
+## github.com/ows4444/tui/window (package window)
+
+const (
+	PartNone	Part	= iota
+
+	PartTitle
+
+	PartClose
+
+	PartEdge
+
+	PartBody
+)
+func (m *Model) Add(w Window)
+func (m *Model) Raise(id string) bool
+func (m *Model) Remove(id string) bool
+func (m *Model) SetRect(id string, r hittest.Rect)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) ContentRect(id string) (hittest.Rect, bool)
+func (m Model) Dragging() bool
+func (m Model) Focused() string
+func (m Model) Hit(x, y int) (id string, part Part)
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Window(id string) (Window, bool)
+func (m Model) WithTokens(tok theme.Tokens) Model
+func (w Window) Maximized() bool
+func DefaultKeyMap() KeyMap
+func New(windows ...Window) Model
+type ChangedMsg struct {
+	ID	string
+	Rect	hittest.Rect
+}
+type ClosedMsg struct{ ID string }
+type FocusedMsg struct{ ID string }
+type KeyMap struct {
+	Next, Prev	keymap.Binding
+
+	Close	keymap.Binding
+
+	Maximize	keymap.Binding
+
+	MoveLeft, MoveRight, MoveUp, MoveDown	keymap.Binding
+
+	ShrinkW, GrowW, ShrinkH, GrowH	keymap.Binding
+}
+type Model struct {
+	Windows	[]Window
+
+	Background	layout.Node
+
+	Step	int
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type Part int
+type Window struct {
+	ID	string
+
+	Title	string
+
+	Rect	hittest.Rect
+
+	MinW, MinH	int
+
+	Content	layout.Node
+
+	Fixed	bool
+
+	NoClose	bool
+	// contains filtered or unexported fields
+}
 
 ## github.com/ows4444/tui/wizard (package wizard)
 

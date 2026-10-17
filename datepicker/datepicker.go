@@ -36,6 +36,9 @@ type Model struct {
 	// like Enter) and the wheel moves the cursor by a month. Days outside
 	// [MinDate, MaxDate] ignore clicks. Off (the default) ignores the mouse.
 	Mouse bool
+	// Labels are the weekday and month names and the first day of the week;
+	// the zero value is English, Sunday first.
+	Labels Labels
 	// Bounds is the screen rectangle where the app draws the calendar (its
 	// first row is the weekday header); mouse events outside it are ignored.
 	Bounds hittest.Rect
@@ -174,7 +177,7 @@ func (m Model) dayAt(col, row int) (time.Time, bool) {
 	}
 	y, mo, _ := m.cursor.Date()
 	first := time.Date(y, mo, 1, 0, 0, 0, 0, m.cursor.Location())
-	day := (row-1)*7 + col/3 - int(first.Weekday()) + 1
+	day := (row-1)*7 + col/3 - m.lead(first) + 1
 	last := time.Date(y, mo+1, 0, 0, 0, 0, 0, m.cursor.Location()).Day()
 	if col/3 > 6 || day < 1 || day > last {
 		return time.Time{}, false
@@ -234,8 +237,7 @@ func (m Model) View() string {
 	cursorStyle := m.themed().ResolvedStates().Selected.Bold()
 	dimStyle := ansi.NewStyle().Faint()
 
-	weekdays := []string{"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"}
-	b.WriteString(strings.Join(weekdays, " "))
+	b.WriteString(m.header())
 	b.WriteByte('\n')
 
 	y, mo, _ := m.cursor.Date()
@@ -243,7 +245,7 @@ func (m Model) View() string {
 	lastDay := time.Date(y, mo+1, 0, 0, 0, 0, 0, m.cursor.Location()).Day()
 
 	// Pad to align the first day under its weekday column.
-	b.WriteString(strings.Repeat("   ", int(first.Weekday())))
+	b.WriteString(strings.Repeat("   ", m.lead(first)))
 
 	for day := 1; day <= lastDay; day++ {
 		d := time.Date(y, mo, day, 0, 0, 0, 0, m.cursor.Location())
@@ -258,8 +260,7 @@ func (m Model) View() string {
 
 		b.WriteString(cell)
 
-		wd := int(d.Weekday())
-		if wd == 6 || day == lastDay {
+		if (m.lead(first)+day-1)%7 == 6 || day == lastDay {
 			b.WriteByte('\n')
 		} else {
 			b.WriteByte(' ')

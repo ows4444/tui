@@ -29,6 +29,36 @@ func WithEllipsis(glyph string) TextOpt {
 	return func(n *textNode) { n.ellipsis, n.glyph = true, glyph }
 }
 
+// Overflow says which part of a line wider than its width is dropped.
+type Overflow int
+
+const (
+	// OverflowEnd keeps the start of the line and drops the end. It is what
+	// WithEllipsis does.
+	OverflowEnd Overflow = iota
+	// OverflowStart keeps the end of the line: the file name of a path.
+	OverflowStart
+	// OverflowMiddle keeps both ends and drops the middle: a long path or
+	// identifier whose start and end both say something.
+	OverflowMiddle
+)
+
+// WithOverflow ends a line wider than the width the way o says, with glyph
+// standing where text was dropped (see WithEllipsis; an empty glyph uses "~").
+// The line, glyph included, is at most the width.
+func WithOverflow(o Overflow, glyph string) TextOpt {
+	if glyph == "" {
+		glyph = "~"
+	}
+	return func(n *textNode) { n.ellipsis, n.glyph, n.overflow = true, glyph, o }
+}
+
+// WithJustify sets wrapped text flush on both sides: the gaps between words
+// grow until each line is as wide as the node, except the last line of a
+// paragraph and a line with no gap. It needs WithWrap, and it does not change
+// what Measure reports.
+func WithJustify() TextOpt { return func(n *textNode) { n.justify = true } }
+
 // WithAlign places each line within the width: AlignStart (the default) flush
 // left, AlignCenter centred (an odd remainder goes after the line) and
 // AlignEnd flush right. It does not change what Measure reports.
@@ -52,12 +82,17 @@ type textNode struct {
 	wrap     bool
 	ellipsis bool
 	glyph    string
+	overflow Overflow
+	justify  bool
 	align    Align
 }
 
 func (n textNode) lines(width int) []string {
 	t := n.text
 	if n.wrap && width > 0 {
+		if n.justify {
+			return justifyParagraphs(t, width)
+		}
 		t = ansi.WrapStyled(t, width)
 	}
 	return strings.Split(t, "\n")
@@ -94,7 +129,14 @@ func (n textNode) Render(s Size) string {
 	}
 	for i, l := range lines {
 		if n.ellipsis && ansi.Width(l) > s.W {
-			l = ansi.Truncate(l, s.W-ansi.Width(n.glyph)) + n.glyph
+			switch n.overflow {
+			case OverflowStart:
+				l = ansi.TruncateStart(l, s.W, n.glyph)
+			case OverflowMiddle:
+				l = ansi.TruncateMiddle(l, s.W, n.glyph)
+			default:
+				l = ansi.Truncate(l, s.W-ansi.Width(n.glyph)) + n.glyph
+			}
 		}
 		pad := 0
 		switch n.align {
@@ -112,4 +154,20 @@ func (n textNode) Render(s Size) string {
 		lines[i] = l
 	}
 	return Block(strings.Join(lines, "\n")).Render(s)
+}
+
+// justifyParagraphs wraps each paragraph of t to width and widens every line of
+// it but the last.
+func justifyParagraphs(t string, width int) []string {
+	var out []string
+	for _, para := range strings.Split(t, "\n") {
+		wrapped := strings.Split(ansi.WrapStyled(para, width), "\n")
+		for i, l := range wrapped {
+			if i < len(wrapped)-1 {
+				l = ansi.Justify(l, width)
+			}
+			out = append(out, l)
+		}
+	}
+	return out
 }

@@ -17,7 +17,7 @@ func Example() {
 	// true
 }
 
-type yesNo struct{ asked bool }
+type yesNo struct{}
 
 func (yesNo) Update(msg tui.Msg) (yesNo, tui.Cmd) {
 	if k, ok := msg.(tui.Key); ok && k.Text == "y" {

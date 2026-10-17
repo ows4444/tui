@@ -1,4 +1,4 @@
-// Package imageview draws a PNG with the kitty graphics protocol when the
+// Package imageview draws a PNG, JPEG or GIF with the kitty graphics protocol when the
 // terminal supports it, else with iTerm2's inline images, else with Sixel, and
 // with a bordered text placeholder when it supports none of them.
 //
@@ -75,6 +75,9 @@ type Model struct {
 	// the row it is anchored to is rewritten.
 	ID    uint32
 	Theme theme.Theme
+	// PlaceholderOnly draws the bordered text placeholder, and not half blocks,
+	// when the terminal has no graphics protocol.
+	PlaceholderOnly bool
 	// Getenv reads $TMUX and $STY, to wrap the graphics sequences for a
 	// terminal multiplexer (see ansi.Passthrough). Nil means os.Getenv; set it
 	// to the Program's environment, or to a stub in tests. Delete does not
@@ -104,7 +107,7 @@ type viewCache struct {
 type viewKey struct {
 	png                            *byte
 	n, width, height, cellW, cellH int
-	kitty, inline                  bool
+	kitty, inline, blocks          bool
 	id                             uint32
 	tmux, sty                      string
 }
@@ -161,6 +164,11 @@ func (m Model) imageID() uint32 {
 
 // New returns a Model for png at width by height cells, using theme.DarkTheme().
 func New(png []byte, width, height int, alt string) Model {
+	if len(png) > 0 && !isPNG(png) {
+		if b, err := ToPNG(png); err == nil {
+			png = b // a JPEG or GIF is shown from its PNG form
+		}
+	}
 	return Model{PNG: png, Width: width, Height: height, Alt: alt, Theme: theme.DarkTheme(), cache: &viewCache{}}
 }
 
@@ -173,8 +181,11 @@ func (m Model) View() string {
 	if m.Width <= 0 || m.Height <= 0 {
 		return ""
 	}
-	if len(m.PNG) == 0 || !m.Kitty && !m.Inline && !m.Sixel {
+	if len(m.PNG) == 0 {
 		return m.placeholder()
+	}
+	if !m.Kitty && !m.Inline && !m.Sixel {
+		return m.blocksView()
 	}
 	if c := m.cache; c != nil {
 		key := m.viewKey()
@@ -308,4 +319,36 @@ func asciiOnly(s string) string {
 		b = append(b, byte(r))
 	}
 	return string(b)
+}
+
+// blocksView is the fallback for a terminal with no graphics protocol: the
+// image in half blocks over Width by Height cells, or the placeholder when
+// PlaceholderOnly is set or the image does not decode.
+func (m Model) blocksView() string {
+	if m.PlaceholderOnly || asciiOnly(m.themed().GlyphSet().BarFull) == m.themed().GlyphSet().BarFull {
+		// An ASCII glyph set means the terminal cannot be trusted with the block
+		// characters: the text placeholder it is.
+		return m.placeholder()
+	}
+	if c := m.cache; c != nil {
+		key := m.viewKey()
+		key.blocks = true
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		if !c.ok || c.key != key {
+			c.key, c.view, c.ok = key, m.drawBlocks(), true
+		}
+		return c.view
+	}
+	return m.drawBlocks()
+}
+
+func (m Model) drawBlocks() string {
+	if encodeHook != nil {
+		encodeHook()
+	}
+	if v := HalfBlocks(m.PNG, m.Width, m.Height); v != "" {
+		return v
+	}
+	return m.placeholder()
 }

@@ -12,6 +12,113 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+New example `examples/ssh`: serves a program over SSH, one Program per connection, with the pty and window-change requests answering `Terminal.Size` and `Resizes`. It is a separate module (it needs `golang.org/x/crypto`), tested in CI on its own (`docs/program.md`).
+New command `tui dev [package]`: builds a program, runs it and rebuilds and restarts it when the source of its module changes (`docs/devtools.md`); the README states what the Windows console needs.
+New experimental package `termpane`: runs a program on a pseudo-terminal (darwin and linux) and draws its screen in a pane, with keys, bracketed paste, mouse reports, resize, scrollback and a terminal emulator that treats the output as untrusted (`docs/background-work.md`).
+New experimental package `motion/fx`: cell effects (`Fade`, `Dissolve`, `Slide`, `Sweep`) with `Wrap` for any `layout.Node`, `Out`, and `Progress` (eased, 1 at once under reduced motion); `ansi` gains `Color256.RGB` and `BasicColor.RGB`, `cellbuf` gains `Color.RGB` (`docs/animation.md`).
+New experimental package `window`: a desktop of overlapping windows the user moves by the title bar, resizes by the edges, raises with a press and closes with the close box, with the same actions on the keyboard (alt+arrows, alt+shift+arrows, alt+[ and alt+], alt+m, alt+w).
+Text selection across widgets: `WithTextSelection(style)` lets the user select screen text with Alt+drag (double click a word, triple click a row), copies it with OSC 52 and delivers a `SelectionMsg` (`docs/input.md`).
+Vi mode for `textarea` and `textinput`: set `Vi` and the widget is modal (counts, motions, `d` `c` `y` with motions and text objects, `p`, `.`, `u`, Visual mode), with `ViMode`, `SetViMode` and `ViPending`; a change undoes as one step (`docs/input.md`).
+- Four examples for the new widgets: docsreader (markdownview with a contents panel), logbrowser (filter input with history over a viewport), splitedit (splitpane with a highlighted textarea and outline) and inventory (datatable Source, Columns and marks with a detail pane).
+- Guides for animation, background work, forms, tables and the development tools
+  (`docs/animation.md`, `background-work.md`, `forms.md`, `tables.md`, `devtools.md`),
+  and the `motion` package comment now says it has 31 easings.
+- Development tools in the `tui` command: `tui keys` (what the terminal sends, live: keys
+  with their decoded type, modifiers and action, mouse events with click counts, paste
+  and focus), `tui log [-f] [-n lines] [-grep text] file` (read and follow the file
+  `tui.LogToFile` writes), and previews of `tui colors [preset]` (swatches and contrast),
+  `tui borders` and `tui easings [name]`.
+- `prompt.Choose[T]` with `prompt.Choice[T]` (a label, a value of any type, an optional
+  group shown as "Group > Label"), and two `prompt.Config` fields for `Select` and
+  `Choose`: `Start`, the choice the cursor begins on, and `PageSize`, how many
+  entries show at once.
+- `datepicker.Model.Labels` and `Title`: weekday and month names, the first day of the
+  week, the way a date is spoken and the phrases of `Linearize`, all replaceable, so the
+  picker can be shown in another language or start its week on Monday. The zero value is
+  the English picker it was.
+- A theme file (`theme.Parse`, `tui theme check`) can now also set `glyphs`
+  (`unicode`, `ascii`, `nerd`), `spacing`, the interactive `states` and the
+  `typography` styles, and the colours of one kind of widget under `components`;
+  `border` also takes `double`, `thick` and `hidden`.
+- `layout.Wrap(colGap, rowGap, children...)`: children flow left to right at their natural
+  width and start a new row when the next does not fit: chips, tags and toolbars
+  that should wrap, which `Row` cannot.
+- `virtuallist.Model.HeightOf`: items of different heights in a virtual list. `Height` then
+  counts rows, every item is drawn exactly its rows (padded or cut), the last may be cut
+  off by the window, scrolling and the cursor keep an item whole, and `HeightOf` is
+  asked only for the items near the window.
+- `treeview.FromValue` and `ValueNode`: show any Go value as a tree: struct fields,
+  sorted map entries, slice elements, pointers followed with cycles marked, `time.Time`
+  and values with an `Error` or `String` method by their text; `ValueOptions` bounds
+  the depth and the items per collection. Text from the value is cleaned of escapes.
+- `markdownview` (experimental): a Markdown document you read in a window. It scrolls,
+  lists its headings (`Headings`, for a table of contents) and links, moves through the
+  links with Tab, follows in-page links (`#section`) with a Back and Forward history,
+  jumps by heading with `]` and `[`, and reports other links with a `LinkMsg`.
+  `viewport` gains `YOffset` and `SetYOffset`.
+- `imageview` takes more than PNG and works without a graphics protocol: `New` accepts a
+  JPEG or GIF (its first frame) and keeps its PNG form; `FromImage`, `EncodePNG`
+  and `ToPNG` convert; `Frames` decodes an animated GIF into whole-picture frames with
+  their delays; and where the terminal has no graphics protocol the image is drawn in
+  half blocks, two pixels to a cell (`HalfBlocks`), unless `PlaceholderOnly` is set or
+  the theme's glyph set is ASCII.
+- Two experimental packages: `rangeslider` (two thumbs on one track, Space or `[` and
+  `]` to pick one, the low never passing the high, mouse drag) and `timepicker`
+  (hours, minutes, optional seconds and AM or PM as fields; arrows, typed digits,
+  wheel). `theme.ComponentRangeSlider` and `ComponentTimePicker` name them for
+  theme tokens.
+- `textinput` history and suggestions: `Model.History` with Up and Down (and Ctrl+R to
+  search it), and `Model.Suggestion` or `SuggestFromHistory` for grey text after the
+  cursor that Right, End or Ctrl+E takes (`KeyMap.HistoryPrev`, `HistoryNext`,
+  `HistorySearch`, `AcceptSuggestion`). With no history and no suggestion nothing changes.
+- Double and triple click: the Program counts presses of the same button on the same
+  cell within 400 ms into `MouseEvent.Clicks` (`WithMultiClick` sets or turns off the
+  interval). In `textinput` a double click selects the word and a triple click the
+  line; in `textarea` a double click selects the word and a triple click the line.
+- `datatable` multi-row marking: with `Model.Multi` on, Space marks the row under the
+  cursor and Ctrl+A marks all (`KeyMap.Mark`, `MarkAll`); a marked row shows a check
+  in the gutter. `Marked`, `IsMarked`, `Mark` and `ClearMarks` read and set the marks,
+  which belong to source rows and stay with their rows through sort, filter and row edits.
+- `datatable.Column` and `Model.Columns`: per-column alignment (numbers flush right),
+  minimum and maximum width (a cell wider than the maximum ends in an ellipsis), a
+  `Format` that changes what is shown and not the cell, and a `Less` for the sort key.
+  View, the layout node, `Linearize` and `DrawCells` follow them.
+- `prompt.Progress` and `prompt.Track`: a bar with the elapsed time, rate and time
+  left (from `widgets.ProgressStats`) while a function or a loop runs, with
+  Ctrl+C cancelling its context; the counterpart of `prompt.Spin` for work with a
+  known size.
+- `layout.Anchor(corner, dx, dy, node)`: pin a `Stack` child to a corner or the middle of
+  the Stack, following its size (a badge top right, a status bottom left); and
+  `layout.Aspect(w, h, node)`, which sizes a node to a ratio in cells.
+- `tui.SetPointerShape` and `ViewState.Pointer`: change the mouse pointer's shape
+  (OSC 22: a hand over a button, an I-beam over a text field) on terminals that
+  support it; the default is put back on every exit path.
+- `layout.Box.Shadow(colour)` and `ShadowGlyph(glyph, colour)`: a drop shadow, one
+  column down the right side and one row along the bottom, which adds that much to
+  the box's size.
+- `autocomplete.Source` and `Model.Source`: suggestions found for the typed text,
+  run on `tui.Tasks` so newer text cancels the older run, like the command
+  palette's; `autocomplete.PathSource()` completes file system paths.
+- Four Program options: `WithEnvironment` (the program's own `TERM`, `COLORTERM`,
+  `NO_COLOR`, `ACCESSIBLE` and reduced-motion variables, read through the new
+  `Program.Getenv` and `motion.DetectEnv`, so a host serving several sessions can
+  give each its own), `WithFilter` (sees every message on its way to the model,
+  `QuitMsg` included, and may replace or drop it), `WithoutRenderer` (the event
+  loop with no frames) and `WithWindowSize` (the starting size when the terminal
+  reports none).
+- Text overflow and justification: `ansi.TruncateStart` and `TruncateMiddle` keep the
+  end, or both ends, of a line that is too wide; `ansi.Justify` widens the gaps
+  between words; `layout.WithOverflow(OverflowStart|OverflowMiddle|OverflowEnd, glyph)`
+  and `layout.WithJustify()` use them in a `Text` node.
+- Seven more border presets in `layout` (`BlockBorder`, `OuterHalfBlockBorder`,
+  `InnerHalfBlockBorder`, `DashedBorder`, `HeavyDashedBorder`, `MarkdownBorder`,
+  `HiddenBorder`, the last taking a border's space and drawing none of it), and
+  `Box.BorderColors(top, right, bottom, left)` to colour the sides separately.
+- The rest of the standard easing set in `motion`: Quart, Quint, Sine, Expo, Circ,
+  Back, Elastic and Bounce, each in, out and in-out (31 in all, with the first
+  eight), and `motion.ByName` and `EaseNames` so a config file can name one.
+- `ansi.RGB` colour math: `HSL` and `FromHSL`, `Complement`, `Luminance` (WCAG relative
+  luminance) and `Readable` (black or white, whichever reads better on the colour).
 - Three more form fields: `form.FieldConfirm` (a Yes/No choice answered with Y and
   N; `Bool` reads it), `form.FieldNote` (a read-only line between fields, no
   focus, no value) and `form.FieldFile` (a path with a file list that

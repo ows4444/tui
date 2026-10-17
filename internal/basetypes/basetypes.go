@@ -18,4 +18,7 @@ var (
 	NormalBorder  = Border{"─", "─", "│", "│", "┌", "┐", "└", "┘"}
 	RoundedBorder = Border{"─", "─", "│", "│", "╭", "╮", "╰", "╯"}
 	ASCIIBorder   = Border{"-", "-", "|", "|", "+", "+", "+", "+"}
+	DoubleBorder  = Border{"═", "═", "║", "║", "╔", "╗", "╚", "╝"}
+	ThickBorder   = Border{"━", "━", "┃", "┃", "┏", "┓", "┗", "┛"}
+	HiddenBorder  = Border{" ", " ", " ", " ", " ", " ", " ", " "}
 )

@@ -25,6 +25,9 @@ func TestEveryPackageHasExample(t *testing.T) {
 			if path != "." && (n == "internal" || n == "testdata" || n == "docs" || n == "bench" || strings.HasPrefix(n, ".")) {
 				return filepath.SkipDir
 			}
+			if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil && path != "." {
+				return filepath.SkipDir // a module of its own (examples/ssh), not part of this one
+			}
 			return nil
 		}
 		if !strings.HasSuffix(path, ".go") {

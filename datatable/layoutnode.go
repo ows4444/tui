@@ -45,9 +45,39 @@ func (n tableNode) naturalWidths() []int {
 			continue
 		}
 		if nat == nil {
-			nat = m.measure()
+			nat = n.measureShown()
 		}
 		w[i] = nat[i]
+		col := m.column(i)
+		if col.Max > 0 {
+			w[i] = min(w[i], col.Max)
+		}
+		w[i] = max(w[i], col.Min)
+	}
+	return w
+}
+
+// formatScan bounds how many rows are measured to find the widths of formatted
+// columns, which the width cache (keyed on the raw cells) cannot give.
+const formatScan = 500
+
+// measureShown is the natural width of each column: from the cache, or, when
+// a Format changes what is drawn, from the text shown in the first rows.
+func (n tableNode) measureShown() []int {
+	m := n.m
+	if !m.hasFormat() {
+		return m.measure()
+	}
+	w := make([]int, len(m.Headers))
+	for i, h := range m.Headers {
+		w[i] = ansi.Width(ansi.Clean(m.Raw, h))
+	}
+	for _, row := range m.rowsIn(0, min(m.rowCount(), formatScan)) {
+		for c, cell := range row {
+			if c < len(w) {
+				w[c] = max(w[c], ansi.Width(ansi.Clean(m.Raw, m.display(c, cell))))
+			}
+		}
 	}
 	return w
 }
@@ -163,7 +193,7 @@ func (n tableNode) Render(s layout.Size) string {
 		cells := make([]string, len(row))
 		for i, cell := range row {
 			if i < len(widths) {
-				cells[i] = clip(ansi.Clean(m.Raw, cell), widths[i], ellipsis)
+				cells[i] = clip(ansi.Clean(m.Raw, m.display(i, cell)), widths[i], ellipsis)
 			} else {
 				cells[i] = ansi.Clean(m.Raw, cell)
 			}
@@ -173,6 +203,7 @@ func (n tableNode) Render(s layout.Size) string {
 
 	noop := func() {}
 	rows = m.styleCells(rows, start, &noop)
+	headers, rows = m.alignRows(headers, rows, widths)
 	if len(cols) != len(m.Headers) {
 		headers, rows = pickColumns(headers, rows, cols)
 	}
@@ -186,7 +217,7 @@ func (n tableNode) Render(s layout.Size) string {
 		}
 		return ansi.Style{}
 	}, m.themed())
-	return layout.Block(strings.TrimRight(withGutter(out, start, m.cursor), "\n")).Render(s)
+	return layout.Block(strings.TrimRight(withGutterMarks(out, start, m.cursor, m.markedRow, m.markGlyph()), "\n")).Render(s)
 }
 
 // visibleCols returns the columns Render draws at width w: all of them, unless

@@ -58,3 +58,20 @@ func ExampleNode_Load() {
 	// app.log
 	// db.log
 }
+
+// FromValue shows a Go value as a tree.
+func ExampleFromValue() {
+	type server struct {
+		Host string
+		Port int
+	}
+	m := treeview.FromValue(server{"localhost", 8080})
+	m, _ = m.Update(tui.Key{Type: tui.KeyRight})
+	for _, r := range m.VisibleRows() {
+		fmt.Println(r.Label)
+	}
+	// Output:
+	// value server {}
+	// Host: "localhost"
+	// Port: 8080
+}

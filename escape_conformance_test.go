@@ -1,6 +1,8 @@
 package tui_test
 
 import (
+	"context"
+	"github.com/ows4444/tui"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -9,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui/accordion"
 	"github.com/ows4444/tui/appshell"
@@ -38,6 +41,7 @@ import (
 	"github.com/ows4444/tui/inputgroup"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/logview"
+	"github.com/ows4444/tui/markdownview"
 	"github.com/ows4444/tui/menu"
 	"github.com/ows4444/tui/menubar"
 	"github.com/ows4444/tui/multiselect"
@@ -46,14 +50,17 @@ import (
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
 	"github.com/ows4444/tui/radiogroup"
+	"github.com/ows4444/tui/rangeslider"
 	"github.com/ows4444/tui/slider"
 	"github.com/ows4444/tui/spinner"
 	"github.com/ows4444/tui/streamtext"
 	"github.com/ows4444/tui/tabs"
 	"github.com/ows4444/tui/taginput"
+	"github.com/ows4444/tui/termpane"
 	"github.com/ows4444/tui/textarea"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
+	"github.com/ows4444/tui/timepicker"
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
@@ -62,6 +69,7 @@ import (
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/viewport"
 	"github.com/ows4444/tui/widgets"
+	"github.com/ows4444/tui/window"
 	"github.com/ows4444/tui/wizard"
 )
 
@@ -223,6 +231,43 @@ var conformance = map[string]func() map[string]string{
 	},
 	"radiogroup": func() map[string]string {
 		m := radiogroup.New(evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"markdownview": func() map[string]string {
+		m := markdownview.New("# "+evil+"\n\n["+evil+"]("+evil+")\n", 40, 6)
+		m, _ = m.Update(tui.Key{Type: tui.KeyTab})
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"rangeslider": func() map[string]string {
+		m := rangeslider.New(0, 10)
+		m.ShowValue = true
+		m.Format = func(float64) string { return evil }
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"timepicker": func() map[string]string {
+		m := timepicker.New(time.Date(2026, 1, 1, 15, 0, 0, 0, time.UTC))
+		m.Hour12 = true
+		m.AM, m.PM = evil, evil
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"termpane": func() map[string]string {
+		m := termpane.New("sh", "-c", `printf '\033[2J\033[HMARK\033]52;c;ZXZpbA==\007\033]0;t\033\\END'`)
+		m.Cols, m.Rows = 40, 3
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		defer m.Close()
+		for cmd := m.Init(); cmd != nil; {
+			msg := tui.RunCmd(ctx, cmd)
+			if _, done := msg.(termpane.ExitedMsg); done || msg == nil {
+				break
+			}
+			m, cmd = m.Update(msg)
+		}
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"window": func() map[string]string {
+		m := window.New(window.Window{ID: "a", Title: evil, Rect: layout.Rect{W: 30, H: 5}})
+		m.Bounds = layout.Rect{W: 32, H: 6}
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"slider": func() map[string]string {

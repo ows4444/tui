@@ -16,6 +16,9 @@ import (
 
 // Model is an append-only log built on top of viewport.Model.
 type Model struct {
+	// Viewport holds the rows and the scrolling. Set Viewport.Mouse and
+	// Viewport.Bounds to let the pointer select log text: a drag selects, and
+	// Viewport.SelectedText or the viewport's Copy key (y) takes it.
 	Viewport viewport.Model
 
 	// Max, if positive, caps the number of lines kept: an Append that would

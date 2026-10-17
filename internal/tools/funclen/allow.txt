@@ -1,6 +1,2 @@
 # Functions over the funclen limit that were already long, with the length
 # each may not exceed. Generated: go run ./internal/tools/funclen -w
-internal/highlight.lexClike 185
-internal/render.Cells.Frame 268
-internal/render.Cells.parseRow 187
-tuitest.Replay 173
