@@ -264,6 +264,29 @@ status := map[textarea.ViMode]string{textarea.ViNormal: "NORMAL", textarea.ViIns
 	textarea.ViVisual: "VISUAL", textarea.ViVisualLine: "V-LINE"}[ed.ViMode()]
 ```
 
+## Selecting text anywhere on screen
+
+With the mouse on, the terminal no longer selects text for the user, and a
+widget only selects what it drew itself. `WithTextSelection` gives the user the
+terminal's behaviour back for the whole screen:
+
+```go
+p := tui.NewProgram(model,
+	tui.WithAltScreen(true),
+	tui.WithMouse(tui.MouseCellMotion),
+	tui.WithTextSelection(ansi.Style{}), // zero Style draws it in reverse video
+)
+```
+
+Dragging with Alt held selects the cells under the pointer in reading order,
+whatever widget drew them; a double click with Alt takes a word and a triple
+click the row. A release copies the text with OSC 52 and delivers a
+`tui.SelectionMsg{Text}` to `Update`. The Program consumes the events that make
+the selection, so a widget never sees that drag; a plain click or drag reaches
+the widgets as usual and ends the selection, as does any key and a resize. The
+text is read from the last frame, so it is what the user saw, not what the model
+holds, and wrapped text is not joined back into one line.
+
 ## Clipboard
 
 [`clipboard.Model`](https://pkg.go.dev/github.com/ows4444/tui/clipboard) is a

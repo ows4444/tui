@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+Text selection across widgets: `WithTextSelection(style)` lets the user select screen text with Alt+drag (double click a word, triple click a row), copies it with OSC 52 and delivers a `SelectionMsg` (`docs/input.md`).
 Vi mode for `textarea` and `textinput`: set `Vi` and the widget is modal (counts, motions, `d` `c` `y` with motions and text objects, `p`, `.`, `u`, Visual mode), with `ViMode`, `SetViMode` and `ViPending`; a change undoes as one step (`docs/input.md`).
 - Four examples for the new widgets: docsreader (markdownview with a contents panel), logbrowser (filter input with history over a viewport), splitedit (splitpane with a highlighted textarea and outline) and inventory (datatable Source, Columns and marks with a detail pane).
 - Guides for animation, background work, forms, tables and the development tools

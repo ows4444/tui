@@ -255,6 +255,7 @@ func WithResizePoll(d time.Duration) ProgramOption
 func WithScreenshot(key string, save func(Screenshot)) ProgramOption
 func WithSuspendOnCtrlZ(enabled bool) ProgramOption
 func WithTerminal(t Terminal) ProgramOption
+func WithTextSelection(style ansi.Style) ProgramOption
 func WithTheme(auto theme.Auto) ProgramOption
 func WithWindowSize(width, height int) ProgramOption
 func WithoutRenderer() ProgramOption
@@ -395,6 +396,7 @@ type Screenshot struct {
 
 	Width, Height	int
 }
+type SelectionMsg struct{ Text string }
 type SuspendMsg struct{ Err error }
 type TaskDoneMsg struct {
 	Key		string

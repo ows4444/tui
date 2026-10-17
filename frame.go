@@ -89,7 +89,7 @@ func (p *Program) renderBody() string {
 	}
 	p.peekedView, p.hasPeeked = "", false
 	p.lastView, p.haveView = raw, true
-	view := p.transformView(p.withAnnounceRegion(p.withInspector(raw)))
+	view := p.transformView(p.withAnnounceRegion(p.withInspector(p.paintSelection(raw))))
 	lines := p.splitView(view)
 	if p.bidi {
 		m := p.Measurer()

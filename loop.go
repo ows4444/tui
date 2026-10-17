@@ -333,8 +333,24 @@ func (p *Program) step(msg Msg, done chan struct{}) (stop bool, err error) {
 		p.stopFlushTimer()
 		return true, p.parentCtx.Err()
 	}
+	if p.selOn {
+		switch msg.(type) {
+		case Key, ResizeMsg:
+			p.clearSelection()
+		}
+	}
 	if me, ok := msg.(MouseEvent); ok {
-		msg = p.countClicks(me)
+		me = p.countClicks(me)
+		msg = me
+		if p.selOn {
+			sel, handled := p.selectMouse(me)
+			if handled && sel == nil {
+				return false, nil
+			}
+			if handled {
+				msg = sel
+			}
+		}
 	}
 	if p.filter != nil {
 		// Like Bubble Tea's, after the Program's own messages and before the
@@ -527,6 +543,11 @@ func isInputMsg(msg Msg) bool {
 // terminal shows), nothing is written. The View result is handed to
 // renderBody so View runs once per frame.
 func (p *Program) renderIfChanged() {
+	if p.selDirty || p.sel.on {
+		p.selDirty = false
+		p.render() // the selection is drawn over the view, so the view alone proves nothing
+		return
+	}
 	if p.accessible {
 		p.render()
 		return

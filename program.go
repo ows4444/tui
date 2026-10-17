@@ -130,6 +130,10 @@ type Program struct {
 	inCloseOnce   sync.Once
 	altScreen     bool
 	mouseMode     MouseMode
+	selOn         bool       // WithTextSelection
+	selStyle      ansi.Style // how the selection is drawn
+	sel           selection
+	selDirty      bool // the selection went away and the next frame must show it
 	// resizeKick carries "the console reported a resize" from the input
 	// reader to watchResize (Windows); a size re-read follows each kick.
 	resizeKick         chan struct{}
