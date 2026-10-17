@@ -264,6 +264,23 @@ status := map[textarea.ViMode]string{textarea.ViNormal: "NORMAL", textarea.ViIns
 	textarea.ViVisual: "VISUAL", textarea.ViVisualLine: "V-LINE"}[ed.ViMode()]
 ```
 
+## Type-ahead
+
+Set `TypeAhead: true` on a `picker`, `menu`, `treeview`, `filepicker` or
+`datatable` and typing letters jumps to the next item whose label starts with
+them, ignoring case: `b` finds the next one that starts with b, the same letter
+again goes on to the one after it, `bl` finds the first that starts with bl from
+where you began typing, and a pause of a second starts a new word. A `virtuallist`
+does it when it has a `Label` function, which it calls for items from the cursor
+on until one matches, so it works on a million rows.
+
+A key that a binding uses keeps its meaning, so a letter bound to something
+(`s` and `/` in a `datatable`, a letter you added to `KeyMap`) cannot start a
+word. `Filter` on a `picker` or `treeview` wins over `TypeAhead`, since typing
+narrows the list there; a `datatable` with a `Source` does not search; in
+`CellMode` a `datatable` searches the column the cursor is in, and otherwise the
+first. `dropdown` has it built in.
+
 ## Mnemonics
 
 A label can name its own hot key with an ampersand: `"&Save"` is the label

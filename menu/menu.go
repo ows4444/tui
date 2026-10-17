@@ -38,6 +38,13 @@ type Model struct {
 	// sanitised (ansi.Sanitize) so untrusted text cannot carry terminal
 	// escape sequences. Item.Value is never altered.
 	Raw bool
+	// TypeAhead, when true, makes typing letters jump to the next item whose
+	// label starts with them, ignoring case: "b" finds the next one that starts with
+	// b, "bl" the next that starts with bl, the same letter again goes on to the
+	// one after, and a pause of a second starts a new word. Keys that a binding in
+	// KeyMap uses keep their meaning, so a letter some binding uses cannot start a word. Off (the default), letters do
+	// nothing.
+	TypeAhead bool
 
 	// KeyMap holds the key bindings Update obeys, at every depth. New fills
 	// it with DefaultKeyMap; a Model built with no bindings set behaves as
@@ -195,6 +202,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	lvl := m.stack[i]
 	lvl.KeyMap = k.pickerKeys()
 	lvl.Mouse, lvl.Bounds, lvl.WheelStep = m.Mouse, m.Bounds, m.WheelStep
+	lvl.TypeAhead = m.TypeAhead
 	lvl, cmd := lvl.Update(msg)
 	m.stack[i] = lvl
 	return m, cmd

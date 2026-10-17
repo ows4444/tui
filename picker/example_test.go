@@ -27,3 +27,15 @@ func ExampleModel_filter() {
 	fmt.Println(m.Query(), m.Highlighted().Label)
 	// Output: rs Rust
 }
+
+// With TypeAhead on, typing letters jumps to the next label that starts with
+// them.
+func ExampleModel_typeAhead() {
+	m := picker.NewStrings("Apple", "Banana", "Blueberry", "Cherry")
+	m.TypeAhead = true
+	for _, r := range "bl" {
+		m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: string(r)})
+	}
+	fmt.Println(m.Highlighted().Label)
+	// Output: Blueberry
+}

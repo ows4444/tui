@@ -6,6 +6,7 @@
 package virtuallist
 
 import (
+	"github.com/ows4444/tui/internal/typeahead"
 	"strings"
 
 	"github.com/ows4444/tui"
@@ -57,8 +58,18 @@ type Model struct {
 	Bounds    hittest.Rect
 	WheelStep int
 
+	// Label gives the text of item i for type-ahead: with it set, typing letters
+	// jumps to the next item whose label starts with them, ignoring case ("b"
+	// the next one that starts with b, "bl" the next with bl, the same letter
+	// again the one after, a pause of a second starts a new word). Keys that a
+	// binding in KeyMap uses keep their meaning. Label is called for items from
+	// the cursor on until one matches, so keep it cheap; nil (the default) turns
+	// type-ahead off.
+	Label func(i int) string
+
 	offset int
 	cursor int
+	ta     typeahead.State
 }
 
 // KeyMap is the set of keys a list reacts to. Up and Down scroll the list by
@@ -234,6 +245,13 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.SetCursor(0)
 	case keymap.Matches(msg, km.Bottom):
 		m.SetCursor(m.ItemCount - 1)
+	case m.Label != nil:
+		if text, ok := typeahead.Printable(msg); ok {
+			prefix, from := m.ta.Feed(text, m.Cursor())
+			if i, ok := typeahead.Find(prefix, from, m.ItemCount, m.Label); ok {
+				m.SetCursor(i)
+			}
+		}
 	}
 	return m, nil
 }

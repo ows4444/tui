@@ -3,6 +3,7 @@
 package picker
 
 import (
+	"github.com/ows4444/tui/internal/typeahead"
 	"strconv"
 	"strings"
 
@@ -55,9 +56,17 @@ type Model struct {
 	// underlined; the cursor moves to the best match as the query changes.
 	// Off (the default), the list is unchanged. A first line shows the query.
 	Filter bool
+	// TypeAhead, when true, makes typing letters jump to the next item whose
+	// label starts with them, ignoring case: "b" finds the next one that starts with
+	// b, "bl" the next that starts with bl, the same letter again goes on to the
+	// one after, and a pause of a second starts a new word. Keys that a binding in
+	// KeyMap uses keep their meaning, so a letter some binding uses cannot start a word. Off (the default), letters do
+	// nothing.
+	TypeAhead bool
 
 	cursor int
 	query  string
+	ta     typeahead.State
 }
 
 // KeyMap is the set of keys Update reacts to.
@@ -226,6 +235,13 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		return m, func() tui.Msg { return SelectedMsg{Index: idx, Item: item} }
 	case m.Filter:
 		return m.editQuery(msg.(tui.Key)), nil
+	case m.TypeAhead:
+		if text, ok := typeahead.Printable(msg); ok {
+			prefix, from := m.ta.Feed(text, m.cursor)
+			if i, ok := typeahead.Find(prefix, from, len(m.Items), func(i int) string { return m.Items[i].Label }); ok {
+				m.cursor = i
+			}
+		}
 	}
 	return m, nil
 }

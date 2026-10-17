@@ -17,6 +17,7 @@
 package datatable
 
 import (
+	"github.com/ows4444/tui/internal/typeahead"
 	"strconv"
 	"strings"
 
@@ -81,6 +82,14 @@ type Model struct {
 	// which one Enter confirmed. Off (the default), the cursor is the row, and
 	// Left and Right still move the column Sort sorts by.
 	CellMode bool
+	// TypeAhead, when true, makes typing letters jump to the next row whose
+	// first column (the current column in CellMode) starts with them, ignoring case: "b" finds the next one that starts with
+	// b, "bl" the next that starts with bl, the same letter again goes on to the
+	// one after, and a pause of a second starts a new word. Keys that a binding in
+	// KeyMap uses keep their meaning, so a letter some binding uses (s, S and / by default) cannot start a word. Off (the default), letters do
+	// nothing.
+	TypeAhead bool
+	// It does nothing for a table with a Source.
 	// CellStyle, when set, styles the cell of displayed row row (0 is the
 	// first shown row) in column col, holding value. The zero ansi.Style
 	// leaves the cell alone. It is called for every cell that is drawn, so it
@@ -123,6 +132,7 @@ type Model struct {
 
 	cursor int
 	offset int
+	ta     typeahead.State
 	// col is the current column (the one Sort sorts by) and colOffset the
 	// first drawn column.
 	col, colOffset int
@@ -489,6 +499,23 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.moveCol(-1)
 	case keymap.Matches(msg, k.Right):
 		m.moveCol(1)
+	case m.TypeAhead && m.Source == nil:
+		if text, ok := typeahead.Printable(msg); ok {
+			col := 0
+			if m.CellMode {
+				col = m.col
+			}
+			prefix, from := m.ta.Feed(text, m.cursor)
+			label := func(i int) string {
+				if row := m.rowAt(i); col < len(row) {
+					return row[col]
+				}
+				return ""
+			}
+			if i, ok := typeahead.Find(prefix, from, m.rowCount(), label); ok {
+				m.cursor = i
+			}
+		}
 	}
 	m.reveal()
 	return m, nil

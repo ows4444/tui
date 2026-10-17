@@ -5,6 +5,7 @@ package filepicker
 
 import (
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/typeahead"
 	"path/filepath"
 	"strings"
 
@@ -59,9 +60,18 @@ type Model struct {
 	Bounds    hittest.Rect
 	WheelStep int
 
+	// TypeAhead, when true, makes typing letters jump to the next entry whose
+	// name starts with them, ignoring case: "b" finds the next one that starts with
+	// b, "bl" the next that starts with bl, the same letter again goes on to the
+	// one after, and a pause of a second starts a new word. Keys that a binding in
+	// KeyMap uses keep their meaning, so a letter some binding uses cannot start a word. Off (the default), letters do
+	// nothing.
+	TypeAhead bool
+
 	cursor  int
 	offset  int // first entry shown when Height is set; kept by Update
 	entries []fsutil.Entry
+	ta      typeahead.State
 	err     error // why Dir could not be listed, or nil
 }
 
@@ -227,6 +237,13 @@ func (m Model) step(msg tui.Msg) (Model, tui.Cmd) {
 		}
 		path := filepath.Join(m.Dir, entry.Name)
 		return m, func() tui.Msg { return SelectedMsg{Path: path} }
+	case m.TypeAhead:
+		if text, ok := typeahead.Printable(msg); ok {
+			prefix, from := m.ta.Feed(text, m.cursor)
+			if i, ok := typeahead.Find(prefix, from, len(m.entries), func(i int) string { return m.entries[i].Name }); ok {
+				m.cursor = i
+			}
+		}
 	}
 	return m, nil
 }

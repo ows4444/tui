@@ -3,6 +3,7 @@
 package treeview
 
 import (
+	"github.com/ows4444/tui/internal/typeahead"
 	"strconv"
 	"strings"
 
@@ -77,6 +78,14 @@ type Model struct {
 	//
 	// A node whose children are not loaded yet (see Node.Load) is not searched.
 	Filter bool
+	// TypeAhead, when true, makes typing letters jump to the next visible node whose
+	// label starts with them, ignoring case: "b" finds the next one that starts with
+	// b, "bl" the next that starts with bl, the same letter again goes on to the
+	// one after, and a pause of a second starts a new word. Keys that a binding in
+	// KeyMap uses keep their meaning, so a letter some binding uses cannot start a word. Off (the default), letters do
+	// nothing.
+	TypeAhead bool
+	// With Filter on, typing narrows the tree instead and TypeAhead does nothing.
 
 	// Name tells LoadedMsg apart when two lazy trees are on screen: a message
 	// is taken only by the Model whose Name equals its own. Empty is a name.
@@ -89,6 +98,7 @@ type Model struct {
 	cursor   int
 	expanded map[string]bool
 	query    string
+	ta       typeahead.State
 	// loaded holds the children fetched for lazy nodes, by path; loading the
 	// paths whose Load is running. Both are replaced, not edited, like expanded.
 	loaded  map[string][]Node
@@ -398,6 +408,13 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		}
 	case m.Filter:
 		return m.editQuery(msg.(tui.Key)), nil
+	case m.TypeAhead:
+		if text, ok := typeahead.Printable(msg); ok {
+			prefix, from := m.ta.Feed(text, m.cursor)
+			if i, ok := typeahead.Find(prefix, from, len(items), func(i int) string { return items[i].label }); ok {
+				m.cursor = i
+			}
+		}
 	}
 	return m, nil
 }

@@ -14,9 +14,9 @@
 package dropdown
 
 import (
+	"github.com/ows4444/tui/internal/typeahead"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
@@ -27,12 +27,6 @@ import (
 
 // defaultMaxRows is how many options the open list shows at once.
 const defaultMaxRows = 8
-
-// typeAheadReset is how long a pause ends the letters typed to jump.
-const typeAheadReset = time.Second
-
-// now is the clock the type-ahead uses; a test replaces it.
-var now = time.Now
 
 // Model is one dropdown. The zero value is not ready to use; build one with
 // New.
@@ -75,8 +69,7 @@ type Model struct {
 	offset   int // the first option shown while open
 	open     bool
 	focused  bool
-	typed    string
-	typedAt  time.Time
+	ta       typeahead.State
 }
 
 // New returns a dropdown labelled label with the given options, nothing
@@ -183,7 +176,7 @@ func (m *Model) SetOpen(open bool) {
 		return
 	}
 	m.open = open
-	m.typed = ""
+	m.ta.Clear()
 	if open {
 		m.cursor = max(m.selected, 0)
 		m.scrollTo(m.cursor)
@@ -201,7 +194,7 @@ func (m *Model) Focus() tui.Cmd {
 func (m *Model) Blur() {
 	m.focused = false
 	m.open = false
-	m.typed = ""
+	m.ta.Clear()
 }
 
 // Focused reports whether the dropdown has keyboard focus.
@@ -304,22 +297,9 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 // typeAhead moves the highlight to the next option that starts with the
 // letters typed in the last second, ignoring case.
 func (m *Model) typeAhead(text string) {
-	t := now()
-	if t.Sub(m.typedAt) > typeAheadReset {
-		m.typed = ""
-	}
-	m.typedAt = t
-	m.typed += text
-	start := m.cursor
-	if len([]rune(m.typed)) > 1 {
-		start-- // a longer prefix may still match the highlighted option
-	}
-	for n := 1; n <= len(m.Options); n++ {
-		i := ((start+n)%len(m.Options) + len(m.Options)) % len(m.Options)
-		if strings.HasPrefix(strings.ToLower(m.Options[i]), strings.ToLower(m.typed)) {
-			m.moveTo(i)
-			return
-		}
+	prefix, from := m.ta.Feed(text, m.cursor)
+	if i, ok := typeahead.Find(prefix, from, len(m.Options), func(i int) string { return m.Options[i] }); ok {
+		m.moveTo(i)
 	}
 }
 

@@ -1681,6 +1681,8 @@ type Model struct {
 
 	CellMode	bool
 
+	TypeAhead	bool
+
 	CellStyle	func(row, col int, value string) ansi.Style
 
 	FrozenCols	int
@@ -2067,6 +2069,8 @@ type Model struct {
 	Mouse		bool
 	Bounds		hittest.Rect
 	WheelStep	int
+
+	TypeAhead	bool
 	// contains filtered or unexported fields
 }
 type SelectedMsg struct {
@@ -3114,6 +3118,8 @@ type KeyMap struct {
 type Model struct {
 	Raw	bool
 
+	TypeAhead	bool
+
 	KeyMap	KeyMap
 
 	Mouse	bool
@@ -3623,6 +3629,8 @@ type Model struct {
 	WheelStep	int
 
 	Filter	bool
+
+	TypeAhead	bool
 	// contains filtered or unexported fields
 }
 type SelectedMsg struct {
@@ -5069,6 +5077,8 @@ type Model struct {
 
 	Filter	bool
 
+	TypeAhead	bool
+
 	Name	string
 
 	Notify	bool
@@ -5285,6 +5295,8 @@ type Model struct {
 	Mouse		bool
 	Bounds		hittest.Rect
 	WheelStep	int
+
+	Label	func(i int) string
 	// contains filtered or unexported fields
 }
 

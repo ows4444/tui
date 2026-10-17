@@ -143,3 +143,36 @@ func TestEscAtRootIsNoOp(t *testing.T) {
 		t.Fatalf("View() changed after no-op Esc at root: got %q, want %q", next.View(), m.View())
 	}
 }
+
+func TestTypeAheadJumpsWithinTheOpenLevelAndFollowsIntoASubmenu(t *testing.T) {
+	m := New([]Item{
+		{Label: "Open", Value: "open"},
+		{Label: "Save", Value: "save"},
+		{Label: "Settings", Value: "settings", Children: []Item{{Label: "Theme"}, {Label: "Tabs"}, {Label: "Zoom"}}},
+	})
+	m.TypeAhead = true
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "s"})
+	if got := m.stack[m.current()].Cursor(); got != 1 {
+		t.Fatalf("s -> %d, want 1 (Save)", got)
+	}
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "s"}) // the same letter goes on
+	if got := m.stack[m.current()].Cursor(); got != 2 {
+		t.Fatalf("s s -> %d, want 2 (Settings)", got)
+	}
+	m, _ = m.Update(tui.Key{Type: tui.KeyEnter})
+	if len(m.stack) != 2 {
+		t.Fatalf("Enter did not open the submenu: %d levels", len(m.stack))
+	}
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "z"})
+	if got := m.stack[m.current()].Cursor(); got != 2 {
+		t.Errorf("z in the submenu -> %d, want 2 (Zoom)", got)
+	}
+}
+
+func TestTypeAheadOffInAMenu(t *testing.T) {
+	m := New([]Item{{Label: "Open"}, {Label: "Save"}})
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "s"})
+	if m.stack[m.current()].Cursor() != 0 {
+		t.Error("letters moved a menu with TypeAhead off")
+	}
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/input"
+	"github.com/ows4444/tui/internal/typeahead"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 )
@@ -178,8 +179,8 @@ func TestMovementClampsAndPages(t *testing.T) {
 
 func TestTypeAheadJumpsToTheNextMatch(t *testing.T) {
 	clock := time.Unix(100, 0)
-	now = func() time.Time { return clock }
-	defer func() { now = time.Now }()
+	typeahead.Now = func() time.Time { return clock }
+	defer func() { typeahead.Now = time.Now }()
 	m := New("", "Apple", "Avocado", "Banana", "Blueberry", "Cherry")
 	m.Focus()
 	m, _ = press(m, key(tui.KeyEnter))
@@ -187,14 +188,14 @@ func TestTypeAheadJumpsToTheNextMatch(t *testing.T) {
 	if m.cursor != 2 {
 		t.Fatalf("b -> %d, want 2", m.cursor)
 	}
-	m, _ = press(m, runes("b")) // "bb" matches nothing; cursor stays
-	if m.cursor != 2 {
-		t.Fatalf("bb -> %d, want 2", m.cursor)
+	m, _ = press(m, runes("b")) // the same letter again goes on to the next b
+	if m.cursor != 3 {
+		t.Fatalf("bb -> %d, want 3", m.cursor)
 	}
 	clock = clock.Add(2 * time.Second) // a pause ends the word
 	m, _ = press(m, runes("b"))
-	if m.cursor != 3 {
-		t.Fatalf("b again -> %d, want 3 (the next b)", m.cursor)
+	if m.cursor != 2 {
+		t.Fatalf("b again -> %d, want 2 (round to the first b)", m.cursor)
 	}
 	clock = clock.Add(2 * time.Second)
 	m, _ = press(m, runes("B"), runes("l")) // ignores case, prefix grows in place
@@ -345,17 +346,21 @@ func TestOptionTextCannotCarryControlCodes(t *testing.T) {
 	}
 }
 
-func TestTypeAheadKeepsTheHighlightWhileItStillMatches(t *testing.T) {
+func TestTypeAheadWordStartsWhereItBegan(t *testing.T) {
 	m := New("", "Blue", "Bluebird", "Green")
 	m.Focus()
 	m, _ = press(m, key(tui.KeyEnter))
-	m, _ = press(m, runes("b")) // from Blue, the next match is Bluebird
+	m, _ = press(m, runes("b")) // from Blue, the next b is Bluebird
 	if m.cursor != 1 {
 		t.Fatalf("b -> %d, want 1", m.cursor)
 	}
-	m, _ = press(m, runes("l")) // "bl" still matches Bluebird: stay, do not wrap to Blue
+	m, _ = press(m, runes("l")) // "bl" is searched from where the word began: Blue itself
+	if m.cursor != 0 {
+		t.Fatalf("bl -> %d, want 0", m.cursor)
+	}
+	m, _ = press(m, runes("u"), runes("e"), runes("b")) // "blueb" -> Bluebird
 	if m.cursor != 1 {
-		t.Fatalf("bl -> %d, want 1", m.cursor)
+		t.Fatalf("blueb -> %d, want 1", m.cursor)
 	}
 }
 
