@@ -320,12 +320,16 @@ func TestFindErrors(t *testing.T) {
 
 func TestGoto(t *testing.T) {
 	m, _ := open(t, seq(1000))
-	for in, want := range map[string]int{"10": 16, "0x1f0": 0x1f0, "#100": 100, "+4": 104, "-8": 96, "end": 999, "ffff": 999} {
+	// In order: the relative jumps are from wherever the one before landed.
+	for _, c := range []struct {
+		in   string
+		want int
+	}{{"10", 16}, {"0x1f0", 0x1f0}, {"#100", 100}, {"+4", 104}, {"-8", 96}, {"end", 999}, {"ffff", 999}} {
 		m = ctrl(m, 'g')
-		m.in.SetValue(in)
+		m.in.SetValue(c.in)
 		m = key(m, tui.KeyEnter)
-		if m.cur != want {
-			t.Errorf("goto %q: cur = %d, want %d", in, m.cur, want)
+		if m.cur != c.want {
+			t.Errorf("goto %q: cur = %d, want %d", c.in, m.cur, c.want)
 		}
 	}
 	m = runes(m, ":")

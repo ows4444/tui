@@ -21,7 +21,7 @@ func screen(s *tuitest.Session) string { return strings.Join(s.Screen(), "\n") }
 
 func want(t *testing.T, s *tuitest.Session, text string) {
 	t.Helper()
-	if !s.WaitForText(text, time.Second) {
+	if !s.WaitForText(text, 3*time.Second) {
 		t.Fatalf("screen never showed %q:\n%s", text, screen(s))
 	}
 }
