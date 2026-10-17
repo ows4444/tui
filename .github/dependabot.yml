@@ -1,5 +1,6 @@
-# The module has no third-party requires, so there is nothing to bump in
-# go.mod; this keeps the pinned GitHub Actions current.
+# The library module has no third-party requires, so there is nothing to bump in
+# its go.mod; this keeps the pinned GitHub Actions current. examples/ssh is a
+# module of its own with one requirement, golang.org/x/crypto.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -8,3 +9,10 @@ updates:
       interval: weekly
     commit-message:
       prefix: ci
+  - package-ecosystem: gomod
+    directory: /examples/ssh
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: deps
+

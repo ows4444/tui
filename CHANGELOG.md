@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+New example `examples/ssh`: serves a program over SSH, one Program per connection, with the pty and window-change requests answering `Terminal.Size` and `Resizes`. It is a separate module (it needs `golang.org/x/crypto`), tested in CI on its own (`docs/program.md`).
 New command `tui dev [package]`: builds a program, runs it and rebuilds and restarts it when the source of its module changes (`docs/devtools.md`); the README states what the Windows console needs.
 New experimental package `termpane`: runs a program on a pseudo-terminal (darwin and linux) and draws its screen in a pane, with keys, bracketed paste, mouse reports, resize, scrollback and a terminal emulator that treats the output as untrusted (`docs/background-work.md`).
 New experimental package `motion/fx`: cell effects (`Fade`, `Dissolve`, `Slide`, `Sweep`) with `Wrap` for any `layout.Node`, `Out`, and `Progress` (eased, 1 at once under reduced motion); `ansi` gains `Color256.RGB` and `BasicColor.RGB`, `cellbuf` gains `Color.RGB` (`docs/animation.md`).

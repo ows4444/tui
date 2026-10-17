@@ -38,6 +38,9 @@ func foreignImports(t *testing.T, root string) []string {
 			if n := d.Name(); path != root && (n == "testdata" || n == "vendor" || strings.HasPrefix(n, ".")) {
 				return filepath.SkipDir
 			}
+			if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil && path != root {
+				return filepath.SkipDir // a module of its own (examples/ssh) may have requirements
+			}
 			return nil
 		}
 		if !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {

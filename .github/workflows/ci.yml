@@ -31,6 +31,11 @@ jobs:
       # module for linux, darwin, windows and the BSDs.
       - name: go test -race
         run: go test -race ./...
+      # examples/ssh is a module of its own (it needs golang.org/x/crypto, which
+      # the library does not), so ./... above does not reach it.
+      - name: go test examples/ssh
+        working-directory: examples/ssh
+        run: go test -race ./...
       # Linux on the older Go only: one coverage profile is enough, and the
       # floor is per package. The same holds for the two steps after it.
       - name: coverage floor (90% per library package)
