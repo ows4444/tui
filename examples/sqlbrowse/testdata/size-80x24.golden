@@ -1,0 +1,24 @@
+sqlbrowse  read-only                                     Run   History   Export 
+ Tables                  │SQL ▸ SELECT * FROM customers LIMIT 20                
+ customers 30            │✓ 20 rows × 6 columns in 0s                           
+ orders 80               │    id   name               city     country    signu 
+ products 15             │ 1    1  Ada Lovelace       Mumbai   India      2024  
+ order_items 156         │ 2    2  Alan Turing        Oslo     Norway     2025  
+                         │ 3    3  Grace Hopper       Cairo    Egypt      2023  
+ customers               │ 4    4  Edsger Dijkstra    Mumbai   India      2023  
+  id int                 │ 5    5  Barbara Liskov     Mumbai   India      2024  
+  name text              │ 6    6  Donald Knuth       Cairo    Egypt      2025  
+  city text              │ 7    7  Margaret Hamilton  Sydney   Australia  2025  
+  country text           │ 8    8  Dennis Ritchie     Berlin   Germany    2024  
+  signup date            │ 9    9  Ken Thompson       Sydney   Australia  2024  
+  vip bool               │10   10  Linus Torvalds     Mumbai   India      2023  
+                         │11   11  Radia Perlman      Sydney   Australia  2024  
+                         │12   12  Tim Berners-Lee    Tokyo    Japan      2023  
+                         │13   13  Hedy Lamarr        Tokyo    Japan      2023  
+                         │14   14  John von Neumann   Sydney   Australia  2023  
+                         │15   15  Katherine Johnson  Toronto  Canada     2025  
+                         │16   16  Claude Shannon     Tokyo    Japan      2024  
+                         │17   17  Annie Easley       Cairo    Egypt      2025  
+                         │18   18  Vint Cerf          Berlin   Germany    2025  
+query · 4 tables · 1 queries in history                                         
+[enter] run  [tab] pane  [ctrl+r] history  [ctrl+t] tables  [ctrl+e] export  …  

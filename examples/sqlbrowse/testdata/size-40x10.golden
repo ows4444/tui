@@ -1,0 +1,10 @@
+sqlbrowse  read-only  Tables   Run   His
+SQL ▸ SELECT * FROM customers LIMIT 20  
+✓ 20 rows × 6 columns in 0s             
+    id   name               city     cou
+ 1    1  Ada Lovelace       Mumbai   In 
+ 2    2  Alan Turing        Oslo     No 
+ 3    3  Grace Hopper       Cairo    Eg 
+ 4    4  Edsger Dijkstra    Mumbai   In 
+query · 4 tables · 1 queries in history 
+[enter] run  [tab] pane  …              

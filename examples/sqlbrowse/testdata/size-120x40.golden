@@ -1,0 +1,40 @@
+sqlbrowse  read-only                                                                             Run   History   Export 
+ Tables                  │SQL ▸ SELECT * FROM customers LIMIT 20                                                        
+ customers 30            │✓ 20 rows × 6 columns in 0s                                                                   
+ orders 80               │    id   name               city     country    signup      vip                               
+ products 15             │ 1    1  Ada Lovelace       Mumbai   India      2024-11-01  false                             
+ order_items 156         │ 2    2  Alan Turing        Oslo     Norway     2025-05-03  false                             
+                         │ 3    3  Grace Hopper       Cairo    Egypt      2023-06-27  false                             
+ customers               │ 4    4  Edsger Dijkstra    Mumbai   India      2023-10-10  true                              
+  id int                 │ 5    5  Barbara Liskov     Mumbai   India      2024-02-14  true                              
+  name text              │ 6    6  Donald Knuth       Cairo    Egypt      2025-02-25  true                              
+  city text              │ 7    7  Margaret Hamilton  Sydney   Australia  2025-08-26  true                              
+  country text           │ 8    8  Dennis Ritchie     Berlin   Germany    2024-12-14  false                             
+  signup date            │ 9    9  Ken Thompson       Sydney   Australia  2024-08-08  true                              
+  vip bool               │10   10  Linus Torvalds     Mumbai   India      2023-05-12  true                              
+                         │11   11  Radia Perlman      Sydney   Australia  2024-10-28  false                             
+                         │12   12  Tim Berners-Lee    Tokyo    Japan      2023-12-17  false                             
+                         │13   13  Hedy Lamarr        Tokyo    Japan      2023-12-12  true                              
+                         │14   14  John von Neumann   Sydney   Australia  2023-04-16  false                             
+                         │15   15  Katherine Johnson  Toronto  Canada     2025-01-14  false                             
+                         │16   16  Claude Shannon     Tokyo    Japan      2024-08-22  false                             
+                         │17   17  Annie Easley       Cairo    Egypt      2025-06-04  true                              
+                         │18   18  Vint Cerf          Berlin   Germany    2025-05-15  false                             
+                         │19   19  Frances Allen      Mumbai   India      2025-04-02  false                             
+                         │20   20  Niklaus Wirth      Lima     Peru       2023-03-17  false                             
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+                         │                                                                                              
+query · 4 tables · 1 queries in history                                                                                 
+[enter] run  [tab] pane  [ctrl+r] history  [ctrl+t] tables  [ctrl+e] export  [f1] help                                  
