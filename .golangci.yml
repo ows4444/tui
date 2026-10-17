@@ -562,6 +562,7 @@ linters:
             - "github.com/ows4444/tui$"
             - "github.com/ows4444/tui/ansi$"
             - "github.com/ows4444/tui/cellbuf$"
+            - "github.com/ows4444/tui/filepicker$"
             - "github.com/ows4444/tui/focus$"
             - "github.com/ows4444/tui/fuzzy$"
             - "github.com/ows4444/tui/hittest$"

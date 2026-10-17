@@ -1958,6 +1958,12 @@ const (
 	FieldMultiSelect
 
 	FieldTextArea
+
+	FieldConfirm
+
+	FieldNote
+
+	FieldFile
 )
 const DefaultWidth = 30
 func (m *Model) Blur()
@@ -1980,6 +1986,7 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func Bool(m Model, name string) bool
 func DefaultKeyMap() KeyMap
 func Email() Validator
+func FileExists() Validator
 func Int(m Model, name string) (int, error)
 func Match(re *regexp.Regexp, msg string) Validator
 func MaxLen(n int) Validator
@@ -2034,6 +2041,8 @@ type KeyMap struct {
 	PrevGroup	keymap.Binding
 
 	SubmitInArea	keymap.Binding
+
+	Browse	keymap.Binding
 }
 type Model struct {
 	Theme	theme.Theme

@@ -66,7 +66,9 @@ func (m Model) span() (lo, hi int) {
 func (m Model) allValues() map[string]string {
 	v := make(map[string]string, len(m.fields))
 	for i, f := range m.fields {
-		v[f.Name] = m.inputs[i].value()
+		if f.Kind != FieldNote {
+			v[f.Name] = m.inputs[i].value()
+		}
 	}
 	return v
 }
@@ -118,12 +120,12 @@ func (m Model) GroupCount() int {
 func (m *Model) syncRing() {
 	lo, hi := m.span()
 	for i := range m.fields {
-		if i >= lo && i < hi {
+		if i >= lo && i < hi && m.fields[i].Kind != FieldNote {
 			m.ring = m.ring.SetDisabled(i, false)
 		}
 	}
 	for i := range m.fields {
-		if i < lo || i >= hi {
+		if i < lo || i >= hi || m.fields[i].Kind == FieldNote {
 			m.ring = m.ring.SetDisabled(i, true)
 		}
 	}

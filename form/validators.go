@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/mail"
+	"os"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -71,6 +72,25 @@ func Match(re *regexp.Regexp, msg string) Validator {
 	return func(v string) error {
 		if v != "" && !re.MatchString(v) {
 			return errors.New(msg)
+		}
+		return nil
+	}
+}
+
+// FileExists rejects a non-empty value that is not the path of an existing
+// file (a directory does not count). Like the other validators it passes an
+// empty value; pair it with Required.
+func FileExists() Validator {
+	return func(v string) error {
+		if v == "" {
+			return nil
+		}
+		st, err := os.Stat(v)
+		if err != nil {
+			return errors.New("no such file")
+		}
+		if st.IsDir() {
+			return errors.New("is a directory, not a file")
 		}
 		return nil
 	}

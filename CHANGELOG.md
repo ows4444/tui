@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Three more form fields: `form.FieldConfirm` (a Yes/No choice answered with Y and
+  N; `Bool` reads it), `form.FieldNote` (a read-only line between fields, no
+  focus, no value) and `form.FieldFile` (a path with a file list that
+  `KeyMap.Browse`, Ctrl+O, opens), plus the `form.FileExists` validator.
 - `layout.Span(node, cols, rows)`: a grid cell that covers several columns or
   rows, so a dashboard with one wide panel over two narrow ones is one
   `GridNode`. Cells still fill row by row, skipping what a span covers; a span

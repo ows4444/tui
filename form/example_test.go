@@ -114,3 +114,15 @@ func ExampleSelected() {
 	fmt.Println(form.Selected(m, "tags"), m.Values()["tags"])
 	// Output: [go tui] go,tui
 }
+
+// A note explains, a confirm asks yes or no, and a file field takes a path.
+func ExampleFieldConfirm() {
+	m := form.New(
+		form.Field{Kind: form.FieldNote, Label: "This cannot be undone."},
+		form.Field{Name: "sure", Label: "Delete", Kind: form.FieldConfirm},
+	)
+	m.Focus()
+	m, _ = m.Update(tui.Key{Type: tui.KeyRunes, Text: "y"})
+	fmt.Println(form.Bool(m, "sure"), len(m.Values()))
+	// Output: true 1
+}

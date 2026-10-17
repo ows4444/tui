@@ -51,11 +51,11 @@ func Value[T any](m Model, name string) (v T, ok bool) {
 	return opts[c].Value, true
 }
 
-// Bool returns whether the checkbox called name is ticked; false when there is
-// no such field or it is not a checkbox.
+// Bool returns whether the checkbox or confirm field called name is on; false
+// when there is no such field or it is neither.
 func Bool(m Model, name string) bool {
 	i := m.index(name)
-	return i >= 0 && m.fields[i].Kind == FieldCheckbox && m.inputs[i].checked
+	return i >= 0 && (m.fields[i].Kind == FieldCheckbox || m.fields[i].Kind == FieldConfirm) && m.inputs[i].checked
 }
 
 // Int returns the value of the field called name as an integer, trimming

@@ -57,7 +57,7 @@ func (n formNode) Render(s layout.Size) string {
 	for i := lo; i < hi; i++ {
 		in := n.m.inputs[i]
 		body := 1
-		if in.kind == FieldMultiSelect || in.kind == FieldTextArea {
+		if in.kind == FieldMultiSelect || in.kind == FieldTextArea || (in.kind == FieldFile && in.browsing) {
 			body = strings.Count(in.view(n.m.themed()), "\n") + 1
 		}
 		rows = append(rows, strings.Split(n.child(i).Render(layout.Size{W: s.W, H: body}), "\n")...)
