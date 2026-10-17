@@ -1,13 +1,40 @@
-┌────────────────────────────────────────────────────┐
-│                                                    │
-│ Create an account                                  │
-│                                                    │
-│ Name:  Ada Lovelace                                │
-│ Email: ada@example.com                             │
-│ Password:                                          │
-│ Plan: < Free >                                     │
-│ [ ] Accept terms                                   │
-│                                                    │
-│ [tab] next  [←→/space] change  [enter] submit      │
-│                                                    │
-└────────────────────────────────────────────────────┘
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                            ┌──────────────────────────────────────────────────────────────┐                            
+                            │                                                              │                            
+                            │ Create your account                                          │                            
+                            │                                                              │                            
+                            │ 1 Account  2 Plan  3 Review                                  │                            
+                            │                                                              │                            
+                            │ Account  step 1 of 2                                         │                            
+                            │ Who is this for?                                             │                            
+                            │ Name:  Ada Lovelace                                          │                            
+                            │ Email: ada@example.com                                       │                            
+                            │ Password:                                                    │                            
+                            │   At least 8 characters                                      │                            
+                            │                                                              │                            
+                            │  ‹ Back    Next ›                                            │                            
+                            │                                                              │                            
+                            │ [tab] next field  [enter] continue  [pgup] back  …           │                            
+                            │                                                              │                            
+                            └──────────────────────────────────────────────────────────────┘                            
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
