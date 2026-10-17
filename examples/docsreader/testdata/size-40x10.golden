@@ -1,10 +1,10 @@
-Contents                tui             
-> tui                                   
-    Quick start         A terminal UI   
-    Architecture        library for Go. 
-    Testing             Start with the q
-                        start           
-                        (#quick-start), 
+docsreader  Parcel docs          [‹] [›]
+Parcel docs                             
                                         
+Parcel moves small files between        
+machines. Start with the quick start    
+(quickstart.md), read about the table   
+widget (widgets/table.md), or see the   
                                         
-tab: next link   enter: follow   ]/[: h…
+6 pages · README.md                     
+[tab] link  [/] search  [s] sidebar  …  

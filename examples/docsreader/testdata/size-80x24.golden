@@ -1,24 +1,24 @@
-Contents                tui                                                     
-> tui                                                                           
-    Quick start         A terminal UI library for Go. Start with the quick start
-    Architecture        (#quick-start), or read about the architecture          
-    Testing             (#architecture). The source is on GitHub                
-                        (https://github.com/ows4444/tui).                       
-                                                                                
-                        Quick start                                             
-                                                                                
-                        Write a Model with Init, Update and View, hand it to a  
-                        Program, and call Run.                                  
-                                                                                
-                        [x] a model                                             
-                        [x] a program                                           
-                        [ ] your idea                                           
-                                                                                
-                        Architecture                                            
-                                                                                
-                        A Program owns the terminal and one event loop. Messages
-                        go in, a View comes out, and the renderer writes only   
-                        what changed. See quick start (#quick-start) again.     
-                                                                                
-                                                                                
-tab: next link   enter: follow   ]/[: heading   backspace: back   q: quit       
+docsreader  Parcel docs                                                  [‹] [›]
+ Parcel docs                 │Parcel docs                                       
+   What is in here           │                                                  
+ FAQ                         │Parcel moves small files between machines. Start  
+ Quick start                 │with the quick start (quickstart.md), read about  
+ Testing                     │the table widget (widgets/table.md), or see the   
+ Forms                       │FAQ (faq.md).                                     
+ Table                       │                                                  
+                             │What is in here                                   
+                             │                                                  
+                             │• Quick start (quickstart.md): send your first    
+                             │  file                                            
+                             │• Table (widgets/table.md) and Forms              
+                             │  (widgets/forms.md): the two screens you will    
+                             │  use most                                        
+                             │• Testing (testing.md): check a transfer without  
+                             │  a network                                       
+                             │• FAQ (faq.md): the questions people ask first    
+                             │                                                  
+                             │The project lives at example.com/parcel           
+                             │(https://example.com/parcel).                     
+                             │                                                  
+6 pages · README.md                                                             
+[tab] link  [/] search  [s] sidebar  [bksp] back  [?] help  [q] quit            
