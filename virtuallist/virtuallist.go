@@ -33,6 +33,16 @@ type Model struct {
 
 	RenderItem func(i int) string
 
+	// HeightOf, when set, gives the number of rows item i takes, so a list of
+	// messages or cards of different heights can be virtual. Height is then a
+	// count of rows, not of items: the window shows the items that fit from the
+	// offset, the last one cut off if it does not, and every item is drawn
+	// exactly HeightOf(i) rows tall (a shorter rendering is padded, a taller one
+	// cut). Heights under 1 count as 1. HeightOf is called for the items near the
+	// window only, never for the whole list. Nil (the default) keeps one row to
+	// an item.
+	HeightOf func(i int) int
+
 	Theme theme.Theme
 
 	// KeyMap holds the keys Update reacts to. New sets DefaultKeyMap; a
@@ -120,12 +130,18 @@ func (m Model) visibleCount() int {
 	if m.Height < 0 {
 		return 0
 	}
+	if m.HeightOf != nil {
+		return m.shownCount(m.offset)
+	}
 	return m.Height
 }
 
 // maxOffset is the largest offset that still leaves the window full of
 // content: [0, ItemCount-visibleCount], never negative.
 func (m Model) maxOffset() int {
+	if m.HeightOf != nil {
+		return m.maxOffsetRows()
+	}
 	max := m.ItemCount - m.visibleCount()
 	if max < 0 {
 		return 0
@@ -160,6 +176,10 @@ func (m *Model) SetCursor(i int) {
 // follow scrolls the view the minimum needed to show the cursor.
 func (m *Model) follow() {
 	m.cursor = m.Cursor()
+	if m.HeightOf != nil {
+		m.followRows()
+		return
+	}
 	h := m.visibleCount()
 	if m.cursor < m.offset {
 		m.setOffset(m.cursor)
@@ -231,7 +251,11 @@ func (m Model) mouse(ev tui.MouseEvent) Model {
 		m.pin()
 	case tui.MouseButtonLeft:
 		_, ly := m.Bounds.Local(ev.X, ev.Y)
-		if ly < m.visibleCount() && m.offset+ly < m.ItemCount {
+		if m.HeightOf != nil {
+			if i, ok := m.itemAtRow(ly); ok {
+				m.SetCursor(i)
+			}
+		} else if ly < m.visibleCount() && m.offset+ly < m.ItemCount {
 			m.SetCursor(m.offset + ly)
 		}
 	}
@@ -250,6 +274,9 @@ func (m Model) View() string {
 		return ""
 	}
 
+	if m.HeightOf != nil {
+		return m.viewRows()
+	}
 	start := clamp(m.offset, 0, m.ItemCount)
 	end := start + m.visibleCount()
 	if end > m.ItemCount {
@@ -280,7 +307,8 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	end := min(start+m.visibleCount(), m.ItemCount)
 	y := 0
 	for i := start; i < end && y < sub.Height(); i++ {
-		for rest, more := m.RenderItem(i), true; more && y < sub.Height(); y++ {
+		y0 := y
+		for rest, more := m.RenderItem(i), true; more && y < sub.Height() && (m.HeightOf == nil || y < y0+m.rowsOf(i)); y++ {
 			var line string
 			line, rest, more = strings.Cut(rest, "\n")
 			line = strings.TrimSuffix(line, "\r")
@@ -290,6 +318,9 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 			if _, err := sub.SetStyled(0, y, line); err != nil {
 				sub.SetString(0, y, line, 0)
 			}
+		}
+		if m.HeightOf != nil {
+			y = y0 + m.rowsOf(i) // a short rendering still takes its rows
 		}
 	}
 }

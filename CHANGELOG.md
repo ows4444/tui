@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `virtuallist.Model.HeightOf`: items of different heights in a virtual list. `Height` then
+  counts rows, every item is drawn exactly its rows (padded or cut), the last may be cut
+  off by the window, scrolling and the cursor keep an item whole, and `HeightOf` is
+  asked only for the items near the window.
 - `treeview.FromValue` and `ValueNode`: show any Go value as a tree: struct fields,
   sorted map entries, slice elements, pointers followed with cycles marked, `time.Time`
   and values with an `Error` or `String` method by their text; `ValueOptions` bounds

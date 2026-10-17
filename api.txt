@@ -5006,6 +5006,8 @@ type Model struct {
 
 	RenderItem	func(i int) string
 
+	HeightOf	func(i int) int
+
 	Theme	theme.Theme
 
 	KeyMap	KeyMap

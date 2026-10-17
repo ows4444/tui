@@ -58,8 +58,12 @@ func (n listNode) Render(s layout.Size) string {
 		return ""
 	}
 	m := n.m
-	ih := n.itemHeight()
-	m.Height = (s.H + ih - 1) / ih // items that fill s.H rows
+	if m.HeightOf != nil {
+		m.Height = s.H // rows, as HeightOf counts them
+	} else {
+		ih := n.itemHeight()
+		m.Height = (s.H + ih - 1) / ih // items that fill s.H rows
+	}
 	m.Overscan = 0
 	m.setOffset(m.offset)
 	return layout.Block(m.View()).Render(s)
