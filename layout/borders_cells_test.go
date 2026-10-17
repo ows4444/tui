@@ -23,3 +23,14 @@ func TestShadowNodeSizeAndCells(t *testing.T) {
 	sameScreen(t, "shadow", n, Loose(Size{W: 40, H: 10}))
 	sameScreen(t, "shadow, coloured", BoxNode(NewBox().Border(RoundedBorder()).Shadow(ansi.BrightBlack), Block("a\nb")), Loose(Size{W: 40, H: 10}))
 }
+
+func TestAnchorAndAspectDrawLikeTheyRender(t *testing.T) {
+	panel := BoxNode(NewBox().Border(NormalBorder()), Block("body\nbody\nbody"))
+	stack := Stack(
+		Layer(0, panel),
+		Layer(1, Anchor(TopRight, 1, 0, Block("[x]"))),
+		Anchor(BottomLeft, 2, 0, Block("status")),
+	)
+	sameScreen(t, "anchors", stack, Loose(Size{W: 30, H: 8}))
+	sameScreen(t, "aspect", Aspect(2, 1, BoxNode(NewBox().Border(RoundedBorder()), Block("sq"))), Loose(Size{W: 20, H: 6}))
+}

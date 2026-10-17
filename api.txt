@@ -2598,6 +2598,13 @@ const (
 
 	OverflowMiddle
 )
+const (
+	TopLeft	Corner	= iota
+	TopRight
+	BottomLeft
+	BottomRight
+	Center
+)
 const Unbounded = 1 << 30
 func (b Box) Background(c ansi.Color) Box
 func (b Box) Border(border Border) Box
@@ -2623,6 +2630,8 @@ func (r Rect) Empty() bool
 func (r Rect) Local(x, y int) (lx, ly int)
 func ASCIIBorder() Border
 func Absolute(x, y int, n Node) Node
+func Anchor(c Corner, dx, dy int, n Node) Node
+func Aspect(w, h int, n Node) Node
 func Block(s string) Node
 func BlockBorder() Border
 func BoxNode(box Box, child Node) Node
@@ -2702,6 +2711,7 @@ type CellSurface interface {
 	Repeat(x, y, n int, cluster string)
 }
 type Constraints struct{ MinW, MaxW, MinH, MaxH int }
+type Corner int
 type CrossAlign int
 type FlexChild struct {
 	Node	Node

@@ -37,10 +37,59 @@ func Absolute(x, y int, n Node) Node {
 	return l
 }
 
+// Corner is a place in a Stack for Anchor.
+type Corner int
+
+// The places Anchor can pin a child to.
+const (
+	TopLeft Corner = iota
+	TopRight
+	BottomLeft
+	BottomRight
+	Center
+)
+
+// Anchor returns n tagged to be pinned to a corner of the enclosing Stack, or to
+// its middle, at its natural size: a badge in the top right of a panel, a
+// status in the bottom left, a dialog in the centre. dx and dy move it inward
+// from the edges it is pinned to (for Center, along the axes: positive is right
+// and down). It follows the Stack's size, which Absolute cannot. The child is
+// kept inside the Stack. Outside a Stack it is n. Anchor composes with Layer in
+// either order and replaces an Absolute offset.
+func Anchor(c Corner, dx, dy int, n Node) Node {
+	l := asLayer(n)
+	l.anchored, l.corner, l.x, l.y = true, c, dx, dy
+	return l
+}
+
 // layerNode carries a child's stacking order and offset for a Stack.
 type layerNode struct {
-	z, x, y int
-	node    Node
+	z, x, y  int
+	node     Node
+	anchored bool   // set by Anchor: x and y are inward offsets from corner
+	corner   Corner //
+}
+
+// place is the top-left cell of a child of size sz in a Stack of size s: its
+// Absolute offset, or where Anchor puts it.
+func (l layerNode) place(s, sz Size) (int, int) {
+	if !l.anchored {
+		return l.x, l.y
+	}
+	var x, y int
+	switch l.corner {
+	case TopRight:
+		x, y = s.W-sz.W-l.x, l.y
+	case BottomLeft:
+		x, y = l.x, s.H-sz.H-l.y
+	case BottomRight:
+		x, y = s.W-sz.W-l.x, s.H-sz.H-l.y
+	case Center:
+		x, y = (s.W-sz.W)/2+l.x, (s.H-sz.H)/2+l.y
+	default:
+		x, y = l.x, l.y
+	}
+	return min(max(x, 0), max(s.W-sz.W, 0)), min(max(y, 0), max(s.H-sz.H, 0))
 }
 
 // asLayer returns n as a layerNode, wrapping it when it is not one.
@@ -76,11 +125,16 @@ func (st stackNode) layout(s Size) []placedKid {
 	out := make([]placedKid, 0, len(st.kids))
 	for _, k := range st.kids {
 		l := asLayer(k)
-		sz := l.node.Measure(Constraints{MaxW: max(s.W-l.x, 0), MaxH: max(s.H-l.y, 0)})
+		mx, my := max(s.W-l.x, 0), max(s.H-l.y, 0)
+		if l.anchored {
+			mx, my = s.W, s.H
+		}
+		sz := l.node.Measure(Constraints{MaxW: mx, MaxH: my})
 		if sz.W <= 0 || sz.H <= 0 {
 			continue
 		}
-		out = append(out, placedKid{node: l.node, rect: Rect{X: l.x, Y: l.y, W: sz.W, H: sz.H}, z: l.z})
+		x, y := l.place(s, sz)
+		out = append(out, placedKid{node: l.node, rect: Rect{X: x, Y: y, W: sz.W, H: sz.H}, z: l.z})
 	}
 	slices.SortStableFunc(out, func(a, b placedKid) int { return a.z - b.z })
 	return out
@@ -90,6 +144,12 @@ func (st stackNode) Measure(c Constraints) Size {
 	var w, h int
 	for _, k := range st.kids {
 		l := asLayer(k)
+		if l.anchored {
+			// Pinned to the Stack's own size, so it only has to fit in it.
+			sz := l.node.Measure(Constraints{MaxW: c.MaxW, MaxH: c.MaxH})
+			w, h = max(w, sz.W), max(h, sz.H)
+			continue
+		}
 		sz := l.node.Measure(Constraints{MaxW: shrinkBound(c.MaxW, l.x), MaxH: shrinkBound(c.MaxH, l.y)})
 		w, h = max(w, l.x+sz.W), max(h, l.y+sz.H)
 	}

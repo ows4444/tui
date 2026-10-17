@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `layout.Anchor(corner, dx, dy, node)`: pin a `Stack` child to a corner or the middle of
+  the Stack, following its size (a badge top right, a status bottom left); and
+  `layout.Aspect(w, h, node)`, which sizes a node to a ratio in cells.
 - `tui.SetPointerShape` and `ViewState.Pointer`: change the mouse pointer's shape
   (OSC 22: a hand over a button, an I-beam over a text field) on terminals that
   support it; the default is put back on every exit path.
