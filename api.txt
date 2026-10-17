@@ -1689,6 +1689,7 @@ func (m Model) Cursor() time.Time
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
 func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Title() string
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
@@ -1704,6 +1705,18 @@ type KeyMap struct {
 	MonthEnd	keymap.Binding
 	Select		keymap.Binding
 }
+type Labels struct {
+	Weekdays	[7]string
+
+	WeekdayNames	[7]string
+	MonthNames	[12]string
+
+	WeekStart	time.Weekday
+
+	Spoken	func(weekday, month string, day, year int) string
+
+	Picker, Unavailable, Selected, Earliest, Latest	string
+}
 type Model struct {
 	Value	time.Time
 	MinDate	time.Time
@@ -1713,6 +1726,8 @@ type Model struct {
 	KeyMap	KeyMap
 
 	Mouse	bool
+
+	Labels	Labels
 
 	Bounds	hittest.Rect
 	// contains filtered or unexported fields

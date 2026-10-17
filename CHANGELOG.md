@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `datepicker.Model.Labels` and `Title`: weekday and month names, the first day of the
+  week, the way a date is spoken and the phrases of `Linearize`, all replaceable, so the
+  picker can be shown in another language or start its week on Monday. The zero value is
+  the English picker it was.
 - A theme file (`theme.Parse`, `tui theme check`) can now also set `glyphs`
   (`unicode`, `ascii`, `nerd`), `spacing`, the interactive `states` and the
   `typography` styles, and the colours of one kind of widget under `components`;

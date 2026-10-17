@@ -24,7 +24,7 @@ func (n calendarNode) Measure(c layout.Constraints) layout.Size {
 func (n calendarNode) cursorWeek() int {
 	y, mo, _ := n.m.cursor.Date()
 	first := time.Date(y, mo, 1, 0, 0, 0, 0, n.m.cursor.Location())
-	return (int(first.Weekday()) + n.m.cursor.Day() - 1) / 7
+	return (n.m.lead(first) + n.m.cursor.Day() - 1) / 7
 }
 
 func (n calendarNode) Render(s layout.Size) string {
