@@ -1,0 +1,10 @@
+codebrowse  demo                        
+demo/go.mod        text · Ln 1/3 · 21 B 
+▸ bin                                   
+▸ docs                                  
+▸ pkg                                   
+  go.mod                                
+  main.go                               
+  README.md                             
+[tab] pane  [:] line  [/] search  …     
+                                        

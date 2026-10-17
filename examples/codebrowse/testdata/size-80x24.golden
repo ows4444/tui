@@ -1,0 +1,24 @@
+codebrowse  demo                                                                
+demo/go.mod                                                text · Ln 1/3 · 21 B 
+▸ bin                         │›1 module demo                                   
+▸ docs                        │ 2                                               
+▸ pkg                         │ 3 go 1.22                                       
+  go.mod                      │                                                 
+  main.go                     │                                                 
+  README.md                   │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+                              │                                                 
+[tab] pane  [:] line  [/] search  [n] next  [.] dot files  [f1] help  [q] quit  
+                                                                                
