@@ -187,6 +187,7 @@ func Batch(cmds ...Cmd) Cmd
 func ClearScreen() Cmd
 func DrawChild(buf *cellbuf.Buffer, r cellbuf.Rect, child Model)
 func DrawView(buf *cellbuf.Buffer, r cellbuf.Rect, view string)
+func EditInEditor(id, text, ext string) Cmd
 func EnableMouse(mode MouseMode) Cmd
 func EnterAltScreen() Cmd
 func Eprintln(text string) Cmd
@@ -316,6 +317,15 @@ type CursorProvider interface {
 	CursorCell() (x, y int, ok bool)
 }
 type CursorShape int
+type EditedMsg struct {
+	ID	string
+
+	Text	string
+
+	Changed	bool
+
+	Err	error
+}
 type FocusEvent = input.FocusEvent
 type FocusInspector interface {
 	FocusedID() string

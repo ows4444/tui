@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`tui.EditInEditor(id, text, ext)` and `EditedMsg`: hand a text to the user's `$VISUAL` or `$EDITOR` through a private temporary file and get the edited text back, with the terminal released and restored as `Suspend` does (`docs/program.md`).
 `chart.Marker` and `chart.NewCanvasMarker`: a `Canvas` can draw with `Sextant`, `Quadrant`, `HalfBlock` or `Block` glyphs instead of braille dots (shades on an ASCII theme), and `PlotOptions.Marker` passes the choice to `Plot`. The zero value is `Braille`, so nothing changes unless it is set.
 `spinner.Presets`, `Lookup` and `Model.WithPreset`: 18 named animations (dots, arc, arrow, bouncingBar and more, from the cli-spinners set) with their interval, and plain `-\|/` frames on an ASCII-only theme.
 `tui.WithColorFilter(f)` and `ansi.FilterColors`: pass every colour the Program paints through a function before the colour profile is applied, with ready filters `ansi.Grayscale`, `Protanopia`, `Deuteranopia`, `Tritanopia` and `Dim` (`docs/accessibility.md`). A root model that draws through `DrawCells` is drawn from its `View` string while a filter is set.

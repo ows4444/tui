@@ -217,7 +217,11 @@ func (p *Program) runtimeMsg(msg Msg, done chan struct{}) (Msg, bool) {
 		// once fn has actually run.
 		err := p.suspend(sm.fn)
 		var cmd Cmd
-		p.model, cmd = p.model.Update(SuspendMsg{Err: err})
+		var result Msg = SuspendMsg{Err: err}
+		if sm.then != nil {
+			result = sm.then(err)
+		}
+		p.model, cmd = p.model.Update(result)
 		if cmd != nil {
 			p.spawn(cmd, done)
 		}

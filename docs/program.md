@@ -70,6 +70,7 @@ used only on the root model itself.
 | `ChordMsg` | Only with `WithChords` |
 | `InputErrorMsg` | Once, if reading input fails. Input stops but the Program keeps running |
 | `SuspendMsg` | After a `Suspend` Cmd's function has returned |
+| `EditedMsg` | After an `EditInEditor` Cmd's editor has closed |
 | `CapabilitiesMsg` | Once, with `WithCapabilityProbe` ([capabilities.md](capabilities.md)) |
 | `BackgroundColorEvent`, `PaletteColorEvent`, `BackgroundUnknownMsg` | With `WithBackgroundDetection` or `WithTheme` |
 | `ClipboardMsg` | The answer to `ReadClipboard`, if the terminal answers |
@@ -101,6 +102,7 @@ goes to `Update`. A nil Cmd does nothing.
 | `Tasks.Start(key, fn)` | Like `FromCtx`, by key: starting a key cancels its earlier run, and the result arrives as `TaskDoneMsg` (`Canceled` marks a stale one). `Cancel`, `CancelAll` and `Running` manage the set |
 | `Println(text)`, `Eprintln(text)` | Write text above the live region, into scrollback (see below) |
 | `Suspend(fn)` | Hands the terminal back while `fn` runs (see below) |
+| `EditInEditor(id, text, ext)` | Edits `text` in `$VISUAL` or `$EDITOR`; the result is an `EditedMsg` |
 | `EnableMouse(mode)`, `EnterAltScreen()`, `ExitAltScreen()`, `ClearScreen()` | Change a terminal mode while running |
 | `SetProgress(state, percent)` | Show a progress bar in the terminal's tab or taskbar (OSC 9;4); removed on exit |
 | `SetWindowTitle(s)`, `SetCursorShape(s)` | Both are undone on every exit path |
@@ -190,6 +192,15 @@ reading input so `fn` owns stdin, runs `fn`, then puts everything back and
 repaints the whole frame. Use it to run an editor or a shell. `fn` starts and
 waits for the external program itself. Its error reaches `Update` as
 `SuspendMsg.Err`, and the Program keeps running either way.
+
+`EditInEditor(id, text, ext)` is `Suspend` for the common case: it writes `text`
+to a private temporary file (named with `ext`, such as `".md"`, so the editor
+picks a syntax), runs `$VISUAL` or `$EDITOR` on it (`vi`, or `notepad` on
+Windows, if neither is set), reads the file back and removes it. The result
+reaches `Update` as an `EditedMsg` with the new `Text`, `Changed` and any `Err`.
+The editor has to wait for the user, so a graphical one needs its wait flag
+(`code -w`); arguments in the variable are split on spaces, not passed to a
+shell.
 
 `WithSuspendOnCtrlZ(true)` makes Ctrl+Z stop the process as a shell job does.
 The Program restores the terminal, stops itself with SIGSTOP, and on `fg`

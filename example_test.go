@@ -93,3 +93,11 @@ func ExampleMap() {
 	fmt.Println(cmd().(fromSidebar).Msg)
 	// Output: selected
 }
+
+// EditInEditor hands a text to the user's editor. Return its Cmd from Update;
+// the edited text arrives as an EditedMsg.
+func ExampleEditInEditor() {
+	cmd := tui.EditInEditor("commit", "Subject\n\nBody\n", ".txt")
+	fmt.Println(cmd != nil)
+	// Output: true
+}

@@ -65,7 +65,12 @@ func Eprintln(text string) Cmd {
 // terminal released; the event loop intercepts it the same way it does
 // printMsg, calling it directly instead of ever handing it to Update —
 // its result reaches Update as a SuspendMsg once fn has actually run.
-type suspendMsg struct{ fn func() error }
+type suspendMsg struct {
+	fn func() error
+	// then, when set, turns fn's error into the Msg delivered to Update
+	// instead of a SuspendMsg (EditInEditor uses it to carry the edited text).
+	then func(error) Msg
+}
 
 // Suspend returns a Cmd that temporarily hands the real terminal back —
 // undoing Run's raw-mode/alt-screen/mouse/bracketed-paste/cursor setup,
