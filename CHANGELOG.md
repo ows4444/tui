@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- A theme file (`theme.Parse`, `tui theme check`) can now also set `glyphs`
+  (`unicode`, `ascii`, `nerd`), `spacing`, the interactive `states` and the
+  `typography` styles, and the colours of one kind of widget under `components`;
+  `border` also takes `double`, `thick` and `hidden`.
 - `layout.Wrap(colGap, rowGap, children...)`: children flow left to right at their natural
   width and start a new row when the next does not fit: chips, tags and toolbars
   that should wrap, which `Row` cannot.
