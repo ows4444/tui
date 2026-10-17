@@ -243,12 +243,12 @@ func (b boxNode) DrawCells(dst CellSurface, r Rect) {
 	}
 	y := r.Y
 	if showTop {
-		bx.drawEdge(dst, r.X, y, innerW, showLeft, showRight, bx.border.TopLeft, bx.border.Top, bx.border.TopRight, bx.title)
+		bx.drawEdge(dst, sideTop, r.X, y, innerW, showLeft, showRight, bx.border.TopLeft, bx.border.Top, bx.border.TopRight, bx.title)
 		y++
 	}
 	rows := bx.padTop + inner.H + bx.padBottom
 	if showLeft || showRight {
-		left, right := bx.paint(bx.border.Left), bx.paint(bx.border.Right)
+		left, right := bx.paintSide(sideLeft, bx.border.Left), bx.paintSide(sideRight, bx.border.Right)
 		rx := r.X + lw + innerW
 		for i := 0; i < rows; i++ {
 			if showLeft {
@@ -262,35 +262,36 @@ func (b boxNode) DrawCells(dst CellSurface, r Rect) {
 	drawNode(b.child, dst, Rect{X: r.X + lw + bx.padLeft, Y: y + bx.padTop, W: inner.W, H: inner.H})
 	y += rows
 	if showBottom {
-		bx.drawEdge(dst, r.X, y, innerW, showLeft, showRight, bx.border.BottomLeft, bx.border.Bottom, bx.border.BottomRight, "")
+		bx.drawEdge(dst, sideBottom, r.X, y, innerW, showLeft, showRight, bx.border.BottomLeft, bx.border.Bottom, bx.border.BottomRight, "")
 	}
 	dst.SetClip(prev)
 }
 
-// paint colours a border glyph with the box's border colour, if it has one.
-func (b Box) paint(s string) string {
-	if b.borderColor == nil || s == "" {
+// paintSide colours a border glyph with the colour of its side, if it has one.
+func (b Box) paintSide(side int, s string) string {
+	c := b.sideColor(side)
+	if c == nil || s == "" {
 		return s
 	}
-	return ansi.NewStyle().Foreground(b.borderColor).Render(s)
+	return ansi.NewStyle().Foreground(c).Render(s)
 }
 
 // drawEdge draws one horizontal border row (corners and edge, with title
 // embedded when set) as Render does, innerW edge cells wide.
-func (b Box) drawEdge(dst CellSurface, x, y, innerW int, showLeft, showRight bool, tl, line, tr, title string) {
+func (b Box) drawEdge(dst CellSurface, side, x, y, innerW int, showLeft, showRight bool, tl, line, tr, title string) {
 	if showLeft && tl != "" {
-		x += dst.Put(x, y, b.paint(tl))
+		x += dst.Put(x, y, b.paintSide(side, tl))
 	}
 	if title == "" {
-		dst.Repeat(x, y, innerW, b.paint(line))
+		dst.Repeat(x, y, innerW, b.paintSide(side, line))
 		x += innerW * ansi.Width(line)
 	} else {
 		e := b.edge(line, innerW, title)
-		dst.Put(x, y, b.paint(e))
+		dst.Put(x, y, b.paintSide(side, e))
 		x += ansi.Width(e)
 	}
 	if showRight && tr != "" {
-		dst.Put(x, y, b.paint(tr))
+		dst.Put(x, y, b.paintSide(side, tr))
 	}
 }
 

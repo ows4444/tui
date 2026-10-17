@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Seven more border presets in `layout` (`BlockBorder`, `OuterHalfBlockBorder`,
+  `InnerHalfBlockBorder`, `DashedBorder`, `HeavyDashedBorder`, `MarkdownBorder`,
+  `HiddenBorder`, the last taking a border's space and drawing none of it), and
+  `Box.BorderColors(top, right, bottom, left)` to colour the sides separately.
 - The rest of the standard easing set in `motion`: Quart, Quint, Sine, Expo, Circ,
   Back, Elastic and Bounce, each in, out and in-out (31 in all, with the first
   eight), and `motion.ByName` and `EaseNames` so a config file can name one.

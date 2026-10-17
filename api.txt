@@ -2554,6 +2554,7 @@ const Unbounded = 1 << 30
 func (b Box) Background(c ansi.Color) Box
 func (b Box) Border(border Border) Box
 func (b Box) BorderColor(c ansi.Color) Box
+func (b Box) BorderColors(top, right, bottom, left ansi.Color) Box
 func (b Box) BorderGradient(from, to ansi.RGB) Box
 func (b Box) BorderSides(top, right, bottom, left bool) Box
 func (b Box) Height(h int) Box
@@ -2573,9 +2574,11 @@ func (r Rect) Local(x, y int) (lx, ly int)
 func ASCIIBorder() Border
 func Absolute(x, y int, n Node) Node
 func Block(s string) Node
+func BlockBorder() Border
 func BoxNode(box Box, child Node) Node
 func Column(gap int, children ...FlexChild) Node
 func ColumnJustify(gap int, justify Justify, children ...FlexChild) Node
+func DashedBorder() Border
 func DoubleBorder() Border
 func Draw(root Node, c Constraints) string
 func DrawTight(root Node, size Size) string
@@ -2586,15 +2589,20 @@ func Fixed(n Node, size Size) Node
 func Fr(n int) Length
 func GridNode(tracks []Track, gap int, cells ...Node) Node
 func GridNodeGaps(tracks []Track, colGap, rowGap int, cells ...Node) Node
+func HeavyDashedBorder() Border
+func HiddenBorder() Border
+func InnerHalfBlockBorder() Border
 func JoinHorizontalJustify(width int, justify Justify, blocks ...string) string
 func Layer(z int, n Node) Node
 func Loose(max Size) Constraints
+func MarkdownBorder() Border
 func MinMax(n Node, min, max Size) Node
 func MinSize(n Node, min Size, fallback Node) Node
 func Named(name string, n Node) Node
 func NamedAt(root Node, s Size, x, y int) (name string, relX, relY int, ok bool)
 func NewBox() Box
 func NormalBorder() Border
+func OuterHalfBlockBorder() Border
 func Overlay(base, overlay string, x, y int) string
 func OverlayNode(base, over Node, x, y int) Node
 func Pct(n int) Length
