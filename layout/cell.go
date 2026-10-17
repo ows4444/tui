@@ -198,6 +198,13 @@ func (g gridNode) DrawCells(dst CellSurface, r Rect) {
 	}
 	widths, heights := g.sizes(Size{W: r.W, H: r.H})
 	prev := pushClip(dst, r)
+	if g.spans != nil {
+		for _, c := range g.placedRects(g.slots(), widths, heights) {
+			drawNode(c.node, dst, Rect{X: r.X + c.rect.X, Y: r.Y + c.rect.Y, W: c.rect.W, H: c.rect.H})
+		}
+		dst.SetClip(prev)
+		return
+	}
 	rowGap, colGap := max(g.rowGap, 0), max(g.colGap, 0)
 	y := r.Y
 	for row, h := range heights {

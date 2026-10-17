@@ -2593,6 +2593,7 @@ func RoundedBorder() Border
 func Row(gap int, children ...FlexChild) Node
 func RowJustify(gap int, justify Justify, children ...FlexChild) Node
 func Scroll(child Node, offset int) Node
+func Span(n Node, cols, rows int) Node
 func Stack(children ...Node) Node
 func Sticky(n Node) Node
 func StyledText(text string, style ansi.Style, wrap bool) Node

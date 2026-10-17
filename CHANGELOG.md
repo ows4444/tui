@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `layout.Span(node, cols, rows)`: a grid cell that covers several columns or
+  rows, so a dashboard with one wide panel over two narrow ones is one
+  `GridNode`. Cells still fill row by row, skipping what a span covers; a span
+  wider than the auto-sized columns it covers widens them. Rendering,
+  `DrawCells`, `Rects` and `NamedAt` all follow it.
 - Screenshots of a running program: `tui.WithScreenshot(key, save)` hands `save` a
   `tui.Screenshot` (the rows as plain `Text`, as `ANSI`, and the size) when the
   key is pressed, and `tui.ScreenshotCmd(wrap)` delivers one to `Update`.

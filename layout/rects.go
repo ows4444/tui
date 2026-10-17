@@ -206,6 +206,9 @@ func (g gridNode) children(s Size) []child {
 		return nil
 	}
 	widths, heights := g.sizes(s)
+	if g.spans != nil {
+		return g.placedRects(g.slots(), widths, heights)
+	}
 	colGap, rowGap := max(g.colGap, 0), max(g.rowGap, 0)
 	var out []child
 	y := 0
