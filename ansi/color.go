@@ -140,3 +140,11 @@ func (c RGB) bgCode() string {
 func (c RGB) ulCode() string {
 	return "58;2;" + strconv.Itoa(int(c.R)) + ";" + strconv.Itoa(int(c.G)) + ";" + strconv.Itoa(int(c.B))
 }
+
+// RGB is the colour as the xterm default palette draws it: the 16 basic colours
+// as the usual terminal values, the 6x6x6 cube and the grey ramp exactly.
+func (c Color256) RGB() RGB { return color256RGB(c) }
+
+// RGB is the colour as the xterm default palette draws it. Colours 0 to 7 are
+// the basic ones and 8 to 15 the bright ones.
+func (c BasicColor) RGB() RGB { return color256RGB(Color256(c & 15)) }

@@ -588,6 +588,8 @@ const (
 )
 const QueryBackgroundColor = "\x1b]11;?\x1b\\"
 const QueryPalette = "\x1b]4;0;?;1;?;2;?;3;?;4;?;5;?;6;?;7;?;8;?;9;?;10;?;11;?;12;?;13;?;14;?;15;?\x1b\\"
+func (c BasicColor) RGB() RGB
+func (c Color256) RGB() RGB
 func (c RGB) Complement() RGB
 func (c RGB) Darken(t float64) RGB
 func (c RGB) HSL() (h, s, l float64)
@@ -1243,6 +1245,7 @@ func (b *Buffer) Style(id StyleID) Style
 func (b *Buffer) StyleID(st Style) StyleID
 func (b *Buffer) Sub(r Rect) *Buffer
 func (b *Buffer) Width() int
+func (c Color) RGB() (rgb ansi.RGB, ok bool)
 func (s *Surface) Clip() layout.Rect
 func (s *Surface) Put(x, y int, str string) int
 func (s *Surface) Repeat(x, y, n int, cluster string)
@@ -3236,6 +3239,42 @@ type Tween struct {
 	Duration	time.Duration
 	Ease		Ease
 	Motion		Preference
+}
+
+## github.com/ows4444/tui/motion/fx (package fx)
+
+const (
+	FromLeft	Direction	= iota
+	FromRight
+	FromTop
+	FromBottom
+)
+func (d Dissolve) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func (f Fade) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func (s Slide) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func (s Sweep) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+func Out(e Effect) Effect
+func Progress(elapsed, d time.Duration, ease func(float64) float64, pref motion.Preference) float64
+func Wrap(node layout.Node, e Effect, p float64) layout.Node
+type Direction int
+type Dissolve struct {
+	Seed uint64
+}
+type Effect interface {
+	Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64)
+}
+type Fade struct {
+	To ansi.RGB
+}
+type Slide struct {
+	From Direction
+}
+type Sweep struct {
+	From	Direction
+
+	Soft	int
+
+	To	ansi.RGB
 }
 
 ## github.com/ows4444/tui/multiselect (package multiselect)

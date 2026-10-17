@@ -1,5 +1,7 @@
 package cellbuf
 
+import "github.com/ows4444/tui/ansi"
+
 // Attr is a set of text attributes, as bit flags.
 type Attr uint16
 
@@ -70,3 +72,21 @@ type Style struct {
 // StyleID names a Style in one Buffer's style table (and in every Sub view of
 // it). ID 0 is always the zero Style. IDs are not portable between Buffers.
 type StyleID uint16
+
+// RGB returns the colour as 24-bit components, reading basic, bright and 256
+// colours through the xterm default palette. ok is false for the default
+// colour, which has no value of its own.
+func (c Color) RGB() (rgb ansi.RGB, ok bool) {
+	n := int(c & 0xffffff)
+	switch c >> 24 {
+	case kindBasic:
+		return ansi.BasicColor(n & 7).RGB(), true
+	case kindBright:
+		return ansi.BasicColor(8 + n&7).RGB(), true
+	case kind256:
+		return ansi.Color256(n & 0xff).RGB(), true
+	case kindRGB:
+		return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, true
+	}
+	return ansi.RGB{}, false
+}

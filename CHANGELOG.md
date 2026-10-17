@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+New experimental package `motion/fx`: cell effects (`Fade`, `Dissolve`, `Slide`, `Sweep`) with `Wrap` for any `layout.Node`, `Out`, and `Progress` (eased, 1 at once under reduced motion); `ansi` gains `Color256.RGB` and `BasicColor.RGB`, `cellbuf` gains `Color.RGB` (`docs/animation.md`).
 New experimental package `window`: a desktop of overlapping windows the user moves by the title bar, resizes by the edges, raises with a press and closes with the close box, with the same actions on the keyboard (alt+arrows, alt+shift+arrows, alt+[ and alt+], alt+m, alt+w).
 Text selection across widgets: `WithTextSelection(style)` lets the user select screen text with Alt+drag (double click a word, triple click a row), copies it with OSC 52 and delivers a `SelectionMsg` (`docs/input.md`).
 Vi mode for `textarea` and `textinput`: set `Vi` and the widget is modal (counts, motions, `d` `c` `y` with motions and text objects, `p`, `.`, `u`, Visual mode), with `ViMode`, `SetViMode` and `ViPending`; a change undoes as one step (`docs/input.md`).

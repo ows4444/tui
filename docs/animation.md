@@ -84,3 +84,24 @@ Program, `program.ReducedMotion()` (set with `tui.WithReducedMotion`, or
 offset, a colour from `ansi.RGB.Mix`. For a fade, mix the colour of each style
 with the background by the eased value; for a slide, pass the offset to
 `layout.Absolute` or `layout.Anchor` inside a `layout.Stack`.
+
+## Effects: motion/fx
+
+For the usual cases there is a ready-made set in the experimental package
+`motion/fx`: `Fade`, `Dissolve`, `Slide` and `Sweep`. An `Effect` rewrites a
+cell grid that already holds the finished picture, as a function of a progress
+`p` from 0 (nothing shows) to 1 (the picture as it is). `fx.Wrap` puts one
+around any `layout.Node`, `fx.Out` runs one backwards for a panel that closes,
+and `fx.Progress` turns elapsed time into `p` (eased, and 1 at once under
+`motion.Reduced`):
+
+```go
+p := fx.Progress(time.Since(m.shownAt), 250*time.Millisecond, motion.OutCubic, m.motion)
+panel := fx.Wrap(m.panel.LayoutNode(), fx.Sweep{Soft: 4}, p)
+```
+
+Drive `p` with the same tick as a `Tween`. At `p == 1` the node is drawn
+unchanged. `Fade` blends toward the colour in `Fade.To`, which should be the
+background behind the region; a cell with no background of its own is taken to
+be that colour already.
+
