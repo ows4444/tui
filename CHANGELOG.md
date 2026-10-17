@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Guides for animation, background work, forms, tables and the development tools
+  (`docs/animation.md`, `background-work.md`, `forms.md`, `tables.md`, `devtools.md`),
+  and the `motion` package comment now says it has 31 easings.
 - Development tools in the `tui` command: `tui keys` (what the terminal sends, live: keys
   with their decoded type, modifiers and action, mouse events with click counts, paste
   and focus), `tui log [-f] [-n lines] [-grep text] file` (read and follow the file

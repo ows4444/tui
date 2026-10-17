@@ -20,7 +20,9 @@
 // reduced motion with zero changes to spinner.go, streamtext.go, or
 // skeleton.go. See decision #11 for the full rationale.
 //
-// The package also has easing functions (Ease, from Linear to OutBack) and
+// The package also has 31 easing functions (Ease: Linear and the Quad, Cubic,
+// Quart, Quint, Sine, Expo, Circ, Back, Elastic and Bounce families, each in,
+// out and in-out; ByName finds one by its name) and
 // Tween, which interpolates a value over time and skips straight to the end
 // value under a Reduced preference.
 package motion
