@@ -1,0 +1,40 @@
+csvedit  sample                                                                                        12 rows × 4 cols 
+[+Row] [+Col] [−Row] [−Col] [Sort] [Undo] [Redo] [Save]                                                                 
+   city        country    population  area_km2                                                                          
+ 1 Tokyo       Japan         37400000      2194                                                                         
+ 2 Delhi       India         31000000      1484                                                                         
+ 3 Shanghai    China         27100000      6341                                                                         
+ 4 São Paulo   Brazil        22000000      1521                                                                         
+ 5 Mexico City Mexico        21800000      1485                                                                         
+ 6 Cairo       Egypt         20900000      3085                                                                         
+ 7 Mumbai      India         20400000       603                                                                         
+ 8 Beijing     China         20000000     16411                                                                         
+ 9 Dhaka       Bangladesh    21000000       306                                                                         
+10 Osaka       Japan         19200000       225                                                                         
+11 New York    USA           18800000       783                                                                         
+12 Lagos       Nigeria       15400000      1171                                                                         
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+A1 city  "Tokyo"                                                                                                        
+[enter] edit  [o] row  [s] sort  [ctrl+z] undo  [ctrl+s] save  [f1] help  [q] quit                                      
