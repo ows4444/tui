@@ -40,6 +40,9 @@ func (p *Program) titleAndShapeRestoreLocked() string {
 	if p.progressSet {
 		s += progressSeq(ProgressNone, 0)
 	}
+	if p.pointerSet {
+		s += pointerSeq(PointerDefault)
+	}
 	return s
 }
 
@@ -50,7 +53,7 @@ func (p *Program) takeTitleAndShapeRestore() string {
 	p.outMu.Lock()
 	defer p.outMu.Unlock()
 	s := p.titleAndShapeRestoreLocked()
-	p.titleSaved, p.cursorShaped, p.progressSet = false, false, false
+	p.titleSaved, p.cursorShaped, p.progressSet, p.pointerSet = false, false, false, false
 	return s
 }
 
@@ -133,6 +136,67 @@ func SetProgress(state ProgressState, percent int) Cmd {
 			p.progressSet = state != ProgressNone
 			p.outMu.Unlock()
 			p.write(progressSeq(state, percent))
+		}}
+	}
+}
+
+// PointerShape is a mouse pointer shape for SetPointerShape (OSC 22): the
+// name of a CSS cursor.
+type PointerShape string
+
+// The pointer shapes a terminal that supports OSC 22 (kitty, foot, Ghostty and
+// others) understands; a terminal ignores a name it does not know.
+const (
+	// PointerDefault is the terminal's own pointer.
+	PointerDefault PointerShape = "default"
+	// PointerPointer is the hand over a button or a link.
+	PointerPointer PointerShape = "pointer"
+	// PointerText is the I-beam over text that can be edited or selected.
+	PointerText PointerShape = "text"
+	// PointerCrosshair is a crosshair.
+	PointerCrosshair PointerShape = "crosshair"
+	// PointerWait shows that the program is busy.
+	PointerWait PointerShape = "wait"
+	// PointerHelp is a pointer with a question mark.
+	PointerHelp PointerShape = "help"
+	// PointerNotAllowed shows that an action is refused here.
+	PointerNotAllowed PointerShape = "not-allowed"
+	// PointerGrab and PointerGrabbing are the open and closed hand of a drag.
+	PointerGrab     PointerShape = "grab"
+	PointerGrabbing PointerShape = "grabbing"
+	// PointerMove is the four-way arrow of a window being moved.
+	PointerMove PointerShape = "move"
+	// PointerEWResize and PointerNSResize are the two-way arrows over a divider.
+	PointerEWResize PointerShape = "ew-resize"
+	PointerNSResize PointerShape = "ns-resize"
+)
+
+// pointerSeq is OSC 22 with the shape name, which is cut to lower-case letters
+// and hyphens so a caller's string cannot end the sequence early.
+func pointerSeq(s PointerShape) string {
+	name := strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r == '-' {
+			return r
+		}
+		return -1
+	}, strings.ToLower(string(s)))
+	if name == "" {
+		name = string(PointerDefault)
+	}
+	return "\x1b]22;" + name + "\x1b\\"
+}
+
+// SetPointerShape returns a Cmd that changes the mouse pointer's shape (OSC 22)
+// while it is over the terminal: a hand over a button, an I-beam over a text
+// field. The Program puts the default back on every exit path. Terminals that do
+// not know the sequence ignore it. See also ViewState.Pointer.
+func SetPointerShape(s PointerShape) Cmd {
+	return func() Msg {
+		return modeMsg{apply: func(p *Program) {
+			p.outMu.Lock()
+			p.pointerSet = s != PointerDefault && s != ""
+			p.outMu.Unlock()
+			p.write(pointerSeq(s))
 		}}
 	}
 }

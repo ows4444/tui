@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `tui.SetPointerShape` and `ViewState.Pointer`: change the mouse pointer's shape
+  (OSC 22: a hand over a button, an I-beam over a text field) on terminals that
+  support it; the default is put back on every exit path.
 - `layout.Box.Shadow(colour)` and `ShadowGlyph(glyph, colour)`: a drop shadow, one
   column down the right side and one row along the bottom, which adds that much to
   the box's size.

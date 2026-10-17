@@ -24,6 +24,8 @@ type ViewState struct {
 	Title *string
 	// Progress is the terminal's progress indicator (see SetProgress).
 	Progress *Progress
+	// Pointer is the mouse pointer's shape (see SetPointerShape).
+	Pointer *PointerShape
 }
 
 // Progress is a progress indicator state for ViewState.
@@ -75,6 +77,11 @@ func (p *Program) applyViewState() {
 		pr := *st.Progress
 		p.viewProgress = &pr
 		run(SetProgress(pr.State, pr.Percent))
+	}
+	if st.Pointer != nil && (p.viewPointer == nil || *st.Pointer != *p.viewPointer) {
+		ps := *st.Pointer
+		p.viewPointer = &ps
+		run(SetPointerShape(ps))
 	}
 	if st.Title != nil && (!p.viewTitleSet || *st.Title != p.viewTitle) {
 		p.viewTitle, p.viewTitleSet = *st.Title, true

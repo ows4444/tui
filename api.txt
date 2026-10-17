@@ -121,6 +121,29 @@ const (
 	MouseAllMotion
 )
 const (
+	PointerDefault	PointerShape	= "default"
+
+	PointerPointer	PointerShape	= "pointer"
+
+	PointerText	PointerShape	= "text"
+
+	PointerCrosshair	PointerShape	= "crosshair"
+
+	PointerWait	PointerShape	= "wait"
+
+	PointerHelp	PointerShape	= "help"
+
+	PointerNotAllowed	PointerShape	= "not-allowed"
+
+	PointerGrab	PointerShape	= "grab"
+	PointerGrabbing	PointerShape	= "grabbing"
+
+	PointerMove	PointerShape	= "move"
+
+	PointerEWResize	PointerShape	= "ew-resize"
+	PointerNSResize	PointerShape	= "ns-resize"
+)
+const (
 	Polite	AnnounceLevel	= iota
 
 	Assertive
@@ -184,6 +207,7 @@ func RunCmd(ctx context.Context, cmd Cmd) Msg
 func ScreenshotCmd(wrap func(Screenshot) Msg) Cmd
 func Sequence(cmds ...Cmd) Cmd
 func SetCursorShape(s CursorShape) Cmd
+func SetPointerShape(s PointerShape) Cmd
 func SetProgress(state ProgressState, percent int) Cmd
 func SetWindowTitle(title string) Cmd
 func Suspend(fn func() error) Cmd
@@ -341,6 +365,7 @@ type PanicError struct {
 	Stack	[]byte
 }
 type PasteEvent = input.PasteEvent
+type PointerShape string
 type Program struct {
 	// contains filtered or unexported fields
 }
@@ -404,6 +429,8 @@ type ViewState struct {
 	Title	*string
 
 	Progress	*Progress
+
+	Pointer	*PointerShape
 }
 type ViewStater interface {
 	ViewState() ViewState
