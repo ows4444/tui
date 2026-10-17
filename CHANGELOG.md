@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `appshell.Stack`: a screen stack. A screen pushes another over itself with
+  `PushCmd` and the pushed one pops itself with `PopCmd(result)`, which delivers
+  the result to the screens below; `Replace`, `ViewAt` and `Depth` complete it.
+  Keys and mouse go to the top screen, everything else to all of them.
 - `commandpalette.Source` and `Model.Sources`: commands found for what was typed,
   not from a fixed list. Each keystroke runs every Source on `tui.Tasks`, so a
   newer query cancels the older one, and the answers join the dropdown when the
