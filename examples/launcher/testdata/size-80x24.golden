@@ -1,0 +1,24 @@
+launcher  sample project, scripted                                              
+›  Type a command name…                                                         
+›  build                    Compile the project                                 
+   test                     Run the tests with the race detector                
+   test-flaky               Run the tests that sometimes fail                   
+   lint                     Check the code with the linters                     
+   fmt                      Format every source file                            
+   bench                    Run the benchmarks                                  
+Output appears here                                                             
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+[enter] run  [ctrl+x] cancel  [ctrl+r] rerun  [pgup/pgdn] scroll  [f1] help  …  
