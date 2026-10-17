@@ -1,412 +1,566 @@
-// Command login is a credential sign-in screen built on package form, with a
-// live design-system panel beside it for trying every theming control the
-// library has.
+// Command login is a sign-in screen: a username, a masked password you can
+// reveal, a remember-me box and a Sign in button. A wrong password shakes the
+// panel, clears the password and keeps the username; three wrong tries lock
+// the screen for a few seconds with a countdown. The sign-in is simulated, so
+// nothing is sent anywhere. The demo account is ada / lovelace1815.
 //
-// The login panel has a username field, a masked password field and a
-// "remember me" checkbox: Tab and Shift+Tab move between them, Space ticks
-// the box, Enter signs in (Esc quits). Submitting a valid form starts a
-// simulated authentication round-trip — a tui.Tick standing in for a network
-// call — with a spinner in place of the form. Wrong credentials show an error
-// alert, keep the username and clear the password; three failures lock the
-// screen. The demo account is demoUser / demoPassword; there is no real
-// credential storage here.
+// Mouse: click a field or the box to focus it, click "show" or "hide" next to
+// the password, click Sign in. Keyboard: Tab and Shift+Tab move between the
+// fields, Space ticks the box, Enter signs in (from the username it moves on
+// to the password), Ctrl+T shows or hides the password, Esc clears it, F1
+// shows help, Ctrl+C quits. With reduced motion the shake is skipped.
 //
-// Ctrl+T (or F2) moves the keyboard to the design panel (see design.go):
-// Up/Down pick a setting, Left/Right change it, r resets, and Ctrl+T, F2 or
-// Esc go back to the form. Every change rebuilds one theme.Theme — preset,
-// light twin, border, border colour, component accent tokens, glyph set,
-// colour depth, spacing, title typography and panel fill — and re-themes the
-// form, spinner, alerts and boxes with it. On a terminal too narrow for both
-// panels only the one with the keyboard is shown.
+// The Caps Lock hint is a guess: a terminal cannot report the lock, so the
+// hint shows when the password has three or more letters and all are capitals.
+//
+//	go run ./examples/login
 package main
 
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
-	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
+	"github.com/ows4444/tui/passwordinput"
 	"github.com/ows4444/tui/spinner"
+	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
 )
 
 const (
-	// width is the content width of the login panel, or what is left of a
-	// narrower terminal (see model.contentWidth).
-	width = 44
-
 	demoUser     = "ada"
-	demoPassword = "lovelace"
-
-	// maxAttempts is how many wrong passwords lock the screen.
-	maxAttempts = 3
+	demoPassword = "lovelace1815"
+	maxTries     = 3
+	lockSeconds  = 5
+	labelW       = 10
+	revealW      = 6 // the show/hide word and its gap
 )
 
-// authDelay stands in for network latency; tests set it to zero.
-var authDelay = 800 * time.Millisecond
+// shakeOffsets are the sideways steps of the panel after a wrong password.
+var shakeOffsets = [...]int{-2, 2, -2, 2, -1, 1, 0}
 
-// state is which screen the login panel is on.
-type state int
+type focus int
 
 const (
-	editing state = iota
-	authenticating
-	signedIn
-	locked
+	onUser focus = iota
+	onPass
+	onRemember
+	onButton
+	numFocus
 )
 
-// authResultMsg is the answer of the simulated authentication call.
-type authResultMsg struct {
-	user     string
-	remember bool
-	ok       bool
-}
+type phase int
 
-// authenticate checks the credentials after authDelay. A real app would call
-// its backend here and return the result as a Msg the same way.
-func authenticate(user, password string, remember bool) tui.Cmd {
-	ok := user == demoUser && password == demoPassword
-	res := authResultMsg{user: user, remember: remember, ok: ok}
-	if authDelay <= 0 {
-		return func() tui.Msg { return res }
-	}
-	return tui.FromCtx(motion.After(authDelay, func(time.Time) tui.Msg { return res }))
+const (
+	signingIn phase = iota
+	signedIn
+)
+
+type authMsg struct {
+	seq int
+	ok  bool
 }
+type shakeMsg struct{ seq, step int }
+type lockMsg struct{ seq int }
 
 type model struct {
-	t     theme.Theme // design.theme(), cached by restyle
-	form  form.Model
-	spin  spinner.Model
-	state state
+	user textinput.Model
+	pass passwordinput.Model
+	spin spinner.Model
 
-	design    design
-	designing bool // the design panel has the keyboard
-
-	user     string // the signed-in (or last tried) username
+	focus    focus
+	phase    phase
 	remember bool
-	failures int
-	errMsg   string // last authentication error, "" when none
+	remName  string // the username kept for the next sign-in when Remember me was ticked
+	reveal   bool
+	busy     bool
+	err      string
+	fails    int
+	lock     int // seconds of lock left
+	shake    int // index into shakeOffsets, or len when still
+	seq      int // tells a stale timer from the current one
+	help     bool
+	hover    string
+	reduced  bool
 
-	termWidth, termHeight int // terminal size from the last ResizeMsg; 0 until known
-
-	// focusCmd is the form's initial Focus Cmd, handed back by Init: Init can
-	// only return a Cmd, so the Focus itself happens in initialModel.
-	focusCmd tui.Cmd
+	width, height int
 }
 
-// newForm builds the sign-in form, prefilled with user and remember.
-func newForm(user string, remember bool) form.Model {
-	rem := "false"
-	if remember {
-		rem = "true"
-	}
-	return form.New(
-		form.Field{Name: "user", Label: "Username", Placeholder: demoUser, Value: user,
-			Validators: []form.Validator{form.Required()}},
-		form.Field{Name: "password", Label: "Password", Secret: true,
-			Validators: []form.Validator{form.Required()}},
-		form.Field{Name: "remember", Label: "Remember me", Kind: form.FieldCheckbox, Value: rem},
-	)
-}
-
-func initialModel() model {
-	sp := spinner.New()
-	sp.Label = "Signing in…"
-	m := model{form: newForm("", false), spin: sp}
-	m.restyle()
-	m.focusCmd = m.form.Focus()
+func newModel(reduced bool) model {
+	u := textinput.New()
+	u.Placeholder = "username"
+	p := passwordinput.New()
+	p.Placeholder = "password"
+	m := model{user: u, pass: p, spin: spinner.New(), reduced: reduced, shake: len(shakeOffsets)}
+	m.user.Focus()
 	return m
 }
 
-// restyle rebuilds the theme from the design settings and hands it to every
-// themed widget.
-func (m *model) restyle() {
-	m.t = m.design.theme()
-	m.form = m.form.SetTheme(m.t)
-	m.spin = m.spin.SetTheme(m.t)
+func (m model) Init() tui.Cmd {
+	u := m.user
+	return u.Focus()
 }
 
-func (m model) Init() tui.Cmd { return m.focusCmd }
-
-// isToggle reports whether k moves the keyboard between the two panels.
-func isToggle(k tui.Key) bool {
-	return k.Type == tui.KeyF2 || (k.Type == tui.KeyCtrl && k.Code == 't')
+// after returns a Cmd that sends the Msg fn makes once d has passed.
+func after(d time.Duration, fn func() tui.Msg) tui.Cmd {
+	return tui.FromCtx(motion.After(d, func(time.Time) tui.Msg { return fn() }))
 }
+
+// ---- update ----------------------------------------------------------------
 
 func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	switch msg := msg.(type) {
 	case tui.ResizeMsg:
-		m.termWidth, m.termHeight = msg.Width, msg.Height
-		return m, nil
+		m.width, m.height = msg.Width, msg.Height
 	case tui.Key:
-		if msg.Type == tui.KeyCtrlC {
-			return m, tui.Quit()
-		}
-		if isToggle(msg) || (m.designing && msg.Type == tui.KeyEsc) {
-			return m.toggleDesign()
-		}
-		if m.designing {
-			return m.updateDesign(msg), nil
-		}
-		if msg.Type == tui.KeyEsc {
-			return m, tui.Quit()
-		}
-		if m.state == signedIn || m.state == locked {
-			if msg.Type == tui.KeyEnter || (msg.Type == tui.KeyRunes && msg.Text == "q") {
-				return m, tui.Quit()
-			}
-			return m, nil
-		}
-		if m.state == authenticating {
-			return m, nil // ignore typing while the request is in flight
-		}
-	case form.SubmittedMsg:
-		m.state = authenticating
-		m.errMsg = ""
-		m.user, m.remember = msg.Values["user"], msg.Values["remember"] == "true"
-		m.form.Blur()
-		return m, tui.Batch(m.spin.Start(),
-			authenticate(m.user, msg.Values["password"], m.remember))
-	case authResultMsg:
-		m.spin.Stop()
-		if msg.ok {
-			m.state = signedIn
-			return m, nil
-		}
-		m.failures++
-		if m.failures >= maxAttempts {
-			m.state = locked
-			return m, nil
-		}
-		m.state = editing
-		m.errMsg = fmt.Sprintf("Invalid username or password (%d of %d attempts)",
-			m.failures, maxAttempts)
-		// Rebuild the form to clear the password, keep the username, and move
-		// focus on to the password field.
-		m.form = newForm(m.user, m.remember).SetTheme(m.t)
-		if m.designing {
-			return m, nil
-		}
-		focus := m.form.Focus()
-		var next tui.Cmd
-		m.form, next = m.form.Update(tui.Key{Type: tui.KeyTab})
-		return m, tui.Batch(focus, next)
-	}
-
-	if m.state == authenticating {
+		return m.key(msg)
+	case tui.MouseEvent:
+		return m.mouse(msg)
+	case authMsg:
+		return m.authDone(msg)
+	case shakeMsg:
+		return m.shakeStep(msg)
+	case lockMsg:
+		return m.lockTick(msg)
+	default:
 		var cmd tui.Cmd
 		m.spin, cmd = m.spin.Update(msg)
 		return m, cmd
 	}
-	if m.state != editing || m.designing {
+	return m, nil
+}
+
+func (m model) key(k tui.Key) (tui.Model, tui.Cmd) {
+	if k.Type == tui.KeyCtrlC {
+		return m, tui.Quit()
+	}
+	if k.Type == tui.KeyF1 {
+		m.help = !m.help
 		return m, nil
 	}
+	if m.help {
+		m.help = k.Type != tui.KeyEsc && k.Type != tui.KeyEnter
+		return m, nil
+	}
+	if m.phase == signedIn {
+		return m.welcomeKey(k)
+	}
+	if m.busy {
+		return m, nil
+	}
+	switch k.Type {
+	case tui.KeyTab:
+		if k.Mod.Shift() {
+			return m.moveFocus(-1)
+		}
+		return m.moveFocus(1)
+	case tui.KeyEnter:
+		return m.enter()
+	case tui.KeyEsc:
+		m.pass.Reset()
+		m.err = ""
+		return m, nil
+	case tui.KeyCtrl:
+		if k.Code == 't' {
+			m.reveal = !m.reveal
+		}
+		return m, nil
+	}
+	return m.typeKey(k)
+}
+
+func (m model) typeKey(k tui.Key) (tui.Model, tui.Cmd) {
 	var cmd tui.Cmd
-	m.form, cmd = m.form.Update(msg)
+	switch m.focus {
+	case onUser:
+		m.user, cmd = m.user.Update(k)
+	case onPass:
+		m.pass, cmd = m.pass.Update(k)
+	case onRemember:
+		if k.Type == tui.KeyRunes && k.Text == " " {
+			m.remember = !m.remember
+		}
+	case onButton:
+		if k.Type == tui.KeyRunes && k.Text == " " {
+			return m.submit()
+		}
+	}
 	return m, cmd
 }
 
-// toggleDesign moves the keyboard between the form and the design panel.
-func (m model) toggleDesign() (tui.Model, tui.Cmd) {
-	m.designing = !m.designing
-	if m.designing {
-		m.form.Blur()
-		return m, nil
-	}
-	if m.state == editing {
-		return m, m.form.Focus()
+func (m model) welcomeKey(k tui.Key) (tui.Model, tui.Cmd) {
+	switch {
+	case k.Type == tui.KeyRunes && k.Text == "q":
+		return m, tui.Quit()
+	case k.Type == tui.KeyEnter, k.Type == tui.KeyEsc, k.Type == tui.KeyRunes && k.Text == "o":
+		return m.signOut()
 	}
 	return m, nil
 }
 
-// updateDesign handles a key while the design panel has the keyboard.
-func (m model) updateDesign(k tui.Key) model {
-	switch {
-	case k.Type == tui.KeyUp || (k.Type == tui.KeyTab && k.Mod.Shift()):
-		m.design = m.design.move(-1)
-	case k.Type == tui.KeyDown || k.Type == tui.KeyTab:
-		m.design = m.design.move(1)
-	case k.Type == tui.KeyLeft:
-		m.design = m.design.change(-1)
-	case k.Type == tui.KeyRight || k.Type == tui.KeySpace || k.Type == tui.KeyEnter:
-		m.design = m.design.change(1)
-	case k.Type == tui.KeyRunes && k.Text == "r":
-		m.design = design{cursor: m.design.cursor}
-	default:
-		return m
-	}
-	m.restyle()
-	return m
+func (m model) signOut() (tui.Model, tui.Cmd) {
+	next := newModel(m.reduced)
+	next.width, next.height = m.width, m.height
+	next.remember = m.remName != ""
+	next.remName = m.remName
+	next.user.SetValue(m.remName)
+	next.user.CursorEnd()
+	next.focus = onPass
+	next.user.Blur()
+	return next, next.pass.Focus()
 }
 
-// contentWidth is the login panel's content width: width, or what is left of
-// the terminal once the border and padding are paid for.
-func (m model) contentWidth() int {
-	if m.termWidth > 0 {
-		return max(10, min(width, m.termWidth-2-2*m.design.padding(m.t)))
-	}
-	return width
+// moveFocus moves to the next (dir 1) or previous field.
+func (m model) moveFocus(dir int) (tui.Model, tui.Cmd) {
+	return m.focusOn((m.focus + focus(dir) + numFocus) % numFocus)
 }
 
-// compact reports whether the terminal is too short for blank rows between
-// sections and padding inside the box.
-func (m model) compact() bool { return m.termHeight > 0 && m.termHeight < 14 }
-
-func (m model) gap() int {
-	if m.compact() {
-		return 0
+func (m model) focusOn(f focus) (tui.Model, tui.Cmd) {
+	m.user.Blur()
+	m.pass.Blur()
+	m.focus = f
+	switch f {
+	case onUser:
+		return m, m.user.Focus()
+	case onPass:
+		return m, m.pass.Focus()
 	}
-	return 1
+	return m, nil
 }
 
-// sideBySide reports whether both panels fit next to each other.
-func (m model) sideBySide() bool {
-	pad := 2 + 2*m.design.padding(m.t)
-	return m.termWidth == 0 || m.termWidth >= width+designWidth+2*pad+2
+func (m model) enter() (tui.Model, tui.Cmd) {
+	if m.focus == onUser {
+		return m.focusOn(onPass)
+	}
+	return m.submit()
 }
 
-// hints is the key legend: with words when they fit in w, else the keys alone.
-func hints(w int, hs ...widgets.Hint) string {
-	full := widgets.KeyHints("  ", hs...)
-	if ansi.Width(full) <= w {
-		return full
+// ---- signing in ------------------------------------------------------------
+
+func (m model) submit() (tui.Model, tui.Cmd) {
+	if m.lock > 0 {
+		return m, nil
 	}
-	for i := range hs {
-		hs[i].Action = ""
+	if strings.TrimSpace(m.user.Value()) == "" {
+		m.err = "Enter your username"
+		return m.focusOn(onUser)
 	}
-	return ansi.Truncate(widgets.KeyHints(" ", hs...), w)
+	if m.pass.Value() == "" {
+		m.err = "Enter your password"
+		return m.focusOn(onPass)
+	}
+	m.err, m.busy = "", true
+	ok := strings.TrimSpace(m.user.Value()) == demoUser && m.pass.Value() == demoPassword
+	m.seq++
+	seq := m.seq
+	if m.reduced {
+		return m.authDone(authMsg{seq, ok})
+	}
+	return m, tui.Batch(m.spin.Start(), after(700*time.Millisecond, func() tui.Msg { return authMsg{seq, ok} }))
+}
+
+func (m model) authDone(a authMsg) (tui.Model, tui.Cmd) {
+	if !m.busy || a.seq != m.seq {
+		return m, nil
+	}
+	m.busy = false
+	m.spin.Stop()
+	if a.ok {
+		m.phase, m.fails = signedIn, 0
+		m.remName = ""
+		if m.remember {
+			m.remName = strings.TrimSpace(m.user.Value())
+		}
+		return m, nil
+	}
+	m.fails++
+	m.pass.Reset()
+	m.err = "Wrong username or password"
+	next, cmd := m.focusOn(onPass)
+	m = next.(model)
+	if m.fails >= maxTries {
+		m.lock, m.err = lockSeconds, ""
+		m.seq++
+		seq := m.seq
+		cmd = tui.Batch(cmd, after(time.Second, func() tui.Msg { return lockMsg{seq} }))
+	}
+	if !m.reduced {
+		m.shake = 0
+		seq := m.seq
+		cmd = tui.Batch(cmd, after(40*time.Millisecond, func() tui.Msg { return shakeMsg{seq, 1} }))
+	}
+	return m, cmd
+}
+
+func (m model) shakeStep(s shakeMsg) (tui.Model, tui.Cmd) {
+	if s.seq != m.seq {
+		return m, nil
+	}
+	m.shake = s.step
+	if s.step >= len(shakeOffsets) {
+		return m, nil
+	}
+	seq, step := m.seq, s.step+1
+	return m, after(40*time.Millisecond, func() tui.Msg { return shakeMsg{seq, step} })
+}
+
+func (m model) lockTick(l lockMsg) (tui.Model, tui.Cmd) {
+	if l.seq != m.seq || m.lock == 0 {
+		return m, nil
+	}
+	m.lock--
+	if m.lock == 0 {
+		m.fails = 0
+		return m, nil
+	}
+	seq := m.seq
+	return m, after(time.Second, func() tui.Msg { return lockMsg{seq} })
+}
+
+// ---- mouse -----------------------------------------------------------------
+
+func (m model) hit(x, y int) string {
+	for _, id := range []string{"reveal", "user", "pass", "remember", "button", "signout"} {
+		if r, ok := layout.RectOf(m.screen(), m.size(), id); ok && x >= r.X && x < r.X+r.W && y >= r.Y && y < r.Y+r.H {
+			return id
+		}
+	}
+	return ""
+}
+
+func (m model) mouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
+	id := m.hit(ev.X, ev.Y)
+	if ev.Action == tui.MouseActionMotion {
+		m.hover = id
+		return m, nil
+	}
+	if m.help || m.busy || ev.Button != tui.MouseButtonLeft || ev.Action != tui.MouseActionPress {
+		return m, nil
+	}
+	if m.phase == signedIn {
+		if id == "signout" {
+			return m.signOut()
+		}
+		return m, nil
+	}
+	switch id {
+	case "reveal":
+		m.reveal = !m.reveal
+	case "user":
+		return m.focusOn(onUser)
+	case "pass":
+		return m.focusOn(onPass)
+	case "remember":
+		m.remember = !m.remember
+		return m.focusOn(onRemember)
+	case "button":
+		next, _ := m.focusOn(onButton)
+		return next.(model).submit()
+	}
+	return m, nil
+}
+
+// ---- view ------------------------------------------------------------------
+
+func (m model) size() layout.Size {
+	if m.width == 0 {
+		return layout.Size{W: 80, H: 24}
+	}
+	return layout.Size{W: m.width, H: m.height}
+}
+
+func (m model) inner() int { return max(16, min(40, m.size().W-6)) }
+
+func (m model) compact() bool { return m.size().H < 16 }
+
+func (m model) capsHint() bool {
+	letters, upper := 0, 0
+	for _, r := range m.pass.Value() {
+		if unicode.IsLetter(r) {
+			letters++
+			if unicode.IsUpper(r) {
+				upper++
+			}
+		}
+	}
+	return letters >= 3 && upper == letters
 }
 
 func block(s string) layout.FlexChild { return layout.FlexChild{Node: layout.Block(s)} }
 
-// title is the login panel's heading in the chosen typography, or "" when
-// the title is drawn on the border instead.
-func (m model) title() string {
-	ty := m.t.ResolvedTypography()
-	switch m.design.pick[setTitle] {
-	case titleH2:
-		return ty.H2.Render("Sign in")
-	case titleBig:
-		return widgets.BigText("LOGIN", widgets.FontSlim, m.t)
-	case titleBorder:
-		return ""
+func (m model) field(id, label string, in string, f focus, th theme.Theme) layout.FlexChild {
+	st := ansi.NewStyle().Faint()
+	if m.focus == f {
+		st = ansi.NewStyle().Bold().Foreground(th.Primary)
 	}
-	return ty.H1.Render("Sign in")
+	tag := st.Render(fmt.Sprintf("%-*s", labelW, label))
+	return layout.FlexChild{Node: layout.Named(id, layout.Block(tag+in))}
 }
 
-// body is the login panel's content for the current state.
-func (m model) body() layout.Node {
-	w := m.contentWidth()
-	muted := ansi.NewStyle().Foreground(m.t.Muted)
-	switch m.state {
-	case signedIn:
-		note := "Session ends when you quit."
-		if m.remember {
-			note = "You'll stay signed in on this device."
+func (m model) inputWidth() int { return max(4, m.inner()-labelW-revealW) }
+
+func (m model) fields(th theme.Theme) []layout.FlexChild {
+	w := m.inputWidth()
+	m.user.Width, m.pass.Width = w, w
+	passView := m.pass.View()
+	if m.reveal {
+		passView = m.pass.Model.View()
+	}
+	word := "show"
+	if m.reveal {
+		word = "hide"
+	}
+	rv := ansi.NewStyle().Foreground(th.Muted)
+	if m.hover == "reveal" {
+		rv = ansi.NewStyle().Foreground(th.Primary).Underline()
+	}
+	passRow := layout.Row(1,
+		m.field("pass", "Password", ansi.Truncate(passView, w+1), onPass, th),
+		layout.FlexChild{Node: layout.Named("reveal", layout.Block(rv.Render(word)))},
+	)
+	box := "[ ]"
+	if m.remember {
+		box = "[x]"
+	}
+	rem := ansi.NewStyle()
+	if m.focus == onRemember {
+		rem = ansi.NewStyle().Bold().Foreground(th.Primary)
+	}
+	return []layout.FlexChild{
+		m.field("user", "Username", ansi.Truncate(m.user.View(), w+1), onUser, th),
+		{Node: passRow},
+		{Node: layout.Block(m.notice(th))},
+		{Node: layout.Named("remember", layout.Block(rem.Render(box+" Remember me")))},
+	}
+}
+
+// notice is the one line under the fields: an error, a lock countdown, the
+// caps hint, or nothing. A mark leads each so colour is not the only signal.
+func (m model) notice(th theme.Theme) string {
+	var s string
+	switch {
+	case m.lock > 0:
+		s = ansi.NewStyle().Foreground(th.Error).Render(fmt.Sprintf("✗ Too many tries. Try again in %ds", m.lock))
+	case m.err != "":
+		s = ansi.NewStyle().Foreground(th.Error).Render("✗ " + m.err)
+	case m.capsHint() && m.focus == onPass:
+		s = ansi.NewStyle().Foreground(th.Warning).Render("⚠ Caps Lock may be on")
+	}
+	return ansi.Truncate(s, m.inner())
+}
+
+func (m model) button(th theme.Theme) layout.Node {
+	label, st := " Sign in ", ansi.NewStyle().Bold().Foreground(th.TextInverse).Background(th.Primary)
+	switch {
+	case m.busy:
+		label, st = " "+m.spin.View()+" Signing in… ", ansi.NewStyle().Faint()
+		if m.reduced {
+			label = " Signing in… "
 		}
-		return layout.Column(m.gap(),
-			block(widgets.Alert("Welcome back, "+m.user+"!", widgets.VariantSuccess, m.t, w)),
-			block(muted.Render(ansi.Truncate(note, w))),
-			block(hints(w, widgets.Hint{Key: "enter", Action: "quit"})))
-	case locked:
-		return layout.Column(m.gap(),
-			block(widgets.Alert("Too many failed attempts. Try again later.", widgets.VariantError, m.t, w)),
-			block(hints(w, widgets.Hint{Key: "enter", Action: "quit"})))
+	case m.lock > 0:
+		st = ansi.NewStyle().Faint()
+	case m.hover == "button":
+		st = st.Underline()
+	case m.focus == onButton:
+		st = st.Underline()
 	}
-
-	var children []layout.FlexChild
-	if t := m.title(); t != "" {
-		children = append(children, block(t))
-	}
-	children = append(children,
-		block(muted.Render(ansi.Truncate("demo: "+demoUser+" / "+demoPassword, w))))
-	if m.errMsg != "" {
-		children = append(children, block(widgets.Alert(m.errMsg, widgets.VariantError, m.t, w)))
-	}
-	if m.state == authenticating {
-		children = append(children, layout.FlexChild{Node: m.spin.LayoutNode()})
-	} else {
-		children = append(children,
-			layout.FlexChild{Node: m.form.LayoutNode()},
-			block(hints(w,
-				widgets.Hint{Key: "tab", Action: "next"},
-				widgets.Hint{Key: "enter", Action: "sign in"},
-				widgets.Hint{Key: "ctrl+t", Action: "design"})))
-	}
-	return layout.Column(m.gap(), children...)
+	return layout.Named("button", layout.Block(st.Render(label)))
 }
 
-// frame wraps content in a box drawn with the theme's border, padding and
-// fill. The panel with the keyboard has its border in the Focus colour.
-func (m model) frame(content layout.Node, w int, active bool, title string) layout.Node {
-	pad := m.design.padding(m.t)
-	box := layout.NewBox().Border(m.t.Border).Padding(m.gap(), pad, m.gap(), pad)
-	if active && m.sideBySide() {
-		box = box.BorderColor(m.t.Focus)
-	} else {
-		box = box.BorderColor(m.t.BorderColor)
+func (m model) form(th theme.Theme) []layout.FlexChild {
+	out := m.fields(th)
+	out = append(out, layout.FlexChild{Node: m.button(th)})
+	if !m.compact() {
+		f := widgets.Footer(m.inner(),
+			widgets.Hint{Key: "tab", Action: "next"}, widgets.Hint{Key: "enter", Action: "sign in"},
+			widgets.Hint{Key: "ctrl+t", Action: "show"}, widgets.Hint{Key: "f1", Action: "help"})
+		out = append(out, block(ansi.NewStyle().Faint().Render(f)))
 	}
-	if c := m.design.fill(m.t); c != nil {
-		box = box.Background(c)
-	}
-	if title != "" {
-		box = box.Title(" "+title+" ", layout.AlignCenter)
-	}
-	return layout.BoxNode(box, layout.Fixed(content, layout.Size{W: w}))
+	return out
 }
 
-func (m model) loginPanel() layout.Node {
-	title := ""
-	if m.design.pick[setTitle] == titleBorder {
-		title = "Sign in"
+func (m model) welcome(th theme.Theme) []layout.FlexChild {
+	who := strings.TrimSpace(m.user.Value())
+	note := "You will be asked for your username next time."
+	if m.remName != "" {
+		note = "Your username is remembered for next time."
 	}
-	return m.frame(m.body(), m.contentWidth(), !m.designing, title)
+	so := ansi.NewStyle().Foreground(th.Primary)
+	if m.hover == "signout" {
+		so = so.Underline().Bold()
+	}
+	return []layout.FlexChild{
+		block(ansi.NewStyle().Bold().Foreground(th.Success).Render("✓ Signed in")),
+		block(ansi.Truncate("Welcome back, "+who+".", m.inner())),
+		block(ansi.NewStyle().Faint().Render(ansi.Truncate(note, m.inner()))),
+		{Node: layout.Named("signout", layout.Block(so.Render("[ Sign out ]")))},
+		block(ansi.NewStyle().Faint().Render(widgets.Footer(m.inner(),
+			widgets.Hint{Key: "enter", Action: "sign out"}, widgets.Hint{Key: "q", Action: "quit"}))),
+	}
 }
 
-// designContentWidth is designWidth, or what is left of a narrower terminal.
-func (m model) designContentWidth() int {
-	if m.termWidth > 0 && !m.sideBySide() {
-		return max(10, min(designWidth, m.termWidth-2-2*m.design.padding(m.t)))
+func (m model) helpBody(th theme.Theme) []layout.FlexChild {
+	key := func(k, a string) layout.FlexChild {
+		return block(ansi.Truncate(ansi.NewStyle().Bold().Foreground(th.Primary).Render(fmt.Sprintf("%-12s", k))+a, m.inner()))
 	}
-	return designWidth
+	return []layout.FlexChild{
+		key("Tab", "next field"), key("Shift+Tab", "previous field"), key("Enter", "sign in"),
+		key("Space", "tick the box"), key("Ctrl+T", "show or hide"), key("Esc", "clear the password"),
+		key("F1", "close help"), key("Ctrl+C", "quit"),
+	}
 }
 
-func (m model) designPanel() layout.Node {
-	w := m.designContentWidth()
-	h := hints(w,
-		widgets.Hint{Key: "↑↓", Action: "pick"},
-		widgets.Hint{Key: "←→", Action: "change"}) + "\n" + hints(w,
-		widgets.Hint{Key: "r", Action: "reset"},
-		widgets.Hint{Key: "ctrl+t", Action: "back to form"})
-	if !m.designing {
-		h = hints(w, widgets.Hint{Key: "ctrl+t", Action: "edit design"})
-	}
-	return m.frame(layout.Block(m.design.panel(m.t, m.designing, h, w)), w, m.designing, "")
-}
-
-// screen is both panels side by side, or the one with the keyboard when the
-// terminal is too narrow for both.
 func (m model) screen() layout.Node {
-	if m.sideBySide() {
-		return layout.Row(2,
-			layout.FlexChild{Node: m.loginPanel()},
-			layout.FlexChild{Node: m.designPanel()})
+	th := theme.DarkTheme()
+	var body []layout.FlexChild
+	switch {
+	case m.help:
+		body = m.helpBody(th)
+	case m.phase == signedIn:
+		body = m.welcome(th)
+	default:
+		body = m.form(th)
 	}
-	if m.designing {
-		return m.designPanel()
+	gap := 1
+	if m.compact() {
+		gap = 0
 	}
-	return m.loginPanel()
+	if !m.compact() && !m.help && m.phase == signingIn {
+		head := []layout.FlexChild{
+			block(ansi.NewStyle().Bold().Foreground(th.Primary).Render("Sign in")),
+			block(ansi.NewStyle().Faint().Render(ansi.Truncate("Demo account: "+demoUser+" / "+demoPassword, m.inner()))),
+		}
+		body = append(head, body...)
+	}
+	col := layout.Fixed(layout.Column(gap, body...), layout.Size{W: m.inner()})
+	dx := 0
+	if m.shake < len(shakeOffsets) {
+		dx = shakeOffsets[m.shake]
+	}
+	if m.compact() {
+		return layout.Stack(layout.Anchor(layout.Center, dx, 0, col))
+	}
+	box := layout.NewBox().Border(th.Border).Padding(1, 2, 1, 2)
+	return layout.Stack(layout.Anchor(layout.Center, dx, 0, layout.BoxNode(box, col)))
 }
 
-func (m model) View() string { return layout.Draw(m.screen(), layout.Unconstrained()) }
+func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	if _, err := tui.NewProgram(initialModel()).Run(); err != nil {
+	opts := []tui.ProgramOption{tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)}
+	// ReducedMotion is known as soon as the Program exists, before Run.
+	p := tui.NewProgram(newModel(false), opts...)
+	if p.ReducedMotion() {
+		p = tui.NewProgram(newModel(true), opts...)
+	}
+	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
