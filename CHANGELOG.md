@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `treeview.FromValue` and `ValueNode`: show any Go value as a tree: struct fields,
+  sorted map entries, slice elements, pointers followed with cycles marked, `time.Time`
+  and values with an `Error` or `String` method by their text; `ValueOptions` bounds
+  the depth and the items per collection. Text from the value is cleaned of escapes.
 - `markdownview` (experimental): a Markdown document you read in a window. It scrolls,
   lists its headings (`Headings`, for a table of contents) and links, moves through the
   links with Tab, follows in-page links (`#section`) with a Back and Forward history,

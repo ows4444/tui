@@ -4779,9 +4779,11 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func DirectoryTree(root string) Node
 func FromJSON(data []byte) (Model, error)
+func FromValue(v any, opts ...ValueOptions) Model
 func LazyDirectoryTree(root string) Node
 func New(roots ...Node) Model
 func Sidebar(title string, tv Model, activeKey string, icons, badges map[string]string, t theme.Theme, width int) string
+func ValueNode(label string, v any, opts ...ValueOptions) Node
 type CollapsedMsg struct {
 	Node	*Node
 	Path	string
@@ -4832,6 +4834,11 @@ type Node struct {
 type SelectedMsg struct {
 	Node	*Node
 	Path	string
+}
+type ValueOptions struct {
+	MaxDepth	int
+
+	MaxItems	int
 }
 type VisibleRow struct {
 	Label		string
