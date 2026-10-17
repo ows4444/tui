@@ -2774,6 +2774,8 @@ func ASCIIBorder() Border
 func Absolute(x, y int, n Node) Node
 func Anchor(c Corner, dx, dy int, n Node) Node
 func Aspect(w, h int, n Node) Node
+func AutoGrid(minWidth, gap int, cells ...Node) Node
+func AutoGridGaps(minWidth, colGap, rowGap int, cells ...Node) Node
 func Block(s string) Node
 func BlockBorder() Border
 func BoxNode(box Box, child Node) Node

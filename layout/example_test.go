@@ -286,3 +286,27 @@ func ExampleRichText() {
 	// plain bold
 	// words here
 }
+
+// AutoGrid puts as many equal columns as fit the width, each at least minWidth
+// wide: here one column at 12 cells and two at 25.
+func ExampleAutoGrid() {
+	cards := []layout.Node{layout.Block("one"), layout.Block("two"), layout.Block("three")}
+	grid := layout.AutoGrid(10, 1, cards...)
+	for _, size := range []layout.Size{{W: 12, H: 5}, {W: 25, H: 3}} {
+		fmt.Printf("width %d:\n", size.W)
+		for _, line := range strings.Split(grid.Render(size), "\n") {
+			fmt.Printf("|%s|\n", line)
+		}
+	}
+	// Output:
+	// width 12:
+	// |one         |
+	// |            |
+	// |two         |
+	// |            |
+	// |three       |
+	// width 25:
+	// |one          two         |
+	// |                         |
+	// |three                    |
+}
