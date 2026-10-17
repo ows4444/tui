@@ -51,7 +51,7 @@ jobs:
         with:
           go-version: "1.26"
           cache: false # no go.sum to key the module cache on
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
