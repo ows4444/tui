@@ -4351,6 +4351,7 @@ const (
 	ComponentTooltip		= "tooltip"
 	ComponentTransferList		= "transferlist"
 	ComponentTreeView		= "treeview"
+	ComponentWindow			= "window"
 	ComponentWizard			= "wizard"
 )
 func (a Auto) For(bg ansi.RGB) Theme
@@ -5330,6 +5331,89 @@ type Series struct {
 	Color	ansi.Color
 }
 type SeriesKind int
+
+## github.com/ows4444/tui/window (package window)
+
+const (
+	PartNone	Part	= iota
+
+	PartTitle
+
+	PartClose
+
+	PartEdge
+
+	PartBody
+)
+func (m *Model) Add(w Window)
+func (m *Model) Raise(id string) bool
+func (m *Model) Remove(id string) bool
+func (m *Model) SetRect(id string, r hittest.Rect)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) ContentRect(id string) (hittest.Rect, bool)
+func (m Model) Dragging() bool
+func (m Model) Focused() string
+func (m Model) Hit(x, y int) (id string, part Part)
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Tokens() theme.Tokens
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Window(id string) (Window, bool)
+func (m Model) WithTokens(tok theme.Tokens) Model
+func (w Window) Maximized() bool
+func DefaultKeyMap() KeyMap
+func New(windows ...Window) Model
+type ChangedMsg struct {
+	ID	string
+	Rect	hittest.Rect
+}
+type ClosedMsg struct{ ID string }
+type FocusedMsg struct{ ID string }
+type KeyMap struct {
+	Next, Prev	keymap.Binding
+
+	Close	keymap.Binding
+
+	Maximize	keymap.Binding
+
+	MoveLeft, MoveRight, MoveUp, MoveDown	keymap.Binding
+
+	ShrinkW, GrowW, ShrinkH, GrowH	keymap.Binding
+}
+type Model struct {
+	Windows	[]Window
+
+	Background	layout.Node
+
+	Step	int
+	Theme	theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type Part int
+type Window struct {
+	ID	string
+
+	Title	string
+
+	Rect	hittest.Rect
+
+	MinW, MinH	int
+
+	Content	layout.Node
+
+	Fixed	bool
+
+	NoClose	bool
+	// contains filtered or unexported fields
+}
 
 ## github.com/ows4444/tui/wizard (package wizard)
 

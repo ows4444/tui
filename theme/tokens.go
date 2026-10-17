@@ -83,6 +83,7 @@ const (
 	ComponentTooltip            = "tooltip"
 	ComponentTransferList       = "transferlist"
 	ComponentTreeView           = "treeview"
+	ComponentWindow             = "window"
 	ComponentWizard             = "wizard"
 )
 
@@ -103,7 +104,7 @@ func Components() []string {
 		ComponentSplitPane, ComponentStreamText, ComponentTabs,
 		ComponentTagInput, ComponentTextArea, ComponentTextInput, ComponentTimePicker,
 		ComponentToast, ComponentToggle, ComponentToolApproval, ComponentTooltip, ComponentTransferList, ComponentTreeView,
-		ComponentWizard,
+		ComponentWindow, ComponentWizard,
 	}
 }
 

@@ -120,6 +120,7 @@ in `examples/` that imports the package.
 | [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |
 | [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes  `examples/panes` |
+| [window](../window) | A desktop of overlapping windows moved by the title bar, resized by the edges, raised by a press and closed by the close box, with the same actions on the keyboard. Experimental | yes | |
 | [wizard](../wizard) | Step navigation for multi-step flows, drawn with `widgets.Stepper` | | `examples/form` |
 
 Every package listed has an `Example` in its `example_test.go`

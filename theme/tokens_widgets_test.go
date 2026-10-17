@@ -67,6 +67,7 @@ import (
 	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/widgets"
+	"github.com/ows4444/tui/window"
 	"github.com/ows4444/tui/wizard"
 )
 
@@ -409,6 +410,14 @@ func tokenCases() []tokenCase {
 		{theme.ComponentTimePicker, func(th theme.Theme, i *theme.Tokens) string {
 			m := timepicker.New(time.Date(2026, 1, 1, 9, 5, 0, 0, time.UTC)).SetTheme(th)
 			m.Focus()
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentWindow, func(th theme.Theme, i *theme.Tokens) string {
+			m := window.New(window.Window{ID: "a", Title: "Files", Rect: layout.Rect{W: 20, H: 5}}).SetTheme(th)
+			m.Bounds = layout.Rect{W: 24, H: 6}
 			if i != nil {
 				m = m.WithTokens(*i)
 			}

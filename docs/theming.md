@@ -227,7 +227,7 @@ Code that reads glyphs from the theme:
 
 - Component packages: accordion, avatar, commandpalette, contextmenu, datatable,
   errorretry, faces, loadingbar, markdown, maskedinput, passwordinput,
-  scrollbar, skeleton, spinner, splitpane, streamtext, toast, treeview.
+  scrollbar, skeleton, spinner, splitpane, streamtext, toast, treeview, window.
 - layout: the `Text` ellipsis.
 - widgets files: alert, bigtext, chatmessage, codeblock, codeblock_lang,
   divider, infobox, list, pagination, panel, progressbar, progresscircle,

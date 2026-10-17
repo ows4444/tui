@@ -102,6 +102,7 @@ linters:
             - "!**/viewport/**"
             - "!**/virtuallist/**"
             - "!**/widgets/**"
+            - "!**/window/**"
             - "!**/wizard/**"
             - "!**/examples/**"
             - "!$test"
@@ -190,6 +191,7 @@ linters:
             - "**/treeview/*.go"
             - "**/viewport/*.go"
             - "**/virtuallist/*.go"
+            - "**/window/*.go"
             - "**/wizard/*.go"
             - "!**/examples/**"
             - "!$test"
@@ -526,6 +528,7 @@ linters:
             - "github.com/ows4444/tui/virtuallist$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
+            - "github.com/ows4444/tui/window$"
             - "github.com/ows4444/tui/wizard$"
         group-08:
           list-mode: strict

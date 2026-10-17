@@ -67,6 +67,7 @@ import (
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/viewport"
 	"github.com/ows4444/tui/widgets"
+	"github.com/ows4444/tui/window"
 	"github.com/ows4444/tui/wizard"
 )
 
@@ -245,6 +246,11 @@ var conformance = map[string]func() map[string]string{
 		m := timepicker.New(time.Date(2026, 1, 1, 15, 0, 0, 0, time.UTC))
 		m.Hour12 = true
 		m.AM, m.PM = evil, evil
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"window": func() map[string]string {
+		m := window.New(window.Window{ID: "a", Title: evil, Rect: layout.Rect{W: 30, H: 5}})
+		m.Bounds = layout.Rect{W: 32, H: 6}
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"slider": func() map[string]string {
