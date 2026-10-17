@@ -46,6 +46,7 @@ import (
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
 	"github.com/ows4444/tui/radiogroup"
+	"github.com/ows4444/tui/rangeslider"
 	"github.com/ows4444/tui/rating"
 	"github.com/ows4444/tui/scrollbar"
 	"github.com/ows4444/tui/skeleton"
@@ -58,6 +59,7 @@ import (
 	"github.com/ows4444/tui/textarea"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
+	"github.com/ows4444/tui/timepicker"
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
@@ -392,6 +394,21 @@ func tokenCases() []tokenCase {
 		{theme.ComponentSkeleton, func(th theme.Theme, i *theme.Tokens) string {
 			m := skeleton.New().SetTheme(th)
 			m.Width, m.Lines = 10, 2
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentRangeSlider, func(th theme.Theme, i *theme.Tokens) string {
+			m := rangeslider.New(0, 10).SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentTimePicker, func(th theme.Theme, i *theme.Tokens) string {
+			m := timepicker.New(time.Date(2026, 1, 1, 9, 5, 0, 0, time.UTC)).SetTheme(th)
+			m.Focus()
 			if i != nil {
 				m = m.WithTokens(*i)
 			}

@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Two experimental packages: `rangeslider` (two thumbs on one track, Space or `[` and
+  `]` to pick one, the low never passing the high, mouse drag) and `timepicker`
+  (hours, minutes, optional seconds and AM or PM as fields; arrows, typed digits,
+  wheel). `theme.ComponentRangeSlider` and `ComponentTimePicker` name them for
+  theme tokens.
 - `textinput` history and suggestions: `Model.History` with Up and Down (and Ctrl+R to
   search it), and `Model.Suggestion` or `SuggestFromHistory` for grey text after the
   cursor that Right, End or Ctrl+E takes (`KeyMap.HistoryPrev`, `HistoryNext`,

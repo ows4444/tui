@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui/accordion"
 	"github.com/ows4444/tui/appshell"
@@ -46,6 +47,7 @@ import (
 	"github.com/ows4444/tui/picker"
 	"github.com/ows4444/tui/popover"
 	"github.com/ows4444/tui/radiogroup"
+	"github.com/ows4444/tui/rangeslider"
 	"github.com/ows4444/tui/slider"
 	"github.com/ows4444/tui/spinner"
 	"github.com/ows4444/tui/streamtext"
@@ -54,6 +56,7 @@ import (
 	"github.com/ows4444/tui/textarea"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
+	"github.com/ows4444/tui/timepicker"
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
 	"github.com/ows4444/tui/toolapproval"
@@ -223,6 +226,18 @@ var conformance = map[string]func() map[string]string{
 	},
 	"radiogroup": func() map[string]string {
 		m := radiogroup.New(evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"rangeslider": func() map[string]string {
+		m := rangeslider.New(0, 10)
+		m.ShowValue = true
+		m.Format = func(float64) string { return evil }
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"timepicker": func() map[string]string {
+		m := timepicker.New(time.Date(2026, 1, 1, 15, 0, 0, 0, time.UTC))
+		m.Hour12 = true
+		m.AM, m.PM = evil, evil
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"slider": func() map[string]string {
