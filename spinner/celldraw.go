@@ -15,10 +15,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	if sub.Width() == 0 || sub.Height() == 0 {
 		return
 	}
-	frames := m.Frames
-	if isDefaultFrames(frames) {
-		frames = m.themed().GlyphSet().SpinnerFrames()
-	}
+	frames := m.frames()
 	if len(frames) == 0 {
 		if !celldraw.Plain(m.Label) {
 			tui.DrawView(buf, r, m.View())

@@ -106,7 +106,7 @@ in `examples/` that imports the package.
 | [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/panes` |
 | [skeleton](../skeleton) | A loading placeholder block |  `examples/timers` |
 | [slider](../slider) | A value in a range on a track with a thumb; arrows, Page Up and Page Down, Home and End move it, and the pointer can press or drag. Experimental | | `examples/controls` |
-| [spinner](../spinner) | An animated loading indicator | | `examples/asyncload`, `examples/buildlog`, `examples/inlinespinners` |
+| [spinner](../spinner) | An animated loading indicator, with 18 named animations (`Presets`, `Lookup`, `WithPreset`) and ASCII fallbacks | | `examples/asyncload`, `examples/buildlog`, `examples/inlinespinners` |
 | [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes  `examples/panes` |
 | [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/agentshell` |
 | [tabs](../tabs) | A horizontal tab bar | yes | `examples/settings`, `examples/inspector` |

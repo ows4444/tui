@@ -20,3 +20,12 @@ func Example() {
 	// true
 	// 10
 }
+
+// A preset is a named animation; WithPreset sets a spinner's frames and
+// interval from it.
+func ExampleLookup() {
+	p, _ := spinner.Lookup("arrow")
+	m := spinner.New().WithPreset(p)
+	fmt.Println(p.Name, len(p.Frames), p.Interval, ansi.StripANSI(m.View()))
+	// Output: arrow 8 100ms ←
+}

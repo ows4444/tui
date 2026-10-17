@@ -41,6 +41,8 @@ type Model struct {
 	// nil; start the Clock instead). Nil keeps the per-widget tick.
 	Clock *motion.Clock
 
+	// ascii is the preset's frames for an ASCII-only theme, set by WithPreset.
+	ascii   []string
 	frame   int
 	running bool
 	// id tells this Model's ticks from another's. A program that holds two
@@ -111,12 +113,7 @@ func isDefaultFrames(f []string) bool {
 
 // View renders the current frame, or Label if Frames is empty.
 func (m Model) View() string {
-	frames := m.Frames
-	if isDefaultFrames(frames) {
-		// The stock frames follow the theme's glyph set (ASCII on request);
-		// custom frames are drawn as given.
-		frames = m.themed().GlyphSet().SpinnerFrames()
-	}
+	frames := m.frames()
 	if len(frames) == 0 {
 		return m.Label
 	}

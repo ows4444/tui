@@ -4004,9 +4004,12 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
+func (m Model) WithPreset(p Preset) Model
 func (m Model) WithTokens(tok theme.Tokens) Model
 func Frames() []string
+func Lookup(name string) (Preset, bool)
 func New() Model
+func Presets() []Preset
 type Model struct {
 	Frames		[]string
 	Interval	time.Duration
@@ -4018,6 +4021,15 @@ type Model struct {
 
 	Clock	*motion.Clock
 	// contains filtered or unexported fields
+}
+type Preset struct {
+	Name	string
+
+	Frames	[]string
+
+	Interval	time.Duration
+
+	ASCII	[]string
 }
 
 ## github.com/ows4444/tui/splitpane (package splitpane)
