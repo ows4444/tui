@@ -308,6 +308,25 @@ func WithColorFilter(f func(ansi.RGB) ansi.RGB) ProgramOption {
 	return func(prog *Program) { prog.colorFilter = f }
 }
 
+// WithCaptureOutput makes the Program catch what the rest of the process writes
+// to os.Stdout and os.Stderr, and to the standard logger, while Run is going,
+// and commit it above the live region line by line as Println and Eprintln do.
+// Without it a stray fmt.Println or log.Printf writes into the terminal under the
+// frame and garbles it. Escape sequences other than styling are removed from
+// what is caught.
+//
+// The redirect is process-wide while Run is going: os.Stdout and os.Stderr are
+// replaced, so anything else that prints in the process is caught too. A
+// subprocess started with its output set to the old os.Stdout keeps writing to
+// the terminal. The standard logger is redirected only if it still writes to the
+// original os.Stderr (not after LogToFile). Lines wait for the event loop without
+// blocking the writer, at most 10,000 of them, then the oldest are dropped; a
+// notice says how many. When Run returns, os.Stdout and os.Stderr are put back
+// and any line the loop did not get to is written to them. Off by default.
+func WithCaptureOutput(enabled bool) ProgramOption {
+	return func(p *Program) { p.captureOutput = enabled }
+}
+
 // WithContext supplies the parent context.Context for the Program's run
 // (default context.Background(), also used for a nil ctx). Cancelling ctx
 // ends Run, which restores the terminal and returns ctx.Err(). Program derives

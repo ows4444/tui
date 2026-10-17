@@ -150,6 +150,7 @@ details.
 | `WithClock(c)` | wall clock, for `Every` |
 | `WithExitOnSignal(bool)` | on |
 | `WithRecover(bool)` | off |
+| `WithCaptureOutput(bool)` | off |
 | `WithSuspendOnCtrlZ(bool)` | off |
 | `WithTerminal(t)` | the OS terminal behind input and output |
 | `WithResizePoll(d)` | 250ms, Windows only |
@@ -184,6 +185,29 @@ scrollback, so the Program holds those lines (up to 10,000; the oldest are
 dropped beyond that) and writes them once it leaves the alternate screen, with
 `ExitAltScreen` or on exit. `examples/inlinebuild` is an inline program that
 commits finished lines with `Println`.
+
+## Stray prints
+
+A `fmt.Println` or `log.Printf` from anywhere in the process writes into the
+terminal under the frame and garbles it. `WithCaptureOutput(true)` catches
+what is written to `os.Stdout`, `os.Stderr` and the standard logger while `Run`
+is going, and commits it above the live region line by line as `Println` and
+`Eprintln` do. Styling is kept and other escape sequences are removed.
+
+It is a process-wide redirect while `Run` is going, so keep these in mind:
+
+- `os.Stdout` and `os.Stderr` are variables that other goroutines read; code that
+  prints at the very moment `Run` starts or returns, or while a `Suspend`
+  function runs, races with the swap (the race detector will say so);
+- a subprocess started earlier with its output set to the old `os.Stdout` keeps
+  writing to the terminal, and `Suspend` and `EditInEditor` get the real terminal
+  back while they run;
+- the standard logger is redirected only if it still writes to the original
+  `os.Stderr`, so not after `LogToFile`;
+- lines wait for the event loop without ever blocking the writer, at most 10,000
+  of them, then the oldest are dropped and a notice says how many;
+- when `Run` returns the real files are put back and any line the loop did not
+  get to is written to them.
 
 ## Suspend and resume
 

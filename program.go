@@ -163,6 +163,8 @@ type Program struct {
 	colorProfile       ansi.Profile
 	colorSet           bool                    // WithColorProfile was used, so NO_COLOR is not consulted
 	colorFilter        func(ansi.RGB) ansi.RGB // WithColorFilter
+	captureOutput      bool                    // WithCaptureOutput
+	cap                atomic.Pointer[capture] // the live capture, if any
 	focusReporting     bool
 	colorSchemeReports bool
 	inBandResize       bool
@@ -569,6 +571,10 @@ func (p *Program) Run() (Model, error) {
 		}
 		p.termRestore = restore
 	}
+	// Runs after restoreTerminal (defers are last in, first out), so lines the
+	// loop never got to are written to a terminal that has been put back.
+	stopCapture := func() {}
+	defer func() { stopCapture() }()
 	defer p.restoreTerminal()
 	// Cancels the context returned by (*Program).Context, so a Cmd built
 	// from it (see WithContext) observes shutdown on every return path:
@@ -620,6 +626,9 @@ func (p *Program) Run() (Model, error) {
 	p.rec.begin(p.width, p.height)
 	p.enterModes()
 
+	if p.captureOutput {
+		stopCapture = p.startCapture()
+	}
 	return p.runLoop()
 }
 

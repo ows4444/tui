@@ -222,6 +222,7 @@ func WithBackgroundDetection(timeout time.Duration) ProgramOption
 func WithBidi(enabled bool) ProgramOption
 func WithBracketedPaste(enabled bool) ProgramOption
 func WithCapabilityProbe(timeout time.Duration) ProgramOption
+func WithCaptureOutput(enabled bool) ProgramOption
 func WithCellRenderer(enabled bool) ProgramOption
 func WithChordTimeout(d time.Duration) ProgramOption
 func WithChords(defs ...ChordDef) ProgramOption

@@ -597,6 +597,11 @@ func (p *Program) stopFlushTimer() {
 // everything else — the ansi escape writes, fn, and the frame-state
 // reset — still runs, which is what makes Suspend testable without one.
 func (p *Program) suspend(fn func() error) error {
+	if c := p.cap.Load(); c != nil {
+		// fn may hand the terminal to another program, which writes to os.Stdout.
+		c.pause()
+		defer c.resume()
+	}
 	if p.stopInput != nil {
 		p.stopInput()
 	}
