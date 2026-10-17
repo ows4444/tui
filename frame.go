@@ -128,6 +128,7 @@ func (p *Program) renderBody() string {
 		lines: newLines, rows: max, lazyFit: lazyFit,
 		width: p.width, height: p.height, prev: p.lastFrame, commit: commit,
 		regionTop: p.toRegionTop, fitLine: p.fitLine, measurer: p.Measurer(),
+		scroll: p.scrollRegionsOn(),
 	}
 	var (
 		out      string
@@ -511,3 +512,21 @@ func (p *Program) printLines(text string, dest io.Writer) {
 
 // stripOSC removes OSC strings, keeping the text between them; see announce.StripOSC.
 func stripOSC(s string) string { return announce.StripOSC(s) }
+
+// scrollRegionsOn reports whether a block of rows that only moved may be
+// scrolled by the terminal rather than rewritten: in the alternate screen, where
+// the live region starts at the screen's first row, unless the environment
+// variable TUI_NO_SCROLL_REGIONS is set (for a terminal that mishandles
+// DECSTBM). The variable is read once.
+func (p *Program) scrollRegionsOn() bool {
+	if !p.altScreen || p.height <= 0 {
+		return false
+	}
+	if p.scrollEnv == 0 {
+		p.scrollEnv = 1
+		if p.Getenv("TUI_NO_SCROLL_REGIONS") != "" {
+			p.scrollEnv = 2
+		}
+	}
+	return p.scrollEnv == 1
+}

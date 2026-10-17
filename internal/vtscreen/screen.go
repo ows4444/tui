@@ -18,7 +18,7 @@ type Cell struct {
 
 // Screen is a minimal terminal emulator: a fixed cols x rows grid that
 // interprets the small subset of ANSI the tui renderer emits (cursor
-// movement, line/screen erase, "\r", "\n", autowrap) and nothing more.
+// movement, line/screen erase, scroll regions and scrolling, "\r", "\n", autowrap) and nothing more.
 // Unlike a byte-stream replay it models the physical screen, so it
 // reproduces what a real terminal does when output wraps at the right edge,
 // scrolls off the bottom, or the window is resized. It also tracks SGR attributes per cell and the cursor's
@@ -33,6 +33,10 @@ type Screen struct {
 	wrapNext   bool   // cursor is past the last column; next glyph wraps
 	soft       []bool // soft[i]: row i wrapped into row i+1 (autowrap, not a newline)
 	rest       []byte // incomplete trailing escape sequence / rune
+	// custom says DECSTBM set a scroll region; top and bot are its first and last
+	// row. Without it the region is the whole screen.
+	custom   bool
+	top, bot int
 }
 
 // NewScreen returns a blank screen with the cursor at the top-left.
@@ -74,6 +78,7 @@ func (s *Screen) Resize(cols, rows int) {
 	}
 	s.cols, s.rows, s.grid = cols, rows, g
 	s.soft = make([]bool, rows)
+	s.custom = false
 	s.r = min(s.r, rows-1)
 	s.c = min(s.c, cols-1)
 	s.wrapNext = false
@@ -247,15 +252,53 @@ func stringEnd(b []byte, from int) (end int, ok bool) {
 	return 0, false
 }
 
+// region returns the first and last row of the scroll region.
+func (s *Screen) region() (top, bot int) {
+	if s.custom {
+		return s.top, s.bot
+	}
+	return 0, s.rows - 1
+}
+
 func (s *Screen) lineFeed() {
-	if s.r == s.rows-1 {
-		copy(s.grid, s.grid[1:])
-		copy(s.soft, s.soft[1:])
-		s.grid[s.rows-1] = s.blankRow()
-		s.soft[s.rows-1] = false
+	_, bot := s.region()
+	switch {
+	case s.r == bot:
+		s.scroll(1)
+	case s.r < s.rows-1:
+		s.r++
+	}
+}
+
+// scroll moves the rows of the scroll region up by n (down for a negative n)
+// and blanks the rows that open up, as SU and SD do.
+func (s *Screen) scroll(n int) {
+	top, bot := s.region()
+	height := bot - top + 1
+	if n == 0 || height < 1 {
 		return
 	}
-	s.r++
+	k := min(abs(n), height)
+	if n > 0 {
+		copy(s.grid[top:], s.grid[top+k:bot+1])
+		copy(s.soft[top:], s.soft[top+k:bot+1])
+		for r := bot - k + 1; r <= bot; r++ {
+			s.grid[r], s.soft[r] = s.blankRow(), false
+		}
+		return
+	}
+	copy(s.grid[top+k:bot+1], s.grid[top:bot+1-k])
+	copy(s.soft[top+k:bot+1], s.soft[top:bot+1-k])
+	for r := top; r < top+k; r++ {
+		s.grid[r], s.soft[r] = s.blankRow(), false
+	}
+}
+
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 func (s *Screen) put(r rune) {
@@ -320,6 +363,18 @@ func (s *Screen) csi(params string, final byte) {
 		s.r = min(s.rows-1, max(0, arg(0, 1)-1))
 		s.c = min(s.cols-1, max(0, arg(1, 1)-1))
 		s.wrapNext = false
+	case 'r': // DECSTBM: set the scroll region, and the cursor goes home
+		top, bot := arg(0, 1)-1, arg(1, s.rows)-1
+		if top >= 0 && bot < s.rows && top < bot {
+			s.custom, s.top, s.bot = true, top, bot
+		} else {
+			s.custom = false
+		}
+		s.r, s.c, s.wrapNext = 0, 0, false
+	case 'S':
+		s.scroll(max(1, arg(0, 1)))
+	case 'T':
+		s.scroll(-max(1, arg(0, 1)))
 	case 'm':
 		s.sgr(params)
 	case 'J':

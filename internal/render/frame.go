@@ -16,6 +16,10 @@ type Frame struct {
 	// columns, with no string parsed. Rows past GridRows (up to Max) are blank.
 	Grid     GridSource
 	GridRows int
+	// HardwareScroll says the region's first row is the screen's first row (an
+	// alternate screen), so a block of rows that moved can be scrolled by the
+	// terminal instead of rewritten. Lines frames only; ignored with a Grid.
+	HardwareScroll bool
 }
 
 // Stats describes a drawn frame, for the frame log.
@@ -48,6 +52,13 @@ func (c *Cells) Frame(in Frame) (string, Stats, bool) {
 		c.reason = "view_taller_than_terminal"
 		return "", Stats{}, false
 	}
+	// A block of rows that only moved is scrolled by the terminal; the previous
+	// frame's rows move with it, so the row cache and the diff below see them in
+	// their new places.
+	mv, scrolled := c.detectScroll(in)
+	if scrolled {
+		c.applyScroll(mv)
+	}
 	fr := c.frameRows(in.Max)
 	if !c.buildRows(in, fr) {
 		c.havePrev = false
@@ -68,6 +79,9 @@ func (c *Cells) Frame(in Frame) (string, Stats, bool) {
 	e.out = append(e.out, in.RegionTop()...)
 	if !havePrev {
 		e.out = append(e.out, ansi.Reset...) // the pen is unknown
+	}
+	if scrolled {
+		e.out = mv.appendSeq(e.out) // homes the cursor: row 0, column 0 is where it already was
 	}
 	c.deleteGonePlacements(e)
 	changed := 0

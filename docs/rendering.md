@@ -54,6 +54,30 @@ restored.
   what was there.
 - `Println` and the quit frame are never delayed by the cap.
 
+## Scrolling a block of rows
+
+A log or a list that scrolls by a line changes every row it shows, and diffing
+row by row writes them all again: on a 100x40 log of varied lines that is about
+3.7 KB for one line. In the alternate screen the cell renderer therefore looks,
+before it parses anything, for a block of rows of the new view that is the
+previous frame's block moved up or down by 1 to 16 lines (and at most half the
+rows). If moving it saves rewriting at least four rows, and at least half of
+the rows that changed, it has the terminal move the block itself with a scroll
+region (`CSI top;bottom r`, then `CSI n S` or `CSI n T`, then `CSI r`) and
+writes only the rows that opened up. The same 10 one-line scrolls cost 1,089
+bytes instead of 36,952, and `BenchmarkFrame200x60Styled`, whose frames move by a
+row each time, takes 27.7 µs and 1.2 KB instead of 50 µs and 41.7 KB. A header and a footer that stay put are outside the
+block and are not touched; the cost of looking when nothing matches is not
+measurable (144 µs against 160 µs for a 200x60 frame in which every row
+changes).
+
+It is not used inline, where the region does not start at the screen's first
+row; when a row of the block holds an image or a line the cell renderer could
+not parse; or for a root model that draws through `DrawCells`, whose rows have
+no source lines to compare. Set `TUI_NO_SCROLL_REGIONS=1` (in the Program's
+environment, see `WithEnvironment`) to turn it off for a terminal that
+mishandles scroll regions.
+
 ## Cell renderer and line renderer
 
 The two renderers produce the same screen. `TestCellRendererEquivalentToLineRenderer`

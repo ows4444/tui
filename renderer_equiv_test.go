@@ -33,6 +33,9 @@ type vtScreen struct {
 	rows     [][]vtCell
 	row, col int
 	pen      vtStyle
+	// DECSTBM region (first and last row) when custom; else the whole screen.
+	custom   bool
+	top, bot int
 }
 
 func newVTScreen(t *testing.T, width int) *vtScreen {
@@ -226,6 +229,34 @@ func (v *vtScreen) csi(params string, final byte) {
 			v.eraseCell(k)
 		}
 		v.rows = v.rows[:v.row+1]
+	case 'r': // DECSTBM: set the scroll region; the cursor goes home
+		parts := strings.SplitN(params, ";", 2)
+		top, bot := atoiDefault(parts[0], 1)-1, 0
+		if len(parts) == 2 {
+			bot = atoiDefault(parts[1], 0) - 1
+		}
+		v.custom = params != "" && top >= 0 && bot > top
+		if v.custom {
+			v.top, v.bot = top, bot
+			v.ensureRow(bot)
+		}
+		v.row, v.col = 0, 0
+	case 'S', 'T': // SU and SD scroll the region, and the rows that open up are blank
+		if !v.custom {
+			v.t.Fatalf("scroll %d%c without a scroll region", n, final)
+		}
+		k := min(n, v.bot-v.top+1)
+		if final == 'S' {
+			copy(v.rows[v.top:v.bot+1], v.rows[v.top+k:v.bot+1])
+			for r := v.bot - k + 1; r <= v.bot; r++ {
+				v.rows[r] = v.blankRow()
+			}
+		} else {
+			copy(v.rows[v.top+k:v.bot+1], v.rows[v.top:v.bot+1-k])
+			for r := v.top; r < v.top+k; r++ {
+				v.rows[r] = v.blankRow()
+			}
+		}
 	case 'm':
 		v.sgr(params)
 	default:

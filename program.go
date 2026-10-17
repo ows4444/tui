@@ -165,6 +165,7 @@ type Program struct {
 	colorFilter        func(ansi.RGB) ansi.RGB // WithColorFilter
 	captureOutput      bool                    // WithCaptureOutput
 	cap                atomic.Pointer[capture] // the live capture, if any
+	scrollEnv          int8                    // 0 unread, 1 scroll regions on, 2 off; see scrollRegionsOn
 	focusReporting     bool
 	colorSchemeReports bool
 	inBandResize       bool

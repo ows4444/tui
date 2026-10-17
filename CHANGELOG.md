@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+In the alternate screen the cell renderer scrolls a block of rows that only moved (a log, a list) with the terminal's scroll region instead of rewriting it: 10 one-line scrolls of a 100x40 log cost 1,089 bytes instead of 36,952. Set `TUI_NO_SCROLL_REGIONS=1` to turn it off (`docs/rendering.md`).
 `prompt.Parse[T]`, `Int`, `Float`, `Duration` and `Path`: prompts that return a typed answer. A text that does not parse is refused with a message under the question and the question stays open, so the caller never parses again (`docs/cookbook.md`).
 `widgets.TableCells` and `TableOptions`: a static table with a column alignment (`layout.AlignEnd` for numbers), a style for each row and a style for each cell (`CellStyle(row, col)`), so a status column or a negative number can be coloured; `Table` is `TableCells` with no options. `datatable` already had both.
 `tui.WithCaptureOutput(true)`: while `Run` is going, what the process writes to `os.Stdout`, `os.Stderr` and the standard logger is committed above the live region line by line (as `Println` and `Eprintln` do) instead of garbling the frame; `Suspend` and `EditInEditor` still get the real terminal (`docs/program.md`). Off by default.

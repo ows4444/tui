@@ -15,6 +15,9 @@ func (c *Cells) parseRow(line string, row []cell) ([]cell, bool) {
 		p.line = ansi.ExpandTabs(line)
 		p.simple = false
 	}
+	if n := strings.Count(p.line, "\x1b"); n > 0 {
+		p.esc = make([]int32, 0, 2*n) // one allocation, not one per doubling
+	}
 	for i := 0; i < len(p.line); {
 		var ok bool
 		if b := p.line[i]; b == 0x1b {

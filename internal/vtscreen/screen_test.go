@@ -1,7 +1,9 @@
 package vtscreen
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ows4444/tui/ansi"
@@ -315,5 +317,52 @@ func TestZeroSizeScreenDropsOutput(t *testing.T) {
 	s.Write([]byte("hello\r\n"))
 	if got := s.Lines(); len(got) != 0 {
 		t.Fatalf("lines = %q", got)
+	}
+}
+
+func rowText(s *Screen, r int) string {
+	var b strings.Builder
+	for _, c := range s.grid[r] {
+		b.WriteRune(c.Rune)
+	}
+	return strings.TrimRight(b.String(), " ")
+}
+
+func TestScrollRegionScrollsOnlyItsRows(t *testing.T) {
+	s := NewScreen(5, 5)
+	for r := 0; r < 5; r++ {
+		s.Write([]byte(fmt.Sprintf("\x1b[%d;1H%d", r+1, r)))
+	}
+	s.Write([]byte("\x1b[2;4r\x1b[1S\x1b[r")) // rows 2..4 up by one
+	var got []string
+	for r := 0; r < 5; r++ {
+		got = append(got, rowText(s, r))
+	}
+	if strings.Join(got, ",") != "0,2,3,,4" {
+		t.Errorf("after SU: %q", got)
+	}
+	s.Write([]byte("\x1b[2;4r\x1b[2T\x1b[r")) // and down by two
+	got = got[:0]
+	for r := 0; r < 5; r++ {
+		got = append(got, rowText(s, r))
+	}
+	if strings.Join(got, ",") != "0,,,2,4" {
+		t.Errorf("after SD: %q", got)
+	}
+}
+
+func TestDECSTBMHomesTheCursorAndAFullRegionResets(t *testing.T) {
+	s := NewScreen(4, 4)
+	s.Write([]byte("\x1b[3;3H\x1b[2;3r"))
+	if x, y, _ := s.Cursor(); x != 0 || y != 0 {
+		t.Errorf("cursor after DECSTBM = %d,%d, want home", x, y)
+	}
+	s.Write([]byte("\x1b[r\x1b[4;1Hx\n")) // a full region again: a line feed on the last row scrolls the screen
+	if rowText(s, 2) != "x" {
+		t.Errorf("rows: %q %q %q %q", rowText(s, 0), rowText(s, 1), rowText(s, 2), rowText(s, 3))
+	}
+	s.Write([]byte("\x1b[2;3r\x1b[3;1Hy\n")) // inside the region the last region row scrolls the region
+	if rowText(s, 3) != "" {
+		t.Errorf("the row below the region moved: %q", rowText(s, 3))
 	}
 }

@@ -38,6 +38,9 @@ type frameInput struct {
 	regionTop func() string // the sequence that returns the cursor to the region's first row
 	fitLine   func(string) string
 	measurer  ansi.Measurer // how this Program's terminal measures grapheme clusters
+	// scroll says the live region starts at the screen's first row, so a block of
+	// rows that only moved may be scrolled by the terminal.
+	scroll bool
 }
 
 // lineFrames is the line renderer: it rewrites every line that differs from the
@@ -83,7 +86,7 @@ func (r cellFrames) draw(in frameInput) (string, frameStats, bool) {
 	out, st, ok := r.c.Frame(render.Frame{
 		Lines: in.lines, Max: in.rows, LazyFit: in.lazyFit,
 		Width: in.width, Height: in.height, PrevRows: len(in.prev),
-		RegionTop: in.regionTop, FitLine: in.fitLine, Measurer: in.measurer,
+		RegionTop: in.regionTop, FitLine: in.fitLine, Measurer: in.measurer, HardwareScroll: in.scroll,
 	})
 	if !ok {
 		return "", frameStats{}, false
