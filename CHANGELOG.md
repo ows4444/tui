@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `autocomplete.Source` and `Model.Source`: suggestions found for the typed text,
+  run on `tui.Tasks` so newer text cancels the older run, like the command
+  palette's; `autocomplete.PathSource()` completes file system paths.
 - Four Program options: `WithEnvironment` (the program's own `TERM`, `COLORTERM`,
   `NO_COLOR`, `ACCESSIBLE` and reduced-motion variables, read through the new
   `Program.Getenv` and `motion.DetectEnv`, so a host serving several sessions can

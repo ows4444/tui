@@ -730,6 +730,7 @@ func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func New(suggestions ...string) Model
+func PathSource() Source
 type AcceptedMsg struct {
 	Value string
 }
@@ -751,8 +752,13 @@ type Model struct {
 	Bounds	hittest.Rect
 
 	Fuzzy	bool
+
+	Source	Source
+	Tasks	*tui.Tasks
+	Name	string
 	// contains filtered or unexported fields
 }
+type Source func(ctx context.Context, text string) []string
 
 ## github.com/ows4444/tui/avatar (package avatar)
 
