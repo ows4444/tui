@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`widgets.TableCells` and `TableOptions`: a static table with a column alignment (`layout.AlignEnd` for numbers), a style for each row and a style for each cell (`CellStyle(row, col)`), so a status column or a negative number can be coloured; `Table` is `TableCells` with no options. `datatable` already had both.
 `tui.WithCaptureOutput(true)`: while `Run` is going, what the process writes to `os.Stdout`, `os.Stderr` and the standard logger is committed above the live region line by line (as `Println` and `Eprintln` do) instead of garbling the frame; `Suspend` and `EditInEditor` still get the real terminal (`docs/program.md`). Off by default.
 Editor aids on `textarea`, all off by default: `HighlightCursorLine`, `MatchBrackets`, `ShowWhitespace` and `Ruler` (with `CursorLineColor`, `RulerColor` and `WhitespaceMark`). They draw over the text, a Highlighter and a selection, and work with soft wrap and `Height` (`docs/input.md`).
 `layout.AutoGrid` and `AutoGridGaps`: as many equal columns as fit the width, each at least `minWidth` wide, never more than there are cells (`AutoGrid(20, 1, cards...)`), where `GridNode` takes a fixed list of tracks and `Responsive` swaps whole layouts at breakpoints you choose (`docs/layout.md`).

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
 )
@@ -84,4 +85,25 @@ func ExampleProgressStats() {
 	s.Update(start.Add(20*time.Second), 50, 200)
 	fmt.Println(s.Text("files"))
 	// Output: 25%, 0:20 elapsed, 2.5 files/s, ETA 1:00
+}
+
+// TableCells aligns a column and styles single cells; here the Time column is
+// flush right and a failed job's status is picked out.
+func ExampleTableCells() {
+	rows := [][]string{{"build", "ok", "12.5"}, {"deploy", "failed", "3"}}
+	out := widgets.TableCells([]string{"Job", "Status", "Time"}, rows, widgets.TableOptions{
+		Align: []layout.Align{layout.AlignStart, layout.AlignStart, layout.AlignEnd},
+		CellStyle: func(i, j int) ansi.Style {
+			if j == 1 && rows[i][1] == "failed" {
+				return ansi.NewStyle().Bold()
+			}
+			return ansi.Style{}
+		},
+	}, theme.DarkTheme())
+	fmt.Println(ansi.StripANSI(out))
+	// Output:
+	// Job     Status  Time
+	// ────────────────────
+	// build   ok      12.5
+	// deploy  failed     3
 }

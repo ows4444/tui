@@ -5439,6 +5439,7 @@ func Spacer(width, height int) string
 func StatusIndicator(label string, variant Variant, t theme.Theme) string
 func Stepper(steps []string, current int, t theme.Theme) string
 func Table(headers []string, rows [][]string, t theme.Theme) string
+func TableCells(headers []string, rows [][]string, opts TableOptions, t theme.Theme) string
 func TableRows(headers []string, rows [][]string, headerStyle, dividerStyle ansi.Style, styleForRow func(i int) ansi.Style) string
 func TableRowsWith(headers []string, rows [][]string, headerStyle, dividerStyle ansi.Style, styleForRow func(i int) ansi.Style, t theme.Theme) string
 func Tag(text string, style TagStyle, variant Variant, t theme.Theme) string
@@ -5479,6 +5480,13 @@ type ProgressStats struct {
 }
 type ProgressStatus int
 type Sender int
+type TableOptions struct {
+	Align	[]layout.Align
+
+	RowStyle	func(i int) ansi.Style
+
+	CellStyle	func(i, j int) ansi.Style
+}
 type TagStyle int
 type TimelineItem struct {
 	Title	string
