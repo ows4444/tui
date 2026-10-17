@@ -31,6 +31,7 @@ var glyphSources = map[string]string{
 	"layout/borders.go":              "more Border sets (block, half block, dashed, markdown, hidden), written as escapes; Theme.Border selects one",
 	"spinner/spinner.go":             "the default frames, replaced by Theme.Glyphs.Spinner",
 	"textarea/aids.go":               "the default ShowWhitespace mark, an opt-in editor aid that WhitespaceMark replaces (textarea has no theme to take a glyph from)",
+	"layout/junction.go":             "the line characters MergedRow and MergedColumn recognise and the junctions they make where two borders meet; a cell is rewritten only when both halves are already border glyphs of one family, and ASCII borders merge into ASCII",
 	"spinner/presets.go":             "the named animations; on an ASCII theme a preset draws its ASCII frames instead (Model.frames)",
 	"widgets/chart/marker.go":        "the block, quadrant and sextant glyph tables of the Canvas markers; under an ASCII glyph set a cell draws a shade from Theme.Glyphs.Shades instead",
 	"widgets/bigtext.go":             "the block font, drawn with full blocks and swapped for Theme.Glyphs.BarFull at render",

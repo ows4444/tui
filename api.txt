@@ -2800,6 +2800,8 @@ func JoinHorizontalJustify(width int, justify Justify, blocks ...string) string
 func Layer(z int, n Node) Node
 func Loose(max Size) Constraints
 func MarkdownBorder() Border
+func MergedColumn(children ...FlexChild) Node
+func MergedRow(children ...FlexChild) Node
 func MinMax(n Node, min, max Size) Node
 func MinSize(n Node, min Size, fallback Node) Node
 func Named(name string, n Node) Node

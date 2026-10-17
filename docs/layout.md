@@ -124,6 +124,7 @@ rendered.
 | Need | Node |
 | --- | --- |
 | Columns that line up across rows | `GridNode`, `GridNodeGaps` with `[]Track` (`ExampleGridNode`) |
+| Bordered boxes that share their borders (junctions `┬ ┴ ├ ┼`) | `MergedRow`, `MergedColumn` (`ExampleMergedRow`) |
 | As many equal columns as fit the width (cards, tiles) | `AutoGrid`, `AutoGridGaps` (`ExampleAutoGrid`) |
 | Different trees for different terminal sizes | `Responsive` with `[]Break` (`ExampleResponsive`) |
 | A "terminal too small" screen | `MinSize(n, min, fallback)` |

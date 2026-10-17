@@ -310,3 +310,17 @@ func ExampleAutoGrid() {
 	// |                         |
 	// |three                    |
 }
+
+// MergedRow lets bordered boxes share their border: two boxes side by side get
+// one line between them, with a junction where it meets the top and bottom.
+func ExampleMergedRow() {
+	box := func(s string) layout.Node {
+		return layout.BoxNode(layout.NewBox().Border(layout.RoundedBorder()), layout.Block(s))
+	}
+	row := layout.MergedRow(layout.Fill(box("one")), layout.Fill(box("two")))
+	fmt.Println(row.Render(layout.Size{W: 11, H: 3}))
+	// Output:
+	// ╭────┬────╮
+	// │one │two │
+	// ╰────┴────╯
+}
