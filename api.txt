@@ -2962,20 +2962,39 @@ func (tw Tween) At(elapsed time.Duration) float64
 func (tw Tween) Done(elapsed time.Duration) bool
 func AfterOn[T any](c *Clock, d time.Duration, fn func(time.Time) T) func(context.Context) T
 func After[T any](d time.Duration, fn func(time.Time) T) func(context.Context) T
+func ByName(name string) (Ease, bool)
 func Detect() Preference
+func EaseNames() []string
 func FrameInterval(fps int) time.Duration
+func InBack(t float64) float64
+func InBounce(t float64) float64
+func InCirc(t float64) float64
 func InCubic(t float64) float64
+func InElastic(t float64) float64
+func InExpo(t float64) float64
+func InOutBack(t float64) float64
+func InOutBounce(t float64) float64
+func InOutCirc(t float64) float64
 func InOutCubic(t float64) float64
+func InOutElastic(t float64) float64
+func InOutExpo(t float64) float64
 func InOutQuad(t float64) float64
+func InOutSine(t float64) float64
 func InQuad(t float64) float64
+func InSine(t float64) float64
 func Linear(t float64) float64
 func NewClock(interval time.Duration) *Clock
 func NewFrameClock(fps int) *Clock
 func NewSpring(value, stiffness float64) *Spring
 func NewTransition(value float64, duration time.Duration, motion Preference) *Transition
 func OutBack(t float64) float64
+func OutBounce(t float64) float64
+func OutCirc(t float64) float64
 func OutCubic(t float64) float64
+func OutElastic(t float64) float64
+func OutExpo(t float64) float64
 func OutQuad(t float64) float64
+func OutSine(t float64) float64
 type Clock struct {
 	Interval	time.Duration
 
@@ -3034,6 +3053,15 @@ type Tween struct {
 	Ease		Ease
 	Motion		Preference
 }
+var (
+	InQuart		Ease	= inPow(4)
+	OutQuart	Ease	= outPow(4)
+	InOutQuart	Ease	= inOutPow(4)
+
+	InQuint		Ease	= inPow(5)
+	OutQuint	Ease	= outPow(5)
+	InOutQuint	Ease	= inOutPow(5)
+)
 
 ## github.com/ows4444/tui/multiselect (package multiselect)
 

@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- The rest of the standard easing set in `motion`: Quart, Quint, Sine, Expo, Circ,
+  Back, Elastic and Bounce, each in, out and in-out (31 in all, with the first
+  eight), and `motion.ByName` and `EaseNames` so a config file can name one.
 - `ansi.RGB` colour math: `HSL` and `FromHSL`, `Complement`, `Luminance` (WCAG relative
   luminance) and `Readable` (black or white, whichever reads better on the colour).
 - Three more form fields: `form.FieldConfirm` (a Yes/No choice answered with Y and
