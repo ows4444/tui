@@ -608,6 +608,7 @@ func DowngradeString(s string, p Profile) string
 func ExpandTabs(s string) string
 func FromHSL(h, s, l float64) RGB
 func Hyperlink(text, url string) string
+func Justify(line string, width int) string
 func KittyKeyboardEnableFlags(flags int) string
 func NewStyle() Style
 func NewText(text string, style Style) Text
@@ -620,6 +621,8 @@ func SanitizeKeepSGR(s string) string
 func StripANSI(s string) string
 func TrimLeftWidth(s string, width int) string
 func Truncate(s string, width int) string
+func TruncateMiddle(s string, width int, glyph string) string
+func TruncateStart(s string, width int, glyph string) string
 func Width(s string) int
 func Wrap(s string, width int) string
 func WrapStyled(s string, width int) string
@@ -2550,6 +2553,13 @@ const (
 
 	JustifySpaceEvenly
 )
+const (
+	OverflowEnd	Overflow	= iota
+
+	OverflowStart
+
+	OverflowMiddle
+)
 const Unbounded = 1 << 30
 func (b Box) Background(c ansi.Color) Box
 func (b Box) Border(border Border) Box
@@ -2628,6 +2638,8 @@ func Window(lines []string, cursor, h int) []string
 func WindowRange(total, cursor, h int) (start, end int)
 func WithAlign(a Align) TextOpt
 func WithEllipsis(glyph string) TextOpt
+func WithJustify() TextOpt
+func WithOverflow(o Overflow, glyph string) TextOpt
 func WithStyle(st ansi.Style) TextOpt
 func WithWrap() TextOpt
 type Align int
@@ -2676,6 +2688,7 @@ type Node interface {
 	Measure(c Constraints) Size
 	Render(s Size) string
 }
+type Overflow int
 type Placed struct {
 	Node	Node
 

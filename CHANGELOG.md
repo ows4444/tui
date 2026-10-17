@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Text overflow and justification: `ansi.TruncateStart` and `TruncateMiddle` keep the
+  end, or both ends, of a line that is too wide; `ansi.Justify` widens the gaps
+  between words; `layout.WithOverflow(OverflowStart|OverflowMiddle|OverflowEnd, glyph)`
+  and `layout.WithJustify()` use them in a `Text` node.
 - Seven more border presets in `layout` (`BlockBorder`, `OuterHalfBlockBorder`,
   `InnerHalfBlockBorder`, `DashedBorder`, `HeavyDashedBorder`, `MarkdownBorder`,
   `HiddenBorder`, the last taking a border's space and drawing none of it), and
