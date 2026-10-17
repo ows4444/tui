@@ -592,7 +592,10 @@ func (m model) rowLine(r row, w int, th theme.Theme) string {
 	}
 	var b strings.Builder
 	b.WriteString(strings.Repeat("  ", r.depth) + arrow)
-	if key != "" {
+	switch {
+	case n.parent == nil:
+		b.WriteString(ansi.NewStyle().Foreground(th.Primary).Render(key) + " ")
+	default:
 		b.WriteString(m.mark(key, ansi.NewStyle().Foreground(th.Primary)) + ansi.NewStyle().Faint().Render(": "))
 	}
 	if n.container() {

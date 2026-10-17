@@ -1,6 +1,6 @@
 jsonx  sample.json                                                                                                      
 $                                                                                                         [Path] [Value]
-▾ $:                                                              │object · 46 values inside                            
+▾ $                                                               │object · 46 values inside                            
     status: "ok"                                                  │{                                                    
     generated: "2026-10-18T09:30:00Z"                             │  "status": "ok",                                    
   ▸ shop: {4 keys}                                                │  "generated": "2026-10-18T09:30:00Z",               
