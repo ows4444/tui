@@ -1,0 +1,10 @@
+weather                                 
+Search ▸  type a city                   
+Recent  1 Berlin                    [°C]
+Berlin, Germany  fetched 09:30:00 from b
+Now 1°C  ☁ Overcast  wind 26 km/h       
+Wed 14 ☁ Overcast      3°C/-5°C         
+Thu 15 ≋ Fog           -2°C/-8°C        
+Fri 16 ≋ Fog           2°C/-6°C         
+built-in fixture                        
+[enter] open  [tab] days  [r] reload  … 
