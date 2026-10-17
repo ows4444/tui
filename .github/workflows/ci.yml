@@ -41,6 +41,9 @@ jobs:
       - name: every exported identifier has a doc comment
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         run: go run ./internal/tools/doccheck
+      - name: no function grows past the length limit
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
+        run: go run ./internal/tools/funclen
       - name: benchmarks (smoke)
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         run: go test -run '^$' -bench 'VirtualList10k|RenderDiff|Frame|Repaint|AvatarView|FacesView' -benchtime=100x ./...

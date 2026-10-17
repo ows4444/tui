@@ -17,6 +17,7 @@ go test -race ./...
 go test -coverprofile=cover.out -coverpkg=./... ./...
 go run ./internal/tools/covercheck cover.out
 go run ./internal/tools/doccheck
+go run ./internal/tools/funclen
 ```
 
 CI also checks that the generated files below are current, and runs

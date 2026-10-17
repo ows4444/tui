@@ -45,28 +45,65 @@ func (p *Program) runLoop() (_ Model, err error) {
 	rs := p.newReaderSet(done)
 	rs.start()
 	p.stopInput, p.startInput = rs.stop, rs.start
-	defer func() {
-		p.stopInput, p.startInput = nil, nil
-		p.setLoopDone(nil)
-		close(done)
-		if p.chordTimer != nil {
-			p.chordTimer.Stop()
-		}
-		rs.cancel()
-		if p.inCloser != nil {
-			p.inCloseOnce.Do(func() { _ = p.inCloser.Close() })
-		}
-		select {
-		case <-p.rdDone:
-		case <-time.After(readerStopTimeout):
-		}
-		select {
-		case <-resizeStopped:
-		case <-time.After(readerStopTimeout): // a Terminal whose Size never returns
-		}
-	}()
+	defer p.endLoop(done, resizeStopped, rs)
 
-	// Cancelling the context given to WithContext ends Run.
+	p.watchParentContext(done)
+	p.watchResize(done, resizeStopped)
+	p.queryTerminalColors(done)
+
+	// The theme goes in before Init, so a model that builds state or Cmds
+	// from its theme there sees the Program's theme, not its own default.
+	if p.themeSet {
+		p.applyTheme(p.themeAuto.Dark)
+	}
+	if cmd := p.model.Init(); cmd != nil {
+		p.spawn(cmd, done)
+	}
+
+	// Seed the model with its starting size before the first paint.
+	var cmd Cmd
+	p.model, cmd = p.model.Update(p.resizeMsg(p.width, p.height))
+	if cmd != nil {
+		p.spawn(cmd, done)
+	}
+	p.render()
+	p.announce.Done = done
+
+	for msg := range p.msgs {
+		if stop, err := p.step(msg, done); stop {
+			return p.model, err
+		}
+	}
+
+	p.stopFlushTimer()
+	return p.model, nil
+}
+
+// endLoop is runLoop's shutdown: it stops the watchers and the input reader,
+// and waits for the reader and the resize watcher, briefly, before returning.
+func (p *Program) endLoop(done chan struct{}, resizeStopped <-chan struct{}, rs *readerSet) {
+	p.stopInput, p.startInput = nil, nil
+	p.setLoopDone(nil)
+	close(done)
+	if p.chordTimer != nil {
+		p.chordTimer.Stop()
+	}
+	rs.cancel()
+	if p.inCloser != nil {
+		p.inCloseOnce.Do(func() { _ = p.inCloser.Close() })
+	}
+	select {
+	case <-p.rdDone:
+	case <-time.After(readerStopTimeout):
+	}
+	select {
+	case <-resizeStopped:
+	case <-time.After(readerStopTimeout): // a Terminal whose Size never returns
+	}
+}
+
+// watchParentContext ends Run when the context given to WithContext is cancelled.
+func (p *Program) watchParentContext(done <-chan struct{}) {
 	if p.parentCtx != nil && p.parentCtx.Done() != nil {
 		parentDone := p.parentCtx.Done()
 		p.wg.Add(1)
@@ -82,7 +119,11 @@ func (p *Program) runLoop() (_ Model, err error) {
 			}
 		}()
 	}
+}
 
+// watchResize starts the goroutine that forwards terminal resizes, closing
+// resizeStopped when it exits.
+func (p *Program) watchResize(done <-chan struct{}, resizeStopped chan struct{}) {
 	// startResizeWatch is implemented per-OS (resize_unix.go / resize_windows.go)
 	// since there's no portable way to detect a terminal resize: unix has
 	// SIGWINCH; windows reads window-buffer-size events from the console
@@ -105,7 +146,11 @@ func (p *Program) runLoop() (_ Model, err error) {
 		defer close(resizeStopped)
 		watch(done)
 	}()
+}
 
+// queryTerminalColors asks the terminal for its background colour and palette,
+// and arms the timer that reports them unknown if no answer comes.
+func (p *Program) queryTerminalColors(done <-chan struct{}) {
 	if p.themeSet && p.bgTimeout <= 0 {
 		p.bgTimeout = defaultThemeDetectTimeout
 	}
@@ -130,200 +175,194 @@ func (p *Program) runLoop() (_ Model, err error) {
 			}
 		}()
 	}
+}
 
-	// The theme goes in before Init, so a model that builds state or Cmds
-	// from its theme there sees the Program's theme, not its own default.
-	if p.themeSet {
-		p.applyTheme(p.themeAuto.Dark)
+// runtimeMsg handles the messages that are instructions to the Program and are
+// never forwarded to Update: prints, batches, suspends. It reports whether msg
+// was one, and the message to carry on with, which interceptCmdMsg may have
+// replaced.
+func (p *Program) runtimeMsg(msg Msg, done chan struct{}) (Msg, bool) {
+	if pm, ok := msg.(printMsg); ok {
+		// Never forwarded to Update: printMsg is a renderer
+		// instruction (like batchMsg/ResizeMsg/QuitMsg above), not
+		// application data.
+		if p.altScreen && !p.accessible {
+			// The alternate screen has no scrollback and the next frame
+			// repaints all of it, so a print made here would be erased.
+			// Hold it and write it to the main screen once that is back.
+			p.holdAltPrint(pm)
+			return msg, true
+		}
+		dest := p.output
+		if pm.stderr {
+			dest = p.errOutput
+		}
+		p.printLines(pm.text, dest)
+		p.render()
+		return msg, true
 	}
-	if cmd := p.model.Init(); cmd != nil {
-		p.spawn(cmd, done)
+	var handled bool
+	if msg, handled = p.interceptCmdMsg(msg, done); handled {
+		return msg, true
 	}
-
-	// Seed the model with its starting size before the first paint.
-	var cmd Cmd
-	p.model, cmd = p.model.Update(p.resizeMsg(p.width, p.height))
-	if cmd != nil {
-		p.spawn(cmd, done)
+	if bm, ok := msg.(batchMsg); ok {
+		for _, c := range bm {
+			p.spawn(c, done)
+		}
+		return msg, true
 	}
-	p.render()
-	p.announce.Done = done
-
-	for msg := range p.msgs {
-		if err := p.outputErr(); err != nil {
-			p.stopFlushTimer()
-			return p.model, fmt.Errorf("tui: write to the output: %w", err)
-		}
-		if p.handleAnnounce(msg) {
-			continue
-		}
-		if pm, ok := msg.(printMsg); ok {
-			// Never forwarded to Update: printMsg is a renderer
-			// instruction (like batchMsg/ResizeMsg/QuitMsg above), not
-			// application data.
-			if p.altScreen && !p.accessible {
-				// The alternate screen has no scrollback and the next frame
-				// repaints all of it, so a print made here would be erased.
-				// Hold it and write it to the main screen once that is back.
-				p.holdAltPrint(pm)
-				continue
-			}
-			dest := p.output
-			if pm.stderr {
-				dest = p.errOutput
-			}
-			p.printLines(pm.text, dest)
-			p.render()
-			continue
-		}
-		var handled bool
-		if msg, handled = p.interceptCmdMsg(msg, done); handled {
-			continue
-		}
-		if bm, ok := msg.(batchMsg); ok {
-			for _, c := range bm {
-				p.spawn(c, done)
-			}
-			continue
-		}
-		if sm, ok := msg.(suspendMsg); ok {
-			// Never forwarded to Update directly, the same as printMsg:
-			// suspend's result is delivered as a SuspendMsg below instead,
-			// once fn has actually run.
-			err := p.suspend(sm.fn)
-			var cmd Cmd
-			p.model, cmd = p.model.Update(SuspendMsg{Err: err})
-			if cmd != nil {
-				p.spawn(cmd, done)
-			}
-			// Bypass the cap: the frame right after a suspend must be a
-			// full repaint against the just-reset lastFrame/liveLines,
-			// not skipped and left showing whatever the resumed terminal
-			// happens to still have on screen from the suspended fn.
-			p.render()
-			continue
-		}
-		if p.isSuspendKey(msg) {
-			// Never forwarded to Update; see WithSuspendOnCtrlZ.
-			rm, resized := p.suspendToBackground()
-			if resized {
-				var cmd Cmd
-				p.model, cmd = p.model.Update(rm)
-				if cmd != nil {
-					p.spawn(cmd, done)
-				}
-			}
-			// Bypass the cap: the screen is unknown after a stop.
-			if p.accessible {
-				p.render()
-			} else {
-				p.repaintFresh()
-			}
-			continue
-		}
-		msg = splitKeyAction(msg)
-		if p.inspectorKeyPressed(msg) {
-			p.render() // show or hide the overlay
-			continue
-		}
-		if p.chords != nil {
-			if handled := p.handleChordMsg(msg, done); handled {
-				continue
-			}
-		}
-		if ev, ok := msg.(BackgroundColorEvent); ok && p.themeSet {
-			p.applyTheme(p.themeAuto.For(ansi.RGB{R: ev.R, G: ev.G, B: ev.B}))
-		}
-		if ev, ok := msg.(ColorSchemeEvent); ok && p.themeSet {
-			if ev.Dark {
-				p.applyTheme(p.themeAuto.Dark)
-			} else {
-				p.applyTheme(p.themeAuto.Light)
-			}
-		}
-		reported := false
-		if ev, ok := msg.(InBandResizeEvent); ok && ev.Cols > 0 && ev.Rows > 0 {
-			msg, reported = ResizeMsg{Width: ev.Cols, Height: ev.Rows}, true
-		}
-		rm, isResize := msg.(ResizeMsg)
-		if isResize {
-			// The size that triggered this message may already be stale
-			// (a drag sends many SIGWINCHes, and watchResize coalesces them
-			// while the queue is full), so trust the terminal's current size.
-			// A size the terminal reported in band is its own answer.
-			if w, h, ok := p.termSize(); ok && !reported {
-				rm = ResizeMsg{Width: w, Height: h}
-			}
-			rm.Measurer = p.Measurer()
-			p.sentMeasurer = rm.Measurer
-			msg = rm
-			p.width, p.height = rm.Width, rm.Height
-			p.rec.size(rm.Width, rm.Height)
-		}
-		if _, ok := msg.(flushRenderMsg); ok {
-			// Never forwarded to Update: the timer armed by allowRender
-			// asks for the frame it throttled away. A render that
-			// happened since already cleared the flag.
-			if p.renderPending {
-				p.lastRenderAt = time.Now()
-				p.renderIfChanged()
-			}
-			continue
-		}
-		if pm, ok := msg.(panicMsg); ok {
-			p.stopFlushTimer()
-			return p.model, pm.err
-		}
-		if _, ok := msg.(interruptMsg); ok {
-			p.stopFlushTimer()
-			return p.model, ErrInterrupted
-		}
-		if _, ok := msg.(ctxDoneMsg); ok {
-			p.stopFlushTimer()
-			return p.model, p.parentCtx.Err()
-		}
-		if _, ok := msg.(QuitMsg); ok {
-			p.stopFlushTimer()
-			if p.maxFPS > 0 || p.renderPending {
-				// Bypass the cap: the final frame at quit must reflect
-				// the latest model state, never a stale one left behind
-				// by a throttled-away render.
-				p.render()
-			}
-			return p.model, nil
-		}
-
+	if sm, ok := msg.(suspendMsg); ok {
+		// Never forwarded to Update directly, the same as printMsg:
+		// suspend's result is delivered as a SuspendMsg below instead,
+		// once fn has actually run.
+		err := p.suspend(sm.fn)
 		var cmd Cmd
-		if p.msgKey != "" {
-			began := time.Now()
-			p.model, cmd = p.model.Update(msg)
-			p.msgLog.add(msg, time.Since(began))
-		} else {
-			p.model, cmd = p.model.Update(msg)
-		}
-		p.rec.upd()
+		p.model, cmd = p.model.Update(SuspendMsg{Err: err})
 		if cmd != nil {
 			p.spawn(cmd, done)
 		}
-		if isResize {
-			// Never throttled, and never a diff: see repaintFresh.
-			p.repaintFresh()
-		} else if _, ok := msg.(CapabilitiesMsg); ok && p.Measurer() != p.sentMeasurer {
-			// The probe changed how this terminal measures text: tell the
-			// model with the size it already has, and redraw from scratch
-			// since every cell width may differ.
-			p.model, cmd = p.model.Update(p.resizeMsg(p.width, p.height))
+		// Bypass the cap: the frame right after a suspend must be a
+		// full repaint against the just-reset lastFrame/liveLines,
+		// not skipped and left showing whatever the resumed terminal
+		// happens to still have on screen from the suspended fn.
+		p.render()
+		return msg, true
+	}
+	if p.isSuspendKey(msg) {
+		// Never forwarded to Update; see WithSuspendOnCtrlZ.
+		rm, resized := p.suspendToBackground()
+		if resized {
+			var cmd Cmd
+			p.model, cmd = p.model.Update(rm)
 			if cmd != nil {
 				p.spawn(cmd, done)
 			}
+		}
+		// Bypass the cap: the screen is unknown after a stop.
+		if p.accessible {
+			p.render()
+		} else {
 			p.repaintFresh()
-		} else if p.allowRenderFor(done, isInputMsg(msg)) {
-			p.renderIfChanged()
+		}
+		return msg, true
+	}
+	return msg, false
+}
+
+// step handles one message from the queue. It reports stop with the error
+// runLoop returns when the message ends the loop.
+func (p *Program) step(msg Msg, done chan struct{}) (stop bool, err error) {
+	if err := p.outputErr(); err != nil {
+		p.stopFlushTimer()
+		return true, fmt.Errorf("tui: write to the output: %w", err)
+	}
+	if p.handleAnnounce(msg) {
+		return false, nil
+	}
+	var handled bool
+	if msg, handled = p.runtimeMsg(msg, done); handled {
+		return false, nil
+	}
+	msg = splitKeyAction(msg)
+	if p.inspectorKeyPressed(msg) {
+		p.render() // show or hide the overlay
+		return false, nil
+	}
+	if p.chords != nil {
+		if handled := p.handleChordMsg(msg, done); handled {
+			return false, nil
 		}
 	}
+	if ev, ok := msg.(BackgroundColorEvent); ok && p.themeSet {
+		p.applyTheme(p.themeAuto.For(ansi.RGB{R: ev.R, G: ev.G, B: ev.B}))
+	}
+	if ev, ok := msg.(ColorSchemeEvent); ok && p.themeSet {
+		if ev.Dark {
+			p.applyTheme(p.themeAuto.Dark)
+		} else {
+			p.applyTheme(p.themeAuto.Light)
+		}
+	}
+	reported := false
+	if ev, ok := msg.(InBandResizeEvent); ok && ev.Cols > 0 && ev.Rows > 0 {
+		msg, reported = ResizeMsg{Width: ev.Cols, Height: ev.Rows}, true
+	}
+	rm, isResize := msg.(ResizeMsg)
+	if isResize {
+		// The size that triggered this message may already be stale
+		// (a drag sends many SIGWINCHes, and watchResize coalesces them
+		// while the queue is full), so trust the terminal's current size.
+		// A size the terminal reported in band is its own answer.
+		if w, h, ok := p.termSize(); ok && !reported {
+			rm = ResizeMsg{Width: w, Height: h}
+		}
+		rm.Measurer = p.Measurer()
+		p.sentMeasurer = rm.Measurer
+		msg = rm
+		p.width, p.height = rm.Width, rm.Height
+		p.rec.size(rm.Width, rm.Height)
+	}
+	if _, ok := msg.(flushRenderMsg); ok {
+		// Never forwarded to Update: the timer armed by allowRender
+		// asks for the frame it throttled away. A render that
+		// happened since already cleared the flag.
+		if p.renderPending {
+			p.lastRenderAt = time.Now()
+			p.renderIfChanged()
+		}
+		return false, nil
+	}
+	if pm, ok := msg.(panicMsg); ok {
+		p.stopFlushTimer()
+		return true, pm.err
+	}
+	if _, ok := msg.(interruptMsg); ok {
+		p.stopFlushTimer()
+		return true, ErrInterrupted
+	}
+	if _, ok := msg.(ctxDoneMsg); ok {
+		p.stopFlushTimer()
+		return true, p.parentCtx.Err()
+	}
+	if _, ok := msg.(QuitMsg); ok {
+		p.stopFlushTimer()
+		if p.maxFPS > 0 || p.renderPending {
+			// Bypass the cap: the final frame at quit must reflect
+			// the latest model state, never a stale one left behind
+			// by a throttled-away render.
+			p.render()
+		}
+		return true, nil
+	}
 
-	p.stopFlushTimer()
-	return p.model, nil
+	var cmd Cmd
+	if p.msgKey != "" {
+		began := time.Now()
+		p.model, cmd = p.model.Update(msg)
+		p.msgLog.add(msg, time.Since(began))
+	} else {
+		p.model, cmd = p.model.Update(msg)
+	}
+	p.rec.upd()
+	if cmd != nil {
+		p.spawn(cmd, done)
+	}
+	if isResize {
+		// Never throttled, and never a diff: see repaintFresh.
+		p.repaintFresh()
+	} else if _, ok := msg.(CapabilitiesMsg); ok && p.Measurer() != p.sentMeasurer {
+		// The probe changed how this terminal measures text: tell the
+		// model with the size it already has, and redraw from scratch
+		// since every cell width may differ.
+		p.model, cmd = p.model.Update(p.resizeMsg(p.width, p.height))
+		if cmd != nil {
+			p.spawn(cmd, done)
+		}
+		p.repaintFresh()
+	} else if p.allowRenderFor(done, isInputMsg(msg)) {
+		p.renderIfChanged()
+	}
+	return false, nil
 }
 
 // focusDedupe remembers the last FocusEvent state handed to Update. Its
