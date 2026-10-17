@@ -13,3 +13,13 @@ func TestBorderColorsDrawCellsMatchRender(t *testing.T) {
 	sameScreen(t, "per-side colours", BoxNode(b, Block("hello\nworld")), Loose(Size{W: 30, H: 10}))
 	sameScreen(t, "per-side, one side only", BoxNode(NewBox().Border(DashedBorder()).BorderColors(nil, ansi.Red, nil, nil), Block("x")), Loose(Size{W: 30, H: 10}))
 }
+
+func TestShadowNodeSizeAndCells(t *testing.T) {
+	box := NewBox().Border(NormalBorder()).Padding(0, 1, 0, 1).ShadowGlyph("#", nil)
+	n := BoxNode(box, Block("hi"))
+	if got := n.Measure(Loose(Size{W: 40, H: 10})); got != (Size{W: 4 + 2 + 1, H: 3 + 1}) {
+		t.Fatalf("Measure = %v; want 7x4 (box 6x3 plus the shadow)", got)
+	}
+	sameScreen(t, "shadow", n, Loose(Size{W: 40, H: 10}))
+	sameScreen(t, "shadow, coloured", BoxNode(NewBox().Border(RoundedBorder()).Shadow(ansi.BrightBlack), Block("a\nb")), Loose(Size{W: 40, H: 10}))
+}

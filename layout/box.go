@@ -47,6 +47,8 @@ type Box struct {
 	marginT, marginR, marginB, marginL   int
 	border                               Border
 	borderColor                          ansi.Color    // nil = draw the border in the terminal's default colour
+	shadow                               string        // the shadow glyph set by Shadow; "" = none
+	shadowColor                          ansi.Color    // nil = the glyph in the terminal's default colour
 	sides                                [4]ansi.Color // per-side colours set by BorderColors: top, right, bottom, left; nil falls back to borderColor
 	gradient                             *[2]ansi.RGB  // set by BorderGradient: the border blends from [0] to [1] and back around the box
 	bg                                   ansi.Color    // nil = no background
@@ -122,6 +124,21 @@ func (b Box) BorderColor(c ansi.Color) Box { b.borderColor = c; return b }
 // bottom-coloured. BorderGradient takes precedence over both.
 func (b Box) BorderColors(top, right, bottom, left ansi.Color) Box {
 	b.sides = [4]ansi.Color{top, right, bottom, left}
+	return b
+}
+
+// Shadow gives the box a drop shadow: a column of shade cells down its right
+// side and a row along its bottom, each shifted one cell, drawn in c (nil for the
+// default colour). The shadow adds one column and one row to the box's size.
+// Under a shadow the page shows through nowhere: the cells are the glyph, so
+// pick a dim colour. For a terminal that cannot draw the shade glyph use
+// ShadowGlyph with an ASCII one.
+func (b Box) Shadow(c ansi.Color) Box { return b.ShadowGlyph("\u2592", c) }
+
+// ShadowGlyph is Shadow with the glyph of your choice, one cell wide. An empty
+// glyph removes the shadow.
+func (b Box) ShadowGlyph(glyph string, c ansi.Color) Box {
+	b.shadow, b.shadowColor = glyph, c
 	return b
 }
 
@@ -217,6 +234,7 @@ func (b Box) render(content string) string {
 	r.top()
 	r.body(content)
 	r.bottom()
+	r.shadowRow()
 	r.margins(b.marginB)
 	return r.out.String()
 }
@@ -242,6 +260,11 @@ type boxRender struct {
 	ring borderRing
 	// fullWidth is the width of a margin-only row.
 	fullWidth int
+
+	// shade is the styled shadow glyph, "" when the box has none; boxRows counts
+	// the rows of the box written so far, since the shadow starts one row down.
+	shade   string
+	boxRows int
 
 	out     strings.Builder
 	first   bool // no row written yet: the next one needs no newline before it
@@ -344,6 +367,13 @@ func (b Box) plan(content string) *boxRender {
 		}
 	}
 	r.fullWidth = b.marginL + r.innerWidth + b.marginR
+	if b.shadow != "" {
+		r.shade = b.shadow
+		if b.shadowColor != nil {
+			r.shade = ansi.NewStyle().Foreground(b.shadowColor).Render(b.shadow)
+		}
+		r.fullWidth++
+	}
 	if r.showLeft {
 		r.fullWidth += ansi.Width(b.border.Left)
 	}
@@ -383,6 +413,7 @@ func (r *boxRender) top() {
 	} else {
 		r.out.WriteString(r.paint[sideTop](topRow))
 	}
+	r.shadowCell()
 	writeSpaces(&r.out, b.marginR)
 }
 
@@ -400,6 +431,7 @@ func (r *boxRender) bottom() {
 	} else {
 		r.out.WriteString(r.paint[sideBottom](botRow))
 	}
+	r.shadowCell()
 	writeSpaces(&r.out, b.marginR)
 }
 
@@ -453,6 +485,7 @@ func (r *boxRender) row(text string) {
 		r.out.WriteString(r.right)
 	}
 	r.sideRow++
+	r.shadowCell()
 	writeSpaces(&r.out, b.marginR)
 }
 
@@ -674,4 +707,33 @@ func writeSpaces(b *strings.Builder, n int) {
 	if n > 0 {
 		b.WriteString(spaces[:n])
 	}
+}
+
+// shadowCell writes the right-hand shadow cell of the row just written: blank
+// on the box's first row, a shade from the second on.
+func (r *boxRender) shadowCell() {
+	if r.shade == "" {
+		return
+	}
+	if r.boxRows == 0 {
+		r.out.WriteByte(' ')
+	} else {
+		r.out.WriteString(r.shade)
+	}
+	r.boxRows++
+}
+
+// shadowRow writes the shadow along the bottom: one cell in from the left edge
+// and as wide as the box.
+func (r *boxRender) shadowRow() {
+	if r.shade == "" {
+		return
+	}
+	b := r.b
+	r.newRow()
+	writeSpaces(&r.out, b.marginL+1)
+	for i := 0; i < r.fullWidth-b.marginL-b.marginR-1; i++ {
+		r.out.WriteString(r.shade)
+	}
+	writeSpaces(&r.out, b.marginR)
 }

@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `layout.Box.Shadow(colour)` and `ShadowGlyph(glyph, colour)`: a drop shadow, one
+  column down the right side and one row along the bottom, which adds that much to
+  the box's size.
 - `autocomplete.Source` and `Model.Source`: suggestions found for the typed text,
   run on `tui.Tasks` so newer text cancels the older run, like the command
   palette's; `autocomplete.PathSource()` completes file system paths.

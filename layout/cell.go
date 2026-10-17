@@ -226,7 +226,7 @@ func (b boxNode) DrawCells(dst CellSurface, r Rect) {
 	ch := b.chrome()
 	inner := Size{W: r.W - ch.W, H: r.H - ch.H}
 	bordered := hasBorder(bx.border)
-	simple := inner.W > 0 && inner.H > 0 && bx.bg == nil && bx.height == 0 &&
+	simple := inner.W > 0 && inner.H > 0 && bx.bg == nil && bx.height == 0 && bx.shadow == "" &&
 		bx.marginT == 0 && bx.marginR == 0 && bx.marginB == 0 && bx.marginL == 0 &&
 		(!bordered || (bx.border.Top != "" && bx.border.Bottom != ""))
 	if !simple {
