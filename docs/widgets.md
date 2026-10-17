@@ -110,6 +110,7 @@ in `examples/` that imports the package.
 | [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/agentshell` |
 | [tabs](../tabs) | A horizontal tab bar | yes | `examples/settings`, `examples/inspector` |
 | [taginput](../taginput) | A text input plus a list of committed tags drawn as `widgets.Tag` chips | yes  `examples/inputs` |
+| [termpane](../termpane) | A program run on a pseudo-terminal and drawn in a pane: a shell or a full-screen tool inside the app, with keys, paste, mouse, resize and scrollback. darwin and linux only. Experimental | | |
 | [textarea](../textarea) | A multi-line text input | yes | `examples/focus`, `examples/agentshell` |
 | [textinput](../textinput) | A single-line text input | yes | `examples/focus`, `examples/cursorfield`, `examples/form` |
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |

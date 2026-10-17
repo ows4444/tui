@@ -4126,6 +4126,57 @@ type State struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/termpane (package termpane)
+
+func (m *Model) Blur()
+func (m *Model) Focus()
+func (m *Model) SetSize(cols, rows int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Close() error
+func (m Model) Focused() bool
+func (m Model) Init() tui.Cmd
+func (m Model) Input(text string)
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Running() bool
+func (m Model) Scrolled() int
+func (m Model) Size() (cols, rows int)
+func (m Model) Title() string
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func DefaultKeyMap() KeyMap
+func New(command string, args ...string) Model
+type ExitedMsg struct {
+	ID	string
+	Code	int
+	Err	error
+}
+type KeyMap struct {
+	ScrollUp, ScrollDown, ScrollEnd keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Command	string
+	Args	[]string
+
+	Dir	string
+
+	Env	[]string
+
+	Cols, Rows	int
+
+	Scrollback	int
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+type OutputMsg struct{ ID string }
+
 ## github.com/ows4444/tui/textarea (package textarea)
 
 const (

@@ -1,6 +1,7 @@
 package tui_test
 
 import (
+	"context"
 	"github.com/ows4444/tui"
 	"go/ast"
 	"go/parser"
@@ -55,6 +56,7 @@ import (
 	"github.com/ows4444/tui/streamtext"
 	"github.com/ows4444/tui/tabs"
 	"github.com/ows4444/tui/taginput"
+	"github.com/ows4444/tui/termpane"
 	"github.com/ows4444/tui/textarea"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
@@ -246,6 +248,21 @@ var conformance = map[string]func() map[string]string{
 		m := timepicker.New(time.Date(2026, 1, 1, 15, 0, 0, 0, time.UTC))
 		m.Hour12 = true
 		m.AM, m.PM = evil, evil
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"termpane": func() map[string]string {
+		m := termpane.New("sh", "-c", `printf '\033[2J\033[HMARK\033]52;c;ZXZpbA==\007\033]0;t\033\\END'`)
+		m.Cols, m.Rows = 40, 3
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		defer m.Close()
+		for cmd := m.Init(); cmd != nil; {
+			msg := tui.RunCmd(ctx, cmd)
+			if _, done := msg.(termpane.ExitedMsg); done || msg == nil {
+				break
+			}
+			m, cmd = m.Update(msg)
+		}
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"window": func() map[string]string {

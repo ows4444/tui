@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+New experimental package `termpane`: runs a program on a pseudo-terminal (darwin and linux) and draws its screen in a pane, with keys, bracketed paste, mouse reports, resize, scrollback and a terminal emulator that treats the output as untrusted (`docs/background-work.md`).
 New experimental package `motion/fx`: cell effects (`Fade`, `Dissolve`, `Slide`, `Sweep`) with `Wrap` for any `layout.Node`, `Out`, and `Progress` (eased, 1 at once under reduced motion); `ansi` gains `Color256.RGB` and `BasicColor.RGB`, `cellbuf` gains `Color.RGB` (`docs/animation.md`).
 New experimental package `window`: a desktop of overlapping windows the user moves by the title bar, resizes by the edges, raises with a press and closes with the close box, with the same actions on the keyboard (alt+arrows, alt+shift+arrows, alt+[ and alt+], alt+m, alt+w).
 Text selection across widgets: `WithTextSelection(style)` lets the user select screen text with Alt+drag (double click a word, triple click a row), copies it with OSC 52 and delivers a `SelectionMsg` (`docs/input.md`).

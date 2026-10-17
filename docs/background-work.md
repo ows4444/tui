@@ -77,3 +77,43 @@ function's context.
   `View`; return a Cmd instead.
 - A Cmd that can run long takes the context and returns when it is done.
 - `tui.WithMaxConcurrentCmds` bounds how many Cmds run at once.
+
+## Running a program in a pane
+
+`termpane` runs a command on a pseudo-terminal and draws its screen, so a shell
+or an editor can live inside the application (darwin and linux; experimental).
+It follows the usual pattern: start it in `Init`, pass every `Msg` to `Update`,
+and draw `LayoutNode()`. Tell it the size of its area whenever that changes:
+
+```go
+type model struct{ term termpane.Model }
+
+func initial() model {
+	t := termpane.New("sh", "-l")
+	t.ID = "shell"
+	t.Focus()
+	return model{term: t}
+}
+
+func (m model) Init() tui.Cmd { return m.term.Init() }
+
+func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
+	switch msg := msg.(type) {
+	case tui.ResizeMsg:
+		m.term.SetSize(msg.Width, msg.Height-1) // the room the layout gives it
+	case termpane.ExitedMsg:
+		return m, tui.Quit() // the shell ended
+	}
+	var cmd tui.Cmd
+	m.term, cmd = m.term.Update(msg) // keys, pastes, output and mouse
+	return m, cmd
+}
+```
+
+Keys go to the program while the pane has focus, except Shift+PgUp, Shift+PgDn
+and Shift+End, which scroll back through the lines that left the screen (the
+wheel does too, with `Mouse` and `Bounds` set, unless the program asked for
+mouse reports). Call `Close` when the application is done with the pane; it ends
+the program. The program's output is untrusted: it only changes the pane's
+screen, and nothing it writes reaches the host terminal.
+
