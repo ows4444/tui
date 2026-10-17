@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`KillRing` on `textinput` and `textarea` (off by default): Ctrl+K, Ctrl+U and Ctrl+W save what they delete in a ring of 16, kills in a row join, `KeyMap.Yank` (Ctrl+Y) inserts the newest and `KeyMap.YankPop` (Alt+Y) cycles older ones. With the ring on and something in it, Ctrl+Y yanks instead of redoing (`docs/input.md`).
 `tui.EditInEditor(id, text, ext)` and `EditedMsg`: hand a text to the user's `$VISUAL` or `$EDITOR` through a private temporary file and get the edited text back, with the terminal released and restored as `Suspend` does (`docs/program.md`).
 `chart.Marker` and `chart.NewCanvasMarker`: a `Canvas` can draw with `Sextant`, `Quadrant`, `HalfBlock` or `Block` glyphs instead of braille dots (shades on an ASCII theme), and `PlotOptions.Marker` passes the choice to `Plot`. The zero value is `Braille`, so nothing changes unless it is set.
 `spinner.Presets`, `Lookup` and `Model.WithPreset`: 18 named animations (dots, arc, arrow, bouncingBar and more, from the cli-spinners set) with their interval, and plain `-\|/` frames on an ASCII-only theme.

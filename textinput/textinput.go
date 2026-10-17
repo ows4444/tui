@@ -12,6 +12,7 @@
 package textinput
 
 import (
+	"github.com/ows4444/tui/internal/killring"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -64,6 +65,16 @@ type Model struct {
 	// DisableCopy makes Copy and Cut do nothing, for fields whose value must
 	// not reach the clipboard (passwordinput sets it).
 	DisableCopy bool
+	// KillRing, when true, makes the delete-to-end, delete-to-start and
+	// delete-word keys (Ctrl+K, Ctrl+U, Ctrl+W) save what they remove in a ring
+	// of the last 16 kills, as readline and Emacs do: kills in a row join into
+	// one entry, Yank (Ctrl+Y) inserts the newest and YankPop (Alt+Y) right
+	// after replaces it with an older one. Ctrl+Y was Redo's second key, so with
+	// KillRing on it yanks while the ring has something in it and redoes only
+	// when it is empty; Redo keeps Ctrl+Shift+Z. A selection is deleted as
+	// before and saved nowhere. Off (the default), nothing changes. It does
+	// nothing with DisableCopy set, so a password never reaches the ring.
+	KillRing bool
 
 	// Mouse, when true, makes Update handle tui.MouseEvent: a left click inside
 	// Bounds moves the cursor to the clicked cell and a drag selects. Off (the
@@ -102,6 +113,8 @@ type Model struct {
 	KeyMap KeyMap
 
 	ed            edit.Editor
+	kill          killring.Ring // see KillRing
+	yankLen       int           // clusters the last yank inserted
 	hist          historyState
 	focused       bool
 	cursorVisible bool
@@ -145,6 +158,10 @@ type KeyMap struct {
 	// HistorySearch searches it, and AcceptSuggestion takes the suggestion. A
 	// KeyMap that leaves them empty gets the defaults.
 	HistoryPrev, HistoryNext, HistorySearch, AcceptSuggestion keymap.Binding
+	// Yank inserts the newest kill and YankPop replaces it with an older one
+	// right after; both work only with Model.KillRing. A KeyMap that leaves
+	// them empty gets Ctrl+Y and Alt+Y.
+	Yank, YankPop keymap.Binding
 }
 
 // DefaultKeyMap returns the keys a Model used before KeyMap existed.
@@ -171,6 +188,8 @@ func DefaultKeyMap() KeyMap {
 		HistoryNext:      keymap.NewBinding("next entry", "down"),
 		HistorySearch:    keymap.NewBinding("search history", "ctrl+r"),
 		AcceptSuggestion: keymap.NewBinding("accept suggestion", "right", "end", "ctrl+e"),
+		Yank:             keymap.NewBinding("yank", "ctrl+y"),
+		YankPop:          keymap.NewBinding("yank older", "alt+y"),
 	}
 }
 
@@ -329,6 +348,12 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 func (m *Model) handleKey(k tui.Key) tui.Cmd {
 	km := m.keys()
 	m.ed.SetHistoryLimit(m.UndoLimit)
+	if m.KillRing && !m.DisableCopy && !m.Vi {
+		if m.killKey(k, km) {
+			return nil
+		}
+		m.kill = m.kill.Other()
+	}
 	if m.Vi {
 		if handled, cmd := m.viKey(k); handled {
 			return cmd

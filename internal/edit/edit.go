@@ -302,6 +302,51 @@ func (e *Editor) DeleteToEnd() {
 	}
 }
 
+// KillToStart is DeleteToStart that returns what it removed. With a selection
+// it deletes that instead and returns "".
+func (e *Editor) KillToStart() string {
+	if e.DeleteSelection() {
+		return ""
+	}
+	out := strings.Join(e.cl[:e.cursor], "")
+	e.remove(0, e.cursor)
+	return out
+}
+
+// KillToEnd is DeleteToEnd that returns what it removed. With a selection it
+// deletes that instead and returns "".
+func (e *Editor) KillToEnd() string {
+	if e.DeleteSelection() {
+		return ""
+	}
+	out := strings.Join(e.cl[e.cursor:], "")
+	e.remove(e.cursor, len(e.cl))
+	return out
+}
+
+// KillWordBack is DeleteWordBack that returns what it removed. With a
+// selection it deletes that instead and returns "".
+func (e *Editor) KillWordBack() string {
+	if e.DeleteSelection() {
+		return ""
+	}
+	i := e.wordStart()
+	if i >= e.cursor {
+		return ""
+	}
+	out := strings.Join(e.cl[i:e.cursor], "")
+	e.remove(i, e.cursor)
+	return out
+}
+
+// ReplaceBefore replaces the n clusters before the cursor with s in one undo
+// step, keeping at most limit clusters in total when limit > 0. n is clamped to
+// the cursor.
+func (e *Editor) ReplaceBefore(n int, s string, limit int) {
+	n = min(max(n, 0), e.cursor)
+	e.splice(e.cursor-n, e.cursor, s, limit)
+}
+
 // Width is the total column width of the text.
 func (e *Editor) Width() int {
 	t := 0

@@ -12,6 +12,7 @@
 package textarea
 
 import (
+	"github.com/ows4444/tui/internal/killring"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -132,6 +133,15 @@ type Model struct {
 	// of several runes is several steps. ViMode and SetViMode read and set the
 	// mode, for a status line or to start in Insert.
 	Vi bool
+	// KillRing, when true, makes the delete-to-line-end, delete-to-line-start
+	// and delete-word keys (Ctrl+K, Ctrl+U, Ctrl+W) save what they remove in a
+	// ring of the last 16 kills, as readline and Emacs do: kills in a row join
+	// into one entry, Yank (Ctrl+Y) inserts the newest and YankPop (Alt+Y)
+	// right after replaces it with an older one. Ctrl+Y was Redo's second key,
+	// so with KillRing on it yanks while the ring has something in it and
+	// redoes only when it is empty; Redo keeps Ctrl+Shift+Z. A selection is
+	// deleted as before and saved nowhere. Off (the default), nothing changes.
+	KillRing bool
 
 	value         doc // text and line index; persistent, see doc.go
 	cursor        int
@@ -141,6 +151,8 @@ type Model struct {
 	blinkID       uint64 // id of the one live blink loop; stale ticks are dropped
 
 	vi       vi.State
+	kill     killring.Ring // see KillRing
+	yankLen  int           // runes the last yank inserted
 	hist     edit.History
 	sel      int  // selection anchor as rune offset + 1; 0 = no selection
 	quiet    bool // replace does not record history (a group records itself)
@@ -179,6 +191,10 @@ type KeyMap struct {
 	Copy           keymap.Binding // copy the selection with OSC 52
 	Cut            keymap.Binding // copy the selection with OSC 52 and delete it
 	Paste          keymap.Binding // insert the text of the last Copy or Cut
+	// Yank inserts the newest kill and YankPop replaces it with an older one
+	// right after; both work only with Model.KillRing. A KeyMap that leaves
+	// them empty gets Ctrl+Y and Alt+Y.
+	Yank, YankPop keymap.Binding
 }
 
 // DefaultKeyMap returns the keys a Model used before KeyMap existed.
@@ -203,6 +219,8 @@ func DefaultKeyMap() KeyMap {
 		Copy:           keymap.NewBinding("copy", "ctrl+c"),
 		Cut:            keymap.NewBinding("cut", "ctrl+x"),
 		Paste:          keymap.NewBinding("paste", "ctrl+v"),
+		Yank:           keymap.NewBinding("yank", "ctrl+y"),
+		YankPop:        keymap.NewBinding("yank older", "alt+y"),
 	}
 }
 
@@ -225,12 +243,26 @@ func (m Model) keys() KeyMap {
 	if m.KeyMap.zero() {
 		return DefaultKeyMap()
 	}
-	return m.KeyMap
+	km, d := m.KeyMap, DefaultKeyMap()
+	if len(km.Yank.Keys) == 0 {
+		km.Yank = d.Yank
+	}
+	if len(km.YankPop.Keys) == 0 {
+		km.YankPop = d.YankPop
+	}
+	return km
 }
 
 // Bindings returns the editing actions the Model currently honours, with
 // descriptions, for help text. Typed characters are not listed.
-func (m Model) Bindings() []keymap.Binding { return m.keys().list() }
+func (m Model) Bindings() []keymap.Binding {
+	bs := m.keys().list()
+	if m.KillRing {
+		km := m.keys()
+		bs = append(bs, km.Yank, km.YankPop)
+	}
+	return bs
+}
 
 // keyHit reports whether k triggers b, ignoring Shift and Super so that, as
 // before KeyMap existed, Shift+Left still moves left.
@@ -370,6 +402,12 @@ func (m *Model) handleKey(k tui.Key) tui.Cmd {
 		}
 	}
 	km := m.keys()
+	if m.KillRing && !m.Vi {
+		if m.killKey(k, km) {
+			return nil
+		}
+		m.kill = m.kill.Other()
+	}
 	// Redo is tested before Undo and neither ignores Shift: ctrl+shift+z must
 	// not be taken for ctrl+z.
 	switch {
@@ -678,6 +716,14 @@ func (m *Model) deleteAtCursor() {
 }
 
 func (m *Model) deleteWordBeforeCursor() {
+	i := m.wordStartBeforeCursor()
+	m.replace(i, m.cursor, nil)
+	m.cursor = i
+}
+
+// wordStartBeforeCursor is where the word before the cursor starts, on the
+// cursor's line.
+func (m Model) wordStartBeforeCursor() int {
 	lineStart, _ := m.currentLineBounds()
 	i := m.cursor
 	for i > lineStart && m.value.at(i-1) == ' ' {
@@ -686,8 +732,7 @@ func (m *Model) deleteWordBeforeCursor() {
 	for i > lineStart && m.value.at(i-1) != ' ' {
 		i--
 	}
-	m.replace(i, m.cursor, nil)
-	m.cursor = i
+	return i
 }
 
 // currentLineBounds returns the [start, end) rune-offset bounds of the

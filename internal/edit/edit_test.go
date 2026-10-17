@@ -152,3 +152,51 @@ func TestWindowNeverExceedsCols(t *testing.T) {
 		}
 	}
 }
+
+func TestKillMethodsReturnWhatTheyRemove(t *testing.T) {
+	e := &Editor{}
+	e.Insert("one two three", 0)
+	e.SetCursor(7) // after "one two"
+	if got := e.KillWordBack(); got != "two" || e.String() != "one  three" {
+		t.Errorf("KillWordBack = %q, text %q", got, e.String())
+	}
+	if got := e.KillToEnd(); got != " three" || e.String() != "one " {
+		t.Errorf("KillToEnd = %q, text %q", got, e.String())
+	}
+	if got := e.KillToStart(); got != "one " || e.String() != "" {
+		t.Errorf("KillToStart = %q, text %q", got, e.String())
+	}
+	if e.KillWordBack() != "" || e.KillToEnd() != "" || e.KillToStart() != "" {
+		t.Error("a kill at an empty edge returned text")
+	}
+}
+
+func TestKillWithASelectionDeletesItAndReturnsNothing(t *testing.T) {
+	e := &Editor{}
+	e.Insert("hello", 0)
+	e.SelectAll()
+	if got := e.KillToEnd(); got != "" || e.String() != "" {
+		t.Errorf("KillToEnd over a selection = %q, text %q", got, e.String())
+	}
+}
+
+func TestReplaceBefore(t *testing.T) {
+	e := &Editor{}
+	e.Insert("abcdef", 0)
+	e.ReplaceBefore(3, "XY", 0)
+	if e.String() != "abcXY" || e.Cursor() != 5 {
+		t.Errorf("text %q cursor %d", e.String(), e.Cursor())
+	}
+	e.ReplaceBefore(99, "Z", 0) // clamped to the cursor
+	if e.String() != "Z" {
+		t.Errorf("clamped: %q", e.String())
+	}
+	e.ReplaceBefore(-4, "QQQQQ", 3) // negative is zero; the limit applies
+	if e.String() != "ZQQ" {
+		t.Errorf("limit: %q", e.String())
+	}
+	e.Undo()
+	if e.String() != "Z" {
+		t.Errorf("a ReplaceBefore is not one undo step: %q", e.String())
+	}
+}

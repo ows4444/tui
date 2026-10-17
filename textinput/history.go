@@ -37,6 +37,12 @@ func (km KeyMap) withHistoryDefaults() KeyMap {
 	if len(km.AcceptSuggestion.Keys) == 0 {
 		km.AcceptSuggestion = d.AcceptSuggestion
 	}
+	if len(km.Yank.Keys) == 0 {
+		km.Yank = d.Yank
+	}
+	if len(km.YankPop.Keys) == 0 {
+		km.YankPop = d.YankPop
+	}
 	return km
 }
 
@@ -50,6 +56,9 @@ func (m Model) historyBindings() []keymap.Binding {
 	}
 	if m.suggestionRest() != "" {
 		out = append(out, km.AcceptSuggestion)
+	}
+	if m.KillRing && !m.DisableCopy {
+		out = append(out, km.Yank, km.YankPop)
 	}
 	return out
 }

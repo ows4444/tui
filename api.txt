@@ -4336,6 +4336,8 @@ type KeyMap struct {
 	Copy		keymap.Binding
 	Cut		keymap.Binding
 	Paste		keymap.Binding
+
+	Yank, YankPop	keymap.Binding
 }
 type LineInfo struct {
 	Line	int
@@ -4384,6 +4386,8 @@ type Model struct {
 	AutoIndent	bool
 
 	Vi	bool
+
+	KillRing	bool
 	// contains filtered or unexported fields
 }
 type ViMode int
@@ -4441,6 +4445,8 @@ type KeyMap struct {
 	Paste		keymap.Binding
 
 	HistoryPrev, HistoryNext, HistorySearch, AcceptSuggestion	keymap.Binding
+
+	Yank, YankPop	keymap.Binding
 }
 type Model struct {
 	Placeholder	string
@@ -4459,6 +4465,8 @@ type Model struct {
 	Vi	bool
 
 	DisableCopy	bool
+
+	KillRing	bool
 
 	Mouse	bool
 

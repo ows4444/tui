@@ -264,6 +264,22 @@ status := map[textarea.ViMode]string{textarea.ViNormal: "NORMAL", textarea.ViIns
 	textarea.ViVisual: "VISUAL", textarea.ViVisualLine: "V-LINE"}[ed.ViMode()]
 ```
 
+## Kill ring
+
+`textinput` and `textarea` have an opt-in kill ring, as readline and Emacs do.
+Set `KillRing: true` and Ctrl+K, Ctrl+U and Ctrl+W save what they delete (to
+the end of the line, to the start of it, the word before the cursor) in a ring
+of the last 16 kills. Kills in a row join into one entry, in document order.
+Ctrl+Y (`KeyMap.Yank`) inserts the newest, and Alt+Y (`KeyMap.YankPop`) right
+after replaces it with the next older one, round to the newest again. A yank is
+one undo step. A selection is deleted as before and saved nowhere; a field with
+`DisableCopy` (a password) never fills the ring.
+
+Ctrl+Y was also the second key of Redo, so with the ring on it yanks while the
+ring has something in it and redoes only when it is empty. Redo keeps
+Ctrl+Shift+Z, and `KeyMap.Redo` and `KeyMap.Yank` can be set to whatever you
+like. With `KillRing` off, which is the default, nothing changes.
+
 ## Selecting text anywhere on screen
 
 With the mouse on, the terminal no longer selects text for the user, and a
