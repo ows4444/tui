@@ -50,7 +50,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	}
 
 	start, n := m.window()
-	rows := m.Rows[start : start+n]
+	rows := m.rowsIn(start, start+n)
 	first, last := 0, len(m.Headers)
 	if m.Width > 0 {
 		first = clamp(m.colOffset, 0, len(m.Headers)-1)
@@ -58,7 +58,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 	}
 
 	var nat []int
-	if n == len(m.Rows) {
+	if n == m.rowCount() {
 		if w, clean := m.measureClean(); clean {
 			nat = w
 		}

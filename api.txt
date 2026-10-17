@@ -1503,6 +1503,7 @@ func (m *Model) SetCell(row, col int, text string) bool
 func (m *Model) SetCursor(i int)
 func (m *Model) SetQuery(q string)
 func (m *Model) SetRows(rows [][]string)
+func (m *Model) SetSource(src Source)
 func (m *Model) SortBy(col int, desc bool)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
@@ -1522,6 +1523,7 @@ func (m Model) WithLayout(root layout.Node, s layout.Size) Model
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func New(headers []string, rows [][]string) Model
+func NewSource(headers []string, src Source) Model
 type KeyMap struct {
 	Up, Down		keymap.Binding
 	PageUp, PageDown	keymap.Binding
@@ -1564,6 +1566,8 @@ type Model struct {
 
 	Filter	bool
 
+	Source	Source
+
 	ColumnWidths	[]int
 	// contains filtered or unexported fields
 }
@@ -1574,6 +1578,10 @@ type SelectedMsg struct {
 	SourceRow	int
 
 	Col	int
+}
+type Source interface {
+	Rows() int
+	Row(i int) []string
 }
 
 ## github.com/ows4444/tui/datepicker (package datepicker)

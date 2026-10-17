@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `datatable.Source` and `datatable.NewSource`: a table over rows read on demand
+  (`Rows() int`, `Row(i) []string`), so a database cursor or a million-row log
+  loads only the rows in view. Sort, filter and editing are off for it;
+  `SetSource` swaps the source and `SetRows` goes back to in-memory rows.
 - Key bindings from a file: `keymap.Parse` reads `{"action": ["key", ...]}` JSON
   (every key name is checked, with `keymap.ValidKey`), and `keymap.Apply` swaps
   those keys into a list of bindings by their description, returning the names

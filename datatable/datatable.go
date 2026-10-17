@@ -11,6 +11,9 @@
 // no sort or filter is active. CellMode makes the cursor one cell, CellStyle
 // styles cells by their place and value, and FrozenCols keeps leading columns
 // in view while the others scroll.
+//
+// NewSource builds a table over a Source, rows read on demand, for data too big
+// to load first; sort, filter and editing are off for it.
 package datatable
 
 import (
@@ -93,6 +96,10 @@ type Model struct {
 	// the table is as before.
 	Filter bool
 
+	// Source, when set (see NewSource), supplies the rows on demand and Rows is
+	// nil; only the rows in view are read. Sort, Filter and editing are off.
+	Source Source
+
 	// ColumnWidths fixes column widths for LayoutNode: entry i, when positive,
 	// is the width of column i; zero, a negative entry or a missing entry
 	// leaves that column at its natural (content) width. Fixed widths do not
@@ -151,10 +158,13 @@ const defaultPage = 10
 // kept inside the window.
 func (m Model) window() (start, n int) {
 	h := m.height()
-	if h <= 0 || h >= len(m.Rows) {
-		return 0, len(m.Rows)
+	if h <= 0 && m.Source != nil {
+		h = defaultSourceRows
 	}
-	start = clamp(m.offset, 0, len(m.Rows)-h)
+	if h <= 0 || h >= m.rowCount() {
+		return 0, m.rowCount()
+	}
+	start = clamp(m.offset, 0, m.rowCount()-h)
 	if m.cursor < start {
 		start = m.cursor
 	} else if m.cursor >= start+h {
@@ -178,6 +188,7 @@ func New(headers []string, rows [][]string) Model {
 // way, and the cursor keeps its index.
 func (m *Model) SetRows(rows [][]string) {
 	m.widths = &widthCache{}
+	m.Source = nil
 	if m.src != nil || m.sorted || m.query != "" {
 		keep := m.cursor
 		m.src = rows
@@ -273,7 +284,7 @@ func (m Model) fitCols(first int) int {
 	total, k := cursorGutter, 0
 	for c := first; c < n; c++ {
 		w := ansi.Width(m.Headers[c])
-		for _, row := range m.Rows[start : start+cnt] {
+		for _, row := range m.rowsIn(start, start+cnt) {
 			if c < len(row) {
 				w = max(w, ansi.Width(row[c]))
 			}
@@ -331,13 +342,13 @@ func (m Model) mouse(ev tui.MouseEvent) Model {
 	start, n := m.window()
 	switch ev.Button {
 	case tui.MouseButtonWheelUp, tui.MouseButtonWheelDown:
-		if n >= len(m.Rows) {
+		if n >= m.rowCount() {
 			return m
 		}
 		if ev.Button == tui.MouseButtonWheelUp {
 			step = -step
 		}
-		start = clamp(start+step, 0, len(m.Rows)-n)
+		start = clamp(start+step, 0, m.rowCount()-n)
 		m.offset = start
 		m.cursor = clamp(m.cursor, start, start+n-1)
 	case tui.MouseButtonLeft:
@@ -356,11 +367,11 @@ func (m Model) Cursor() int { return m.cursor }
 // SetCursor moves the cursor to row i, clamped to a valid index (or 0
 // with no rows).
 func (m *Model) SetCursor(i int) {
-	if len(m.Rows) == 0 {
+	if m.rowCount() == 0 {
 		m.cursor = 0
 		return
 	}
-	m.cursor = clamp(i, 0, len(m.Rows)-1)
+	m.cursor = clamp(i, 0, m.rowCount()-1)
 	m.reveal()
 }
 
@@ -389,7 +400,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		return m, nil
 	}
 	if ev, ok := msg.(tui.MouseEvent); ok {
-		if len(m.Rows) == 0 {
+		if m.rowCount() == 0 {
 			return m, nil
 		}
 		return m.mouse(ev), nil
@@ -398,7 +409,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		return m, nil
 	}
 	k := m.keys()
-	if m.Filter {
+	if m.Filter && m.Source == nil {
 		// The filter line works with no rows too, so a query that matches
 		// nothing can still be edited away.
 		if m.editing {
@@ -414,7 +425,7 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 			return m, nil
 		}
 	}
-	if len(m.Rows) == 0 {
+	if m.rowCount() == 0 {
 		return m, nil
 	}
 	page := m.height()
@@ -427,19 +438,19 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 			m.cursor--
 		}
 	case keymap.Matches(msg, k.Down):
-		if m.cursor < len(m.Rows)-1 {
+		if m.cursor < m.rowCount()-1 {
 			m.cursor++
 		}
 	case keymap.Matches(msg, k.PageUp):
-		m.cursor = clamp(m.cursor-page, 0, len(m.Rows)-1)
+		m.cursor = clamp(m.cursor-page, 0, m.rowCount()-1)
 	case keymap.Matches(msg, k.PageDown):
-		m.cursor = clamp(m.cursor+page, 0, len(m.Rows)-1)
+		m.cursor = clamp(m.cursor+page, 0, m.rowCount()-1)
 	case keymap.Matches(msg, k.Top):
 		m.cursor = 0
 	case keymap.Matches(msg, k.Bottom):
-		m.cursor = len(m.Rows) - 1
+		m.cursor = m.rowCount() - 1
 	case keymap.Matches(msg, k.Select):
-		row, cells := m.cursor, m.Rows[m.cursor]
+		row, cells := m.cursor, m.rowAt(m.cursor)
 		src := m.SourceRow(row)
 		col := m.col
 		return m, func() tui.Msg { return SelectedMsg{Row: row, SourceRow: src, Cells: cells, Col: col} }
@@ -470,7 +481,7 @@ func (m Model) View() string {
 	// Rows whose cells need no cleaning (the common case) are used as they are;
 	// the row list and a row are copied only when something in them changes,
 	// so a frame costs no per-row allocation.
-	rows := m.Rows[start : start+n]
+	rows := m.rowsIn(start, start+n)
 	owned := false
 	own := func() {
 		if !owned {
@@ -577,11 +588,18 @@ var _ tui.Component[Model] = Model{}
 // with its cell, e.g. "Row 2 of 10: Name: x, Status: y", with ", selected"
 // appended on the cursor row. No padding, dividers or styling.
 func (m Model) Linearize() string {
-	if len(m.Rows) == 0 {
+	if m.rowCount() == 0 {
 		return "No rows"
 	}
-	lines := make([]string, len(m.Rows))
-	for i, row := range m.Rows {
+	from, n := 0, m.rowCount()
+	if m.Source != nil {
+		// Not every row of a lazy table: the window the cursor is in.
+		from, n = m.window()
+	}
+	lines := make([]string, n)
+	for k := range lines {
+		i := from + k
+		row := m.rowAt(i)
 		cells := make([]string, len(row))
 		for j, cell := range row {
 			header := "Column " + strconv.Itoa(j+1)
@@ -590,11 +608,11 @@ func (m Model) Linearize() string {
 			}
 			cells[j] = header + ": " + ansi.Clean(m.Raw, cell)
 		}
-		line := "Row " + strconv.Itoa(i+1) + " of " + strconv.Itoa(len(m.Rows)) + ": " + strings.Join(cells, ", ")
+		line := "Row " + strconv.Itoa(i+1) + " of " + strconv.Itoa(m.rowCount()) + ": " + strings.Join(cells, ", ")
 		if i == m.cursor {
 			line += ", selected"
 		}
-		lines[i] = line
+		lines[k] = line
 	}
 	return strings.Join(lines, "\n")
 }
