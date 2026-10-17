@@ -1,0 +1,24 @@
+mdstudio untitled.md                              [H][B][I][`][Link][List][Save]
+ 1 # Release notes                     │Release notes                           
+ 2                                     │                                        
+ 3 Welcome to **mdstudio**. Edit on the│Welcome to mdstudio. Edit on the left   
+    left and the preview on the right f│and the preview on the right follows    
+   ollows                              │you. Press ctrl+b to make the selection 
+ 4 you. Press `ctrl+b` to make the sele│bold.                                   
+   ction **bold**.                     │                                        
+ 5                                     │What changed                            
+ 6 ## What changed                     │                                        
+ 7                                     │• A new pager example reads files like  
+ 8 - A new `pager` example reads files │  less                                  
+   like less                           │• The table is much faster              
+ 9 - The table is *much* faster        │• Mouse support everywhere              
+10 - Mouse support everywhere          │                                        
+11                                     │Numbers                                 
+12 ### Numbers                         │                                        
+13                                     │Area    │ Before │ After                
+14 | Area      | Before | After |      │────────────────────────                
+15 |-----------|--------|-------|      │Frame   │ 120 µs │ 64 µs                
+16 | Frame     | 120 µs | 64 µs |      │Startup │ 11 ms  │ 4 ms                 
+17 | Startup   | 11 ms  | 4 ms  |      │                                        
+ editor  Ln 1, Col 1  130 words  5 headings                                     
+[ctrl+w] pane  [ctrl+s] save  [ctrl+b] bold  [f1] help  [ctrl+q] quit           

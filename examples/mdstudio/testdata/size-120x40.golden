@@ -1,0 +1,40 @@
+mdstudio untitled.md                                                                      [H][B][I][`][Link][List][Save]
+•Release notes        │ 1 # Release notes                              │Release notes                                   
+   What changed       │ 2                                              │                                                
+     Numbers          │ 3 Welcome to **mdstudio**. Edit on the left and│Welcome to mdstudio. Edit on the left and the   
+   Try it             │    the preview on the right follows            │preview on the right follows you. Press ctrl+b  
+   Links              │ 4 you. Press `ctrl+b` to make the selection **b│to make the selection bold.                     
+                      │   old**.                                       │                                                
+                      │ 5                                              │What changed                                    
+                      │ 6 ## What changed                              │                                                
+                      │ 7                                              │• A new pager example reads files like less     
+                      │ 8 - A new `pager` example reads files like less│• The table is much faster                      
+                      │ 9 - The table is *much* faster                 │• Mouse support everywhere                      
+                      │10 - Mouse support everywhere                   │                                                
+                      │11                                              │Numbers                                         
+                      │12 ### Numbers                                  │                                                
+                      │13                                              │Area    │ Before │ After                        
+                      │14 | Area      | Before | After |               │────────────────────────                        
+                      │15 |-----------|--------|-------|               │Frame   │ 120 µs │ 64 µs                        
+                      │16 | Frame     | 120 µs | 64 µs |               │Startup │ 11 ms  │ 4 ms                         
+                      │17 | Startup   | 11 ms  | 4 ms  |               │                                                
+                      │18                                              │Try it                                          
+                      │19 ## Try it                                    │                                                
+                      │20                                              │1. Move the cursor into another section         
+                      │21 1. Move the cursor into another section      │2. Click a heading in the outline               
+                      │22 2. Click a heading in the outline            │3. Save with ctrl+s                             
+                      │23 3. Save with `ctrl+s`                        │                                                
+                      │24                                              ││ Tip: the outline lists every heading, and the 
+                      │25 > Tip: the outline lists every heading, and t││ preview scrolls to the one you are in.        
+                      │   he preview scrolls to the one you are in.    │                                                
+                      │26                                              │┌──────────────────────────────────────────────┐
+                      │27 ```go                                        ││ func main() {                                │
+                      │28 func main() {                                ││     fmt.Println("hello")                     │
+                      │29 	fmt.Println("hello")                         ││ }                                            │
+                      │30 }                                            │└──────────────────────────────────────────────┘
+                      │31 ```                                          │                                                
+                      │32                                              │Links                                           
+                      │33 ## Links                                     │                                                
+                      │34                                              │                                                
+ editor  Ln 1, Col 1  130 words  5 headings                                                                             
+[ctrl+w] pane  [ctrl+s] save  [ctrl+b] bold  [f1] help  [ctrl+q] quit                                                   
