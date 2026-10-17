@@ -553,9 +553,13 @@ const (
 )
 const QueryBackgroundColor = "\x1b]11;?\x1b\\"
 const QueryPalette = "\x1b]4;0;?;1;?;2;?;3;?;4;?;5;?;6;?;7;?;8;?;9;?;10;?;11;?;12;?;13;?;14;?;15;?\x1b\\"
+func (c RGB) Complement() RGB
 func (c RGB) Darken(t float64) RGB
+func (c RGB) HSL() (h, s, l float64)
 func (c RGB) Lighten(t float64) RGB
+func (c RGB) Luminance() float64
 func (c RGB) Mix(other RGB, t float64) RGB
+func (c RGB) Readable() RGB
 func (m Measurer) Clusters() bool
 func (m Measurer) TrimLeftWidth(s string, w int) string
 func (m Measurer) Truncate(s string, w int) string
@@ -602,6 +606,7 @@ func DetectColorProfileFor(out io.Writer, getenv func(string) string) Profile
 func Downgrade(c Color, p Profile) Color
 func DowngradeString(s string, p Profile) string
 func ExpandTabs(s string) string
+func FromHSL(h, s, l float64) RGB
 func Hyperlink(text, url string) string
 func KittyKeyboardEnableFlags(flags int) string
 func NewStyle() Style

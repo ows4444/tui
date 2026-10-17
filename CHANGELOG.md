@@ -12,6 +12,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `ansi.RGB` colour math: `HSL` and `FromHSL`, `Complement`, `Luminance` (WCAG relative
+  luminance) and `Readable` (black or white, whichever reads better on the colour).
 - Three more form fields: `form.FieldConfirm` (a Yes/No choice answered with Y and
   N; `Bool` reads it), `form.FieldNote` (a read-only line between fields, no
   focus, no value) and `form.FieldFile` (a path with a file list that
