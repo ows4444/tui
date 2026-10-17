@@ -34,3 +34,8 @@ func TestAnchorAndAspectDrawLikeTheyRender(t *testing.T) {
 	sameScreen(t, "anchors", stack, Loose(Size{W: 30, H: 8}))
 	sameScreen(t, "aspect", Aspect(2, 1, BoxNode(NewBox().Border(RoundedBorder()), Block("sq"))), Loose(Size{W: 20, H: 6}))
 }
+
+func TestWrapDrawsLikeItRenders(t *testing.T) {
+	w := Wrap(1, 1, BoxNode(NewBox().Border(NormalBorder()), Block("one")), Block("two\nlines"), Block("three"), BoxNode(NewBox().Border(RoundedBorder()), Block("4")))
+	sameScreen(t, "wrap", w, Loose(Size{W: 16, H: 12}))
+}

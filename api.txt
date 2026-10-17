@@ -2724,6 +2724,7 @@ func WithJustify() TextOpt
 func WithOverflow(o Overflow, glyph string) TextOpt
 func WithStyle(st ansi.Style) TextOpt
 func WithWrap() TextOpt
+func Wrap(colGap, rowGap int, children ...Node) Node
 type Align int
 type Border = basetypes.Border
 type Box struct {

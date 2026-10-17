@@ -12,6 +12,9 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `layout.Wrap(colGap, rowGap, children...)`: children flow left to right at their natural
+  width and start a new row when the next does not fit: chips, tags and toolbars
+  that should wrap, which `Row` cannot.
 - `virtuallist.Model.HeightOf`: items of different heights in a virtual list. `Height` then
   counts rows, every item is drawn exactly its rows (padded or cut), the last may be cut
   off by the window, scrolling and the cursor keep an item whole, and `HeightOf` is
