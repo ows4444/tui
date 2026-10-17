@@ -642,14 +642,17 @@ func DetectColorProfileEnv(getenv func(string) string) Profile
 func DetectColorProfileFor(out io.Writer, getenv func(string) string) Profile
 func Downgrade(c Color, p Profile) Color
 func DowngradeString(s string, p Profile) string
+func EscapeMarkup(s string) string
 func ExpandTabs(s string) string
 func FromHSL(h, s, l float64) RGB
 func Hyperlink(text, url string) string
 func Justify(line string, width int) string
 func KittyKeyboardEnableFlags(flags int) string
+func Markup(s string) Text
 func NewStyle() Style
 func NewText(text string, style Style) Text
 func OSC52Copy(text string) string
+func ParseMarkup(s string) (Text, error)
 func Passthrough(seq string, getenv func(string) string) string
 func PlainASCIIWidth(s string) (int, bool)
 func SafeLinkTarget(url string) bool

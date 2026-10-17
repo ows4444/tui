@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`ansi.Markup`, `ParseMarkup` and `EscapeMarkup`: styled `Text` from a string with inline tags (`[bold red]error[/] in [link=https://example.com]the docs[/]`), with `\[` to write a bracket and `EscapeMarkup` for text that is not yours. Text is cleaned as `NewText` cleans it, so markup cannot carry terminal codes.
 New experimental package `tuislog`: a `log/slog` Handler that writes one styled line per record (time, level in its theme colour, message, key=value attributes), sanitised so a record cannot carry escape sequences. `ToProgram` commits each line above the live region like `tui.Println`; `New` hands it to any function.
 `form.Model` implements `tui.CellDrawer` (`DrawCells`): the text and secret fields draw straight into the cell grid and descriptions and errors are written as styled text; 8 fields cost 12.6 µs and 16 allocations a frame instead of 40 µs and 298 through `View`. The other kinds of field and the group header still draw from their `View` string.
 New example `examples/themefollow`: a fixed theme (`theme.Pair`) that follows the terminal between light and dark through `WithTheme` and `WithColorSchemeReports` (`docs/theming.md`).
