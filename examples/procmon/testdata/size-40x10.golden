@@ -1,0 +1,10 @@
+ Processes   24 running                 
+CPU  █████░░░░░  54.6%                  
+MEM  ██████░░░░  57.3%                  
+   PID NAME          CPU%▼   MEM% STATE 
+   931 compile        77.9    3.1 R     
+   688 node           28.2    3.6 R     
+   142 WindowServer   23.5    2.7 R     
+   612 docker         18.2    5.5 S     
+[ Kill ] [ Pause ] [ Filter / ]         
+[click header] sort  [k] kill  …        

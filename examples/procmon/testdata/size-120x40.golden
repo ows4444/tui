@@ -1,0 +1,40 @@
+ Processes   24 running                                                                                                 
+CPU  ███████████░░░░░░░░░  54.6%  ▅▆▇██▆▅▆▅▄▄▃▃▂▂▁▂▂▂▁▂▃▃▄▃▃▃▄▄▃▄▅▅▆▇▇▇▇▇█                                              
+MEM  ███████████░░░░░░░░░  57.3%  ▇▇▇▇▇██▇▇▇██▇█▇▆▇▇▇▇▆▅▆▆▅▆▅▅▅▅▅▄▄▄▃▃▄▄▃▁                                              
+   PID NAME                                                                               USER       CPU%▼   MEM% STATE 
+   931 compile                                                                            mdawais     77.9    3.1 R     
+   688 node                                                                               mdawais     28.2    3.6 R     
+   142 WindowServer                                                                       _window     23.5    2.7 R     
+   612 docker                                                                             mdawais     18.2    5.5 S     
+   702 Code Helper                                                                        mdawais     14.6    6.8 R     
+   790 Slack                                                                              mdawais     10.1    4.5 S     
+    88 kernel_task                                                                        root         8.9    4.0 R     
+   703 Code Helper (GPU)                                                                  mdawais      7.7    2.2 S     
+   930 go                                                                                 mdawais      7.4    1.8 R     
+   745 Safari                                                                             mdawais      5.8    9.1 R     
+   420 postgres                                                                           postgres     4.9    4.8 S     
+  1410 Music                                                                              mdawais      2.9    3.0 S     
+   421 postgres: writer                                                                   postgres     1.4    0.7 I     
+   507 redis-server                                                                       redis        1.4    0.6 S     
+   311 sshd                                                                               root         1.2    0.6 S     
+  1201 cupsd                                                                              root         1.2    0.3 I     
+  1522 ssh-agent                                                                          mdawais      1.0    0.1 S     
+  1044 Spotlight                                                                          mdawais      0.9    0.6 I     
+   811 Terminal                                                                           mdawais      0.5    1.5 S     
+  1630 htop                                                                               mdawais      0.3    0.2 R     
+  1305 bluetoothd                                                                         root         0.3    0.2 S     
+   812 zsh                                                                                mdawais      0.3    0.6 S     
+  1002 mds_stores                                                                         root         0.0    0.8 I     
+     1 launchd                                                                            root         0.0    0.1 S     
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+[ Kill ] [ Pause ] [ Filter / ]                                                                                         
+[click header] sort  [k] kill  [space] pause  [q] quit                                                                  
