@@ -22,7 +22,7 @@ func TestProgressStatsRateAndETA(t *testing.T) {
 	if !ok || eta != 40*time.Second {
 		t.Fatalf("ETA = %v, %v; want 40s, true", eta, ok)
 	}
-	if got, want := s.Text("files"), "20% · 0:10 elapsed · 2.0 files/s · ETA 0:40"; got != want {
+	if got, want := s.Text("files"), "20%, 0:10 elapsed, 2.0 files/s, ETA 0:40"; got != want {
 		t.Fatalf("Text = %q; want %q", got, want)
 	}
 }
@@ -48,7 +48,7 @@ func TestProgressStatsUnknown(t *testing.T) {
 	if _, ok := s.ETA(); ok {
 		t.Fatal("ETA told with no total")
 	}
-	if got, want := s.Text(""), "0:03 elapsed · 1.7/s"; got != want {
+	if got, want := s.Text(""), "0:03 elapsed, 1.7/s"; got != want {
 		t.Fatalf("Text = %q; want %q", got, want)
 	}
 }
@@ -56,7 +56,7 @@ func TestProgressStatsUnknown(t *testing.T) {
 func TestProgressStatsNoRateYet(t *testing.T) {
 	s := NewProgressStats(t0)
 	s.Update(t0.Add(2*time.Second), 0, 10)
-	if got, want := s.Text(""), "0% · 0:02 elapsed · ETA --:--"; got != want {
+	if got, want := s.Text(""), "0%, 0:02 elapsed, ETA --:--"; got != want {
 		t.Fatalf("Text = %q; want %q", got, want)
 	}
 }
@@ -70,7 +70,7 @@ func TestProgressStatsDoneAndClamp(t *testing.T) {
 	if eta, ok := s.ETA(); !ok || eta != 0 {
 		t.Fatalf("ETA = %v, %v; want 0, true", eta, ok)
 	}
-	if !strings.HasPrefix(s.Text(""), "100% · 1:02:03 elapsed") {
+	if !strings.HasPrefix(s.Text(""), "100%, 1:02:03 elapsed") {
 		t.Fatalf("Text = %q", s.Text(""))
 	}
 }
@@ -93,7 +93,7 @@ func TestProgressBarStats(t *testing.T) {
 	if len(lines) != 2 || ansi.Width(lines[0]) != 8 {
 		t.Fatalf("got %q; want an 8 column bar and a line", out)
 	}
-	if !strings.Contains(ansi.StripANSI(lines[1]), "25% · 0:01 elapsed · 1.0/s · ETA 0:03") {
+	if !strings.Contains(ansi.StripANSI(lines[1]), "25%, 0:01 elapsed, 1.0/s, ETA 0:03") {
 		t.Fatalf("stats line %q", lines[1])
 	}
 	if ProgressBarStats(s, 0, "", theme.DarkTheme()) != "" {

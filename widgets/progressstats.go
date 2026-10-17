@@ -116,25 +116,25 @@ func (s *ProgressStats) ETA() (time.Duration, bool) {
 }
 
 // Text is a short line for under a bar, such as
-// "42% · 0:12 elapsed · 3.2/s · ETA 0:41". The percentage is left out while
+// "42%, 0:12 elapsed, 3.2/s, ETA 0:41". The percentage is left out while
 // the total is unknown, and the ETA reads "ETA --:--" while it cannot be told.
 // unit is appended to the rate ("3.2 files/s"); it may be empty.
 func (s *ProgressStats) Text(unit string) string {
 	out := ""
 	if s.total > 0 {
-		out = fmt.Sprintf("%d%% · ", int(s.Fraction()*100))
+		out = fmt.Sprintf("%d%%, ", int(s.Fraction()*100))
 	}
 	out += formatClock(s.Elapsed()) + " elapsed"
 	if r := s.Rate(); r > 0 {
 		if unit != "" {
 			unit = " " + unit
 		}
-		out += fmt.Sprintf(" · %s%s/s", formatRate(r), unit)
+		out += fmt.Sprintf(", %s%s/s", formatRate(r), unit)
 	}
 	if eta, ok := s.ETA(); ok {
-		out += " · ETA " + formatClock(eta)
+		out += ", ETA " + formatClock(eta)
 	} else if s.total > 0 {
-		out += " · ETA --:--"
+		out += ", ETA --:--"
 	}
 	return out
 }
