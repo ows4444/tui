@@ -1,0 +1,10 @@
+jsonx  sample.json                      
+$                         [Path] [Value]
+▾ $:                                    
+    status: "ok"                        
+    generated: "2026-10-18T09:30:00Z"   
+  ▸ shop: {4 keys}                      
+  ▸ orders: [2 items]                   
+  ▸ totals: {3 keys}                    
+47 values · 6 rows shown                
+[/] search  [n] next  [p] path  …       
