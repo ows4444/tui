@@ -27,22 +27,61 @@ func (e *Editor) HistoryLen() int { return e.hist.Len() }
 // Undo reverts the newest edit, restoring the text and the cursor as they were
 // before it, and reports whether there was one. Set and Reset forget history.
 func (e *Editor) Undo() bool {
-	s, ok := e.hist.PopUndo()
-	if !ok {
-		return false
+	did := false
+	for first := true; ; first = false {
+		s, ok := e.hist.PopUndo()
+		if !ok {
+			return did
+		}
+		did = true
+		inv := e.applyStep(s)
+		inv.Join = !first
+		e.hist.PushRedo(inv)
+		if !s.Join {
+			return true
+		}
 	}
-	e.hist.PushRedo(e.applyStep(s))
-	return true
 }
 
 // Redo re-applies the edit Undo reverted, and reports whether there was one.
 func (e *Editor) Redo() bool {
-	s, ok := e.hist.PopRedo()
-	if !ok {
-		return false
+	did := false
+	for first := true; ; first = false {
+		s, ok := e.hist.PopRedo()
+		if !ok {
+			return did
+		}
+		did = true
+		inv := e.applyStep(s)
+		inv.Join = !first
+		e.hist.PushUndo(inv, e.histMax)
+		if !s.Join {
+			return true
+		}
 	}
-	e.hist.PushUndo(e.applyStep(s), e.histMax)
-	return true
+}
+
+// BeginGroup makes the edits until EndGroup one undo step for Undo and Redo.
+func (e *Editor) BeginGroup() { e.hist.BeginGroup() }
+
+// EndGroup ends the group begun by BeginGroup.
+func (e *Editor) EndGroup() { e.hist.EndGroup() }
+
+// Replace swaps clusters [a, b) for s as one edit, keeping at most limit
+// clusters in total when limit > 0, and leaves the cursor after s.
+func (e *Editor) Replace(a, b int, s string, limit int) {
+	a, b = min(max(a, 0), len(e.cl)), min(max(b, 0), len(e.cl))
+	e.splice(a, max(a, b), s, limit)
+}
+
+// SelectFrom starts a selection at cluster pos (it runs to the cursor), or with
+// on false clears it.
+func (e *Editor) SelectFrom(pos int, on bool) {
+	if on {
+		e.anchor = min(max(pos, 0), len(e.cl)) + 1
+	} else {
+		e.anchor = 0
+	}
 }
 
 // applyStep applies s and returns the step that reverses it.

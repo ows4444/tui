@@ -22,6 +22,7 @@ import (
 	"github.com/ows4444/tui/input"
 	"github.com/ows4444/tui/internal/a11y"
 	"github.com/ows4444/tui/internal/edit"
+	"github.com/ows4444/tui/internal/vi"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/theme"
@@ -51,6 +52,15 @@ type Model struct {
 	// one step. SetValue and Reset forget the history.
 	UndoLimit int
 
+	// Vi, when true, makes the field modal like vi: it starts in Normal mode
+	// (keys are commands: h l w b e 0 ^ $ f t, d c y with motions and text
+	// objects, x p P r ~ u . and counts), i a I A enter Insert mode, where
+	// typing, History and suggestions work as usual until Esc, and v selects.
+	// Up, Down and Enter are left to the field in every mode, and Ctrl+R redoes
+	// in Normal mode (it searches History in Insert mode). y copies with OSC 52
+	// as Copy does unless DisableCopy is set. ViMode and SetViMode read and set
+	// the mode, for a status line or to start in Insert.
+	Vi bool
 	// DisableCopy makes Copy and Cut do nothing, for fields whose value must
 	// not reach the clipboard (passwordinput sets it).
 	DisableCopy bool
@@ -96,7 +106,8 @@ type Model struct {
 	focused       bool
 	cursorVisible bool
 	blinkID       uint64 // id of the one live blink loop; stale ticks are dropped
-	dragging      bool   // a left-button drag that began inside Bounds is under way
+	vi            vi.State
+	dragging      bool // a left-button drag that began inside Bounds is under way
 }
 
 // New returns a Model with sane default styling: a faint placeholder and a
@@ -299,6 +310,9 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.cursorVisible = true
 		return m, cmd
 	case tui.PasteEvent:
+		if m.Vi && m.vi.Mode() != vi.Insert {
+			return m, nil // a command mode takes keys, not text
+		}
 		// This is a single-line field, so newlines in a multi-line paste
 		// are dropped rather than inserted literally.
 		// Untrusted: tabs become one space, then escape sequences and
@@ -315,6 +329,11 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 func (m *Model) handleKey(k tui.Key) tui.Cmd {
 	km := m.keys()
 	m.ed.SetHistoryLimit(m.UndoLimit)
+	if m.Vi {
+		if handled, cmd := m.viKey(k); handled {
+			return cmd
+		}
+	}
 	// Redo is tested before Undo and neither ignores Shift: ctrl+shift+z must
 	// not be taken for ctrl+z.
 	switch {

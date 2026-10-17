@@ -4087,6 +4087,12 @@ type State struct {
 
 ## github.com/ows4444/tui/textarea (package textarea)
 
+const (
+	ViNormal	ViMode	= iota
+	ViInsert
+	ViVisual
+	ViVisualLine
+)
 func (m *Model) Blur()
 func (m *Model) Find(q string) int
 func (m *Model) FindNext(q string) bool
@@ -4099,6 +4105,7 @@ func (m *Model) SelectAll()
 func (m *Model) SetCursor(pos int)
 func (m *Model) SetCursorPosition(line, col int)
 func (m *Model) SetValue(s string)
+func (m *Model) SetViMode(mode ViMode)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Column() int
 func (m Model) Cursor() int
@@ -4116,6 +4123,8 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) Value() string
+func (m Model) ViMode() ViMode
+func (m Model) ViPending() string
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
@@ -4186,11 +4195,19 @@ type Model struct {
 	Highlighter	func(line string) ansi.Text
 
 	AutoIndent	bool
+
+	Vi	bool
 	// contains filtered or unexported fields
 }
+type ViMode int
 
 ## github.com/ows4444/tui/textinput (package textinput)
 
+const (
+	ViNormal	ViMode	= iota
+	ViInsert
+	ViVisual
+)
 func (m *Model) Blur()
 func (m *Model) CursorEnd()
 func (m *Model) CursorStart()
@@ -4198,6 +4215,7 @@ func (m *Model) Focus() tui.Cmd
 func (m *Model) Reset()
 func (m *Model) SetCursor(pos int)
 func (m *Model) SetValue(s string)
+func (m *Model) SetViMode(mode ViMode)
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) CursorCell() (x, y int, ok bool)
@@ -4209,6 +4227,8 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Tokens() theme.Tokens
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) Value() string
+func (m Model) ViMode() ViMode
+func (m Model) ViPending() string
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
@@ -4249,6 +4269,8 @@ type Model struct {
 
 	UndoLimit	int
 
+	Vi	bool
+
 	DisableCopy	bool
 
 	Mouse	bool
@@ -4266,6 +4288,7 @@ type Model struct {
 	KeyMap	KeyMap
 	// contains filtered or unexported fields
 }
+type ViMode int
 
 ## github.com/ows4444/tui/theme (package theme)
 

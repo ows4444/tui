@@ -23,6 +23,7 @@ import (
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/input"
 	"github.com/ows4444/tui/internal/edit"
+	"github.com/ows4444/tui/internal/vi"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/theme"
@@ -122,6 +123,16 @@ type Model struct {
 	// a new line starts at column 0.
 	AutoIndent bool
 
+	// Vi, when true, makes the Model modal like vi: it starts in Normal mode,
+	// where keys are commands (h j k l w b e 0 ^ $ gg G f t, d c y with motions
+	// and text objects, x p P J r ~ u . and counts); i a I A o O enter Insert
+	// mode, where typing and the KeyMap work as usual until Esc; v and V select.
+	// Ctrl+R redoes. Keys with Ctrl or Alt keep their KeyMap meaning in every
+	// mode. y copies with OSC 52 as Copy does. It works on runes, so a cluster
+	// of several runes is several steps. ViMode and SetViMode read and set the
+	// mode, for a status line or to start in Insert.
+	Vi bool
+
 	value         doc // text and line index; persistent, see doc.go
 	cursor        int
 	focused       bool
@@ -129,6 +140,7 @@ type Model struct {
 	top           int    // first visible line when Height > 0; see scrollToCursor
 	blinkID       uint64 // id of the one live blink loop; stale ticks are dropped
 
+	vi       vi.State
 	hist     edit.History
 	sel      int  // selection anchor as rune offset + 1; 0 = no selection
 	quiet    bool // replace does not record history (a group records itself)
@@ -334,6 +346,9 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		m.cursorVisible = true
 		return m, cmd
 	case tui.PasteEvent:
+		if m.Vi && m.vi.Mode() != vi.Insert {
+			return m, nil // a command mode takes keys, not text
+		}
 		// Unlike textinput, a textarea keeps embedded newlines from a
 		// multi-line paste.
 		// Untrusted: expand tabs, strip escape sequences and controls
@@ -349,6 +364,11 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 // handleKey applies k and returns the Cmd a Copy, Cut or Paste needs the
 // Program to run, if any.
 func (m *Model) handleKey(k tui.Key) tui.Cmd {
+	if m.Vi {
+		if handled, cmd := m.viKey(k); handled {
+			return cmd
+		}
+	}
 	km := m.keys()
 	// Redo is tested before Undo and neither ignores Shift: ctrl+shift+z must
 	// not be taken for ctrl+z.
@@ -566,15 +586,35 @@ func (m *Model) copy() (bool, tui.Cmd) {
 	return true, tui.WriteClipboard(t)
 }
 
+// undo reverses the newest undo unit: one step, or all the steps of a group.
 func (m *Model) undo() {
-	if s, ok := m.hist.PopUndo(); ok {
-		m.hist.PushRedo(m.applyStep(s))
+	for first := true; ; first = false {
+		s, ok := m.hist.PopUndo()
+		if !ok {
+			return
+		}
+		inv := m.applyStep(s)
+		inv.Join = !first
+		m.hist.PushRedo(inv)
+		if !s.Join {
+			return
+		}
 	}
 }
 
+// redo reapplies the newest redo unit.
 func (m *Model) redo() {
-	if s, ok := m.hist.PopRedo(); ok {
-		m.hist.PushUndo(m.applyStep(s), m.UndoLimit)
+	for first := true; ; first = false {
+		s, ok := m.hist.PopRedo()
+		if !ok {
+			return
+		}
+		inv := m.applyStep(s)
+		inv.Join = !first
+		m.hist.PushUndo(inv, m.UndoLimit)
+		if !s.Join {
+			return
+		}
 	}
 }
 

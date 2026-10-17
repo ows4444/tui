@@ -231,6 +231,39 @@ root is not drawn at the screen origin, add its offset. In inline mode
 (`WithAltScreen(false)`) mouse coordinates are absolute in the terminal, so
 offset your rectangles by where the live region starts.
 
+## Vi mode
+
+`textarea.Model` and `textinput.Model` have a `Vi` field. Set it and the widget
+is modal: it starts in Normal mode, where keys are commands, and `i a I A o O`
+(`o O` in the text area only) enter Insert mode, where typing and the `KeyMap`
+work as usual until Esc.
+
+```go
+ed := textarea.New()
+ed.Vi = true
+ed.Focus()
+```
+
+Supported: counts; the motions `h l j k w W b B e E 0 ^ $ gg G f F t T ; ,`;
+the operators `d c y` with a motion, a doubled key for lines (`dd`), or a text
+object (`iw aw i" a" i( a( i[ i{`); `x X D C s S Y p P J r ~`; `u` and Ctrl+R;
+`.` to repeat the last change; and `v` / `V` to select. A change, including the
+text typed in an Insert session, undoes as one step. `y` copies with OSC 52, as
+`Copy` does. Not supported: macros, named registers, marks, search, block-wise
+selection. The engine counts runes, so a grapheme cluster of several runes is
+several steps in the text area (the single-line input counts clusters).
+
+Keys with Ctrl or Alt keep their `KeyMap` meaning in every mode, except Ctrl+R
+in Normal mode, which redoes. The single-line input leaves Up, Down and Enter
+to the field in every mode, so `History` still works. `ViMode()` and
+`ViPending()` read the state for a status line, and `SetViMode(ViInsert)` starts
+the widget in Insert mode:
+
+```go
+status := map[textarea.ViMode]string{textarea.ViNormal: "NORMAL", textarea.ViInsert: "INSERT",
+	textarea.ViVisual: "VISUAL", textarea.ViVisualLine: "V-LINE"}[ed.ViMode()]
+```
+
 ## Clipboard
 
 [`clipboard.Model`](https://pkg.go.dev/github.com/ows4444/tui/clipboard) is a

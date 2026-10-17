@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+Vi mode for `textarea` and `textinput`: set `Vi` and the widget is modal (counts, motions, `d` `c` `y` with motions and text objects, `p`, `.`, `u`, Visual mode), with `ViMode`, `SetViMode` and `ViPending`; a change undoes as one step (`docs/input.md`).
 - Four examples for the new widgets: docsreader (markdownview with a contents panel), logbrowser (filter input with history over a viewport), splitedit (splitpane with a highlighted textarea and outline) and inventory (datatable Source, Columns and marks with a detail pane).
 - Guides for animation, background work, forms, tables and the development tools
   (`docs/animation.md`, `background-work.md`, `forms.md`, `tables.md`, `devtools.md`),

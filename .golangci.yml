@@ -128,6 +128,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -217,6 +218,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -277,6 +279,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -327,6 +330,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -369,6 +373,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -406,6 +411,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -473,6 +479,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -550,6 +557,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -591,6 +599,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -652,6 +661,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -727,6 +737,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -820,6 +831,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -853,6 +865,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -886,6 +899,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -919,6 +933,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -972,6 +987,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1065,6 +1081,7 @@ linters:
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1098,6 +1115,7 @@ linters:
             - "github.com/ows4444/tui/internal/highlight$"
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1105,6 +1123,40 @@ linters:
             - "github.com/ows4444/tui/term$"
             - "github.com/ows4444/tui/theme$"
         group-29:
+          list-mode: strict
+          files:
+            - "**/internal/vi/*.go"
+            - "!**/examples/**"
+            - "!$test"
+          allow:
+            - "$gostd"
+            - "github.com/ows4444/tui/ansi$"
+            - "github.com/ows4444/tui/cellbuf$"
+            - "github.com/ows4444/tui/fuzzy$"
+            - "github.com/ows4444/tui/hittest$"
+            - "github.com/ows4444/tui/input$"
+            - "github.com/ows4444/tui/internal/a11y$"
+            - "github.com/ows4444/tui/internal/announce$"
+            - "github.com/ows4444/tui/internal/basetypes$"
+            - "github.com/ows4444/tui/internal/bidi$"
+            - "github.com/ows4444/tui/internal/boxdraw$"
+            - "github.com/ows4444/tui/internal/braille$"
+            - "github.com/ows4444/tui/internal/cancelreader$"
+            - "github.com/ows4444/tui/internal/capprobe$"
+            - "github.com/ows4444/tui/internal/celldraw$"
+            - "github.com/ows4444/tui/internal/clusterwidth$"
+            - "github.com/ows4444/tui/internal/edit$"
+            - "github.com/ows4444/tui/internal/fsutil$"
+            - "github.com/ows4444/tui/internal/highlight$"
+            - "github.com/ows4444/tui/internal/ptytest$"
+            - "github.com/ows4444/tui/internal/render$"
+            - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vtscreen$"
+            - "github.com/ows4444/tui/keymap$"
+            - "github.com/ows4444/tui/layout$"
+            - "github.com/ows4444/tui/motion$"
+            - "github.com/ows4444/tui/theme$"
+        group-30:
           list-mode: strict
           files:
             - "**/internal/vtscreen/*.go"
@@ -1133,11 +1185,12 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-30:
+        group-31:
           list-mode: strict
           files:
             - "**/keymap/*.go"
@@ -1159,7 +1212,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-31:
+        group-32:
           list-mode: strict
           files:
             - "**/layout/*.go"
@@ -1179,7 +1232,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-32:
+        group-33:
           list-mode: strict
           files:
             - "**/logview/*.go"
@@ -1211,6 +1264,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1221,7 +1275,7 @@ linters:
             - "github.com/ows4444/tui/viewport$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-33:
+        group-34:
           list-mode: strict
           files:
             - "**/markdown/*.go"
@@ -1250,6 +1304,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1257,7 +1312,7 @@ linters:
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-34:
+        group-35:
           list-mode: strict
           files:
             - "**/menu/*.go"
@@ -1288,6 +1343,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1298,7 +1354,7 @@ linters:
             - "github.com/ows4444/tui/tuitest$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-35:
+        group-36:
           list-mode: strict
           files:
             - "**/menubar/*.go"
@@ -1330,6 +1386,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1339,7 +1396,7 @@ linters:
             - "github.com/ows4444/tui/tuitest$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-36:
+        group-37:
           list-mode: strict
           files:
             - "**/motion/*.go"
@@ -1359,7 +1416,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/theme$"
-        group-37:
+        group-38:
           list-mode: strict
           files:
             - "**/prompt/*.go"
@@ -1391,6 +1448,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1405,7 +1463,7 @@ linters:
             - "github.com/ows4444/tui/tuitest$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-38:
+        group-39:
           list-mode: strict
           files:
             - "**/term/*.go"
@@ -1426,7 +1484,7 @@ linters:
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
-        group-39:
+        group-40:
           list-mode: strict
           files:
             - "**/theme/*.go"
@@ -1446,7 +1504,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/layout$"
             - "github.com/ows4444/tui/motion$"
-        group-40:
+        group-41:
           list-mode: strict
           files:
             - "**/tuitest/*.go"
@@ -1477,6 +1535,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1485,7 +1544,7 @@ linters:
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-41:
+        group-42:
           list-mode: strict
           files:
             - "**/widgets/*.go"
@@ -1514,6 +1573,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
@@ -1521,7 +1581,7 @@ linters:
             - "github.com/ows4444/tui/motion$"
             - "github.com/ows4444/tui/theme$"
             - "github.com/ows4444/tui/widgets/chart$"
-        group-42:
+        group-43:
           list-mode: strict
           files:
             - "**/widgets/chart/*.go"
@@ -1550,6 +1610,7 @@ linters:
             - "github.com/ows4444/tui/internal/ptytest$"
             - "github.com/ows4444/tui/internal/render$"
             - "github.com/ows4444/tui/internal/termio$"
+            - "github.com/ows4444/tui/internal/vi$"
             - "github.com/ows4444/tui/internal/vtscreen$"
             - "github.com/ows4444/tui/keymap$"
             - "github.com/ows4444/tui/layout$"
