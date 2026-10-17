@@ -1,13 +1,13 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
-// Example builds the counter example's model and renders its first frame.
+// Example clicks + three times and prints the count.
 func Example() {
-	m := model{}
-	fmt.Println(strings.TrimSpace(m.View()) != "")
-	// Output: true
+	m := initialModel()
+	for i := 0; i < 3; i++ {
+		m = click(m, "inc")
+	}
+	fmt.Println(m.count)
+	// Output: 3
 }
