@@ -172,7 +172,7 @@ func TestEditedMsgReachesUpdateThroughTheProgram(t *testing.T) {
 	ch := startSendLoop(t, p)
 
 	pw.WriteString("e")
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(30 * time.Second) // generous: the whole module is testing at once in CI
 	for {
 		m.mu.Lock()
 		n := len(*m.got)

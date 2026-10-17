@@ -30,6 +30,8 @@ var glyphSources = map[string]string{
 	"imageview/formats.go":           "the half-block glyphs of the image fallback; used only when the theme's glyph set is not ASCII",
 	"layout/borders.go":              "more Border sets (block, half block, dashed, markdown, hidden), written as escapes; Theme.Border selects one",
 	"spinner/spinner.go":             "the default frames, replaced by Theme.Glyphs.Spinner",
+	"spinner/presets.go":             "the named animations; on an ASCII theme a preset draws its ASCII frames instead (Model.frames)",
+	"widgets/chart/marker.go":        "the block, quadrant and sextant glyph tables of the Canvas markers; under an ASCII glyph set a cell draws a shade from Theme.Glyphs.Shades instead",
 	"widgets/bigtext.go":             "the block font, drawn with full blocks and swapped for Theme.Glyphs.BarFull at render",
 	"widgets/tree.go":                "the tree connectors, with an ASCII set chosen when Theme.Glyphs is the ASCII set",
 	"maskedinput/maskedinput.go":     "defaultMask, the documented default of the Mask field; it follows Theme.Glyphs.Mask",
