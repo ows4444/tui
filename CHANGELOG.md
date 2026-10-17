@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `commandpalette.Source` and `Model.Sources`: commands found for what was typed,
+  not from a fixed list. Each keystroke runs every Source on `tui.Tasks`, so a
+  newer query cancels the older one, and the answers join the dropdown when the
+  `tui.TaskDoneMsg` comes back through `Update`. `Model.Tasks` is optional and
+  `Model.Name` keeps two palettes apart.
 - Lazy trees: `treeview.Node.Load` makes a node a branch whose children are
   fetched the first time it opens (`Update` returns a Cmd that runs it, and the
   `LoadedMsg` it delivers goes back through `Update`); `treeview.LazyDirectoryTree`

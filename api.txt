@@ -1384,11 +1384,16 @@ type Model struct {
 	Mouse		bool
 	Bounds		hittest.Rect
 	WheelStep	int
+
+	Sources	[]Source
+	Tasks	*tui.Tasks
+	Name	string
 	// contains filtered or unexported fields
 }
 type SelectedMsg struct {
 	Command Command
 }
+type Source func(ctx context.Context, query string) []Command
 
 ## github.com/ows4444/tui/confirm (package confirm)
 
