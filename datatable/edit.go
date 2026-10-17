@@ -36,6 +36,7 @@ func (m *Model) InsertRow(i int, cells []string) {
 	rows = append(rows, src[:i]...)
 	rows = append(rows, slices.Clone(cells))
 	rows = append(rows, src[i:]...)
+	m.shiftMarks(i, +1)
 	m.SetRows(rows)
 }
 
@@ -47,6 +48,7 @@ func (m *Model) RemoveRow(i int) bool {
 	if m.Source != nil || i < 0 || i >= len(src) {
 		return false
 	}
+	m.shiftMarks(i, -1)
 	m.SetRows(slices.Delete(slices.Clone(src), i, i+1))
 	return true
 }

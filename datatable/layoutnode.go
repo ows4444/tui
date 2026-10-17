@@ -217,7 +217,7 @@ func (n tableNode) Render(s layout.Size) string {
 		}
 		return ansi.Style{}
 	}, m.themed())
-	return layout.Block(strings.TrimRight(withGutter(out, start, m.cursor), "\n")).Render(s)
+	return layout.Block(strings.TrimRight(withGutterMarks(out, start, m.cursor, m.markedRow, m.markGlyph()), "\n")).Render(s)
 }
 
 // visibleCols returns the columns Render draws at width w: all of them, unless

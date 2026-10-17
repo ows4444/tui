@@ -1574,8 +1574,10 @@ type SelectedMsg struct {
 
 ## github.com/ows4444/tui/datatable (package datatable)
 
+func (m *Model) ClearMarks()
 func (m *Model) ClearSort()
 func (m *Model) InsertRow(i int, cells []string)
+func (m *Model) Mark(r int, on bool)
 func (m *Model) RemoveRow(i int) bool
 func (m *Model) SetCell(row, col int, text string) bool
 func (m *Model) SetCursor(i int)
@@ -1587,8 +1589,10 @@ func (m Model) Bindings() []keymap.Binding
 func (m Model) Cursor() int
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Filtering() bool
+func (m Model) IsMarked(r int) bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string
+func (m Model) Marked() []int
 func (m Model) Offset() int
 func (m Model) Query() string
 func (m Model) SetTheme(t theme.Theme) Model
@@ -1623,6 +1627,8 @@ type KeyMap struct {
 	Left, Right	keymap.Binding
 
 	Filter, ClearSort	keymap.Binding
+
+	Mark, MarkAll	keymap.Binding
 }
 type Model struct {
 	Headers	[]string
@@ -1654,6 +1660,8 @@ type Model struct {
 	Filter	bool
 
 	Source	Source
+
+	Multi	bool
 
 	Columns	[]Column
 

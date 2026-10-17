@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `datatable` multi-row marking: with `Model.Multi` on, Space marks the row under the
+  cursor and Ctrl+A marks all (`KeyMap.Mark`, `MarkAll`); a marked row shows a check
+  in the gutter. `Marked`, `IsMarked`, `Mark` and `ClearMarks` read and set the marks,
+  which belong to source rows and stay with their rows through sort, filter and row edits.
 - `datatable.Column` and `Model.Columns`: per-column alignment (numbers flush right),
   minimum and maximum width (a cell wider than the maximum ends in an ellipsis), a
   `Format` that changes what is shown and not the cell, and a `Less` for the sort key.
