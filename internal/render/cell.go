@@ -3,7 +3,6 @@ package render
 import (
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/ows4444/tui/ansi"
 )
@@ -126,6 +125,7 @@ type Cells struct {
 	noPatch   bool      // tests: never patch a row from the previous frame
 	keepBlank bool      // ParseGlyphs: keep trailing default blank cells
 	patched   []bool    // rows patched this frame, see patches
+	fr        frameRows // the row state of the frame being built, reused so a frame allocates nothing
 	patches   [][]int32 // per row this frame: changed cell indices when the row was patched
 	patchPos  [][]int32 // the same changes as byte offsets into the new line
 	// prevInfo and curInfo describe the rows of prev and cur for patchRow;
@@ -373,196 +373,6 @@ func applyColonSGR(p *cellStyle, head int, subs []int) bool {
 		return true
 	}
 	return false
-}
-
-// parseRow decodes one view line into cells appended to row[:0]. ok is false
-// when the line uses something the grid cannot represent.
-func (c *Cells) parseRow(line string, row []cell) ([]cell, bool) {
-	row = row[:0]
-	var esc []int32
-	var opq []opaqueSeg
-	simple := true
-	if strings.IndexByte(line, '\t') >= 0 {
-		line = ansi.ExpandTabs(line)
-		simple = false
-	}
-	var pen cellStyle
-	var penID uint16
-	head, headStart, headEnd := -1, 0, 0
-	headText := "" // the text of the head cluster, when it has grown past one rune
-	nonASCII := false
-	sawOSC := false
-
-	// setWidth resizes the head cluster's footprint to nw columns.
-	setWidth := func(nw int) bool {
-		if nw < 1 || nw > 2 {
-			return false
-		}
-		if int(row[head].w) == nw {
-			return true
-		}
-		if nw == 2 {
-			row = append(row, cell{st: row[head].st})
-		} else {
-			row = row[:head+1]
-		}
-		row[head].w = uint8(nw)
-		return true
-	}
-	// fold appends the rune at line[i:i+size] to the head cluster. foldFail
-	// names why it failed, when it did.
-	foldFail := "width_disagreement"
-	fold := func(i, size int) bool {
-		contiguous := headEnd == i
-		var text string
-		switch {
-		case contiguous:
-			text = line[headStart : i+size]
-			headEnd = i + size
-		case headEnd >= 0:
-			text = line[headStart:headEnd] + line[i:i+size]
-			headEnd = -1
-		default:
-			text = headText + line[i:i+size]
-		}
-		headText = text
-		id, ok := c.clusterID(text)
-		if !ok {
-			foldFail = "cluster_table_full"
-			return false
-		}
-		row[head].ch = id
-		if contiguous {
-			return setWidth(c.measure.Width(text))
-		}
-		return true
-	}
-
-	for i := 0; i < len(line); {
-		b := line[i]
-		switch {
-		case b == 0x1b:
-			if i+1 < len(line) && (line[i+1] == '_' || line[i+1] == 'P' || line[i+1] == '^' || line[i+1] == 'X') {
-				end, ok := c.parseString(line, i)
-				if !ok {
-					return nil, false // parseString recorded the reason
-				}
-				seg := opaqueSeg{col: int32(len(row)), seq: line[i:end]} // #nosec G115 -- a row is far shorter than 2 GiB cells
-				seg.kid = kittyPlacementID(seg.seq)
-				opq = append(opq, seg)
-				sawOSC = true
-				simple = false
-				i = end
-				continue
-			}
-			if strings.HasPrefix(line[i:], inlineImageOSC) {
-				end, ok := c.parseInlineImage(line, i)
-				if !ok {
-					return nil, false // parseInlineImage recorded the reason
-				}
-				opq = append(opq, opaqueSeg{col: int32(len(row)), seq: line[i:end]}) // #nosec G115 -- a row is far shorter than 2 GiB cells
-				sawOSC = true
-				simple = false
-				i = end
-				continue
-			}
-			if i+1 < len(line) && line[i+1] == ']' {
-				end, ok := c.parseLink(line, i, &pen)
-				if !ok {
-					return nil, false // parseLink recorded the reason
-				}
-				id, ok := c.intern(pen)
-				if !ok {
-					c.resetStyles()
-					c.havePrev = false
-					c.wide = true
-					return nil, c.fail("style_table_full")
-				}
-				penID = id
-				sawOSC = true
-				simple = false
-				i = end
-				continue
-			}
-			if i+1 >= len(line) || line[i+1] != '[' {
-				return nil, c.fail("non_CSI_escape")
-			}
-			j := i + 2
-			for j < len(line) && (line[j] >= '0' && line[j] <= '9' || line[j] == ';' || line[j] == ':') {
-				j++
-			}
-			if j >= len(line) || line[j] != 'm' {
-				return nil, c.fail("non_SGR_escape")
-			}
-			if !applySGR(&pen, line[i+2:j]) {
-				return nil, c.fail("unsupported_SGR")
-			}
-			id, ok := c.intern(pen)
-			if !ok {
-				c.resetStyles()
-				c.havePrev = false
-				c.wide = true // rows already parsed this frame hold ids the reset invalidated
-				return nil, c.fail("style_table_full")
-			}
-			penID = id
-			esc = append(esc, int32(i), int32(j+1)) // #nosec G115 -- a line is far shorter than 2 GiB
-			i = j + 1
-		case b < 0x20 || b == 0x7f:
-			return nil, c.fail("control_character")
-		case b < utf8.RuneSelf:
-			row = append(row, cell{ch: uint32(b), w: 1, st: penID})
-			head, headStart, headEnd = len(row)-1, i, i+1
-			i++
-		default:
-			r, size := utf8.DecodeRuneInString(line[i:])
-			if r == utf8.RuneError && size == 1 || r >= 0x80 && r < 0xa0 {
-				return nil, c.fail("invalid_UTF_8_or_C1_control")
-			}
-			nonASCII = true
-			simple = false
-			w := c.measure.Width(line[i : i+size])
-			switch {
-			case w == 0:
-				if head < 0 || !fold(i, size) {
-					return nil, c.fail(foldFail)
-				}
-			case head >= 0 && headEnd == i && c.measure.Width(line[headStart:i+size]) != int(row[head].w)+w:
-				// The rune joins the cluster before it (ZWJ sequence, flag
-				// half, prepend...): the pair measures narrower than the sum.
-				if !fold(i, size) {
-					return nil, c.fail(foldFail)
-				}
-			default:
-				if w > 2 {
-					return nil, c.fail("width_disagreement")
-				}
-				row = append(row, cell{ch: uint32(r), w: uint8(w), st: penID}) // #nosec G115 -- w is at most 2 here, checked just above
-				if w == 2 {
-					row = append(row, cell{st: penID})
-				}
-				head, headStart, headEnd = len(row)-1-(w-1), i, i+size
-			}
-			i += size
-		}
-	}
-	if nonASCII {
-		sum := 0
-		for _, cl := range row {
-			sum += int(cl.w)
-		}
-		visible := line
-		if sawOSC {
-			visible = cellStripOSC(line)
-		}
-		if sum != c.measure.Width(visible) {
-			return nil, c.fail("width_disagreement")
-		}
-	}
-	for !c.keepBlank && len(row) > 0 && row[len(row)-1] == blankCell {
-		row = row[:len(row)-1]
-	}
-	c.rowEsc, c.rowSimple, c.rowOpq = esc, simple, opq
-	return row, true
 }
 
 // fail records why the frame falls back and reports false.
