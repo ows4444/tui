@@ -1,10 +1,24 @@
-┌──────────────────────────────────────────────────────┐
-│                                                      │
-│ [General]  Advanced                                  │
-│                                                      │
-│ > ▸ Display                                          │
-│   ▸ Notifications                                    │
-│                                                      │
-│ [←→/click] tabs  [↑↓] move  [enter] toggle  [q] quit │
-│                                                      │
-└──────────────────────────────────────────────────────┘
+Settings                                                     All changes applied
+ General         │ General                                                      
+ Appearance      │› Language                           ‹ English            ›   
+ Editor          │  Check for updates                  ━━● On                   
+ Notifications   │  Restore last session               ━━● On                   
+                 │  Share usage data                   ○━━ Off                  
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+                 │                                                              
+ The language of menus and messages.                                            
+ Apply    Reset                                                                 
+[tab] pane  [←→] change  [ctrl+s] apply  [ctrl+r] reset  [f1] help  [q] quit    
