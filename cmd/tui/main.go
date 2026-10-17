@@ -11,6 +11,7 @@
 //	go run github.com/ows4444/tui/cmd/tui colors nord
 //	go run github.com/ows4444/tui/cmd/tui borders
 //	go run github.com/ows4444/tui/cmd/tui easings out-bounce
+//	go run github.com/ows4444/tui/cmd/tui dev ./examples/panes
 //
 // It writes a directory holding go.mod, main.go (a small Model), main_test.go
 // (a headless test with tuitest) and a README. It writes no dependency version
@@ -71,6 +72,7 @@ const usage = `usage: tui new [-module path] <dir>
        tui colors [preset]
        tui borders
        tui easings [name]
+       tui dev [-poll d] [-watch dir]... [package] [-- args]
        tui prompt input|password|confirm|select|multiselect|spin ...`
 
 var name = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9._-]*$`)
@@ -100,6 +102,10 @@ func run(args []string, out io.Writer) error {
 		return runBorders(out)
 	case "easings":
 		return runEasings(args[1:], out)
+	case "dev":
+		stop, cancel := interrupted()
+		defer cancel()
+		return runDev(args[1:], out, stop)
 	case "prompt":
 		return runPrompt(args[1:], out)
 	}

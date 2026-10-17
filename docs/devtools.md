@@ -16,6 +16,20 @@
 | `tui borders` | a box in each border preset |
 | `tui easings [name]` | plots the easing curves |
 | `tui prompt ...` | ask a question from a shell script |
+| `tui dev [-poll d] [-watch dir]... [package] [-- args]` | build a program, run it on the terminal, and build and run it again whenever the `.go`, `go.mod` or `.tmpl` files of its module change |
+
+`tui dev` watches the module in the working directory (add `-watch dir` for other
+directories, such as a module you `replace`), polls every 400 ms (`-poll`), and
+needs no tools beyond `go`. A change stops the running program with SIGTERM so it
+can restore the terminal, and kills it after two seconds if it does not; then it
+resets the terminal modes and builds again. A build that fails prints the
+compiler's errors and waits for the next change. When the program exits by
+itself, `tui dev` waits for a change too. Ctrl+C stops it.
+
+```
+tui dev ./examples/panes
+tui dev ./examples/inventory -- --demo
+```
 
 ## Seeing your app
 

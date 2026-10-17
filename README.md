@@ -221,6 +221,12 @@ Packages under `internal/` are not public API.
   Linux, macOS, Windows and FreeBSD; OpenBSD, NetBSD and DragonFly BSD are only
   cross-compiled (`TestBuildsOnSupportedPlatforms`). `WithSuspendOnCtrlZ` does
   nothing on Windows, where Ctrl+Z stays an ordinary key.
+- **Windows console.** The Program turns on `ENABLE_VIRTUAL_TERMINAL_PROCESSING`
+  for the output console and reads input through the console's own events. It
+  draws with escape sequences only, never the legacy console API, so a console
+  that refuses that flag cannot run a Program: `Run` returns an error naming it
+  (`term.EnableOutputVTOn`). Windows Terminal and a ConPTY session accept it.
+  `termpane` (a program in a pane) is darwin and linux only.
 - **Colour.** Without `WithColorProfile`, `NewProgram` detects the depth from
   the output and the environment (`ansi.DetectColorProfileFor`), in this order:
   `NO_COLOR` (non-empty) turns colour off; `CLICOLOR_FORCE` (non-empty, not
