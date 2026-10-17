@@ -448,7 +448,7 @@ func extColor(sub, rest []string) (c ansi.Color, used int) {
 		switch sub[1] {
 		case "5":
 			if len(sub) > 2 {
-				return ansi.Color256(atoi(sub[2])), 0
+				return ansi.Color256(atoi(sub[2])), 0 // #nosec G115 -- atoi clamps to 0..255
 			}
 		case "2":
 			v := sub[2:]
@@ -462,7 +462,7 @@ func extColor(sub, rest []string) (c ansi.Color, used int) {
 		return nil, 0
 	}
 	if len(rest) >= 2 && rest[0] == "5" {
-		return ansi.Color256(atoi(rest[1])), 2
+		return ansi.Color256(atoi(rest[1])), 2 // #nosec G115 -- atoi clamps to 0..255
 	}
 	if len(rest) >= 4 && rest[0] == "2" {
 		return ansi.RGB{R: uint8(atoi(rest[1])), G: uint8(atoi(rest[2])), B: uint8(atoi(rest[3]))}, 4 // #nosec G115 -- clamped to 255

@@ -251,8 +251,8 @@ func TestTitleAndLinearize(t *testing.T) {
 }
 
 func TestCloseKillsTheProgram(t *testing.T) {
-	m, cmd := pane(t, 20, 3, `sleep 60`)
-	m, cmd = m.Update(OutputMsg{ID: "p"})
+	m, _ := pane(t, 20, 3, `sleep 60`)
+	m, cmd := m.Update(OutputMsg{ID: "p"}) // asks for the next message
 	if !m.Running() {
 		t.Fatal("not running")
 	}
@@ -347,7 +347,7 @@ func TestHostileOutputCannotReachTheHostTerminal(t *testing.T) {
 	m, cmd := pane(t, 60, 4, `printf 'a\033]52;c;SGVsbG8=\007b\033]8;;http://evil\033\\c\302\233d\342\200\256e\033[2Jf'`)
 	m, _, _ = until(t, m, cmd, has("f"))
 	view := m.View()
-	for _, bad := range []string{"\x1b]52", "\x1b]8", "evil", "\u009b", "‮", "\x07"} {
+	for _, bad := range []string{"\x1b]52", "\x1b]8", "evil", "\u009b", "\u202e", "\x07"} {
 		if strings.Contains(view, bad) {
 			t.Errorf("the view carries %q: %q", bad, view)
 		}

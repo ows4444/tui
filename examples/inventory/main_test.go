@@ -16,14 +16,6 @@ func press(m model, keys ...tui.Msg) model {
 	return m
 }
 
-func typed(s string) []tui.Msg {
-	var out []tui.Msg
-	for _, r := range s {
-		out = append(out, tui.Key{Type: tui.KeyRunes, Text: string(r)})
-	}
-	return out
-}
-
 func TestPricesAreFormatted(t *testing.T) {
 	out := ansi.StripANSI(initialModel().View())
 	if !strings.Contains(out, "$1.25") {

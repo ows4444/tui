@@ -210,5 +210,5 @@ func parseHex(s string) (ansi.Color, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%q is not a colour like #rrggbb", s)
 	}
-	return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, nil
+	return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, nil // #nosec G115 -- n was parsed from six hex digits
 }

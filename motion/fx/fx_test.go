@@ -126,7 +126,8 @@ func TestDissolveIsMonotoneAndDeterministic(t *testing.T) {
 	if fmtSet(shown(2, 0.5)) == fmtSet(shown(1, 0.5)) {
 		t.Error("two seeds dissolve the same cells")
 	}
-	if fmtSet(shown(1, 0.5)) != fmtSet(shown(1, 0.5)) {
+	again := fmtSet(shown(1, 0.5))
+	if again != fmtSet(shown(1, 0.5)) {
 		t.Error("the same seed dissolved differently twice")
 	}
 	if n := len(shown(1, 0)); n != 0 {

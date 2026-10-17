@@ -1,6 +1,7 @@
 package termpane
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/ows4444/tui"
@@ -23,7 +24,7 @@ func encodeKey(k tui.Key, appCursor bool) string {
 	}
 	csi := func(final string) string { // an arrow or Home/End
 		if mod > 1 {
-			return "\x1b[1;" + itoa(mod) + final
+			return "\x1b[1;" + strconv.Itoa(mod) + final
 		}
 		if appCursor {
 			return "\x1bO" + final
@@ -32,13 +33,13 @@ func encodeKey(k tui.Key, appCursor bool) string {
 	}
 	tilde := func(n string) string {
 		if mod > 1 {
-			return "\x1b[" + n + ";" + itoa(mod) + "~"
+			return "\x1b[" + n + ";" + strconv.Itoa(mod) + "~"
 		}
 		return "\x1b[" + n + "~"
 	}
 	ss3 := func(final string) string { // F1 to F4
 		if mod > 1 {
-			return "\x1b[1;" + itoa(mod) + final
+			return "\x1b[1;" + strconv.Itoa(mod) + final
 		}
 		return "\x1bO" + final
 	}
@@ -131,13 +132,6 @@ func ctrlByte(r rune) string {
 	return ""
 }
 
-func itoa(n int) string {
-	if n < 10 {
-		return string(rune('0' + n))
-	}
-	return itoa(n/10) + string(rune('0'+n%10))
-}
-
 // encodePaste is the bytes for pasted text: wrapped in markers when the program
 // asked for bracketed paste, with the marker itself cut out of the text so a
 // paste cannot end the bracket early.
@@ -191,5 +185,5 @@ func encodeMouse(ev tui.MouseEvent, x, y int, mode int) string {
 	if ev.Mod.Ctrl() {
 		b += 16
 	}
-	return "\x1b[<" + itoa(b) + ";" + itoa(x+1) + ";" + itoa(y+1) + final
+	return "\x1b[<" + strconv.Itoa(b) + ";" + strconv.Itoa(x+1) + ";" + strconv.Itoa(y+1) + final
 }

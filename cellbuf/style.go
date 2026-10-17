@@ -86,7 +86,7 @@ func (c Color) RGB() (rgb ansi.RGB, ok bool) {
 	case kind256:
 		return ansi.Color256(n & 0xff).RGB(), true
 	case kindRGB:
-		return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, true
+		return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, true // #nosec G115 -- n holds 24 bits
 	}
 	return ansi.RGB{}, false
 }

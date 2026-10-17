@@ -19,7 +19,7 @@ func runKeys(args []string, out io.Writer) error {
 	if len(args) != 2 || args[0] != "check" {
 		return errors.New(usage)
 	}
-	fh, err := os.Open(args[1]) // #nosec G304 -- the file the user named
+	fh, err := os.Open(args[1]) // #nosec G304 G703 -- the file the user named
 	if err != nil {
 		return err
 	}

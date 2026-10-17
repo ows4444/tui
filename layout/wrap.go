@@ -103,7 +103,7 @@ func (w wrapNode) children(s Size) []child {
 	kids, _ := w.flow(s.W)
 	out := make([]child, len(kids))
 	for i, k := range kids {
-		out[i] = child{node: k.node, rect: k.rect}
+		out[i] = child(k)
 	}
 	return out
 }

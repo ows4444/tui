@@ -69,10 +69,7 @@ func (o out) Apply(dst *cellbuf.Buffer, r cellbuf.Rect, p float64) {
 }
 
 // Default colours for a cell that names none: what a terminal usually draws.
-var (
-	defaultFG = ansi.RGB{R: 229, G: 229, B: 229}
-	defaultBG = ansi.RGB{}
-)
+var defaultFG = ansi.RGB{R: 229, G: 229, B: 229}
 
 // region is r clipped to dst's own cells.
 func region(dst *cellbuf.Buffer, r cellbuf.Rect) cellbuf.Rect {
