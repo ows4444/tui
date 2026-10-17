@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`tui demo [-list] [widget]`: an interactive catalog of 27 widgets and layouts. A filterable list on the left, the selected one live on the right with its code below, a key to change the theme, and the last message the widget sent (`docs/devtools.md`).
 `layout.MergedRow` and `MergedColumn`: Row and Column with no gap in which each child overlaps the next by one cell, so bordered boxes share their border and the places where they meet become junctions (`┬ ┴ ├ ┤ ┼`), in thin, rounded, heavy, double and ASCII borders; nest them for a grid of boxes (`docs/layout.md`).
 In the alternate screen the cell renderer scrolls a block of rows that only moved (a log, a list) with the terminal's scroll region instead of rewriting it: 10 one-line scrolls of a 100x40 log cost 1,089 bytes instead of 36,952. Set `TUI_NO_SCROLL_REGIONS=1` to turn it off (`docs/rendering.md`).
 `prompt.Parse[T]`, `Int`, `Float`, `Duration` and `Path`: prompts that return a typed answer. A text that does not parse is refused with a message under the question and the question stays open, so the caller never parses again (`docs/cookbook.md`).
