@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Double and triple click: the Program counts presses of the same button on the same
+  cell within 400 ms into `MouseEvent.Clicks` (`WithMultiClick` sets or turns off the
+  interval). In `textinput` a double click selects the word and a triple click the
+  line; in `textarea` a double click selects the word and a triple click the line.
 - `datatable` multi-row marking: with `Model.Multi` on, Space marks the row under the
   cursor and Ctrl+A marks all (`KeyMap.Mark`, `MarkAll`); a marked row shows a check
   in the gutter. `Marked`, `IsMarked`, `Mark` and `ClearMarks` read and set the marks,

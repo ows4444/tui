@@ -245,6 +245,7 @@ func WithLinearizeFullLine() ProgramOption
 func WithMaxConcurrentCmds(n int) ProgramOption
 func WithMaxFPS(fps int) ProgramOption
 func WithMouse(mode MouseMode) ProgramOption
+func WithMultiClick(interval time.Duration) ProgramOption
 func WithOutput(w io.Writer) ProgramOption
 func WithRecorder(w io.Writer) ProgramOption
 func WithRecorderSidecar(w io.Writer) ProgramOption
@@ -2497,6 +2498,8 @@ type MouseEvent struct {
 	Button	MouseButton
 	Action	MouseAction
 	Mod	Mod
+
+	Clicks	int
 }
 type PaletteColorEvent struct {
 	Index	uint8

@@ -427,7 +427,13 @@ func (m Model) updateMouse(ev tui.MouseEvent) Model {
 		m.ed.SetCursor(m.indexAt(ev.X - m.Bounds.X))
 		m.ed.ClearSelection()
 		m.ed.SetAnchor()
-		m.dragging = true
+		switch {
+		case ev.Clicks >= 3:
+			m.ed.SelectAll() // a triple click takes the whole line
+		case ev.Clicks == 2:
+			m.ed.SelectRunAt(m.ed.Cursor()) // a double click takes the word
+		}
+		m.dragging = ev.Clicks < 2
 		m.cursorVisible = true
 	case tui.MouseActionMotion:
 		if m.dragging {

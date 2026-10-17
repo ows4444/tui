@@ -543,6 +543,14 @@ func WithFilter(filter func(Model, Msg) Msg) ProgramOption {
 	return func(p *Program) { p.filter = filter }
 }
 
+// WithMultiClick sets how long after a press a second press of the same button
+// on the same cell still counts as a double click, and a third as a triple (the
+// count is MouseEvent.Clicks). The default is 400 ms. An interval of 0 or less
+// turns counting off: Clicks stays 0 and widgets treat every press as single.
+func WithMultiClick(interval time.Duration) ProgramOption {
+	return func(p *Program) { p.multiClick, p.multiClickSet = interval, true }
+}
+
 // WithoutRenderer runs the model with no frames drawn: input is read, Update
 // and Cmds run, but View is not called to paint and nothing is written for it.
 // It is for a program run as a service, or in a pipeline, that wants the

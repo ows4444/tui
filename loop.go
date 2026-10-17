@@ -333,6 +333,9 @@ func (p *Program) step(msg Msg, done chan struct{}) (stop bool, err error) {
 		p.stopFlushTimer()
 		return true, p.parentCtx.Err()
 	}
+	if me, ok := msg.(MouseEvent); ok {
+		msg = p.countClicks(me)
+	}
 	if p.filter != nil {
 		// Like Bubble Tea's, after the Program's own messages and before the
 		// model's, QuitMsg included, so a filter can hold a quit back.

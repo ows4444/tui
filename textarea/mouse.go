@@ -97,6 +97,15 @@ func (m Model) updateMouse(ev tui.MouseEvent) Model {
 		m.cursor = m.offsetAt(ev.X-m.Bounds.X, ev.Y-m.Bounds.Y)
 		m.sel = m.cursor + 1
 		m.dragging = true
+		switch {
+		case ev.Clicks >= 3: // the whole line
+			start, end := m.currentLineBounds()
+			m.sel, m.cursor, m.dragging = start+1, end, false
+		case ev.Clicks == 2: // the word
+			if lo, hi, ok := m.runAt(m.cursor); ok {
+				m.sel, m.cursor, m.dragging = lo+1, hi, false
+			}
+		}
 		m.cursorVisible = true
 		m.scrollToCursor()
 	case ev.Action == tui.MouseActionMotion:
@@ -109,4 +118,24 @@ func (m Model) updateMouse(ev tui.MouseEvent) Model {
 		m.dragging = false
 	}
 	return m
+}
+
+// runAt is the run of spaces or of non-spaces around rune offset pos within its
+// line, for a double click; ok is false on an empty line.
+func (m Model) runAt(pos int) (lo, hi int, ok bool) {
+	start, end := m.boundsAt(pos)
+	if end <= start {
+		return 0, 0, false
+	}
+	at := min(max(pos, start), end-1)
+	blank := func(i int) bool { r := m.value.at(i); return r == ' ' || r == '\t' }
+	class := blank(at)
+	lo, hi = at, at+1
+	for lo > start && blank(lo-1) == class {
+		lo--
+	}
+	for hi < end && blank(hi) == class {
+		hi++
+	}
+	return lo, hi, true
 }

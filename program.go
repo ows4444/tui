@@ -146,8 +146,11 @@ type Program struct {
 	env                []string // WithEnvironment; nil means the process environment
 	envSet             bool
 	filter             func(Model, Msg) Msg // WithFilter
-	noRender           bool                 // WithoutRenderer
-	initW, initH       int                  // WithWindowSize: the size when the terminal reports none
+	multiClick         time.Duration        // WithMultiClick; the default applies unless multiClickSet
+	multiClickSet      bool
+	clicks             clickCounter
+	noRender           bool // WithoutRenderer
+	initW, initH       int  // WithWindowSize: the size when the terminal reports none
 	accessible         bool
 	modeSet            bool           // WithAltScreen or WithAccessible was given (see applyDumbTermDefaults)
 	polite             announce.Queue // accessible polite lines queued and de-duplicated; loop goroutine only
