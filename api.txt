@@ -4992,6 +4992,27 @@ type VisibleRow struct {
 	HasChildren	bool
 }
 
+## github.com/ows4444/tui/tuislog (package tuislog)
+
+func (h *Handler) Enabled(_ context.Context, l slog.Level) bool
+func (h *Handler) Handle(_ context.Context, r slog.Record) error
+func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler
+func (h *Handler) WithGroup(name string) slog.Handler
+func New(sink func(line string), o *Options) *Handler
+func ToProgram(p *tui.Program, o *Options) *Handler
+type Handler struct {
+	// contains filtered or unexported fields
+}
+type Options struct {
+	Level	slog.Leveler
+
+	AddSource	bool
+
+	TimeFormat	string
+
+	Theme	theme.Theme
+}
+
 ## github.com/ows4444/tui/tuitest (package tuitest)
 
 func (c *FakeClock) NewTicker(d time.Duration) (<-chan time.Time, func())

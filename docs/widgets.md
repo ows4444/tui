@@ -119,6 +119,7 @@ in `examples/` that imports the package.
 | [tooltip](../tooltip) | An overlay with a short hint, drawn under its target while the pointer is over it. Experimental | | `examples/gallery` |
 | [transferlist](../transferlist) | Two lists side by side; Enter, Space or a click moves the item under the cursor to the other list and delivers `ChangedMsg`. Experimental | | `examples/gallery` |
 | [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
+| [tuislog](../tuislog) | A `log/slog` handler that writes one styled line per record, above the live region of a running Program or to any function. Experimental | | |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |
 | [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes  `examples/panes` |
 | [window](../window) | A desktop of overlapping windows moved by the title bar, resized by the edges, raised by a press and closed by the close box, with the same actions on the keyboard. Experimental | yes | |
