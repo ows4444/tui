@@ -1841,6 +1841,68 @@ type Model struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/dropdown (package dropdown)
+
+func (m *Model) Blur()
+func (m *Model) Focus() tui.Cmd
+func (m *Model) SetOpen(open bool)
+func (m *Model) SetSelected(i int)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Focused() bool
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Open() bool
+func (m Model) Popup() string
+func (m Model) Selected() int
+func (m Model) SetTheme(t theme.Theme) Model
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) Value() string
+func (m Model) View() string
+func (m Model) Width() int
+func DefaultKeyMap() KeyMap
+func New(label string, options ...string) Model
+type ChangedMsg struct {
+	ID	string
+
+	Index	int
+
+	Value	string
+}
+type KeyMap struct {
+	Open	keymap.Binding
+	Prev	keymap.Binding
+	Next	keymap.Binding
+	Confirm	keymap.Binding
+	Cancel	keymap.Binding
+	First	keymap.Binding
+	Last	keymap.Binding
+	PageUp	keymap.Binding
+	PageDn	keymap.Binding
+}
+type Model struct {
+	ID	string
+
+	Label	string
+
+	Options	[]string
+
+	Placeholder	string
+
+	MinWidth	int
+
+	MaxRows	int
+
+	Disabled	bool
+	Theme		theme.Theme
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/emailinput (package emailinput)
 
 func (m Model) LayoutNode() layout.Node

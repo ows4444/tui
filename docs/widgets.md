@@ -75,6 +75,7 @@ in `examples/` that imports the package.
 | [datatable](../datatable) | `widgets.Table` plus row navigation | yes | `examples/table`, `examples/inspector` |
 | [datepicker](../datepicker) | A keyboard-navigable calendar on `time.Time` | yes  `examples/pickers` |
 | [dialog](../dialog) | A modal box with title and message, composited over the screen, dismissed with Enter/Esc | yes | `examples/dashboard` |
+| [dropdown](../dropdown) | A closed one-line control that shows the chosen option and opens a list of the others: Enter opens, arrows move, typing jumps, Enter chooses, Esc closes. Experimental | | |
 | [drawer](../drawer) | An overlay anchored to an edge of the base view | yes  `examples/panes` |
 | [emailinput](../emailinput) | A `textinput.Model` wrapper that rejects whitespace |  `examples/inputs` |
 | [errorretry](../errorretry) | An error with retry (Enter or `r`, up to `MaxRetries`) and dismiss (Esc). Experimental | yes | |

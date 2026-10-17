@@ -30,6 +30,7 @@ import (
 	"github.com/ows4444/tui/datatable"
 	"github.com/ows4444/tui/dialog"
 	"github.com/ows4444/tui/drawer"
+	"github.com/ows4444/tui/dropdown"
 	"github.com/ows4444/tui/errorretry"
 	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/form"
@@ -311,6 +312,14 @@ var conformance = map[string]func() map[string]string{
 		m := toast.New(evil)
 		m.Show()
 		return map[string]string{"Render": m.Render(strings.Repeat(strings.Repeat(".", 50)+"\n", 8)), "Linearize": m.Linearize()}
+	},
+	"dropdown": func() map[string]string {
+		m := dropdown.New(evil, evil, evil)
+		m.Placeholder = evil
+		m.SetSelected(0)
+		closed := m.View()
+		m.SetOpen(true)
+		return map[string]string{"View": closed, "ViewOpen": m.View(), "Popup": m.Popup(), "Linearize": m.Linearize()}
 	},
 	"toggle": func() map[string]string {
 		m := toggle.New(evil)
