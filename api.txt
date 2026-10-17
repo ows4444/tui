@@ -180,6 +180,7 @@ func Println(text string) Cmd
 func Quit() Cmd
 func ReadClipboard() Cmd
 func RunCmd(ctx context.Context, cmd Cmd) Msg
+func ScreenshotCmd(wrap func(Screenshot) Msg) Cmd
 func Sequence(cmds ...Cmd) Cmd
 func SetCursorShape(s CursorShape) Cmd
 func SetProgress(state ProgressState, percent int) Cmd
@@ -223,6 +224,7 @@ func WithRecorderSidecar(w io.Writer) ProgramOption
 func WithRecover(enabled bool) ProgramOption
 func WithReducedMotion(enabled bool) ProgramOption
 func WithResizePoll(d time.Duration) ProgramOption
+func WithScreenshot(key string, save func(Screenshot)) ProgramOption
 func WithSuspendOnCtrlZ(enabled bool) ProgramOption
 func WithTerminal(t Terminal) ProgramOption
 func WithTheme(auto theme.Auto) ProgramOption
@@ -354,6 +356,13 @@ type ResizeNotifier interface {
 }
 type Rewrapper interface {
 	Rewrap(inner Model) Model
+}
+type Screenshot struct {
+	Text	string
+
+	ANSI	string
+
+	Width, Height	int
 }
 type SuspendMsg struct{ Err error }
 type TaskDoneMsg struct {
@@ -4540,6 +4549,7 @@ func (s *Session) Wheel(x, y, dy int)
 func New(model tui.Model, w, h int, opts ...tui.ProgramOption) *Session
 func NewFakeClock() *FakeClock
 func Replay(t TB, newModel func() tui.Model, cast, sidecar io.Reader, opts ...tui.ProgramOption)
+func SVGOf(styled string, w, h int, o SVGOptions) string
 func WithClock(c *FakeClock) tui.ProgramOption
 type Cell struct {
 	Grapheme					string

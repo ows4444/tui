@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/internal/vtscreen"
 )
 
 // SVGOptions shapes Session.SVG. Every field is optional.
@@ -271,4 +272,43 @@ func colorOrDefault(c ansi.Color, def ansi.RGB, pal *[16]ansi.RGB) ansi.RGB {
 		}
 	}
 	return def
+}
+
+// SVGOf draws styled text, such as tui.Screenshot.ANSI, as an SVG image the way
+// Session.SVG draws a session's screen: the rows are laid onto a w by h
+// terminal, colours and attributes kept. It is how a running program's
+// screenshot becomes a picture for the docs.
+func SVGOf(styled string, w, h int, o SVGOptions) string {
+	if w < 1 {
+		w = 1
+	}
+	if h < 1 {
+		h = 1
+	}
+	scr := vtscreen.NewScreen(w, h)
+	scr.Write([]byte(strings.ReplaceAll(styled, "\n", "\r\n")))
+	cells := make([][]Cell, h)
+	for y := range cells {
+		cells[y] = make([]Cell, w)
+		for x := range cells[y] {
+			c := scr.Cell(x, y)
+			cells[y][x] = Cell{
+				Grapheme: string(c.Rune), Bold: c.Bold, Dim: c.Dim, Italic: c.Italic,
+				Underline: c.Underline, Reverse: c.Reverse, Strike: c.Strike, FG: c.FG, BG: c.BG,
+			}
+		}
+	}
+	if o.TrimRows {
+		keep := 1
+		for y, row := range cells {
+			for _, c := range row {
+				if (c.Grapheme != " " && c.Grapheme != "") || c.BG != nil || c.Reverse {
+					keep = y + 1
+					break
+				}
+			}
+		}
+		cells = cells[:keep]
+	}
+	return renderSVG(cells, 0, 0, false, o)
 }

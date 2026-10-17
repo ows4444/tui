@@ -259,6 +259,12 @@ func (p *Program) step(msg Msg, done chan struct{}) (stop bool, err error) {
 	if p.handleAnnounce(msg) {
 		return false, nil
 	}
+	if sm, ok := msg.(snapshotMsg); ok {
+		// The answer is delivered to Update like any other message.
+		if msg = sm.wrap(p.takeShot()); msg == nil {
+			return false, nil
+		}
+	}
 	var handled bool
 	if msg, handled = p.runtimeMsg(msg, done); handled {
 		return false, nil
@@ -266,6 +272,9 @@ func (p *Program) step(msg Msg, done chan struct{}) (stop bool, err error) {
 	msg = splitKeyAction(msg)
 	if p.inspectorKeyPressed(msg) {
 		p.render() // show or hide the overlay
+		return false, nil
+	}
+	if p.screenshotKeyPressed(msg) {
 		return false, nil
 	}
 	if p.chords != nil {

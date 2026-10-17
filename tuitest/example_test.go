@@ -54,3 +54,11 @@ func ExampleSession_Find() {
 	fmt.Println(x, y, ok)
 	// Output: 2 0 true
 }
+
+// SVGOf draws styled text, such as a running program's tui.Screenshot.ANSI, as
+// an image.
+func ExampleSVGOf() {
+	svg := tuitest.SVGOf("\x1b[1mhello\x1b[0m", 10, 2, tuitest.SVGOptions{TrimRows: true})
+	fmt.Println(strings.HasPrefix(svg, "<svg "), strings.Contains(svg, ">hello</text>"))
+	// Output: true true
+}

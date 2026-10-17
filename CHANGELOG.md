@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Screenshots of a running program: `tui.WithScreenshot(key, save)` hands `save` a
+  `tui.Screenshot` (the rows as plain `Text`, as `ANSI`, and the size) when the
+  key is pressed, and `tui.ScreenshotCmd(wrap)` delivers one to `Update`.
+  `tuitest.SVGOf(shot.ANSI, w, h, opts)` draws it as an SVG image.
 - Markdown coverage: task lists (`- [ ]`, `- [x]`), reference links
   (`[text][label]`, `[text][]`, `[label]` with `[label]: url`), character
   references (`&amp;`, `&#8212;`; ones that decode to a control character stay
