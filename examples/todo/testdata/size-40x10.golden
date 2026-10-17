@@ -1,0 +1,10 @@
+  ┌──────────────────────────────────┐  
+  │ All 6   Active 5   Done 1        │  
+  │☑ Read the tutorial             ✕ │  
+  │☐ Try the mouse: click a check  ✕ │  
+  │☐ Scroll with the wheel         ✕ │  
+  │☐ Delete this one with its cro  ✕ │  
+  │☐ Write a first tui program     ✕ │  
+  │＋ Add a task (click, or press a) │  
+  │5 left                  Clear done│  
+  └──────────────────────────────────┘  

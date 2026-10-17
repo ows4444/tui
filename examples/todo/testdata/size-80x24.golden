@@ -1,0 +1,24 @@
+                                                                                
+        ┌──────────────────────────────────────────────────────────────┐        
+        │                                                              │        
+        │ Tasks                                                        │        
+        │                                                              │        
+        │  All 6   Active 5   Done 1                                   │        
+        │                                                              │        
+        │ ☑ Read the tutorial                                       ✕  │        
+        │ ☐ Try the mouse: click a checkbox                         ✕  │        
+        │ ☐ Scroll with the wheel                                   ✕  │        
+        │ ☐ Delete this one with its cross                          ✕  │        
+        │ ☐ Write a first tui program                               ✕  │        
+        │ ☐ Ship it                                                 ✕  │        
+        │                                                              │        
+        │                                                              │        
+        │                                                              │        
+        │ ＋ Add a task (click, or press a)                            │        
+        │                                                              │        
+        │ 5 left                                            Clear done │        
+        │                                                              │        
+        │ [click] tick  [↑↓] move  [a] add  [q] quit                   │        
+        │                                                              │        
+        └──────────────────────────────────────────────────────────────┘        
+                                                                                
