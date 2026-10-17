@@ -3542,6 +3542,7 @@ type Model struct {
 
 ## github.com/ows4444/tui/prompt (package prompt)
 
+func Choose[T any](label string, choices []Choice[T], cfg ...Config) (T, error)
 func Confirm(label string, def bool, cfg ...Config) (bool, error)
 func Input(label string, cfg ...Config) (string, error)
 func MultiSelect(label string, choices []string, cfg ...Config) ([]int, error)
@@ -3550,6 +3551,13 @@ func Progress(label string, total int, fn func(ctx context.Context, report func(
 func Select(label string, choices []string, cfg ...Config) (int, error)
 func Spin(label string, fn func(ctx context.Context) error, cfg ...Config) error
 func Track[T any](label string, items []T, fn func(ctx context.Context, item T) error, cfg ...Config) error
+type Choice[T any] struct {
+	Label	string
+
+	Value	T
+
+	Group	string
+}
 type Config struct {
 	Program	[]tui.ProgramOption
 
@@ -3560,6 +3568,10 @@ type Config struct {
 	Validate	func(string) error
 
 	NoFilter	bool
+
+	Start	int
+
+	PageSize	int
 }
 var ErrCanceled = errors.New("prompt: canceled")
 

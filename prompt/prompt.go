@@ -47,6 +47,13 @@ type Config struct {
 	Validate func(string) error
 	// NoFilter turns off typing to narrow Select and MultiSelect.
 	NoFilter bool
+	// Start is the index of the choice Select and Choose start on; out of
+	// range is the first.
+	Start int
+	// PageSize, when positive, shows at most that many choices at a time,
+	// scrolling to keep the cursor in view; Select and Choose only. Zero shows
+	// them all.
+	PageSize int
 }
 
 type config = Config
@@ -232,6 +239,7 @@ func Confirm(label string, def bool, cfg ...Config) (bool, error) {
 
 type selectModel struct {
 	label    string
+	page     int
 	p        picker.Model
 	index    int
 	done     bool
@@ -257,7 +265,9 @@ func (m selectModel) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	return m, cmd
 }
 
-func (m selectModel) View() string { return ansi.Sanitize(m.label) + "\n" + m.p.View() }
+func (m selectModel) View() string {
+	return ansi.Sanitize(m.label) + "\n" + pageOf(m.p.View(), m.p.Cursor(), m.page, m.p.Filter)
+}
 
 // Select asks the person to pick one of choices and returns its index. Typing
 // narrows the list; Enter picks the one under the cursor.
@@ -268,7 +278,10 @@ func Select(label string, choices []string, cfg ...Config) (int, error) {
 	}
 	p := picker.NewStrings(choices...)
 	p.Filter = !c.NoFilter
-	out, err := run(selectModel{label: label, p: p}, c)
+	if c.Start > 0 && c.Start < len(choices) {
+		p.SetCursor(c.Start)
+	}
+	out, err := run(selectModel{label: label, p: p, page: c.PageSize}, c)
 	if err != nil {
 		return -1, err
 	}

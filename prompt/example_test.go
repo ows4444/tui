@@ -42,3 +42,17 @@ func ExampleTrack() {
 	fmt.Println(err)
 	// Output: <nil>
 }
+
+// Choose is Select for values of any type, with groups.
+func ExampleChoose() {
+	type region struct{ id string }
+	pr, pw := io.Pipe()
+	defer pw.Close()
+	go func() { _, _ = io.WriteString(pw, "\x1b[B\r") }() // Down, Enter
+	r, err := prompt.Choose("Region", []prompt.Choice[region]{
+		{Label: "Frankfurt", Value: region{"eu-central"}, Group: "Europe"},
+		{Label: "Oregon", Value: region{"us-west"}, Group: "Americas"},
+	}, prompt.Config{Program: []tui.ProgramOption{tui.WithOutput(io.Discard), tui.WithInput(pr), tui.WithReducedMotion(true)}})
+	fmt.Println(r.id, err)
+	// Output: us-west <nil>
+}

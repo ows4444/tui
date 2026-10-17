@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `prompt.Choose[T]` with `prompt.Choice[T]` (a label, a value of any type, an optional
+  group shown as "Group > Label"), and two `prompt.Config` fields for `Select` and
+  `Choose`: `Start`, the choice the cursor begins on, and `PageSize`, how many
+  entries show at once.
 - `datepicker.Model.Labels` and `Title`: weekday and month names, the first day of the
   week, the way a date is spoken and the phrases of `Linearize`, all replaceable, so the
   picker can be shown in another language or start its week on Monday. The zero value is
