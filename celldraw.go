@@ -86,7 +86,7 @@ func (g bufGrid) Cell(x, y int) (string, uint8, render.Style) {
 func (p *Program) directDraw() (CellDrawer, bool) {
 	d, ok := p.model.(CellDrawer)
 	if !ok || !p.cellRender || p.accessible || p.inspectorOn || p.outlineOn || p.msgOn || p.modelOn || p.announce.Rows > 0 || p.sel.on ||
-		p.width <= 0 || p.height <= 0 || p.committed > 0 || p.colorProfile < ansi.TrueColor ||
+		p.width <= 0 || p.height <= 0 || p.committed > 0 || p.colorProfile < ansi.TrueColor || p.colorFilter != nil ||
 		p.probeSaysNo(func(c Capabilities) bool { return c.StyledUnderline }) {
 		return nil, false
 	}

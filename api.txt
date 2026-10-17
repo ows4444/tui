@@ -225,6 +225,7 @@ func WithCellRenderer(enabled bool) ProgramOption
 func WithChordTimeout(d time.Duration) ProgramOption
 func WithChords(defs ...ChordDef) ProgramOption
 func WithClock(c Clock) ProgramOption
+func WithColorFilter(f func(ansi.RGB) ansi.RGB) ProgramOption
 func WithColorProfile(p ansi.Profile) ProgramOption
 func WithColorSchemeReports(enabled bool) ProgramOption
 func WithContext(ctx context.Context) ProgramOption
@@ -640,11 +641,15 @@ func CursorUp(n int) string
 func DetectColorProfile() Profile
 func DetectColorProfileEnv(getenv func(string) string) Profile
 func DetectColorProfileFor(out io.Writer, getenv func(string) string) Profile
+func Deuteranopia(c RGB) RGB
+func Dim(factor float64) func(RGB) RGB
 func Downgrade(c Color, p Profile) Color
 func DowngradeString(s string, p Profile) string
 func EscapeMarkup(s string) string
 func ExpandTabs(s string) string
+func FilterColors(s string, f func(RGB) RGB) string
 func FromHSL(h, s, l float64) RGB
+func Grayscale(c RGB) RGB
 func Hyperlink(text, url string) string
 func Justify(line string, width int) string
 func KittyKeyboardEnableFlags(flags int) string
@@ -655,11 +660,13 @@ func OSC52Copy(text string) string
 func ParseMarkup(s string) (Text, error)
 func Passthrough(seq string, getenv func(string) string) string
 func PlainASCIIWidth(s string) (int, bool)
+func Protanopia(c RGB) RGB
 func SafeLinkTarget(url string) bool
 func Sanitize(s string) string
 func SanitizeKeepSGR(s string) string
 func StripANSI(s string) string
 func TrimLeftWidth(s string, width int) string
+func Tritanopia(c RGB) RGB
 func Truncate(s string, width int) string
 func TruncateMiddle(s string, width int, glyph string) string
 func TruncateStart(s string, width int, glyph string) string

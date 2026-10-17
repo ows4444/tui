@@ -161,7 +161,8 @@ type Program struct {
 	fullLine           bool           // WithLinearizeFullLine
 	announce           announce.Region
 	colorProfile       ansi.Profile
-	colorSet           bool // WithColorProfile was used, so NO_COLOR is not consulted
+	colorSet           bool                    // WithColorProfile was used, so NO_COLOR is not consulted
+	colorFilter        func(ansi.RGB) ansi.RGB // WithColorFilter
 	focusReporting     bool
 	colorSchemeReports bool
 	inBandResize       bool

@@ -85,6 +85,25 @@ and fails if two states of one widget give the same text. A new widget whose
 meaning is a state has to be added to that test by hand. `NO_COLOR` itself is
 covered in [capabilities.md](capabilities.md#colour-profile).
 
+## Checking and changing colour for the whole frame
+
+`tui.WithColorFilter(f)` passes every colour the Program paints, in frames and in
+committed text, through `f` before the colour profile is applied. Use it to see
+your design the way someone else would, or to give the user a setting:
+
+```go
+tui.NewProgram(m, tui.WithColorFilter(ansi.Deuteranopia)) // check a design
+tui.NewProgram(m, tui.WithColorFilter(ansi.Grayscale))    // a "no colour" setting
+tui.NewProgram(m, tui.WithColorFilter(ansi.Dim(0.6)))     // calmer colours
+```
+
+`Protanopia`, `Deuteranopia` and `Tritanopia` are approximations of full
+dichromacy for checking a design; they are not a medical model. A filter reads
+the 16 basic colours and the 256-colour palette as the xterm palette, since the
+real colours are the terminal's to choose, and it leaves the terminal's default
+foreground and background alone. A root model that draws through `DrawCells` is
+drawn from its `View` string while a filter is set.
+
 ## The hardware cursor
 
 By default the terminal cursor is hidden. A screen magnifier or an IME needs

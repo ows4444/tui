@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`tui.WithColorFilter(f)` and `ansi.FilterColors`: pass every colour the Program paints through a function before the colour profile is applied, with ready filters `ansi.Grayscale`, `Protanopia`, `Deuteranopia`, `Tritanopia` and `Dim` (`docs/accessibility.md`). A root model that draws through `DrawCells` is drawn from its `View` string while a filter is set.
 New experimental package `dropdown`: a closed one-line control that shows the chosen option and opens a list of the others (Enter or Space or Down opens, arrows move, typing letters jumps, Enter chooses, Esc closes; Left and Right step while closed), with `ChangedMsg`, a scrolling list, the mouse, and `Popup` for floating the list with `popover`.
 `ansi.Markup`, `ParseMarkup` and `EscapeMarkup`: styled `Text` from a string with inline tags (`[bold red]error[/] in [link=https://example.com]the docs[/]`), with `\[` to write a bracket and `EscapeMarkup` for text that is not yours. Text is cleaned as `NewText` cleans it, so markup cannot carry terminal codes.
 New experimental package `tuislog`: a `log/slog` Handler that writes one styled line per record (time, level in its theme colour, message, key=value attributes), sanitised so a record cannot carry escape sequences. `ToProgram` commits each line above the live region like `tui.Println`; `New` hands it to any function.

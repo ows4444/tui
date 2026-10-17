@@ -37,3 +37,9 @@ func ExampleText_Wrap() {
 	// "plain bold" 10
 	// "words here" 10
 }
+
+func ExampleFilterColors() {
+	line := "\x1b[38;2;255;0;0mred\x1b[0m"
+	fmt.Printf("%q\n", ansi.FilterColors(line, ansi.Grayscale))
+	// Output: "\x1b[38;2;127;127;127mred\x1b[0m"
+}

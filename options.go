@@ -289,6 +289,25 @@ func WithColorProfile(p ansi.Profile) ProgramOption {
 	return func(prog *Program) { prog.colorProfile, prog.colorSet = p, true }
 }
 
+// WithColorFilter makes the Program pass every colour it paints through f
+// before the colour profile is applied: a foreground, background or underline
+// colour of any depth is turned into an RGB, f returns the one to draw, and
+// WithColorProfile then downgrades it as usual. It applies to frames and to
+// text committed with Println and Eprintln, so it works with every widget
+// without their cooperation. The ready filters are ansi.Grayscale,
+// ansi.Protanopia, ansi.Deuteranopia, ansi.Tritanopia (simulations for checking
+// a design) and ansi.Dim.
+//
+//	tui.NewProgram(m, tui.WithColorFilter(ansi.Grayscale))
+//
+// Default colours (the terminal's own foreground and background) are not
+// touched. A root Model that draws through DrawCells is drawn from its View
+// string while a filter is set, as it is under a colour profile below
+// ansi.TrueColor. A nil f turns the filter off.
+func WithColorFilter(f func(ansi.RGB) ansi.RGB) ProgramOption {
+	return func(prog *Program) { prog.colorFilter = f }
+}
+
 // WithContext supplies the parent context.Context for the Program's run
 // (default context.Background(), also used for a nil ctx). Cancelling ctx
 // ends Run, which restores the terminal and returns ctx.Err(). Program derives

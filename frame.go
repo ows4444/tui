@@ -59,10 +59,14 @@ func (p *Program) render() {
 var downgradeString = ansi.DowngradeString
 
 // transformView applies the whole-view transforms that can change a frame:
-// colour downgrade for the profile and the styled-underline gate. Each is
+// the colour filter, colour downgrade for the profile and the styled-underline
+// gate. Each is
 // skipped when it provably cannot change s: no downgrade at TrueColor or when
 // s has no CSI (so no SGR), no underline gate without a ':' in s.
 func (p *Program) transformView(s string) string {
+	if p.colorFilter != nil {
+		s = ansi.FilterColors(s, p.colorFilter)
+	}
 	if p.colorProfile < ansi.TrueColor && strings.Contains(s, "\x1b[") {
 		s = downgradeString(s, p.colorProfile)
 	}
@@ -483,6 +487,9 @@ func (p *Program) flushAltPrints() {
 }
 
 func (p *Program) printLines(text string, dest io.Writer) {
+	if p.colorFilter != nil {
+		text = ansi.FilterColors(text, p.colorFilter)
+	}
 	text = ansi.DowngradeString(text, p.colorProfile)
 	var buf strings.Builder
 	buf.WriteString(p.unparkCursor())
