@@ -211,6 +211,10 @@ Ctrl+C returns `prompt.ErrCanceled`.
 ```go
 name, err := prompt.Input("Your name:")
 ok, err := prompt.Confirm("Deploy?", false)
+port, err := prompt.Int("Port:")                        // a number, or the question stays open
+timeout, err := prompt.Duration("Timeout:")                // 90s, 1h30m
+file, err := prompt.Path("Config file:", true)            // ~ is expanded; it has to exist
+v, err := prompt.Parse("Level:", parseLevel)               // your own type from the typed text
 i, err := prompt.Select("Region:", []string{"eu", "us", "ap"}) // typing narrows
 ```
 

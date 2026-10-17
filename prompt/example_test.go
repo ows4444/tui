@@ -56,3 +56,16 @@ func ExampleChoose() {
 	fmt.Println(r.id, err)
 	// Output: us-west <nil>
 }
+
+// Int, Float, Duration and Path return a typed answer; text that does not parse
+// is refused and the question stays open. Parse does the same for a type of
+// your own.
+func ExampleInt() {
+	// "abc" is refused, Ctrl+U clears it, and 42 is taken.
+	keys := tui.WithInput(strings.NewReader("abc\r\x1542\r"))
+	out := tui.WithOutput(io.Discard)
+
+	n, err := prompt.Int("Count:", prompt.Config{Program: []tui.ProgramOption{keys, out}})
+	fmt.Println(n, err)
+	// Output: 42 <nil>
+}

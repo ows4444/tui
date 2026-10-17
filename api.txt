@@ -3681,9 +3681,14 @@ type Model struct {
 
 func Choose[T any](label string, choices []Choice[T], cfg ...Config) (T, error)
 func Confirm(label string, def bool, cfg ...Config) (bool, error)
+func Duration(label string, cfg ...Config) (time.Duration, error)
+func Float(label string, cfg ...Config) (float64, error)
 func Input(label string, cfg ...Config) (string, error)
+func Int(label string, cfg ...Config) (int, error)
 func MultiSelect(label string, choices []string, cfg ...Config) ([]int, error)
+func Parse[T any](label string, parse func(string) (T, error), cfg ...Config) (T, error)
 func Password(label string, cfg ...Config) (string, error)
+func Path(label string, mustExist bool, cfg ...Config) (string, error)
 func Progress(label string, total int, fn func(ctx context.Context, report func(done int)) error, cfg ...Config) error
 func Select(label string, choices []string, cfg ...Config) (int, error)
 func Spin(label string, fn func(ctx context.Context) error, cfg ...Config) error
