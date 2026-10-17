@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `prompt.Progress` and `prompt.Track`: a bar with the elapsed time, rate and time
+  left (from `widgets.ProgressStats`) while a function or a loop runs, with
+  Ctrl+C cancelling its context; the counterpart of `prompt.Spin` for work with a
+  known size.
 - `layout.Anchor(corner, dx, dy, node)`: pin a `Stack` child to a corner or the middle of
   the Stack, following its size (a badge top right, a status bottom left); and
   `layout.Aspect(w, h, node)`, which sizes a node to a ratio in cells.

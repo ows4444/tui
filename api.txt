@@ -3442,8 +3442,10 @@ func Confirm(label string, def bool, cfg ...Config) (bool, error)
 func Input(label string, cfg ...Config) (string, error)
 func MultiSelect(label string, choices []string, cfg ...Config) ([]int, error)
 func Password(label string, cfg ...Config) (string, error)
+func Progress(label string, total int, fn func(ctx context.Context, report func(done int)) error, cfg ...Config) error
 func Select(label string, choices []string, cfg ...Config) (int, error)
 func Spin(label string, fn func(ctx context.Context) error, cfg ...Config) error
+func Track[T any](label string, items []T, fn func(ctx context.Context, item T) error, cfg ...Config) error
 type Config struct {
 	Program	[]tui.ProgramOption
 
