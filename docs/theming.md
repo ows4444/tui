@@ -101,8 +101,9 @@ The Program looks for `Themeable` along the model's `Unwrap` chain (see
 through it is not applied. `appshell.Router` passes its theme to each child that
 is a `ThemeSetter`, or a `Themeable` whose `SetTheme` returns the child's type.
 
-No program in `examples/` uses `WithTheme` yet, and the repository has no
-Example for it.
+A fixed theme follows the terminal when you give it to `WithTheme` as
+`theme.Pair(preset)` and turn on `WithColorSchemeReports(true)`; the Program
+calls `SetTheme` again on every switch. `examples/themefollow` does exactly that.
 
 ## Presets
 
