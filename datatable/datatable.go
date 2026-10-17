@@ -100,6 +100,10 @@ type Model struct {
 	// nil; only the rows in view are read. Sort, Filter and editing are off.
 	Source Source
 
+	// Columns sets how each column is aligned, bounded, formatted and ordered;
+	// see Column. Columns[i] is for Headers[i].
+	Columns []Column
+
 	// ColumnWidths fixes column widths for LayoutNode: entry i, when positive,
 	// is the width of column i; zero, a negative entry or a missing entry
 	// leaves that column at its natural (content) width. Fixed widths do not
@@ -512,7 +516,9 @@ func (m Model) View() string {
 		}
 		headers[m.sortCol] += arrow
 	}
+	rows = m.displayRows(rows, &own)
 	rows = m.styleCells(rows, start, &own)
+	headers, rows = m.alignRows(headers, rows, nil)
 	if m.Width > 0 && len(headers) > 0 {
 		cols := m.colWindow()
 		nh := make([]string, len(cols))
@@ -606,7 +612,7 @@ func (m Model) Linearize() string {
 			if j < len(m.Headers) {
 				header = ansi.Clean(m.Raw, m.Headers[j])
 			}
-			cells[j] = header + ": " + ansi.Clean(m.Raw, cell)
+			cells[j] = header + ": " + ansi.Clean(m.Raw, m.display(j, cell))
 		}
 		line := "Row " + strconv.Itoa(i+1) + " of " + strconv.Itoa(m.rowCount()) + ": " + strings.Join(cells, ", ")
 		if i == m.cursor {

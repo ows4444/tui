@@ -1602,6 +1602,15 @@ func (m Model) WithTokens(tok theme.Tokens) Model
 func DefaultKeyMap() KeyMap
 func New(headers []string, rows [][]string) Model
 func NewSource(headers []string, src Source) Model
+type Column struct {
+	Align	layout.Align
+
+	Min, Max	int
+
+	Format	func(cell string) string
+
+	Less	func(a, b string) bool
+}
 type KeyMap struct {
 	Up, Down		keymap.Binding
 	PageUp, PageDown	keymap.Binding
@@ -1645,6 +1654,8 @@ type Model struct {
 	Filter	bool
 
 	Source	Source
+
+	Columns	[]Column
 
 	ColumnWidths	[]int
 	// contains filtered or unexported fields

@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `datatable.Column` and `Model.Columns`: per-column alignment (numbers flush right),
+  minimum and maximum width (a cell wider than the maximum ends in an ellipsis), a
+  `Format` that changes what is shown and not the cell, and a `Less` for the sort key.
+  View, the layout node, `Linearize` and `DrawCells` follow them.
 - `prompt.Progress` and `prompt.Track`: a bar with the elapsed time, rate and time
   left (from `widgets.ProgressStats`) while a function or a loop runs, with
   Ctrl+C cancelling its context; the counterpart of `prompt.Spin` for work with a

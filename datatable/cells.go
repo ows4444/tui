@@ -71,7 +71,9 @@ func (m Model) colWindow() []int {
 
 // styled reports whether a cell is drawn with a style of its own: CellStyle,
 // or the cursor cell.
-func (m Model) styled() bool { return m.CellStyle != nil || m.CellMode || m.FrozenCols > 0 }
+func (m Model) styled() bool {
+	return m.CellStyle != nil || m.CellMode || m.FrozenCols > 0 || m.hasColumns()
+}
 
 // styleCells returns rows with CellStyle applied to each cell and, in CellMode,
 // the cursor style on the cell under the cursor. own is called before a row is
