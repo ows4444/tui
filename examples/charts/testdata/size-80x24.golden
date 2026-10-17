@@ -1,0 +1,24 @@
+charts  Temperature (°C)                                                        
+ Temperature   Latency   Waves   Growth                                         
+ Line   Scatter   Bars   Histogram                                              
+ 30┤                                 ⣀⣀⣀⣀⡠⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⣀⣀                         
+   │                          ⣀⠤⠔⠒⠊⠉⠉                  ⠉⠉⠒⠒⠤⠤⣀⡀                 
+   │                      ⣀⠤⠒⠉                                ⠈⠉⠑⠢⢄⡀            
+   │                  ⣀⠤⠒⠉                                         ⠈⠒⢄⡀         
+ 20┤             ⣀⡠⠔⠊⠉                 ⢀⣀⡠⠤⠔⠒⠒⠒⠒⠒⠒⠒⠒⠤⣀                ⠈⠑⠤⣀      
+   │        ⣀⠤⠔⠒⠉                ⢀⡠⠤⠒⠊⠉⣁⡠⠤⠔⠒⠉⠉⠑⠒⠒⠒⠤⠤⣀ ⠉⠒⠤⣀                ⠉⠒⠤⣀  
+   │⠒⠒⠒⠊⠉⠉⠉⠉                 ⣀⠤⠒⠉⠁⣀⡠⠔⠊⠉              ⠉⠢⢄  ⠑⠢⢄⡀                ⠉ 
+   │                      ⣀⠔⠊ ⣀⠤⠒⠉                      ⠉⠒⢄⡀ ⠈⠒⠤⣀               
+ 10┤                  ⣀⠤⠒⠉ ⢀⠔⠊                             ⠈⠑⠢⣀  ⠑⠢⢄⡀           
+   │             ⢀⡠⠔⠊⠉  ⢀⠤⠊⠁                                   ⠉⠒⢄⡀ ⠈⠑⠢⢄        
+   │         ⢀⡠⠔⠊⠁   ⡠⠔⠊⠁                                         ⠈⠑⠤⡀  ⠉⠒⠤⣀    
+  0┤⣀⣀⣀⡠⠤⠤⠤⠔⠊⠁   ⢀⠤⠒⠉                                                ⠈⠑⠢⢄⣀⡀ ⠉⠒⠤ 
+   │         ⢀⡠⠔⠊⠁                                                        ⠈⠉⠒⠒⠤ 
+   │⠤⠤⠤⠤⠤⠤⠤⠔⠊⠁                                                                  
+   │                                                                            
+-10┤                                                                            
+   └─────────────────────────────────────────────────────────────────────────── 
+    Jan              Apr                Jun               Sep               Dec 
+● 1 Berlin  ● 2 Cairo  ● 3 Oslo                                                 
+all 12 points  ·  hover for values, wheel to zoom, drag to pan                  
+[←→] cursor  [+/-] zoom  [tab] data  [t] type  [1-3] series  [f1] help  [q] quit
