@@ -164,52 +164,55 @@ func (m Model) textStyle(sty []ansi.Style, ls, pos int) ansi.Style {
 	return m.TextStyle
 }
 
-// selectionView is View when text is selected.
+// styledRow calls f for every run of row r in drawing order with the style to
+// draw it in: the cursor, the selection, or the text in its Highlighter or
+// TextStyle colour with the editor aids over it. a is the frame's aids.
+func (m Model) styledRow(r srow, a aids, f func(text string, st ansi.Style)) {
+	sty, ls := m.rowStyles(r)
+	sel := m.selStyle()
+	a = a.forRow(r)
+	x := 0
+	m.walk(r, func(c string, k cellKind, pos int) {
+		st, text := m.CursorStyle, c
+		switch k {
+		case kindSel:
+			st = sel
+		case kindText:
+			st, text = a.apply(m.textStyle(sty, ls, pos), c, pos, x)
+		}
+		f(text, st)
+		x += ansi.Width(c)
+	})
+	if a.cursorLine || len(m.Ruler) > 0 {
+		a.tail(x, m.TextStyle, f)
+	}
+}
+
+// selectionView is View when text is selected, or an aid or a Highlighter is
+// set.
 func (m Model) selectionView() string {
 	rows := m.visibleRows()
 	out := make([]string, len(rows))
-	sel := m.selStyle()
+	a := m.newAids()
 	for i, r := range rows {
 		var b strings.Builder
-		sty, ls := m.rowStyles(r)
-		m.walk(r, func(c string, k cellKind, pos int) {
-			switch k {
-			case kindCursor:
-				b.WriteString(m.CursorStyle.Render(c))
-			case kindSel:
-				b.WriteString(sel.Render(c))
-			default:
-				b.WriteString(m.textStyle(sty, ls, pos).Render(c))
-			}
-		})
+		m.styledRow(r, a, func(text string, st ansi.Style) { b.WriteString(st.Render(text)) })
 		out[i] = b.String()
 	}
 	return strings.Join(out, "\n")
 }
 
-// drawSelection is DrawCells when text is selected.
+// drawSelection is DrawCells when text is selected, or an aid or a Highlighter
+// is set.
 func (m Model) drawSelection(sub *cellbuf.Buffer) {
-	text, cur := sub.StyleID(cellStyle(m.TextStyle)), sub.StyleID(cellStyle(m.CursorStyle))
-	sel := sub.StyleID(cellStyle(m.selStyle()))
+	a := m.newAids()
 	for y, r := range m.visibleRows() {
 		if y >= sub.Height() {
 			break
 		}
 		x := 0
-		sty, ls := m.rowStyles(r)
-		m.walk(r, func(c string, k cellKind, pos int) {
-			id := text
-			switch k {
-			case kindCursor:
-				id = cur
-			case kindSel:
-				id = sel
-			default:
-				if sty != nil {
-					id = sub.StyleID(cellStyle(m.textStyle(sty, ls, pos)))
-				}
-			}
-			x += sub.SetString(x, y, c, id)
+		m.styledRow(r, a, func(text string, st ansi.Style) {
+			x += sub.SetString(x, y, text, sub.StyleID(cellStyle(st)))
 		})
 	}
 }

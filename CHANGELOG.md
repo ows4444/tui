@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+Editor aids on `textarea`, all off by default: `HighlightCursorLine`, `MatchBrackets`, `ShowWhitespace` and `Ruler` (with `CursorLineColor`, `RulerColor` and `WhitespaceMark`). They draw over the text, a Highlighter and a selection, and work with soft wrap and `Height` (`docs/input.md`).
 `layout.AutoGrid` and `AutoGridGaps`: as many equal columns as fit the width, each at least `minWidth` wide, never more than there are cells (`AutoGrid(20, 1, cards...)`), where `GridNode` takes a fixed list of tracks and `Responsive` swaps whole layouts at breakpoints you choose (`docs/layout.md`).
 `TypeAhead` on `picker`, `menu`, `treeview`, `filepicker` and `datatable`, and `Label` on `virtuallist`: typing letters jumps to the next item whose label starts with them (a repeated letter goes on, a longer word is searched from where it began, a pause of a second starts a new one); keys a binding uses keep their meaning (`docs/input.md`). Off by default.
 Mnemonics: a `button`, `buttongroup` or `tabs` label such as `"&Save"` draws as "Save" with S underlined and is pressed (or its tab activated) with Alt+S; `"&&"` is a literal ampersand. `button.Model` gains `Mnemonic` and `IsMnemonic`, and the hot key works whether or not the widget has focus (`docs/input.md`). A label with no marker draws exactly as before.

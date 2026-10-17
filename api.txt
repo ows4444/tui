@@ -4395,6 +4395,15 @@ type Model struct {
 
 	Highlighter	func(line string) ansi.Text
 
+	HighlightCursorLine	bool
+	MatchBrackets		bool
+	ShowWhitespace		bool
+	Ruler			[]int
+
+	CursorLineColor	ansi.Color
+	RulerColor	ansi.Color
+	WhitespaceMark	string
+
 	AutoIndent	bool
 
 	Vi	bool

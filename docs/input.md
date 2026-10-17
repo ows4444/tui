@@ -301,6 +301,25 @@ The marker takes no room: a labelled widget is as wide as an unlabelled one.
 `menubar` has its own `Menu.Accel` for the same Alt+letter. Two widgets with the
 same letter both act, so keep letters unique within a screen.
 
+## Editor aids in the text area
+
+`textarea` has four opt-in aids that draw over the text, a `Highlighter` and a
+selection, and work with soft wrap and `Height`:
+
+- `HighlightCursorLine` gives the cursor's line the background `CursorLineColor`
+  (a dark gray), across the whole width when `Width` is set, and every row of it
+  when it is wrapped;
+- `MatchBrackets` reverses and bolds the bracket under the cursor, or just
+  before it, and its partner, for `()`, `[]` and `{}`. It does not know about
+  strings or comments and gives up after 20,000 runes;
+- `ShowWhitespace` draws each space as `WhitespaceMark` (a middle dot) in a
+  faint style, which also shows trailing spaces;
+- `Ruler` lists columns, counted from 1 in the cells as drawn, where every row
+  gets the background `RulerColor`: `Ruler: []int{80}` is a line limit.
+
+The cursor and the selection keep their own colours, and the aids use only
+colours and `Faint`, `Reverse` and `Bold`, so they follow the colour profile.
+
 ## Kill ring
 
 `textinput` and `textarea` have an opt-in kill ring, as readline and Emacs do.

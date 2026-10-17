@@ -50,3 +50,12 @@ func ExampleModel_ReplaceAll() {
 	// 2 cat
 	// 2 one dog, two dogs
 }
+
+// ShowWhitespace draws each space as a mark, which shows trailing spaces.
+func ExampleModel_showWhitespace() {
+	m := textarea.New()
+	m.SetValue("a b  ")
+	m.ShowWhitespace = true
+	fmt.Println(ansi.StripANSI(m.View()))
+	// Output: a·b··
+}

@@ -119,6 +119,26 @@ type Model struct {
 	// Nil (the default) leaves View and DrawCells as they were.
 	Highlighter func(line string) ansi.Text
 
+	// HighlightCursorLine, when true, draws the line the cursor is on with the
+	// background CursorLineColor (a dark gray by default), across the whole width
+	// when Width is set. MatchBrackets draws the bracket under the cursor, or just
+	// before it, and its partner, in reverse and bold; it pairs (), [] and {} and
+	// knows nothing of strings or comments. ShowWhitespace draws each space as
+	// WhitespaceMark (a middle dot by default) in a faint style. Ruler lists
+	// columns, counted from 1 in the cells of the area as drawn, where every row
+	// gets the background RulerColor, such as a line limit at 80. All four are off
+	// by default, work with a Highlighter, a selection, soft wrap and Height, and
+	// leave the cursor and selection colours alone.
+	HighlightCursorLine bool
+	MatchBrackets       bool
+	ShowWhitespace      bool
+	Ruler               []int
+	// CursorLineColor, RulerColor and WhitespaceMark restyle the aids; their zero
+	// values use the defaults named above.
+	CursorLineColor ansi.Color
+	RulerColor      ansi.Color
+	WhitespaceMark  string
+
 	// AutoIndent, when true, makes the Newline key start the new line with the
 	// leading spaces and tabs of the line the cursor was on. Off (the default),
 	// a new line starts at column 0.
@@ -1039,7 +1059,7 @@ func (m Model) view() string {
 		return b.String()
 	}
 
-	if _, _, ok := m.selection(); ok || m.Highlighter != nil {
+	if _, _, ok := m.selection(); ok || m.Highlighter != nil || m.aidsOn() {
 		return m.selectionView()
 	}
 
