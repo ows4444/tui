@@ -333,6 +333,13 @@ func (p *Program) step(msg Msg, done chan struct{}) (stop bool, err error) {
 		p.stopFlushTimer()
 		return true, p.parentCtx.Err()
 	}
+	if p.filter != nil {
+		// Like Bubble Tea's, after the Program's own messages and before the
+		// model's, QuitMsg included, so a filter can hold a quit back.
+		if msg = p.filter(p.model, msg); msg == nil {
+			return false, nil
+		}
+	}
 	if _, ok := msg.(QuitMsg); ok {
 		p.stopFlushTimer()
 		if p.maxFPS > 0 || p.renderPending {

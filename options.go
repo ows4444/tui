@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ows4444/tui/ansi"
@@ -149,7 +150,7 @@ func WithKittyKeyboard(enabled bool) ProgramOption {
 // box-drawing decoration — the same "framework provides the signal, caller
 // decides" pattern WithContext already uses for cancellation.
 func WithReducedMotion(enabled bool) ProgramOption {
-	return func(p *Program) { p.reducedMotion = enabled }
+	return func(p *Program) { p.reducedMotion, p.reducedSet = enabled, true }
 }
 
 // WithAccessible turns on accessible (linearized) output for screen-reader
@@ -168,7 +169,7 @@ func WithReducedMotion(enabled bool) ProgramOption {
 // borders stays cooperative: apps call theme.Theme.Plain() when
 // Accessible() is true.
 func WithAccessible(enabled bool) ProgramOption {
-	return func(p *Program) { p.accessible, p.modeSet = enabled, true }
+	return func(p *Program) { p.accessible, p.modeSet, p.accessibleAuto = enabled, true, false }
 }
 
 // WithFocusReporting turns terminal focus reporting (DECSET 1004) on for
@@ -501,4 +502,62 @@ func WithEscTimeout(d time.Duration) ProgramOption {
 // it). d <= 0 keeps the default of 250ms.
 func WithResizePoll(d time.Duration) ProgramOption {
 	return func(p *Program) { p.resizePoll = d }
+}
+
+// WithEnvironment gives the Program an environment of its own, as "KEY=value"
+// strings (the form os.Environ returns; the last of a repeated key wins). The
+// library reads TERM, COLORTERM, NO_COLOR, ACCESSIBLE and the reduced-motion
+// variables through it, and Program.Getenv hands it to code that does the same
+// (theme.DetectGlyphsEnv, motion.DetectEnv, imageview's Getenv). A host that
+// serves several sessions from one process gives each its own, from the client's
+// request, instead of every session seeing the server's. Without the option the
+// process environment is used.
+func WithEnvironment(env []string) ProgramOption {
+	return func(p *Program) { p.env, p.envSet = append([]string(nil), env...), true }
+}
+
+// Getenv returns the value of the environment variable key in the Program's
+// environment (see WithEnvironment), or the process's when it has none; "" when
+// it is not set.
+func (p *Program) Getenv(key string) string {
+	if !p.envSet {
+		return os.Getenv(key)
+	}
+	val := ""
+	prefix := key + "="
+	for _, kv := range p.env {
+		if strings.HasPrefix(kv, prefix) {
+			val = kv[len(prefix):]
+		}
+	}
+	return val
+}
+
+// WithFilter sets a function that sees every message on its way to the model,
+// QuitMsg included, and returns the one the model should get instead, or nil to
+// drop it. The Program's own messages (frame timers, print requests, the
+// signals that end Run) do not pass through it. It runs on the event loop, with
+// the model as it is now, so it can hold a quit back until unsaved work is
+// dealt with. A filter should be quick and must not call Send.
+func WithFilter(filter func(Model, Msg) Msg) ProgramOption {
+	return func(p *Program) { p.filter = filter }
+}
+
+// WithoutRenderer runs the model with no frames drawn: input is read, Update
+// and Cmds run, but View is not called to paint and nothing is written for it.
+// It is for a program run as a service, or in a pipeline, that wants the
+// event loop without a screen.
+func WithoutRenderer() ProgramOption {
+	return func(p *Program) { p.noRender = true }
+}
+
+// WithWindowSize sets the size Run starts with when the terminal cannot report
+// one: output to a file or a pipe, a test, a session with no pty. A terminal
+// that reports its size wins. Nothing changes for a width or height under 1.
+func WithWindowSize(width, height int) ProgramOption {
+	return func(p *Program) {
+		if width > 0 && height > 0 {
+			p.initW, p.initH = width, height
+		}
+	}
 }

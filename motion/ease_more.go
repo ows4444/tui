@@ -22,16 +22,28 @@ func inOutPow(n float64) Ease {
 	}
 }
 
-// InQuart, OutQuart and InOutQuart are the fourth-power curves.
 var (
-	InQuart    Ease = inPow(4)
-	OutQuart   Ease = outPow(4)
-	InOutQuart Ease = inOutPow(4)
-	// InQuint, OutQuint and InOutQuint are the fifth-power curves.
-	InQuint    Ease = inPow(5)
-	OutQuint   Ease = outPow(5)
-	InOutQuint Ease = inOutPow(5)
+	inQuart, outQuart, inOutQuart = inPow(4), outPow(4), inOutPow(4)
+	inQuint, outQuint, inOutQuint = inPow(5), outPow(5), inOutPow(5)
 )
+
+// InQuart is t to the fourth power: InCubic with a steeper start.
+func InQuart(t float64) float64 { return inQuart(t) }
+
+// OutQuart is the fourth-power curve played backwards.
+func OutQuart(t float64) float64 { return outQuart(t) }
+
+// InOutQuart is InQuart then OutQuart.
+func InOutQuart(t float64) float64 { return inOutQuart(t) }
+
+// InQuint is t to the fifth power.
+func InQuint(t float64) float64 { return inQuint(t) }
+
+// OutQuint is the fifth-power curve played backwards.
+func OutQuint(t float64) float64 { return outQuint(t) }
+
+// InOutQuint is InQuint then OutQuint.
+func InOutQuint(t float64) float64 { return inOutQuint(t) }
 
 // InSine eases in along a quarter sine wave.
 func InSine(t float64) float64 { return 1 - math.Cos(clamp01(t)*math.Pi/2) }

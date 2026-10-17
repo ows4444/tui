@@ -26,6 +26,9 @@ import (
 func (p *Program) render() {
 	p.publishKeymap()
 	p.applyViewState()
+	if p.noRender {
+		return
+	}
 	// Any render satisfies a throttled one still waiting.
 	p.stopFlushTimer()
 	if p.accessible {
@@ -405,6 +408,9 @@ func (p *Program) fitLine(l string) string {
 // is simply cleared. Inline, the region is erased from its top (moving up
 // no further than the screen allows) and drawn again below that point.
 func (p *Program) repaintFresh() {
+	if p.noRender {
+		return
+	}
 	if p.accessible {
 		return // append-only output: there is nothing to repaint on resize
 	}

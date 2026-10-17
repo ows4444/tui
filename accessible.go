@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"os"
 	"strings"
 	"time"
 
@@ -44,11 +43,12 @@ func Announce(text string) Cmd {
 // it: ACCESSIBLE=1 or TERM=dumb. Otherwise it leaves accessible mode off.
 // Like every option, the last of WithAccessible / WithAccessibleAuto wins.
 func WithAccessibleAuto() ProgramOption {
-	return func(p *Program) { p.accessible = accessibleFromEnv() }
+	return func(p *Program) { p.accessibleAuto = true }
 }
 
-func accessibleFromEnv() bool {
-	return os.Getenv("ACCESSIBLE") == "1" || os.Getenv("TERM") == "dumb"
+// accessibleFromEnv reads the Program's environment (see WithEnvironment).
+func (p *Program) accessibleFromEnv() bool {
+	return p.Getenv("ACCESSIBLE") == "1" || p.Getenv("TERM") == "dumb"
 }
 
 // AnnounceTTL is how long WithAnnounceRegion keeps an announcement visible.

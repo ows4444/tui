@@ -12,6 +12,13 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Four Program options: `WithEnvironment` (the program's own `TERM`, `COLORTERM`,
+  `NO_COLOR`, `ACCESSIBLE` and reduced-motion variables, read through the new
+  `Program.Getenv` and `motion.DetectEnv`, so a host serving several sessions can
+  give each its own), `WithFilter` (sees every message on its way to the model,
+  `QuitMsg` included, and may replace or drop it), `WithoutRenderer` (the event
+  loop with no frames) and `WithWindowSize` (the starting size when the terminal
+  reports none).
 - Text overflow and justification: `ansi.TruncateStart` and `TruncateMiddle` keep the
   end, or both ends, of a line that is too wide; `ansi.Justify` widens the gaps
   between words; `layout.WithOverflow(OverflowStart|OverflowMiddle|OverflowEnd, glyph)`

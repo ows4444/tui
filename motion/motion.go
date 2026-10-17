@@ -60,8 +60,12 @@ func (p Preference) Reduced() bool {
 
 // Detect returns Reduced if the NO_ANIMATION or REDUCE_MOTION environment
 // variable is set to a non-empty value, and Normal otherwise.
-func Detect() Preference {
-	if os.Getenv(reducedMotionEnvVar) != "" || os.Getenv(standardReducedMotionEnvVar) != "" {
+func Detect() Preference { return DetectEnv(os.Getenv) }
+
+// DetectEnv is Detect reading the variables through getenv, for a program that
+// has an environment of its own (see tui.WithEnvironment).
+func DetectEnv(getenv func(string) string) Preference {
+	if getenv(reducedMotionEnvVar) != "" || getenv(standardReducedMotionEnvVar) != "" {
 		return Reduced
 	}
 	return Normal

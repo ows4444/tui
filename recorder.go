@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
-	"os"
 	"sync"
 	"time"
 )
@@ -61,12 +60,13 @@ type sidecarLine struct {
 // recorder writes the cast and the sidecar. Its methods are safe on a nil
 // receiver (no recording) and for concurrent use.
 type recorder struct {
-	mu    sync.Mutex
-	cast  io.Writer
-	side  io.Writer
-	start time.Time
-	begun bool
-	buf   bytes.Buffer
+	mu      sync.Mutex
+	cast    io.Writer
+	side    io.Writer
+	start   time.Time
+	begun   bool
+	termEnv string // the program's TERM
+	buf     bytes.Buffer
 }
 
 func newRecorder(cast, side io.Writer) *recorder {
@@ -117,14 +117,15 @@ func (r *recorder) beginLocked(w, h int) {
 		"width":     w,
 		"height":    h,
 		"timestamp": r.start.Unix(),
-		"env":       map[string]string{"TERM": termName()},
+		"env":       map[string]string{"TERM": r.term()},
 	}
 	r.line(&r.cast, hdr)
 	r.line(&r.side, sidecarLine{K: "hdr", V: 1, W: w, H: h})
 }
 
-func termName() string {
-	if t := os.Getenv("TERM"); t != "" {
+// term is the TERM value written into the cast header; set by setupRecorder.
+func (r *recorder) term() string {
+	if t := r.termEnv; t != "" {
 		return t
 	}
 	return "xterm-256color"
@@ -227,6 +228,7 @@ func (p *Program) setupRecorder() {
 	if p.rec == nil {
 		return
 	}
+	p.rec.termEnv = p.Getenv("TERM")
 	// Pin the terminal to the real output before it is wrapped, so size and
 	// raw-mode calls still reach the file.
 	p.term = p.terminal()

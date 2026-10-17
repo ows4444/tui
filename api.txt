@@ -146,6 +146,7 @@ func (p *Program) CapabilitiesKnown() bool
 func (p *Program) Clock() Clock
 func (p *Program) ColorProfile() ansi.Profile
 func (p *Program) Context() context.Context
+func (p *Program) Getenv(key string) string
 func (p *Program) Keymap() *keymap.Registry
 func (p *Program) Measurer() ansi.Measurer
 func (p *Program) Quit()
@@ -203,9 +204,11 @@ func WithClock(c Clock) ProgramOption
 func WithColorProfile(p ansi.Profile) ProgramOption
 func WithColorSchemeReports(enabled bool) ProgramOption
 func WithContext(ctx context.Context) ProgramOption
+func WithEnvironment(env []string) ProgramOption
 func WithErrOutput(w io.Writer) ProgramOption
 func WithEscTimeout(d time.Duration) ProgramOption
 func WithExitOnSignal(enabled bool) ProgramOption
+func WithFilter(filter func(Model, Msg) Msg) ProgramOption
 func WithFocusReporting(enabled bool) ProgramOption
 func WithFrameLog(w io.Writer) ProgramOption
 func WithInBandResize(enabled bool) ProgramOption
@@ -228,6 +231,8 @@ func WithScreenshot(key string, save func(Screenshot)) ProgramOption
 func WithSuspendOnCtrlZ(enabled bool) ProgramOption
 func WithTerminal(t Terminal) ProgramOption
 func WithTheme(auto theme.Auto) ProgramOption
+func WithWindowSize(width, height int) ProgramOption
+func WithoutRenderer() ProgramOption
 func WriteClipboard(text string) Cmd
 type AnnounceLevel int
 type BackgroundColorEvent = input.BackgroundColorEvent
@@ -2985,6 +2990,7 @@ func AfterOn[T any](c *Clock, d time.Duration, fn func(time.Time) T) func(contex
 func After[T any](d time.Duration, fn func(time.Time) T) func(context.Context) T
 func ByName(name string) (Ease, bool)
 func Detect() Preference
+func DetectEnv(getenv func(string) string) Preference
 func EaseNames() []string
 func FrameInterval(fps int) time.Duration
 func InBack(t float64) float64
@@ -3000,8 +3006,12 @@ func InOutCubic(t float64) float64
 func InOutElastic(t float64) float64
 func InOutExpo(t float64) float64
 func InOutQuad(t float64) float64
+func InOutQuart(t float64) float64
+func InOutQuint(t float64) float64
 func InOutSine(t float64) float64
 func InQuad(t float64) float64
+func InQuart(t float64) float64
+func InQuint(t float64) float64
 func InSine(t float64) float64
 func Linear(t float64) float64
 func NewClock(interval time.Duration) *Clock
@@ -3015,6 +3025,8 @@ func OutCubic(t float64) float64
 func OutElastic(t float64) float64
 func OutExpo(t float64) float64
 func OutQuad(t float64) float64
+func OutQuart(t float64) float64
+func OutQuint(t float64) float64
 func OutSine(t float64) float64
 type Clock struct {
 	Interval	time.Duration
@@ -3074,15 +3086,6 @@ type Tween struct {
 	Ease		Ease
 	Motion		Preference
 }
-var (
-	InQuart		Ease	= inPow(4)
-	OutQuart	Ease	= outPow(4)
-	InOutQuart	Ease	= inOutPow(4)
-
-	InQuint		Ease	= inPow(5)
-	OutQuint	Ease	= outPow(5)
-	InOutQuint	Ease	= inOutPow(5)
-)
 
 ## github.com/ows4444/tui/multiselect (package multiselect)
 

@@ -141,6 +141,13 @@ type Program struct {
 	kittyKeyboard      bool
 	keyboardFlags      KeyboardFlags
 	reducedMotion      bool
+	reducedSet         bool     // WithReducedMotion chose it; otherwise the environment does
+	accessibleAuto     bool     // WithAccessibleAuto: decided from the environment after every option
+	env                []string // WithEnvironment; nil means the process environment
+	envSet             bool
+	filter             func(Model, Msg) Msg // WithFilter
+	noRender           bool                 // WithoutRenderer
+	initW, initH       int                  // WithWindowSize: the size when the terminal reports none
 	accessible         bool
 	modeSet            bool           // WithAltScreen or WithAccessible was given (see applyDumbTermDefaults)
 	polite             announce.Queue // accessible polite lines queued and de-duplicated; loop goroutine only
@@ -454,27 +461,32 @@ func (p *Program) restoreTerminal() {
 // alternate screen buffer by default; opts override those defaults.
 func NewProgram(m Model, opts ...ProgramOption) *Program {
 	p := &Program{
-		model:         m,
-		initModel:     m,
-		output:        os.Stdout,
-		errOutput:     os.Stderr,
-		input:         os.Stdin,
-		altScreen:     true,
-		parentCtx:     context.Background(),
-		reducedMotion: motion.Detect().Reduced(),
-		msgs:          make(chan Msg, 64),
-		resizeKick:    make(chan struct{}, 1),
-		loopStarted:   make(chan struct{}),
-		exitOnSignal:  true,
-		cellRender:    true, // the default renderer; WithCellRenderer(false) opts out
+		model:        m,
+		initModel:    m,
+		output:       os.Stdout,
+		errOutput:    os.Stderr,
+		input:        os.Stdin,
+		altScreen:    true,
+		parentCtx:    context.Background(),
+		msgs:         make(chan Msg, 64),
+		resizeKick:   make(chan struct{}, 1),
+		loopStarted:  make(chan struct{}),
+		exitOnSignal: true,
+		cellRender:   true, // the default renderer; WithCellRenderer(false) opts out
 
 		bracketedPaste: true,
 	}
 	for _, opt := range opts {
 		opt(p)
 	}
+	if !p.reducedSet {
+		p.reducedMotion = motion.DetectEnv(p.Getenv).Reduced()
+	}
+	if p.accessibleAuto {
+		p.accessible = p.accessibleFromEnv()
+	}
 	if !p.colorSet {
-		p.colorProfile = ansi.DetectColorProfileFor(p.output, os.Getenv)
+		p.colorProfile = ansi.DetectColorProfileFor(p.output, p.Getenv)
 	}
 	p.applyDumbTermDefaults()
 	p.setupRecorder()
@@ -589,6 +601,8 @@ func (p *Program) Run() (Model, error) {
 
 	if w, h, ok := p.termSize(); ok {
 		p.width, p.height = w, h
+	} else if p.initW > 0 && p.initH > 0 {
+		p.width, p.height = p.initW, p.initH
 	} else if _, isFile := p.output.(*os.File); !isFile {
 		p.width, p.height = 80, 24 // a plain writer has no terminal to ask
 	}
