@@ -2057,6 +2057,7 @@ func (m *Model) Focus() tui.Cmd
 func (m Model) Bindings() []keymap.Binding
 func (m Model) Current() string
 func (m Model) CurrentGroup() int
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Err(name string) string
 func (m Model) Focused() bool
 func (m Model) GroupCount() int

@@ -12,6 +12,8 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+`form.Model` implements `tui.CellDrawer` (`DrawCells`): the text and secret fields draw straight into the cell grid and descriptions and errors are written as styled text; 8 fields cost 12.6 µs and 16 allocations a frame instead of 40 µs and 298 through `View`. The other kinds of field and the group header still draw from their `View` string.
+New example `examples/themefollow`: a fixed theme (`theme.Pair`) that follows the terminal between light and dark through `WithTheme` and `WithColorSchemeReports` (`docs/theming.md`).
 New example `examples/ssh`: serves a program over SSH, one Program per connection, with the pty and window-change requests answering `Terminal.Size` and `Resizes`. It is a separate module (it needs `golang.org/x/crypto`), tested in CI on its own (`docs/program.md`).
 New command `tui dev [package]`: builds a program, runs it and rebuilds and restarts it when the source of its module changes (`docs/devtools.md`); the README states what the Windows console needs.
 New experimental package `termpane`: runs a program on a pseudo-terminal (darwin and linux) and draws its screen in a pane, with keys, bracketed paste, mouse reports, resize, scrollback and a terminal emulator that treats the output as untrusted (`docs/background-work.md`).
