@@ -1,0 +1,10 @@
+ File  Edit  View                       
+ 1 package main                         
+ 2                                      
+ 3 import "fmt"                         
+ 4                                      
+ 5 // greet says hello to each name.    
+ 6 func greet(names []string) {         
+ 7     for _, n := range names {        
+ main.go                    Ln 1, Col 1 
+[ctrl+s] save  [ctrl+o] open  …         
