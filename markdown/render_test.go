@@ -191,7 +191,7 @@ func TestRenderLists(t *testing.T) {
 		{"numbering ignores later numbers", "1. a\n7. b", 20, "1. a\n2. b"},
 		{"nested", "- a\n  - b", 20, "• a\n  ◦ b"},
 		{"nested ordered", "- a\n  1. b\n  2. c", 20, "• a\n  1. b\n  2. c"},
-		{"third level is text", "- a\n  - b\n    - c", 20, "• a\n  ◦ b - c"},
+		{"third level is a list", "- a\n  - b\n    - c", 20, "• a\n  ◦ b\n    ◦ c"},
 		{"hanging indent when wrapped", "- aaa bbb ccc", 8, "• aaa\n  bbb\n  ccc"},
 		{"ordered hanging indent", "10. aaa bbb", 9, "10. aaa\n    bbb"},
 		{"empty item", "-", 20, "•"},
@@ -306,12 +306,9 @@ func TestRenderOutOfScopeIsPlainText(t *testing.T) {
 	tests := []struct{ name, md, want string }{
 		{"html", "<b>x</b>", "<b>x</b>"},
 		{"html block", "<div>\nhi\n</div>", "<div> hi </div>"},
-		{"reference link", "[a][b]\n\n[b]: http://x", "[a][b]\n\n[b]: http://x"},
 		{"footnote", "text[^1]\n\n[^1]: note", "text[^1]\n\n[^1]: note"},
 		{"indented code is text", "    code here", "code here"},
-		{"entity", "a &amp; b", "a &amp; b"},
 		{"strikethrough", "~~x~~", "~~x~~"},
-		{"task list", "- [ ] todo", "• [ ] todo"},
 	}
 	for _, tt := range tests {
 		if got := plain(tt.md, 5+len(tt.want)); got != tt.want {

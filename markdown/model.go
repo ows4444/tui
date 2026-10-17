@@ -92,7 +92,7 @@ func (n docNode) Render(s layout.Size) string {
 // row as "header: cell" pairs. Rules are dropped. An empty document returns
 // "Empty document".
 func (m Model) Linearize() string {
-	blocks := parseBlocks(splitLines(sanitize(m.src)), 0, 0)
+	blocks := parseBlocks(resolveRefs(splitLines(sanitize(m.src))), 0, 0)
 	var out []string
 	linearizeBlocks(blocks, "", &out)
 	if len(out) == 0 {

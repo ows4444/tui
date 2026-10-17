@@ -4,16 +4,21 @@
 // Supported: ATX and setext headings, paragraphs (soft and hard breaks),
 // emphasis and strong, inline code, GFM pipe tables (aligned columns,
 // wrapped to fit), fenced code blocks (drawn with widgets.CodeBlock, and
-// coloured by a Lexer passed to RenderWith), bullet and ordered lists with
-// one level of nesting, block quotes, horizontal rules, and inline links and
-// images (shown as "text (url)").
+// coloured by a Lexer passed to RenderWith), bullet and ordered lists nested
+// up to six levels, task lists ("- [ ]" and "- [x]", drawn as "[ ]" and "[x]"),
+// block quotes, horizontal rules, inline links and images (shown as
+// "text (url)"), reference links ("[text][label]", "[text][]" and "[label]"
+// with a "[label]: url" definition, in Render, RenderWith and Model but not in
+// a Stream, which cannot know a definition that comes later), and character
+// references ("&amp;", "&#8212;"), except those that would decode to a control
+// character.
 //
-// Everything else renders as plain paragraph text: HTML, reference links,
-// footnotes, indented code and entities. Deliberate departures
-// from CommonMark: block quotes have no lazy continuation, list items are
-// always tight (only two paragraphs in one item are separated by a blank
-// line), list markers deeper than one nested level are text, and an item's
-// content may start up to four spaces after its marker.
+// Everything else renders as plain paragraph text: HTML, footnotes and
+// indented code. Deliberate departures from CommonMark: block quotes have no
+// lazy continuation, list items are always tight (only two paragraphs in one
+// item are separated by a blank line), list markers deeper than six levels are
+// text, reference link titles are dropped, and an item's content may start up
+// to four spaces after its marker.
 //
 // Styling is applied per word, never across a line break, so every output
 // line is self-contained and safe to repaint on its own (see Program.render).
@@ -77,7 +82,7 @@ func RenderWith(md string, width int, t theme.Theme, o Options) string {
 }
 
 func renderUncached(md string, width int, t theme.Theme, o Options) string {
-	lines := splitLines(sanitize(md))
+	lines := resolveRefs(splitLines(sanitize(md)))
 	out := renderBlocks(parseBlocks(lines, 0, 0), width, t, 0, o)
 	for i, l := range out {
 		if ansi.Width(l) > width { // only reachable at tiny widths
@@ -273,12 +278,20 @@ func renderList(l list, avail int, t theme.Theme, depth int, o Options) []string
 		switch {
 		case l.ordered:
 			text = fmt.Sprintf("%*d%c ", numW, l.start+i, l.delim)
+		case taskOf(l, i) == 1:
+			text = "[ ] "
+		case taskOf(l, i) == 2:
+			text = "[x] "
 		case depth == 0:
 			text = t.GlyphSet().Bullet + " "
 		default:
 			text = t.GlyphSet().BulletNested + " "
 		}
 		mw := ansi.Width(text)
+		marker := marker
+		if taskOf(l, i) == 2 {
+			marker = ansi.NewStyle().Foreground(t.Success)
+		}
 
 		kids := renderItem(item, max(avail-mw, 1), t, depth+1, o)
 		if len(kids) == 0 {
@@ -531,4 +544,12 @@ func wrapPieces(ps []piece, avail int, base look, t theme.Theme) []string {
 		endLine()
 	}
 	return lines
+}
+
+// taskOf is the task state of item i of l: see list.tasks.
+func taskOf(l list, i int) byte {
+	if i < len(l.tasks) {
+		return l.tasks[i]
+	}
+	return 0
 }

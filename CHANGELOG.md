@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Markdown coverage: task lists (`- [ ]`, `- [x]`), reference links
+  (`[text][label]`, `[text][]`, `[label]` with `[label]: url`), character
+  references (`&amp;`, `&#8212;`; ones that decode to a control character stay
+  as typed) and lists nested up to six levels instead of two. Reference links
+  are resolved in `Render`, `RenderWith` and `Model`, not in a `Stream`.
 - Text area editing: `textarea.Model.Highlighter` colours the text from a function
   of one line (View, DrawCells, soft wrap, scrolling and the selection all follow
   it); `AutoIndent` copies the leading whitespace to a new line; `Find`,

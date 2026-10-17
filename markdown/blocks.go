@@ -25,12 +25,15 @@ type (
 		start   int  // first number of an ordered list
 		delim   byte // '.' or ')' for ordered lists, the bullet character otherwise
 		items   [][]block
+		// tasks is per item: 0 an ordinary item, 1 an open task "[ ]", 2 a done
+		// task "[x]". Only bullet lists have tasks.
+		tasks []byte
 	}
 )
 
-// maxListDepth is how many list levels are recognised: a list, and one
-// list nested inside it. Deeper markers are ordinary text.
-const maxListDepth = 2
+// maxListDepth is how many list levels are recognised: a list and five
+// lists nested in it. Deeper markers are ordinary text.
+const maxListDepth = 6
 
 // maxQuoteDepth bounds block-quote nesting, which would otherwise make
 // ">>>>…" cost quadratic time and space; deeper ">" markers are text.
@@ -464,6 +467,10 @@ func parseList(lines []string, i, listDepth, quoteDepth int) (list, int) {
 			break
 		}
 		item := []string{itemFirstLine(lines[i], m)}
+		task := byte(0)
+		if !first.ordered {
+			item[0], task = taskPrefix(item[0])
+		}
 		i++
 
 	body:
@@ -497,6 +504,7 @@ func parseList(lines []string, i, listDepth, quoteDepth int) (list, int) {
 			i++
 		}
 		l.items = append(l.items, parseBlocks(item, listDepth+1, quoteDepth))
+		l.tasks = append(l.tasks, task)
 
 		// Blank lines between items don't end the list; anything else does.
 		j := i
@@ -512,4 +520,27 @@ func parseList(lines []string, i, listDepth, quoteDepth int) (list, int) {
 		break
 	}
 	return l, i
+}
+
+// taskPrefix reads a task-list box at the start of an item: "[ ]" is an open
+// task (1), "[x]" or "[X]" a done one (2); the box needs a space or the end of
+// the line after it. It returns the text after the box.
+func taskPrefix(s string) (string, byte) {
+	if len(s) < 3 || s[0] != '[' || s[2] != ']' {
+		return s, 0
+	}
+	var kind byte
+	switch s[1] {
+	case ' ':
+		kind = 1
+	case 'x', 'X':
+		kind = 2
+	default:
+		return s, 0
+	}
+	rest := s[3:]
+	if rest != "" && rest[0] != ' ' && rest[0] != '\t' {
+		return s, 0
+	}
+	return strings.TrimLeft(rest, " \t"), kind
 }

@@ -207,6 +207,15 @@ func tokenize(s string) (l nodeList, firstDelim *node) {
 			add(s[i : i+1])
 			i++
 
+		case c == '&':
+			if dec, end, ok := entity(s, i); ok {
+				add(dec)
+				i = end
+				continue
+			}
+			add(s[i : i+1])
+			i++
+
 		case c == '<':
 			if url, end, ok := autolink(s, i); ok {
 				flush()
@@ -233,7 +242,7 @@ func tokenize(s string) (l nodeList, firstDelim *node) {
 // isInlineSpecial reports whether c can start a construct in tokenize.
 func isInlineSpecial(c byte) bool {
 	switch c {
-	case '\\', '\n', '`', '*', '_', '!', '[', '<':
+	case '\\', '\n', '`', '*', '_', '!', '[', '<', '&':
 		return true
 	}
 	return false
