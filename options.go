@@ -365,9 +365,9 @@ func WithFrameLog(w io.Writer) ProgramOption {
 // the next row. Tabs are expanded. A row it cannot represent (control
 // characters, escapes other than SGR and OSC 8, unknown SGR codes) is
 // rewritten whole, as the line renderer would; the rest of the frame is still
-// diffed. The whole frame is drawn by the line renderer when the view is
-// taller than the terminal, or when an unrepresentable row appears in a frame
-// that has wide characters.
+// diffed. The whole frame is drawn by the line renderer in two cases: the view
+// is taller than the terminal, or it holds more distinct styles than the
+// renderer's table does (4,096).
 func WithCellRenderer(enabled bool) ProgramOption {
 	return func(p *Program) { p.cellRender = enabled }
 }
