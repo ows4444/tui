@@ -1,0 +1,40 @@
+pkgs  All 31   Installed 12   Updates 4                                                                                 
+Press / to filter                                                                                                       
+› ✓ argon                                       2.3.0 │argon 2.3.0                                                      
+  ✓ bytesize                                    1.0.2 │✓ installed                                                      
+    cachet                                      0.9.4 │                                                                 
+  ↑ clockwork                                   1.3.0 │Command-line flag parsing with sub-commands and shell            
+  ✓ colorize                                    3.1.0 │completion.                                                      
+    configure                                   2.0.0 │                                                                 
+    crontab                                     1.2.5 │Size  180 KB                                                     
+  ✓ csvkit                                      4.0.1 │Needs                                                            
+    difflib                                     0.7.0 │  ✓ textwrap                                                     
+  ↑ dotenv                                      1.0.0 │                                                                 
+  ✓ fmtx                                        5.2.0 │  Up to date  Remove                                             
+    gitlite                                     0.4.2                                                                   
+    glob                                        1.0.0                                                                   
+    httpmock                                    2.1.3                                                                   
+  ↑ jsonpath                                    1.5.2                                                                   
+    logr                                        3.0.1                                                                   
+    markdowner                                  2.8.0                                                                   
+    mimetype                                    1.3.0                                                                   
+  ✓ pathx                                      0.12.0                                                                   
+    progressbar                                 2.2.2                                                                   
+    retry                                       1.0.4                                                                   
+  ↑ semverx                                     3.3.1                                                                   
+    shellwords                                  1.0.1                                                                   
+    sqlmini                                     0.6.0                                                                   
+  ✓ syncx                                       1.9.0                                                                   
+  ✓ textwrap                                    1.2.0                                                                   
+    tomlish                                     2.5.0                                                                   
+    uuidx                                       2.0.2                                                                   
+    watchfs                                     0.8.1                                                                   
+    yamlkit                                     3.0.0                                                                   
+    zlibx                                       1.5.0                                                                   
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+Queue empty                                                                                                             
+[1]                                                                                                                     
+[/] filter  [enter] install  [x] remove  [tab] tab  [f1] help  [q] quit                                                 
