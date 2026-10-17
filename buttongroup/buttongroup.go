@@ -242,10 +242,21 @@ func (m *Model) SetOn(ids ...string) {
 // buttons and wrapping at the ends, and passes every other message to the
 // button under the cursor, so Enter or Space presses it. With Mouse on, a
 // click on a button moves the cursor to it and presses it. Only a group that
-// has focus acts on keys.
+// has focus acts on keys, except a button's hot key (see button.Model.Mnemonic),
+// which moves the cursor to that button and presses it from anywhere.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if ev, ok := msg.(tui.MouseEvent); ok {
 		return m.updateMouse(ev)
+	}
+	// A button's hot key (Alt plus the letter after the "&" in its Label) acts
+	// whether or not the group has focus: it moves the cursor to the button and
+	// presses it.
+	for i, b := range m.Buttons {
+		if m.usable(i) && b.IsMnemonic(msg) {
+			m.cursor = i
+			m = m.sync()
+			return m.forward(i, msg)
+		}
 	}
 	if !m.focused || len(m.Buttons) == 0 {
 		return m, nil

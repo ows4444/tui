@@ -15,6 +15,7 @@
 package button
 
 import (
+	"github.com/ows4444/tui/internal/hotkey"
 	"strings"
 
 	"github.com/ows4444/tui"
@@ -123,7 +124,11 @@ func (m Model) Bindings() []keymap.Binding {
 	if !m.pressable() {
 		return nil
 	}
-	return []keymap.Binding{m.keys().Press}
+	out := []keymap.Binding{m.keys().Press}
+	if k := m.hot().Key; k != 0 {
+		out = append(out, keymap.NewBinding("press", "alt+"+string(k)))
+	}
+	return out
 }
 
 // PressedMsg is delivered (via the Cmd Update returns) when the button is
@@ -187,6 +192,9 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if ev, ok := msg.(tui.MouseEvent); ok {
 		return m.updateMouse(ev)
 	}
+	if m.IsMnemonic(msg) {
+		return m.press()
+	}
 	if m.focused && m.pressable() && keymap.Matches(msg, m.keys().Press) {
 		return m.press()
 	}
@@ -227,9 +235,22 @@ func (m Model) pad() int {
 	return 1
 }
 
-// label is Label with terminal control sequences removed, so text from an
-// untrusted source cannot carry an escape into the frame.
-func (m Model) label() string { return ansi.Sanitize(m.Label) }
+// hot is Label with terminal control sequences removed, so text from an
+// untrusted source cannot carry an escape into the frame, split at its
+// mnemonic marker ("&Save").
+func (m Model) hot() hotkey.Label { return hotkey.Parse(ansi.Sanitize(m.Label)) }
+
+// label is the text of Label as drawn: sanitised, without the mnemonic marker.
+func (m Model) label() string { return m.hot().Text }
+
+// Mnemonic returns the button's hot key, the letter or digit after the "&" in
+// Label, lower-cased, or 0 when Label has none. "&Save" is the label "Save"
+// with S underlined and pressed with Alt+S; "&&" is a literal ampersand.
+func (m Model) Mnemonic() rune { return m.hot().Key }
+
+// IsMnemonic reports whether msg is Alt plus the button's hot key and the
+// button can be pressed. Update acts on it whether or not the button has focus.
+func (m Model) IsMnemonic(msg tui.Msg) bool { return m.pressable() && m.hot().Hit(msg) }
 
 // text is the label as drawn: with an ellipsis while loading.
 func (m Model) text() string {
@@ -309,7 +330,20 @@ func (m Model) leftPad() string {
 // Loading, which adds an ellipsis, makes it one cell wider.
 func (m Model) View() string {
 	left, right := m.brackets()
-	return m.style().Render(left + m.leftPad() + m.text() + strings.Repeat(" ", m.pad()) + right)
+	base := m.style()
+	l := m.hot()
+	pos := l.Pos
+	if !m.pressable() {
+		pos = -1 // a hot key that does nothing is not shown
+	}
+	tail := strings.Repeat(" ", m.pad()) + right
+	if m.Loading {
+		tail = m.themed().GlyphSet().Ellipsis + tail
+	}
+	if pos < 0 {
+		return base.Render(left + m.leftPad() + l.Text + tail) // one run, as before the hot key existed
+	}
+	return base.Render(left+m.leftPad()) + hotkey.Render(l.Text, pos, base) + base.Render(tail)
 }
 
 // Width is the number of cells View takes.
@@ -344,6 +378,9 @@ func (m Model) Linearize() string {
 		out += ", busy"
 	case m.focused:
 		out += ", focused"
+	}
+	if k := m.hot().Spoken(); k != "" && m.pressable() {
+		out += ", shortcut " + k
 	}
 	return out
 }

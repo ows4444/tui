@@ -5,6 +5,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/cellbuf"
 	"github.com/ows4444/tui/internal/celldraw"
+	"github.com/ows4444/tui/internal/hotkey"
 )
 
 // DrawCells draws the bar into the first row of region r of buf, showing what
@@ -21,8 +22,15 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 		tui.DrawView(buf, r, m.View())
 		return
 	}
+	for _, l := range m.Labels {
+		if hotkey.Parse(l).Pos >= 0 {
+			tui.DrawView(buf, r, m.View()) // a hot key is drawn underlined: View does it
+			return
+		}
+	}
 	x := 0
-	for i, l := range m.Labels {
+	for i, raw := range m.Labels {
+		l := hotkey.Parse(raw).Text
 		if i > 0 {
 			x += sub.SetString(x, 0, " ", 0)
 		}

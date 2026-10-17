@@ -8,6 +8,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/input"
 	"github.com/ows4444/tui/keymap"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
@@ -387,5 +388,56 @@ func TestMouseOffIgnoresThePointer(t *testing.T) {
 	next, cmd := m.Update(ev(15, 2, tui.MouseButtonLeft, tui.MouseActionRelease))
 	if cmd != nil || next.Cursor() != 0 {
 		t.Fatal("the pointer acted on a group with Mouse off")
+	}
+}
+
+func altKey(s string) tui.Key { return tui.Key{Type: tui.KeyRunes, Text: s, Mod: input.ModAlt} }
+
+func TestAButtonsHotKeyPressesItFromAnywhere(t *testing.T) {
+	m := New(ModeActions, "&Yes", "&No", "&Cancel")
+	m.Buttons[1].ID = "no"
+	if m.Focused() {
+		t.Fatal("setup: focused")
+	}
+	m, cmd := m.Update(altKey("n"))
+	got := msgs(t, cmd)
+	if len(got) != 1 {
+		t.Fatalf("messages = %v", got)
+	}
+	if p, ok := got[0].(button.PressedMsg); !ok || p.ID != "no" {
+		t.Errorf("message = %+v", got[0])
+	}
+	if m.Cursor() != 1 {
+		t.Errorf("cursor = %d, want 1", m.Cursor())
+	}
+	if m, cmd = m.Update(altKey("q")); cmd != nil {
+		t.Error("an unused hot key pressed something")
+	}
+}
+
+func TestHotKeysInAChoiceGroup(t *testing.T) {
+	m := New(ModeSingle, "&Small", "&Large")
+	m, cmd := m.Update(altKey("l"))
+	got := msgs(t, cmd)
+	if len(got) != 1 {
+		t.Fatalf("messages = %v", got)
+	}
+	if c, ok := got[0].(ChangedMsg); !ok || c.Pressed != "&Large" || len(c.On) != 1 || c.On[0] != "&Large" {
+		t.Errorf("ChangedMsg = %+v", got[0])
+	}
+	if on := m.On(); len(on) != 1 || on[0] != "&Large" {
+		t.Errorf("On = %v", on)
+	}
+	m, _ = m.Update(altKey("s"))
+	if on := m.On(); len(on) != 1 || on[0] != "&Small" {
+		t.Errorf("On after Alt+S = %v", on)
+	}
+}
+
+func TestADisabledButtonsHotKeyDoesNothing(t *testing.T) {
+	m := New(ModeActions, "&Yes", "&No")
+	m.Buttons[1].Disabled = true
+	if _, cmd := m.Update(altKey("n")); cmd != nil {
+		t.Error("a disabled button was pressed by its hot key")
 	}
 }

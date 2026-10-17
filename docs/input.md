@@ -264,6 +264,26 @@ status := map[textarea.ViMode]string{textarea.ViNormal: "NORMAL", textarea.ViIns
 	textarea.ViVisual: "VISUAL", textarea.ViVisualLine: "V-LINE"}[ed.ViMode()]
 ```
 
+## Mnemonics
+
+A label can name its own hot key with an ampersand: `"&Save"` is the label
+"Save" with S underlined, and Alt+S presses it. `"&&"` is a literal ampersand,
+and a marker needs a letter or digit after it. `button`, `buttongroup` and
+`tabs` read it:
+
+- a **button** presses on its hot key whether or not it has focus (a disabled or
+  loading one ignores it and is drawn without the underline), `button.Model.Mnemonic`
+  returns the letter and `IsMnemonic(msg)` tests a message, `Bindings` lists
+  `alt+s`, and `Linearize` says "shortcut Alt+S";
+- a **button group** moves its cursor to the button whose hot key was pressed
+  and presses it, even when the group has no focus;
+- **tabs** activate the tab whose hot key was pressed and deliver the usual
+  `ChangedMsg`.
+
+The marker takes no room: a labelled widget is as wide as an unlabelled one.
+`menubar` has its own `Menu.Accel` for the same Alt+letter. Two widgets with the
+same letter both act, so keep letters unique within a screen.
+
 ## Kill ring
 
 `textinput` and `textarea` have an opt-in kill ring, as readline and Emacs do.

@@ -6,6 +6,7 @@
 package tabs
 
 import (
+	"github.com/ows4444/tui/internal/hotkey"
 	"strconv"
 	"strings"
 
@@ -106,6 +107,16 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if _, ok := msg.(tui.Key); !ok {
 		return m, nil
 	}
+	// Alt plus the letter after the "&" in a label activates that tab.
+	for i, l := range m.Labels {
+		if hotkey.Parse(l).Hit(msg) {
+			if i == m.active {
+				return m, nil
+			}
+			m.active = i
+			return m, func() tui.Msg { return ChangedMsg{Index: i} }
+		}
+	}
 
 	k := m.keys()
 	switch {
@@ -143,7 +154,7 @@ func (m Model) updateMouse(ev tui.MouseEvent) (Model, tui.Cmd) {
 	}
 	x := 0
 	for i, l := range m.Labels {
-		w := ansi.Width(l) + 2
+		w := ansi.Width(hotkey.Parse(l).Text) + 2
 		if lx >= x && lx < x+w {
 			if i == m.active {
 				return m, nil
@@ -162,13 +173,18 @@ func (m Model) View() string {
 	inactive := ansi.NewStyle().Foreground(m.themed().Muted)
 
 	parts := make([]string, len(m.Labels))
-	for i, l := range m.Labels {
-		label := " " + l + " "
-		if i == m.active {
+	for i, raw := range m.Labels {
+		l := hotkey.Parse(raw)
+		switch {
+		case i == m.active && l.Pos < 0:
 			// Brackets replace the padding: visible without colour, same width.
-			parts[i] = active.Render("[" + l + "]")
-		} else {
-			parts[i] = inactive.Render(label)
+			parts[i] = active.Render("[" + l.Text + "]")
+		case i == m.active:
+			parts[i] = active.Render("[") + hotkey.Render(l.Text, l.Pos, active) + active.Render("]")
+		case l.Pos < 0:
+			parts[i] = inactive.Render(" " + l.Text + " ")
+		default:
+			parts[i] = inactive.Render(" ") + hotkey.Render(l.Text, l.Pos, inactive) + inactive.Render(" ")
 		}
 	}
 	return strings.Join(parts, " ")
@@ -198,9 +214,13 @@ func (m Model) Linearize() string {
 	}
 	lines := make([]string, len(m.Labels))
 	for i, l := range m.Labels {
-		lines[i] = l + ", tab " + strconv.Itoa(i+1) + " of " + strconv.Itoa(len(m.Labels))
+		hl := hotkey.Parse(l)
+		lines[i] = hl.Text + ", tab " + strconv.Itoa(i+1) + " of " + strconv.Itoa(len(m.Labels))
 		if i == m.active {
 			lines[i] += ", selected"
+		}
+		if k := hl.Spoken(); k != "" {
+			lines[i] += ", shortcut " + k
 		}
 	}
 	return strings.Join(lines, "\n")
