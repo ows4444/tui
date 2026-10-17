@@ -13,6 +13,9 @@ import (
 
 // runKeys runs `tui keys check <file.json>`.
 func runKeys(args []string, out io.Writer) error {
+	if len(args) == 0 {
+		return runKeyViewer()
+	}
 	if len(args) != 2 || args[0] != "check" {
 		return errors.New(usage)
 	}

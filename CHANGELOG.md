@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Development tools in the `tui` command: `tui keys` (what the terminal sends, live: keys
+  with their decoded type, modifiers and action, mouse events with click counts, paste
+  and focus), `tui log [-f] [-n lines] [-grep text] file` (read and follow the file
+  `tui.LogToFile` writes), and previews of `tui colors [preset]` (swatches and contrast),
+  `tui borders` and `tui easings [name]`.
 - `prompt.Choose[T]` with `prompt.Choice[T]` (a label, a value of any type, an optional
   group shown as "Group > Label"), and two `prompt.Config` fields for `Select` and
   `Choose`: `Start`, the choice the cursor begins on, and `PageSize`, how many

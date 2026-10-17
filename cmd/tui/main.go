@@ -6,6 +6,11 @@
 //	go run github.com/ows4444/tui/cmd/tui theme check mytheme.json
 //	go run github.com/ows4444/tui/cmd/tui theme list
 //	name=$(go run github.com/ows4444/tui/cmd/tui prompt input "Your name")
+//	go run github.com/ows4444/tui/cmd/tui keys        (what the terminal sends, live)
+//	go run github.com/ows4444/tui/cmd/tui log -f app.log
+//	go run github.com/ows4444/tui/cmd/tui colors nord
+//	go run github.com/ows4444/tui/cmd/tui borders
+//	go run github.com/ows4444/tui/cmd/tui easings out-bounce
 //
 // It writes a directory holding go.mod, main.go (a small Model), main_test.go
 // (a headless test with tuitest) and a README. It writes no dependency version
@@ -61,6 +66,11 @@ const usage = `usage: tui new [-module path] <dir>
        tui theme check [-min ratio] <file.json>
        tui theme list
        tui keys check <file.json>
+       tui keys
+       tui log [-f] [-n lines] [-grep text] <file>
+       tui colors [preset]
+       tui borders
+       tui easings [name]
        tui prompt input|password|confirm|select|multiselect|spin ...`
 
 var name = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9._-]*$`)
@@ -77,6 +87,19 @@ func run(args []string, out io.Writer) error {
 		return runTheme(args[1:], out)
 	case "keys":
 		return runKeys(args[1:], out)
+	case "log":
+		stop, cancel := interrupted()
+		defer cancel()
+		return runLog(args[1:], out, stop)
+	case "colors":
+		return runColors(args[1:], out)
+	case "borders":
+		if len(args) != 1 {
+			return errors.New(usage)
+		}
+		return runBorders(out)
+	case "easings":
+		return runEasings(args[1:], out)
 	case "prompt":
 		return runPrompt(args[1:], out)
 	}

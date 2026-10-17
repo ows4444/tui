@@ -214,7 +214,7 @@ func TestKeysCheck(t *testing.T) {
 	if err := run([]string{"keys", "check", bad}, &out); err == nil || !strings.Contains(err.Error(), "Ctrl+Q") {
 		t.Errorf("a bad key passed: %v", err)
 	}
-	for _, args := range [][]string{{"keys"}, {"keys", "nope", good}, {"keys", "check"}, {"keys", "check", filepath.Join(dir, "missing.json")}} {
+	for _, args := range [][]string{{"keys", "nope", good}, {"keys", "check"}, {"keys", "check", filepath.Join(dir, "missing.json")}} {
 		if err := run(args, &out); err == nil {
 			t.Errorf("run(%q) did not fail", args)
 		}
