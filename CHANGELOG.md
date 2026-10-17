@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `markdownview` (experimental): a Markdown document you read in a window. It scrolls,
+  lists its headings (`Headings`, for a table of contents) and links, moves through the
+  links with Tab, follows in-page links (`#section`) with a Back and Forward history,
+  jumps by heading with `]` and `[`, and reports other links with a `LinkMsg`.
+  `viewport` gains `YOffset` and `SetYOffset`.
 - `imageview` takes more than PNG and works without a graphics protocol: `New` accepts a
   JPEG or GIF (its first frame) and keeps its PNG form; `FromImage`, `EncodePNG`
   and `ToPNG` convert; `Frames` decodes an animated GIF into whole-picture frames with

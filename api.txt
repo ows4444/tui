@@ -2903,6 +2903,61 @@ type Stream struct {
 	// contains filtered or unexported fields
 }
 
+## github.com/ows4444/tui/markdownview (package markdownview)
+
+func (m *Model) GoTo(anchor string) bool
+func (m *Model) SetSize(width, height int)
+func (m *Model) SetSource(md string)
+func (m Model) Active() (Link, bool)
+func (m Model) Bindings() []keymap.Binding
+func (m Model) Headings() []Heading
+func (m Model) Height() int
+func (m Model) LayoutNode() layout.Node
+func (m Model) Linearize() string
+func (m Model) Links() []Link
+func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
+func (m Model) View() string
+func (m Model) Width() int
+func (m Model) YOffset() int
+func DefaultKeyMap() KeyMap
+func New(md string, width, height int) Model
+type Heading struct {
+	Level	int
+
+	Text	string
+
+	Anchor	string
+
+	Line	int
+}
+type KeyMap struct {
+	NextLink	keymap.Binding
+	PrevLink	keymap.Binding
+	Follow		keymap.Binding
+	NextHeading	keymap.Binding
+	PrevHeading	keymap.Binding
+	Back		keymap.Binding
+	Forward		keymap.Binding
+}
+type Link struct {
+	Text, URL	string
+
+	Line	int
+}
+type LinkMsg struct{ Text, URL string }
+type Model struct {
+	Theme	theme.Theme
+
+	Options	markdown.Options
+
+	KeyMap	KeyMap
+
+	Mouse	bool
+
+	Bounds	hittest.Rect
+	// contains filtered or unexported fields
+}
+
 ## github.com/ows4444/tui/maskedinput (package maskedinput)
 
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
@@ -4862,6 +4917,7 @@ func (m *Model) PrevMatch() bool
 func (m *Model) Search(q string) int
 func (m *Model) SelectAll()
 func (m *Model) SetContent(s string)
+func (m *Model) SetYOffset(y int)
 func (m *Model) TrimFront(max int) int
 func (m Model) AtBottom() bool
 func (m Model) AtTop() bool
@@ -4877,6 +4933,7 @@ func (m Model) SearchQuery() string
 func (m Model) SelectedText() string
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
+func (m Model) YOffset() int
 func DefaultKeyMap() KeyMap
 func New(width, height int) Model
 type KeyMap struct {

@@ -1,6 +1,7 @@
 package tui_test
 
 import (
+	"github.com/ows4444/tui"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -39,6 +40,7 @@ import (
 	"github.com/ows4444/tui/inputgroup"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/logview"
+	"github.com/ows4444/tui/markdownview"
 	"github.com/ows4444/tui/menu"
 	"github.com/ows4444/tui/menubar"
 	"github.com/ows4444/tui/multiselect"
@@ -226,6 +228,11 @@ var conformance = map[string]func() map[string]string{
 	},
 	"radiogroup": func() map[string]string {
 		m := radiogroup.New(evil, evil)
+		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
+	},
+	"markdownview": func() map[string]string {
+		m := markdownview.New("# "+evil+"\n\n["+evil+"]("+evil+")\n", 40, 6)
+		m, _ = m.Update(tui.Key{Type: tui.KeyTab})
 		return map[string]string{"View": m.View(), "Linearize": m.Linearize()}
 	},
 	"rangeslider": func() map[string]string {

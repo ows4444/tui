@@ -62,6 +62,7 @@ linters:
             - "!**/loadingbar/**"
             - "!**/logview/**"
             - "!**/markdown/**"
+            - "!**/markdownview/**"
             - "!**/maskedinput/**"
             - "!**/menu/**"
             - "!**/menubar/**"
@@ -478,6 +479,7 @@ linters:
             - "github.com/ows4444/tui/loadingbar$"
             - "github.com/ows4444/tui/logview$"
             - "github.com/ows4444/tui/markdown$"
+            - "github.com/ows4444/tui/markdownview$"
             - "github.com/ows4444/tui/maskedinput$"
             - "github.com/ows4444/tui/menu$"
             - "github.com/ows4444/tui/menubar$"
@@ -1181,6 +1183,7 @@ linters:
           list-mode: strict
           files:
             - "**/logview/*.go"
+            - "**/markdownview/*.go"
             - "!**/examples/**"
             - "!$test"
           allow:

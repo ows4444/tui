@@ -287,6 +287,14 @@ func (m Model) maxXOffset() int {
 func (m *Model) setYOffset(y int) { m.yOffset = clamp(y, 0, m.maxYOffset()) }
 func (m *Model) setXOffset(x int) { m.xOffset = clamp(x, 0, m.maxXOffset()) }
 
+// YOffset is the first visible row (a content line, or a visual row with
+// SoftWrap), counted from 0 at the top.
+func (m Model) YOffset() int { return m.yOffset }
+
+// SetYOffset scrolls so that row y is the first visible one, clamped to the
+// content.
+func (m *Model) SetYOffset(y int) { m.setYOffset(y) }
+
 // LineUp scrolls up n lines, clamped to the top.
 func (m *Model) LineUp(n int) { m.setYOffset(m.yOffset - n) }
 
