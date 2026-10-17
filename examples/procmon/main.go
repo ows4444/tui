@@ -22,6 +22,7 @@ import (
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/layout"
+	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
 	"github.com/ows4444/tui/widgets/chart"
@@ -71,7 +72,7 @@ func initialModel() model {
 func (m model) Init() tui.Cmd { return m.tick() }
 
 func (m model) tick() tui.Cmd {
-	return tui.Tick(interval, func(t time.Time) tui.Msg { return tickMsg(t) })
+	return tui.FromCtx(motion.After(interval, func(t time.Time) tui.Msg { return tickMsg(t) }))
 }
 
 // shown is the processes that pass the filter, in sort order.
