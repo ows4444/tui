@@ -12,6 +12,7 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Four examples for the new widgets: docsreader (markdownview with a contents panel), logbrowser (filter input with history over a viewport), splitedit (splitpane with a highlighted textarea and outline) and inventory (datatable Source, Columns and marks with a detail pane).
 - Guides for animation, background work, forms, tables and the development tools
   (`docs/animation.md`, `background-work.md`, `forms.md`, `tables.md`, `devtools.md`),
   and the `motion` package comment now says it has 31 easings.

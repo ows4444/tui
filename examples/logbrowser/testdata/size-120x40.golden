@@ -1,0 +1,40 @@
+filter>                                                                                                                 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+00:00:00 INFO  api     request 0 handled                                                                                
+00:00:01 WARN  worker  request 1 handled                                                                                
+00:00:02 ERROR gateway request 2 handled                                                                                
+00:00:03 INFO  api     request 3 handled                                                                                
+00:00:04 INFO  worker  request 4 handled                                                                                
+00:00:05 INFO  gateway request 5 handled                                                                                
+00:00:06 WARN  api     request 6 handled                                                                                
+00:00:07 ERROR worker  request 7 handled                                                                                
+00:00:08 INFO  gateway request 8 handled                                                                                
+00:00:09 INFO  api     request 9 handled                                                                                
+00:00:10 INFO  worker  request 10 handled                                                                               
+00:00:11 WARN  gateway request 11 handled                                                                               
+00:00:12 ERROR api     request 12 handled                                                                               
+00:00:13 INFO  worker  request 13 handled                                                                               
+00:00:14 INFO  gateway request 14 handled                                                                               
+00:00:15 INFO  api     request 15 handled                                                                               
+00:00:16 WARN  worker  request 16 handled                                                                               
+00:00:17 ERROR gateway request 17 handled                                                                               
+00:00:18 INFO  api     request 18 handled                                                                               
+00:00:19 INFO  worker  request 19 handled                                                                               
+00:00:20 INFO  gateway request 20 handled                                                                               
+00:00:21 WARN  api     request 21 handled                                                                               
+00:00:22 ERROR worker  request 22 handled                                                                               
+00:00:23 INFO  gateway request 23 handled                                                                               
+00:00:24 INFO  api     request 24 handled                                                                               
+00:00:25 INFO  worker  request 25 handled                                                                               
+00:00:26 WARN  gateway request 26 handled                                                                               
+00:00:27 ERROR api     request 27 handled                                                                               
+00:00:28 INFO  worker  request 28 handled                                                                               
+00:00:29 INFO  gateway request 29 handled                                                                               
+00:00:30 INFO  api     request 30 handled                                                                               
+00:00:31 WARN  worker  request 31 handled                                                                               
+00:00:32 ERROR gateway request 32 handled                                                                               
+00:00:33 INFO  api     request 33 handled                                                                               
+00:00:34 INFO  worker  request 34 handled                                                                               
+00:00:35 INFO  gateway request 35 handled                                                                               
+00:00:36 WARN  api     request 36 handled                                                                               
+200 of 200 lines   up/down: history   ctrl+r: search   pgup/pgdn: scroll   esc: quit                                    

@@ -1,0 +1,10 @@
+  Item      Qty    Price  Detail        
+  ──────────────────────                
+> bolt-…     10    $0.00  Item:  bolt-00
+  nut-0…     47    $1.25  Qty:   10     
+  washe…     84    $2.50  Price: $0.00  
+  brack…    121    $3.75                
+  hinge…    158    $5.00  Marked: 0     
+  bolt-…    195    $6.25                
+                                        
+up/down: move   space: mark   s: sort  …

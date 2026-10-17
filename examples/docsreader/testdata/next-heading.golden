@@ -1,0 +1,24 @@
+Contents                (https://github.com/ows4444/tui).                       
+> tui                                                                           
+    Quick start         Quick start                                             
+    Architecture                                                                
+    Testing             Write a Model with Init, Update and View, hand it to a  
+                        Program, and call Run.                                  
+                                                                                
+                        [x] a model                                             
+                        [x] a program                                           
+                        [ ] your idea                                           
+                                                                                
+                        Architecture                                            
+                                                                                
+                        A Program owns the terminal and one event loop. Messages
+                        go in, a View comes out, and the renderer writes only   
+                        what changed. See quick start (#quick-start) again.     
+                                                                                
+                        Testing                                                 
+                                                                                
+                        tuitest runs a model headless: send keys, read the      
+                        screen, compare a golden file.                          
+                                                                                
+                                                                                
+tab: next link   enter: follow   ]/[: heading   backspace: back   q: quit       
