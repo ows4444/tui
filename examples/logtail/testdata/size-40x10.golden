@@ -1,0 +1,10 @@
+logtail                                 
+☑1 TRACE 2 ☑2 DEBUG 3 ☑3 INFO 25 ☑4 WARN
+  09:30:04.795 INFO  worker 2 picked up 
+  09:30:04.932 INFO  request  method=GET
+  09:30:05.069 DEBUG cache lookup  key=/
+  09:30:05.206 INFO  worker 0 picked up 
+  09:30:05.343 INFO  request  method=PUT
+› 09:30:05.480 INFO  request  method=GET
+sample service · 40 of 40 lines         
+[enter] open  [1-5] levels  …           

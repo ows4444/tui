@@ -1,0 +1,40 @@
+logtail                                                                                                                 
+☑1 TRACE 2 ☑2 DEBUG 3 ☑3 INFO 25 ☑4 WARN 7 ☑5 ERROR 3 [/ filter] [‖ pause] [☑ follow]                                   
+  09:30:02.329 WARN  slow request GET /api/cart took 274ms (limit 100ms)                                                
+  09:30:02.466 INFO  request  method=GET  path=/api/cart  status=200  ms=94  bytes=5804                                 
+  09:30:02.603 INFO  request  method=GET  path=/api/orders  status=200  ms=98  bytes=2887                               
+  09:30:02.740 INFO  request  method=GET  path=/api/users  status=200  ms=63  bytes=7743                                
+  09:30:02.877 WARN  slow request POST /static/app.js took 225ms (limit 100ms)                                          
+  09:30:03.014 INFO  request  method=PUT  path=/api/orders  status=200  ms=68  bytes=6850                               
+  09:30:03.151 INFO  request  method=GET  path=/api/users  status=200  ms=114  bytes=1254                               
+  09:30:03.288 TRACE tick 24                                                                                            
+  09:30:03.425 DEBUG cache lookup  key=/healthz:16  hit=true                                                            
+  09:30:03.562 INFO  worker 4 picked up job 1026                                                                        
+  09:30:03.699 INFO  request  method=GET  path=/api/search  status=200  ms=83  bytes=2000                               
+  09:30:03.836 DEBUG cache lookup  key=cart:164  hit=false                                                              
+  09:30:03.973 INFO  request  method=GET  path=/healthz  status=200  ms=16  bytes=2659                                  
+  09:30:04.110 WARN  retrying  path=/api/cart  status=503  retry_in_ms=300                                              
+  09:30:04.247 INFO  request  method=GET  path=/healthz  status=200  ms=29  bytes=3405                                  
+  09:30:04.384 INFO  worker 7 picked up job 1032                                                                        
+  09:30:04.521 WARN  slow request POST /static/app.js took 409ms (limit 100ms)                                          
+  09:30:04.658 INFO  request  method=DELETE  path=/healthz  status=200  ms=6  bytes=4534                                
+  09:30:04.795 INFO  worker 2 picked up job 1035                                                                        
+  09:30:04.932 INFO  request  method=GET  path=/api/orders  status=200  ms=32  bytes=597                                
+  09:30:05.069 DEBUG cache lookup  key=/healthz:246  hit=false                                                          
+  09:30:05.206 INFO  worker 0 picked up job 1038                                                                        
+  09:30:05.343 INFO  request  method=PUT  path=/api/cart  status=200  ms=27  bytes=9025                                 
+› 09:30:05.480 INFO  request  method=GET  path=/api/cart  status=200  ms=34  bytes=4106                                 
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+                                                                                                                        
+sample service · 40 of 40 lines                                                                                         
+[enter] open  [1-5] levels  [/] filter  [space] pause  [f1] help  [q] quit                                              
