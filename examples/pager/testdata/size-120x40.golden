@@ -1,17 +1,40 @@
-╭──────────────────────────────────────────────────────────────╮         
-│                                                              │         
-│ Pager                                                        │         
-│                                                              │         
-│ Paragraph 1                                                  │         
-│ This from-scratch TUI framework talks to the terminal        │         
-│ directly via raw syscall ioctls, no golang.org/x/term and no │         
-│ Bubble Tea.                                                  │         
-│                                                              │         
-│ Paragraph 2                                                  │         
-│ The event loop follows the Elm Architecture: a Model         │         
-│ implements Init, Update, and View, and Program owns the      │         
-│ terminal, the input parsing, and a line-level diffing        │         
-│ renderer.                                                    │         
-│                                                              │         
-╰──────────────────────────────────────────────────────────────╯         
-up/down/pgup/pgdown/home/end/wheel scroll  gg top  G bottom  q quit    0%
+PAGER SAMPLE                                                                                                            
+============                                                                                                            
+                                                                                                                        
+This text stands in for a file. Press / to search, w to wrap, # for line                                                
+numbers, F to follow, ? for help.                                                                                       
+                                                                                                                        
+Section 1                                                                                                               
+---------                                                                                                               
+   1.1  The quick brown fox number 11 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.2  The quick brown fox number 12 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.3  The quick brown fox number 13 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.4  The quick brown fox number 14 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.5  The quick brown fox number 15 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.6  The quick brown fox number 16 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.7  The quick brown fox number 17 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   1.8  The quick brown fox number 18 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+                                                                                                                        
+Section 2                                                                                                               
+---------                                                                                                               
+   2.1  The quick brown fox number 21 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   2.2  The quick brown fox number 22 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   2.3  The quick brown fox number 23 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   2.4  The quick brown fox number 24 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   2.5  The quick brown fox number 25 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+ng or sideways scrolling in a narrow window.                                                                            
+   2.6  The quick brown fox number 26 jumps over the lazy dog, then reads a long line that is wide enough to need wrappi
+sample  lines 1–38 of 139                                                                              ────────────   0%
+[space] page  [/] search  [n] next  [w] wrap  [#] numbers  [F] follow  [?] help  [q] quit                               

@@ -1,10 +1,10 @@
-╭──────────────────────────────────────╮
-│ Pager                                │
-│ Paragraph 1                          │
-│ This from-scratch TUI framework      │
-│ talks to the terminal directly via   │
-│ raw syscall ioctls, no               │
-│ golang.org/x/term and no Bubble Tea. │
-│                                      │
-╰──────────────────────────────────────╯
-scroll: arrows pgup/dn  gg G q    0%    
+PAGER SAMPLE                            
+============                            
+                                        
+This text stands in for a file. Press / 
+to search, w to wrap, # for line        
+numbers, F to follow, ? for help.       
+                                        
+Section 1                               
+sample  1–8/139        ────────────   0%
+[space] page  [/] search  [n] next  …   
