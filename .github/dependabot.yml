@@ -1,0 +1,10 @@
+# The module has no third-party requires, so there is nothing to bump in
+# go.mod; this keeps the pinned GitHub Actions current.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci

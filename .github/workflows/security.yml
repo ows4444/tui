@@ -1,0 +1,42 @@
+name: Security
+
+on:
+  push:
+    branches: [code]
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 1" # Mondays: a new advisory can land with no commit
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+      # The module requires nothing, so this checks the standard library the
+      # build uses and the code's own calls into it.
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+
+  codeql:
+    name: codeql
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: go
+      - uses: github/codeql-action/analyze@v3
