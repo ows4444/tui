@@ -36,7 +36,7 @@ func (m *Model) SetQuery(q string) {
 // current sort is. Numeric cells compare as numbers, others as strings, and
 // the sort is stable. A column outside the headers is ignored.
 func (m *Model) SortBy(col int, desc bool) {
-	if col < 0 || col >= len(m.Headers) {
+	if m.Source != nil || col < 0 || col >= len(m.Headers) {
 		return
 	}
 	m.sortCol, m.sortDesc, m.sorted = col, desc, true
@@ -57,7 +57,7 @@ func (m *Model) ClearSort() {
 // displayed row i, or -1 when i is out of range. It differs from i while the
 // rows are sorted or filtered.
 func (m Model) SourceRow(i int) int {
-	if i < 0 || i >= len(m.Rows) {
+	if i < 0 || i >= m.rowCount() {
 		return -1
 	}
 	if m.idx == nil {

@@ -24,6 +24,11 @@ type Model struct {
 	Message string
 	Theme   theme.Theme
 
+	// MessageText is Message as styled spans (ansi.Text), for an app that builds
+	// its text rather than a styled string. When it is set it is shown instead of
+	// Message, wrapped at Width with each span keeping its style.
+	MessageText ansi.Text
+
 	// tokens is the per-instance colour override set by WithTokens.
 	tokens theme.Tokens
 	// Raw, when true, draws Title and Message unchanged. By default it is sanitised
@@ -151,7 +156,9 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 func (m Model) build() (box string, w, h int) {
 	titleStyled := m.themed().ResolvedTypography().H2.Render(ansi.Clean(m.Raw, m.Title))
 	body := titleStyled
-	if m.Message != "" {
+	if len(m.MessageText) > 0 {
+		body += "\n\n" + m.MessageText.WrapString(m.Width)
+	} else if m.Message != "" {
 		msg := ansi.Clean(m.Raw, m.Message)
 		if m.Width > 0 {
 			msg = ansi.WrapStyled(msg, m.Width)

@@ -65,7 +65,7 @@ func (n tableNode) Measure(c layout.Constraints) layout.Size {
 		return c.Constrain(layout.Size{})
 	}
 	w := n.naturalWidths()
-	return c.Constrain(layout.Size{W: cursorGutter + sum(w) + gap*(len(w)-1), H: len(n.m.Rows) + 2 + n.m.top()})
+	return c.Constrain(layout.Size{W: cursorGutter + sum(w) + gap*(len(w)-1), H: n.m.rowCount() + 2 + n.m.top()})
 }
 
 // fitWidths shrinks the widest column one cell at a time until the columns
@@ -147,10 +147,10 @@ func (n tableNode) Render(s layout.Size) string {
 	if body < 0 {
 		body = 0
 	}
-	start, end := 0, len(m.Rows)
-	if len(m.Rows) > body {
+	start, end := 0, m.rowCount()
+	if m.rowCount() > body {
 		start = m.cursor - body/2
-		if max := len(m.Rows) - body; start > max {
+		if max := m.rowCount() - body; start > max {
 			start = max
 		}
 		if start < 0 {
@@ -159,7 +159,7 @@ func (n tableNode) Render(s layout.Size) string {
 		end = start + body
 	}
 	rows := make([][]string, 0, end-start)
-	for _, row := range m.Rows[start:end] {
+	for _, row := range m.rowsIn(start, end) {
 		cells := make([]string, len(row))
 		for i, cell := range row {
 			if i < len(widths) {

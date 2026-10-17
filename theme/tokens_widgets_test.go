@@ -27,6 +27,7 @@ import (
 	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
+	"github.com/ows4444/tui/hexview"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/hovercard"
 	"github.com/ows4444/tui/imageview"
@@ -361,6 +362,13 @@ func tokenCases() []tokenCase {
 		}},
 		{theme.ComponentRadioGroup, func(th theme.Theme, i *theme.Tokens) string {
 			m := radiogroup.New("A", "B").SetTheme(th)
+			if i != nil {
+				m = m.WithTokens(*i)
+			}
+			return m.View()
+		}},
+		{theme.ComponentHexView, func(th theme.Theme, i *theme.Tokens) string {
+			m := hexview.New([]byte("hello hex view\x00\x01")).SetTheme(th)
 			if i != nil {
 				m = m.WithTokens(*i)
 			}

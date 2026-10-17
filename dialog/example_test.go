@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/dialog"
 )
 
@@ -22,4 +23,16 @@ func Example() {
 	// false
 	// dialog.DismissedMsg
 	// true
+}
+
+// MessageText takes the message as styled spans, for an app that builds its text:
+// it wraps at Width with each span keeping its style.
+func ExampleModel_MessageText() {
+	d := dialog.New("Delete", "")
+	d.Width = 22
+	d.MessageText = ansi.NewText("This cannot be ", ansi.Style{}).Append("undone", ansi.NewStyle().Bold())
+	fmt.Println(ansi.StripANSI(d.Linearize()))
+	// Output:
+	// Dialog: Delete
+	// This cannot be undone
 }

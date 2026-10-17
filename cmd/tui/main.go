@@ -60,6 +60,7 @@ func cli(args []string, stdout, stderr io.Writer) int {
 const usage = `usage: tui new [-module path] <dir>
        tui theme check [-min ratio] <file.json>
        tui theme list
+       tui keys check <file.json>
        tui prompt input|password|confirm|select|multiselect|spin ...`
 
 var name = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9._-]*$`)
@@ -74,6 +75,8 @@ func run(args []string, out io.Writer) error {
 		return runNew(args, out)
 	case "theme":
 		return runTheme(args[1:], out)
+	case "keys":
+		return runKeys(args[1:], out)
 	case "prompt":
 		return runPrompt(args[1:], out)
 	}

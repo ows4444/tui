@@ -9,7 +9,7 @@ import "slices"
 // the cached column widths are dropped.
 func (m *Model) SetCell(row, col int, text string) bool {
 	src := m.source()
-	if row < 0 || row >= len(src) || col < 0 || col >= len(m.Headers) {
+	if m.Source != nil || row < 0 || row >= len(src) || col < 0 || col >= len(m.Headers) {
 		return false
 	}
 	rows := slices.Clone(src)
@@ -27,6 +27,9 @@ func (m *Model) SetCell(row, col int, text string) bool {
 // rows there are (i at or past the end appends). It works on a copy, like
 // SetCell, and applies a sort or filter in force.
 func (m *Model) InsertRow(i int, cells []string) {
+	if m.Source != nil {
+		return
+	}
 	src := m.source()
 	i = max(0, min(i, len(src)))
 	rows := make([][]string, 0, len(src)+1)
@@ -41,7 +44,7 @@ func (m *Model) InsertRow(i int, cells []string) {
 // clamped to the rows that remain.
 func (m *Model) RemoveRow(i int) bool {
 	src := m.source()
-	if i < 0 || i >= len(src) {
+	if m.Source != nil || i < 0 || i >= len(src) {
 		return false
 	}
 	m.SetRows(slices.Delete(slices.Clone(src), i, i+1))

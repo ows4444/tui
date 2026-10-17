@@ -40,3 +40,21 @@ func ExampleModel_filter() {
 	// 0 src
 	// 0.1 util.go
 }
+
+// A node with a Load lists its children the first time it opens. Update returns
+// a Cmd that runs the Load; the LoadedMsg it delivers goes back through Update,
+// which opens the node.
+func ExampleNode_Load() {
+	m := treeview.New(treeview.Node{Label: "logs", Load: func() []treeview.Node {
+		return []treeview.Node{{Label: "app.log"}, {Label: "db.log"}}
+	}})
+	m, cmd := m.Update(tui.Key{Type: tui.KeyRight})
+	m, _ = m.Update(cmd()) // the program does this with the Cmd's message
+	for _, r := range m.VisibleRows() {
+		fmt.Println(r.Label)
+	}
+	// Output:
+	// logs
+	// app.log
+	// db.log
+}

@@ -113,24 +113,55 @@ const (
 
 // walk calls f for every cell run of row r in drawing order: each cluster with
 // its kind, then the end-of-line cursor cell (text " ") when it is shown.
-func (m Model) walk(r srow, f func(text string, k cellKind)) {
+func (m Model) walk(r srow, f func(text string, k cellKind, pos int)) {
 	lo, hi, _ := m.selection()
 	show := r.own && m.focused && m.cursorVisible
 	pos := r.base
 	for _, c := range r.cl {
 		switch {
 		case show && pos == m.cursor:
-			f(c, kindCursor)
+			f(c, kindCursor, pos)
 		case pos >= lo && pos < hi:
-			f(c, kindSel)
+			f(c, kindSel, pos)
 		default:
-			f(c, kindText)
+			f(c, kindText, pos)
 		}
 		pos += utf8.RuneCountInString(c)
 	}
 	if show && r.end && pos == m.cursor {
-		f(" ", kindCursor)
+		f(" ", kindCursor, pos)
 	}
+}
+
+// rowStyles returns the Highlighter's style for each rune of the line r is
+// on, and the rune offset where that line starts. It is nil, 0 without a
+// Highlighter or when its answer does not add up to the line.
+func (m Model) rowStyles(r srow) ([]ansi.Style, int) {
+	if m.Highlighter == nil {
+		return nil, 0
+	}
+	line := m.value.lineOf(r.base)
+	ls := m.value.lineStart(line)
+	text := m.value.str(ls, m.value.lineEnd(line))
+	sty := make([]ansi.Style, 0, len(text))
+	for _, sp := range m.Highlighter(text).WithDefault(m.TextStyle) {
+		for range sp.Text {
+			sty = append(sty, sp.Style)
+		}
+	}
+	if len(sty) != utf8.RuneCountInString(text) {
+		return nil, 0
+	}
+	return sty, ls
+}
+
+// textStyle is the style of the text cluster at rune offset pos: the
+// Highlighter's, or TextStyle.
+func (m Model) textStyle(sty []ansi.Style, ls, pos int) ansi.Style {
+	if i := pos - ls; i >= 0 && i < len(sty) {
+		return sty[i]
+	}
+	return m.TextStyle
 }
 
 // selectionView is View when text is selected.
@@ -140,14 +171,15 @@ func (m Model) selectionView() string {
 	sel := m.selStyle()
 	for i, r := range rows {
 		var b strings.Builder
-		m.walk(r, func(c string, k cellKind) {
+		sty, ls := m.rowStyles(r)
+		m.walk(r, func(c string, k cellKind, pos int) {
 			switch k {
 			case kindCursor:
 				b.WriteString(m.CursorStyle.Render(c))
 			case kindSel:
 				b.WriteString(sel.Render(c))
 			default:
-				b.WriteString(m.TextStyle.Render(c))
+				b.WriteString(m.textStyle(sty, ls, pos).Render(c))
 			}
 		})
 		out[i] = b.String()
@@ -164,13 +196,18 @@ func (m Model) drawSelection(sub *cellbuf.Buffer) {
 			break
 		}
 		x := 0
-		m.walk(r, func(c string, k cellKind) {
+		sty, ls := m.rowStyles(r)
+		m.walk(r, func(c string, k cellKind, pos int) {
 			id := text
 			switch k {
 			case kindCursor:
 				id = cur
 			case kindSel:
 				id = sel
+			default:
+				if sty != nil {
+					id = sub.StyleID(cellStyle(m.textStyle(sty, ls, pos)))
+				}
 			}
 			x += sub.SetString(x, y, c, id)
 		})

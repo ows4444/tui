@@ -184,39 +184,80 @@ func corner(c string, vertOn bool) string {
 // added around them. BoxNode draws through it; the exported way to draw a box
 // is BoxNode(box, Block(content)) or BoxNode with any Node child.
 func (b Box) render(content string) string {
-	contentWidth := b.width
+	r := b.plan(content)
+	rowCount := b.marginT + b.padTop + r.bodyRows + b.padBottom + b.marginB + 2
+	r.out.Grow(rowCount*(r.innerWidth+len(r.left)+len(r.right)+b.marginL+b.marginR+1) + len(content))
+	r.margins(b.marginT)
+	r.top()
+	r.body(content)
+	r.bottom()
+	r.margins(b.marginB)
+	return r.out.String()
+}
+
+// boxRender is one render of a Box: the sizes worked out from the content, the
+// painters for the border and background, and the output so far. The steps
+// top, body and bottom each write their rows to out.
+type boxRender struct {
+	b Box
+	// contentWidth is the width of the text column, innerWidth that plus the
+	// side padding; bodyRows is the number of text rows.
+	contentWidth, innerWidth, bodyRows int
+	// show says which sides of the border are drawn.
+	showTop, showBottom, showLeft, showRight bool
+	// left and right are the painted side glyphs, used when there is no ring.
+	left, right string
+	// paint colours border text; fillBG and reBG apply the background.
+	paint  func(string) string
+	fillBG func(int) string
+	reBG   func(string) string
+	// ring paints a gradient border a cell at a time; off when it is not on.
+	ring borderRing
+	// fullWidth is the width of a margin-only row.
+	fullWidth int
+
+	out     strings.Builder
+	first   bool // no row written yet: the next one needs no newline before it
+	sideRow int  // body rows written so far, the ring's place on the sides
+}
+
+// plan measures content against the box and sets up the painters.
+func (b Box) plan(content string) *boxRender {
+	r := &boxRender{b: b, first: true}
+	r.contentWidth = b.width
 	nLines := 0
 	for rest, more := content, true; more; nLines++ {
 		var l string
 		l, rest, more = nextLine(rest)
 		if b.width == 0 {
-			if w := ansi.Width(l); w > contentWidth {
-				contentWidth = w
+			if w := ansi.Width(l); w > r.contentWidth {
+				r.contentWidth = w
 			}
 		}
 	}
 	bordered := hasBorder(b.border)
-	showTop, showBottom := bordered && !b.noTop, bordered && !b.noBottom
-	showLeft, showRight := bordered && !b.noLeft, bordered && !b.noRight
-	if b.width == 0 && showTop && b.title != "" {
+	r.showTop, r.showBottom = bordered && !b.noTop, bordered && !b.noBottom
+	r.showLeft, r.showRight = bordered && !b.noLeft, bordered && !b.noRight
+	if b.width == 0 && r.showTop && b.title != "" {
 		// An auto-sized box grows to fit its title (with a space each side).
 		need := ansi.Width(b.title) + 2 - b.padLeft - b.padRight
-		if need > contentWidth {
-			contentWidth = need
+		if need > r.contentWidth {
+			r.contentWidth = need
 		}
 	}
-	bodyRows := nLines
+	r.bodyRows = nLines
 	if b.height > 0 {
-		bodyRows = b.height
+		r.bodyRows = b.height
 	}
 	if b.fixedRows {
-		bodyRows = b.rows
+		r.bodyRows = b.rows
 	}
+	r.innerWidth = r.contentWidth + b.padLeft + b.padRight
 
-	paint := func(s string) string { return s }
+	r.paint = func(s string) string { return s }
 	if bordered && b.borderColor != nil {
 		style := ansi.NewStyle().Foreground(b.borderColor)
-		paint = func(s string) string {
+		r.paint = func(s string) string {
 			if s == "" {
 				return s
 			}
@@ -225,18 +266,18 @@ func (b Box) render(content string) string {
 	}
 	// fillBG paints interior spaces; reBG re-opens the background after a
 	// reset inside content.
-	fillBG := func(n int) string { return strings.Repeat(" ", maxInt(n, 0)) }
-	reBG := func(s string) string { return s }
+	r.fillBG = func(n int) string { return strings.Repeat(" ", maxInt(n, 0)) }
+	r.reBG = func(s string) string { return s }
 	if b.bg != nil {
 		style := ansi.NewStyle().Background(b.bg)
-		fillBG = func(n int) string {
+		r.fillBG = func(n int) string {
 			if n <= 0 {
 				return ""
 			}
 			return style.Render(strings.Repeat(" ", n))
 		}
 		open, _, _ := strings.Cut(style.Render("X"), "X")
-		reBG = func(s string) string {
+		r.reBG = func(s string) string {
 			if s == "" {
 				return s
 			}
@@ -246,130 +287,142 @@ func (b Box) render(content string) string {
 		}
 	}
 
-	innerWidth := contentWidth + b.padLeft + b.padRight
-	var left, right string
-	if showLeft {
-		left = paint(b.border.Left)
+	if r.showLeft {
+		r.left = r.paint(b.border.Left)
 	}
-	if showRight {
-		right = paint(b.border.Right)
+	if r.showRight {
+		r.right = r.paint(b.border.Right)
 	}
 	// With a gradient the border is painted a cell at a time along the loop
 	// top (left to right), right side (down), bottom (right to left) and left
 	// side (up). ring says how long the loop is, so a cell's place is a fraction.
-	var ring borderRing
 	if bordered && b.gradient != nil {
-		topW := ansi.Width(corner(b.border.TopLeft, showLeft)) + innerWidth + ansi.Width(corner(b.border.TopRight, showRight))
-		botW := ansi.Width(corner(b.border.BottomLeft, showLeft)) + innerWidth + ansi.Width(corner(b.border.BottomRight, showRight))
-		ring = borderRing{
+		topW := ansi.Width(corner(b.border.TopLeft, r.showLeft)) + r.innerWidth + ansi.Width(corner(b.border.TopRight, r.showRight))
+		botW := ansi.Width(corner(b.border.BottomLeft, r.showLeft)) + r.innerWidth + ansi.Width(corner(b.border.BottomRight, r.showRight))
+		r.ring = borderRing{
 			from: b.gradient[0], to: b.gradient[1],
 			topW: topW, botW: botW,
-			side: b.padTop + bodyRows + b.padBottom,
+			side: b.padTop + r.bodyRows + b.padBottom,
 		}
-		if !showTop {
-			ring.topW = 0
+		if !r.showTop {
+			r.ring.topW = 0
 		}
-		if !showBottom {
-			ring.botW = 0
+		if !r.showBottom {
+			r.ring.botW = 0
 		}
-		paint = func(s string) string { return s } // the ring paints the cells itself
+		r.paint = func(s string) string { return s } // the ring paints the cells itself
 	}
-	rowCount := b.marginT + b.padTop + bodyRows + b.padBottom + b.marginB + 2
-	var out strings.Builder
-	out.Grow(rowCount*(innerWidth+len(left)+len(right)+b.marginL+b.marginR+1) + len(content))
-	first := true
-	newRow := func() {
-		if !first {
-			out.WriteByte('\n')
-		}
-		first = false
+	r.fullWidth = b.marginL + r.innerWidth + b.marginR
+	if r.showLeft {
+		r.fullWidth += ansi.Width(b.border.Left)
 	}
-	fullWidth := b.marginL + innerWidth + b.marginR
-	if showLeft {
-		fullWidth += ansi.Width(b.border.Left)
+	if r.showRight {
+		r.fullWidth += ansi.Width(b.border.Right)
 	}
-	if showRight {
-		fullWidth += ansi.Width(b.border.Right)
+	return r
+}
+
+// newRow starts the next output row.
+func (r *boxRender) newRow() {
+	if !r.first {
+		r.out.WriteByte('\n')
 	}
-	for i := 0; i < b.marginT; i++ {
-		newRow()
-		writeSpaces(&out, fullWidth)
+	r.first = false
+}
+
+// margins writes n blank margin rows.
+func (r *boxRender) margins(n int) {
+	for i := 0; i < n; i++ {
+		r.newRow()
+		writeSpaces(&r.out, r.fullWidth)
 	}
-	if showTop {
-		newRow()
-		writeSpaces(&out, b.marginL)
-		topRow := corner(b.border.TopLeft, showLeft) + b.edge(b.border.Top, innerWidth, b.title) + corner(b.border.TopRight, showRight)
-		if ring.on() {
-			out.WriteString(ring.paintTop(topRow))
-		} else {
-			out.WriteString(paint(topRow))
-		}
-		writeSpaces(&out, b.marginR)
+}
+
+// top writes the top border row, when there is one.
+func (r *boxRender) top() {
+	if !r.showTop {
+		return
 	}
-	sideRow := 0
-	// row writes one body row: margin, side border, left pad, text, fill to
-	// contentWidth, right pad, side border, margin.
-	row := func(text string) {
-		newRow()
-		w := ansi.Width(text)
-		if b.clip && w > contentWidth {
-			// A fixed Width clips: a wider line would push the right border
-			// out of line and make the box wider than asked.
-			text = ansi.Truncate(text, contentWidth)
-			w = ansi.Width(text)
-		}
-		writeSpaces(&out, b.marginL)
-		if ring.on() {
-			if showLeft {
-				out.WriteString(ring.paintSide(b.border.Left, sideRow, false))
-			}
-		} else {
-			out.WriteString(left)
-		}
-		out.WriteString(fillBG(b.padLeft))
-		out.WriteString(reBG(text))
-		out.WriteString(fillBG(contentWidth - w + b.padRight))
-		if ring.on() {
-			if showRight {
-				out.WriteString(ring.paintSide(b.border.Right, sideRow, true))
-			}
-		} else {
-			out.WriteString(right)
-		}
-		sideRow++
-		writeSpaces(&out, b.marginR)
+	b := r.b
+	r.newRow()
+	writeSpaces(&r.out, b.marginL)
+	topRow := corner(b.border.TopLeft, r.showLeft) + b.edge(b.border.Top, r.innerWidth, b.title) + corner(b.border.TopRight, r.showRight)
+	if r.ring.on() {
+		r.out.WriteString(r.ring.paintTop(topRow))
+	} else {
+		r.out.WriteString(r.paint(topRow))
 	}
-	for i := 0; i < b.padTop; i++ {
-		row("")
+	writeSpaces(&r.out, b.marginR)
+}
+
+// bottom writes the bottom border row, when there is one.
+func (r *boxRender) bottom() {
+	if !r.showBottom {
+		return
+	}
+	b := r.b
+	r.newRow()
+	writeSpaces(&r.out, b.marginL)
+	botRow := corner(b.border.BottomLeft, r.showLeft) + strings.Repeat(b.border.Bottom, r.innerWidth) + corner(b.border.BottomRight, r.showRight)
+	if r.ring.on() {
+		r.out.WriteString(r.ring.paintBottom(botRow))
+	} else {
+		r.out.WriteString(r.paint(botRow))
+	}
+	writeSpaces(&r.out, b.marginR)
+}
+
+// body writes the padding rows and the content rows between them.
+func (r *boxRender) body(content string) {
+	for i := 0; i < r.b.padTop; i++ {
+		r.row("")
 	}
 	written := 0
-	for rest, more := content, true; more && written < bodyRows; written++ {
+	for rest, more := content, true; more && written < r.bodyRows; written++ {
 		var l string
 		l, rest, more = nextLine(rest)
-		row(l)
+		r.row(l)
 	}
-	for ; written < bodyRows; written++ {
-		row("")
+	for ; written < r.bodyRows; written++ {
+		r.row("")
 	}
-	for i := 0; i < b.padBottom; i++ {
-		row("")
+	for i := 0; i < r.b.padBottom; i++ {
+		r.row("")
 	}
-	if showBottom {
-		newRow()
-		writeSpaces(&out, b.marginL)
-		botRow := corner(b.border.BottomLeft, showLeft) + strings.Repeat(b.border.Bottom, innerWidth) + corner(b.border.BottomRight, showRight)
-		if ring.on() {
-			out.WriteString(ring.paintBottom(botRow))
-		} else {
-			out.WriteString(paint(botRow))
+}
+
+// row writes one body row: margin, side border, left pad, text, fill to
+// contentWidth, right pad, side border, margin.
+func (r *boxRender) row(text string) {
+	b := r.b
+	r.newRow()
+	w := ansi.Width(text)
+	if b.clip && w > r.contentWidth {
+		// A fixed Width clips: a wider line would push the right border
+		// out of line and make the box wider than asked.
+		text = ansi.Truncate(text, r.contentWidth)
+		w = ansi.Width(text)
+	}
+	writeSpaces(&r.out, b.marginL)
+	if r.ring.on() {
+		if r.showLeft {
+			r.out.WriteString(r.ring.paintSide(b.border.Left, r.sideRow, false))
 		}
-		writeSpaces(&out, b.marginR)
+	} else {
+		r.out.WriteString(r.left)
 	}
-	for i := 0; i < b.marginB; i++ {
-		newRow()
-		writeSpaces(&out, fullWidth)
+	r.out.WriteString(r.fillBG(b.padLeft))
+	r.out.WriteString(r.reBG(text))
+	r.out.WriteString(r.fillBG(r.contentWidth - w + b.padRight))
+	if r.ring.on() {
+		if r.showRight {
+			r.out.WriteString(r.ring.paintSide(b.border.Right, r.sideRow, true))
+		}
+	} else {
+		r.out.WriteString(r.right)
 	}
-	return out.String()
+	r.sideRow++
+	writeSpaces(&r.out, b.marginR)
 }
 
 // Align is a cross-axis alignment for joinHorizontalAlign and

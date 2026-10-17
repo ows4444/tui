@@ -15,6 +15,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
@@ -415,6 +416,55 @@ func (s *Session) Cursor() (x, y int, visible bool) {
 func (s *Session) Click(x, y int) {
 	s.inject(tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
 	s.inject(tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonLeft, Action: tui.MouseActionRelease})
+}
+
+// Find returns the column and row (0-based) of the first cell of the first
+// occurrence of text on the screen, reading rows top to bottom and each row
+// left to right, and whether there was one. Like WaitForText it matches a row
+// as Screen returns it, so text that wraps across two rows is not found. An
+// empty text is not found.
+func (s *Session) Find(text string) (x, y int, ok bool) {
+	if text == "" {
+		return 0, 0, false
+	}
+	for y, row := range s.Screen() {
+		if i := strings.Index(row, text); i >= 0 {
+			return utf8.RuneCountInString(row[:i]), y, true
+		}
+	}
+	return 0, 0, false
+}
+
+// ClickText clicks the middle of the first occurrence of text, as Click does,
+// and reports whether it found one. It saves a test from knowing where a
+// button is drawn; when the same text is drawn twice, use Find and Click on
+// the cell you mean.
+func (s *Session) ClickText(text string) bool {
+	x, y, ok := s.Find(text)
+	if !ok {
+		return false
+	}
+	s.Click(x+utf8.RuneCountInString(text)/2, y)
+	return true
+}
+
+// CursorOn reports whether the terminal cursor is shown over some occurrence
+// of text, that is, on one of its cells. It tells a test which field or row
+// has the cursor without hard-coding a column.
+func (s *Session) CursorOn(text string) bool {
+	cx, cy, visible := s.Cursor()
+	rows := s.Screen()
+	if !visible || text == "" || cy < 0 || cy >= len(rows) {
+		return false
+	}
+	runes := []rune(rows[cy])
+	n := utf8.RuneCountInString(text)
+	for from := 0; from < len(runes); from++ {
+		if from <= cx && cx < from+n && strings.HasPrefix(string(runes[from:]), text) {
+			return true
+		}
+	}
+	return false
 }
 
 // Wheel delivers |dy| wheel notches at column x, row y: up for a negative dy,

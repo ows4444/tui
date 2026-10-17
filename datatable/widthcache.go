@@ -62,6 +62,13 @@ func (m Model) measure() []int {
 // clean, so that its raw width is the width ansi.Clean text has: DrawCells
 // serves a full-table window from the cache only then.
 func (m Model) measureClean() ([]int, bool) {
+	if m.Source != nil {
+		// Only the window is read; the widths are not cached and are not
+		// "clean", so DrawCells measures the visible rows itself.
+		start, n := m.window()
+		w, _ := scanWidths(m.Headers, m.rowsIn(start, start+n))
+		return w, false
+	}
 	c := m.widths
 	if c == nil {
 		return scanWidths(m.Headers, m.Rows)

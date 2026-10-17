@@ -12,6 +12,65 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Three more form fields: `form.FieldConfirm` (a Yes/No choice answered with Y and
+  N; `Bool` reads it), `form.FieldNote` (a read-only line between fields, no
+  focus, no value) and `form.FieldFile` (a path with a file list that
+  `KeyMap.Browse`, Ctrl+O, opens), plus the `form.FileExists` validator.
+- `layout.Span(node, cols, rows)`: a grid cell that covers several columns or
+  rows, so a dashboard with one wide panel over two narrow ones is one
+  `GridNode`. Cells still fill row by row, skipping what a span covers; a span
+  wider than the auto-sized columns it covers widens them. Rendering,
+  `DrawCells`, `Rects` and `NamedAt` all follow it.
+- Screenshots of a running program: `tui.WithScreenshot(key, save)` hands `save` a
+  `tui.Screenshot` (the rows as plain `Text`, as `ANSI`, and the size) when the
+  key is pressed, and `tui.ScreenshotCmd(wrap)` delivers one to `Update`.
+  `tuitest.SVGOf(shot.ANSI, w, h, opts)` draws it as an SVG image.
+- Markdown coverage: task lists (`- [ ]`, `- [x]`), reference links
+  (`[text][label]`, `[text][]`, `[label]` with `[label]: url`), character
+  references (`&amp;`, `&#8212;`; ones that decode to a control character stay
+  as typed) and lists nested up to six levels instead of two. Reference links
+  are resolved in `Render`, `RenderWith` and `Model`, not in a `Stream`.
+- Text area editing: `textarea.Model.Highlighter` colours the text from a function
+  of one line (View, DrawCells, soft wrap, scrolling and the selection all follow
+  it); `AutoIndent` copies the leading whitespace to a new line; `Find`,
+  `FindNext`, `FindPrev` select matches ignoring case and `ReplaceAll` replaces
+  them in one undo step.
+- `appshell.Stack`: a screen stack. A screen pushes another over itself with
+  `PushCmd` and the pushed one pops itself with `PopCmd(result)`, which delivers
+  the result to the screens below; `Replace`, `ViewAt` and `Depth` complete it.
+  Keys and mouse go to the top screen, everything else to all of them.
+- `commandpalette.Source` and `Model.Sources`: commands found for what was typed,
+  not from a fixed list. Each keystroke runs every Source on `tui.Tasks`, so a
+  newer query cancels the older one, and the answers join the dropdown when the
+  `tui.TaskDoneMsg` comes back through `Update`. `Model.Tasks` is optional and
+  `Model.Name` keeps two palettes apart.
+- Lazy trees: `treeview.Node.Load` makes a node a branch whose children are
+  fetched the first time it opens (`Update` returns a Cmd that runs it, and the
+  `LoadedMsg` it delivers goes back through `Update`); `treeview.LazyDirectoryTree`
+  lists one directory at a time. `Model.Notify` makes opening and closing a
+  branch deliver `ExpandedMsg` and `CollapsedMsg`; `Model.Name` keeps two lazy
+  trees' messages apart.
+- `datatable.Source` and `datatable.NewSource`: a table over rows read on demand
+  (`Rows() int`, `Row(i) []string`), so a database cursor or a million-row log
+  loads only the rows in view. Sort, filter and editing are off for it;
+  `SetSource` swaps the source and `SetRows` goes back to in-memory rows.
+- Key bindings from a file: `keymap.Parse` reads `{"action": ["key", ...]}` JSON
+  (every key name is checked, with `keymap.ValidKey`), and `keymap.Apply` swaps
+  those keys into a list of bindings by their description, returning the names
+  that matched nothing. `tui keys check <file.json>` lints such a file.
+- `widgets.ProgressStats` and `widgets.ProgressBarStats`: elapsed time, rate (over
+  the last ten seconds) and ETA for a progress bar, from the counts the caller
+  feeds in with `Update`. It takes the time as an argument and never reads the
+  clock. `ProgressBarStats` draws the bar with the stats line under it.
+- `tuitest.Session.Find`, `ClickText` and `CursorOn`: a test finds text on the
+  screen and clicks it or checks the cursor is on it, without knowing the
+  column and row the layout drew it at.
+- Styled text as data in three overlays: `dialog.Model.MessageText`,
+  `notificationcenter.Notification.Text` and `hovercard.Model.ContentText` take an
+  `ansi.Text`. When set it is shown instead of the string field, wrapped at
+  `Width` with each span keeping its style (a notification's unstyled spans take
+  the variant's colour), and `Linearize` and `LayoutNode` follow it. The string
+  fields work as before. `ansi.Text` gains `WrapString` and `WithDefault`.
 - `ansi.Span` and `ansi.Text`: styled text as data. A `Text` is a list of spans
   that can be measured (`Width`, `Height`), cut (`Slice`, `Truncate`), wrapped at
   spaces (`Wrap`, which cuts a word wider than the line) and rendered (`String`),
@@ -23,6 +82,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
   box, from one colour at the top-left corner to another half way round and back,
   so the loop has no seam. It changes no dimensions and takes precedence over
   `BorderColor`.
+- `hexview` (experimental): bytes as a hex dump with an offset column, hex in
+  groups, an ASCII gutter, a cursor, a selection copied as hex (`v` then `y`),
+  scrolling with `Height`, and mouse click, drag and wheel with `Mouse` on.
+- Seven more components in the Widget gallery, 48 in all: hex view, tooltip,
+  hover card, popover, menu bar, notification center and file picker.
 
 ### Changed
 

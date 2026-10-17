@@ -17,7 +17,8 @@ type Track struct {
 // measured at that column's final width (so a cell can adapt its height to
 // the width it is given), and every cell is stretched to its slot. Rendered
 // at a Size it produces exactly that many columns and rows, padding spare
-// space and clipping overflow like Row and Column. It replaces the string
+// space and clipping overflow like Row and Column. A cell wrapped in Span
+// covers several columns or rows. It replaces the string
 // helpers Grid and GridFlex, removed in v1.0.
 func GridNode(tracks []Track, gap int, cells ...Node) Node {
 	return GridNodeGaps(tracks, gap, gap, cells...)
@@ -29,7 +30,7 @@ func GridNode(tracks []Track, gap int, cells ...Node) Node {
 // rows, which GridNode's single gap cannot express. A negative gap counts as
 // zero. GridNode(tracks, g, cells...) is GridNodeGaps(tracks, g, g, cells...).
 func GridNodeGaps(tracks []Track, colGap, rowGap int, cells ...Node) Node {
-	return gridNode{tracks: tracks, colGap: colGap, rowGap: rowGap, cells: cells}
+	return gridNode{tracks: tracks, colGap: colGap, rowGap: rowGap, cells: cells}.withSpans()
 }
 
 type gridNode struct {
@@ -37,7 +38,9 @@ type gridNode struct {
 	colGap int // blank columns between columns
 	rowGap int // blank rows between rows
 	cells  []Node
-	ar     *arena // scratch for one Draw; nil outside Draw
+	// spans is per cell, or nil when no cell uses Span; see gridspan.go.
+	spans []cellSpan
+	ar    *arena // scratch for one Draw; nil outside Draw
 }
 
 func (g gridNode) cell(row, col int) Node {
@@ -48,6 +51,9 @@ func (g gridNode) cell(row, col int) Node {
 }
 
 func (g gridNode) rows() int {
+	if g.spans != nil {
+		return spanRows(g.slots())
+	}
 	n := len(g.tracks)
 	if n == 0 {
 		return 0
@@ -65,6 +71,9 @@ func gapOf(gap, n int) int {
 
 // contentWidths returns each column's widest measured cell.
 func (g gridNode) contentWidths() []int {
+	if g.spans != nil {
+		return g.spanContentWidths(g.slots())
+	}
 	w := intsFrom(g.ar, len(g.tracks))
 	open := Constraints{MaxW: Unbounded, MaxH: Unbounded}
 	for r := 0; r < g.rows(); r++ {
@@ -78,6 +87,9 @@ func (g gridNode) contentWidths() []int {
 }
 
 func (g gridNode) rowHeights(widths []int) []int {
+	if g.spans != nil {
+		return g.spanRowHeights(g.slots(), widths)
+	}
 	h := intsFrom(g.ar, g.rows())
 	for r := range h {
 		for c := range g.tracks {
@@ -137,6 +149,9 @@ func (g gridNode) Render(s Size) string {
 		return Block("").Render(s)
 	}
 	widths, heights := g.sizes(s)
+	if g.spans != nil {
+		return Block(g.renderSpans(g.slots(), widths, heights)).Render(s)
+	}
 
 	rows := make([]string, len(heights))
 	for r := range rows {

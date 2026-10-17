@@ -1,0 +1,9 @@
+┌───────────────────────────┐
+│ tui                       │
+│                           │
+│ A Go terminal UI library. │
+│ No dependencies.          │
+└───────────────────────────┘
+Status    stable
+Owner     you
+Branch    code

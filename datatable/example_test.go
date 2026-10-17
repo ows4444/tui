@@ -60,3 +60,21 @@ func ExampleModel_SetCell() {
 	fmt.Println(m.Rows)
 	// Output: [[fig 1] [apple 3]]
 }
+
+type squares int
+
+func (s squares) Rows() int { return int(s) }
+func (s squares) Row(i int) []string {
+	return []string{fmt.Sprint(i), fmt.Sprint(i * i)}
+}
+
+// A Source supplies rows on demand: this table has a million rows and reads
+// only the three it shows.
+func ExampleNewSource() {
+	m := datatable.NewSource([]string{"n", "n squared"}, squares(1_000_000))
+	m.Height = 3
+	m.SetCursor(999_998)
+	out := ansi.StripANSI(m.View())
+	fmt.Println(strings.Contains(out, "999998") && strings.Contains(out, "999996000004"))
+	// Output: true
+}

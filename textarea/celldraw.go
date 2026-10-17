@@ -84,7 +84,7 @@ func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect) {
 		return
 	}
 
-	if _, _, ok := m.selection(); ok {
+	if _, _, ok := m.selection(); ok || m.Highlighter != nil {
 		m.drawSelection(sub)
 		return
 	}

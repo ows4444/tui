@@ -21,7 +21,24 @@ import (
 // it, per widgets.Variant's shared convention.
 type Notification struct {
 	Message string
+	// Text is Message as styled spans (ansi.Text). When it is set it is shown
+	// instead of Message: spans with a style of their own keep it, and the others
+	// take the Variant's colour.
+	Text    ansi.Text
 	Variant widgets.Variant
+}
+
+// shown returns the notification's text, wrapped to width (0 for no wrapping),
+// coloured per Variant, as one styled string.
+func (n Notification) shown(m Model, color ansi.Color) string {
+	if len(n.Text) > 0 {
+		return n.Text.WithDefault(ansi.NewStyle().Foreground(color)).WrapString(m.Width)
+	}
+	text := ansi.Clean(m.Raw, n.Message)
+	if m.Width > 0 {
+		text = ansi.WrapStyled(text, m.Width)
+	}
+	return ansi.NewStyle().Foreground(color).Render(text)
 }
 
 // Model is a bounded queue of Notifications rendered as a single panel
@@ -82,12 +99,7 @@ func (m Model) Render(base string) string {
 
 	lines := make([]string, len(m.Notifications))
 	for i, n := range m.Notifications {
-		color := n.Variant.Color(m.themed())
-		text := ansi.Clean(m.Raw, n.Message)
-		if m.Width > 0 {
-			text = ansi.WrapStyled(text, m.Width)
-		}
-		lines[i] = ansi.NewStyle().Foreground(color).Render(text)
+		lines[i] = n.shown(m, n.Variant.Color(m.themed()))
 	}
 	body := strings.Join(lines, "\n")
 

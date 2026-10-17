@@ -11,7 +11,9 @@ func (m Model) Linearize() string {
 		return ""
 	}
 	out := "Dialog: " + ansi.Clean(m.Raw, m.Title)
-	if m.Message != "" {
+	if len(m.MessageText) > 0 {
+		out += "\n" + m.MessageText.Plain()
+	} else if m.Message != "" {
 		out += "\n" + ansi.Clean(m.Raw, m.Message)
 	}
 	return out

@@ -160,11 +160,13 @@ type Program struct {
 	clusterMode        bool                          // mode 2027 set by applyCapabilities; guarded by outMu
 	measurer           atomic.Pointer[ansi.Measurer] // how this terminal measures clusters; nil until a probe says
 	sentMeasurer       ansi.Measurer                 // the Measurer last put in a ResizeMsg; loop goroutine only
-	inspectorKey       string                        // WithInspector Panel; "" means off
-	inspectorOn        bool                          // the overlay is showing; loop goroutine only
-	outlineKey         string                        // WithInspector Layout; "" means off
-	outlineOn          bool                          // the layout outlines are showing; loop goroutine only
-	lastFrameBytes     int                           // the last frame's size and duration, for the inspector
+	screenshotKey      string                        // WithScreenshot; "" means off
+	screenshotFn       func(Screenshot)
+	inspectorKey       string // WithInspector Panel; "" means off
+	inspectorOn        bool   // the overlay is showing; loop goroutine only
+	outlineKey         string // WithInspector Layout; "" means off
+	outlineOn          bool   // the layout outlines are showing; loop goroutine only
+	lastFrameBytes     int    // the last frame's size and duration, for the inspector
 	lastFrameDur       time.Duration
 	recCast, recSide   io.Writer    // WithRecorder, WithRecorderSidecar
 	rec                *recorder    // non-nil while recording

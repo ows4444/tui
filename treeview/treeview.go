@@ -15,10 +15,17 @@ import (
 	"github.com/ows4444/tui/theme"
 )
 
-// Node is one tree node. A Node with no Children is a leaf.
+// Node is one tree node. A Node with no Children and no Load is a leaf.
 type Node struct {
 	Label    string
 	Children []Node
+	// Load, when set on a node with no Children, makes it a branch whose
+	// children are fetched the first time it is expanded: Update returns a Cmd
+	// that calls Load and delivers a LoadedMsg, and the node opens when that
+	// message comes back through Update. A Load that returns no nodes leaves an
+	// empty branch. Load runs off the program's loop, so it may block on disk
+	// or network; it must not touch the Model. Children, when set, win over Load.
+	Load func() []Node
 }
 
 // Model is a keyboard-navigable tree. Expand state is tracked by a path
@@ -67,11 +74,25 @@ type Model struct {
 	// the query changes. The default Select and Expand keys include Space and
 	// Right, so a query cannot hold a space. Off (the default), the tree is
 	// unchanged. A first line shows the query.
+	//
+	// A node whose children are not loaded yet (see Node.Load) is not searched.
 	Filter bool
+
+	// Name tells LoadedMsg apart when two lazy trees are on screen: a message
+	// is taken only by the Model whose Name equals its own. Empty is a name.
+	Name string
+	// Notify, when true, makes Update return a Cmd that delivers ExpandedMsg
+	// or CollapsedMsg when a branch opens or closes. Off (the default), toggling
+	// returns no Cmd, as before. Loading a lazy node returns its Cmd either way.
+	Notify bool
 
 	cursor   int
 	expanded map[string]bool
 	query    string
+	// loaded holds the children fetched for lazy nodes, by path; loading the
+	// paths whose Load is running. Both are replaced, not edited, like expanded.
+	loaded  map[string][]Node
+	loading map[string]bool
 }
 
 // KeyMap names the keys Update reacts to.
@@ -146,6 +167,8 @@ type visible struct {
 	node  *Node
 	depth int
 	path  string
+	// branch reports that the row has children, loaded or still to load.
+	branch bool
 	// label is the text drawn: the node's label, sanitised unless Raw.
 	label string
 	// pos are the rune offsets in label the query matched; nil when the row
@@ -191,10 +214,11 @@ func (m *Model) SetQuery(q string) {
 func (m Model) filtering() bool { return m.Filter && m.query != "" }
 
 // matchesBelow reports whether any descendant of n matches the query.
-func (m Model) matchesBelow(n *Node) bool {
-	for i := range n.Children {
-		c := &n.Children[i]
-		if _, _, ok := fuzzy.Score(m.query, ansi.Clean(m.Raw, c.Label)); ok || m.matchesBelow(c) {
+func (m Model) matchesBelow(n *Node, path string) bool {
+	kids := m.kids(n, path)
+	for i := range kids {
+		c := &kids[i]
+		if _, _, ok := fuzzy.Score(m.query, ansi.Clean(m.Raw, c.Label)); ok || m.matchesBelow(c, path+"."+strconv.Itoa(i)) {
 			return true
 		}
 	}
@@ -214,20 +238,22 @@ func (m Model) flatten() []visible {
 			sub := false
 			if filtering {
 				score, pos, ok := fuzzy.Score(m.query, v.label)
-				sub = len(n.Children) > 0 && m.matchesBelow(n)
+				sub = len(m.kids(n, path)) > 0 && m.matchesBelow(n, path)
 				if !ok && !sub {
 					continue
 				}
 				v.own, v.pos, v.score = ok, pos, score
 			}
-			branch := len(n.Children) > 0
+			kids := m.kids(n, path)
+			branch := len(kids) > 0 || n.Load != nil
+			v.branch = branch
 			v.open = branch && m.expanded[path]
 			if branch && filtering && sub && !v.open {
 				v.open, v.forced = true, true
 			}
 			items = append(items, v)
 			if v.open {
-				walk(n.Children, depth+1, path+".")
+				walk(kids, depth+1, path+".")
 			}
 		}
 		// Sibling places count only the rows that survived the filter.
@@ -288,7 +314,7 @@ func (m Model) VisibleRows() []VisibleRow {
 			Label:       item.node.Label,
 			Path:        item.path,
 			Depth:       item.depth,
-			HasChildren: len(item.node.Children) > 0,
+			HasChildren: item.branch,
 		}
 	}
 	return rows
@@ -323,6 +349,9 @@ type SelectedMsg struct {
 // has children and is expanded. Left on an already-collapsed node, or
 // Left/Right on a leaf, is a no-op. A Msg that isn't a Key is a no-op.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
+	if lm, ok := msg.(LoadedMsg); ok {
+		return m.loadedMsg(lm)
+	}
 	ev, isMouse := msg.(tui.MouseEvent)
 	if _, isKey := msg.(tui.Key); !isKey && !isMouse {
 		return m, nil
@@ -351,28 +380,128 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 		}
 	case keymap.Matches(msg, k.Select):
 		item := items[m.cursor]
-		if len(item.node.Children) > 0 {
+		if item.branch {
 			if !item.forced {
-				m.toggle(item.path)
+				return m.flip(item)
 			}
 			return m, nil
 		}
 		node, path := item.node, item.path
 		return m, func() tui.Msg { return SelectedMsg{Node: node, Path: path} }
 	case keymap.Matches(msg, k.Expand):
-		item := items[m.cursor]
-		if len(item.node.Children) > 0 && !m.expanded[item.path] {
-			m.toggle(item.path)
+		if item := items[m.cursor]; item.branch && !m.expanded[item.path] {
+			return m.flip(item)
 		}
 	case keymap.Matches(msg, k.Collapse):
-		item := items[m.cursor]
-		if len(item.node.Children) > 0 && m.expanded[item.path] && !item.forced {
-			m.toggle(item.path)
+		if item := items[m.cursor]; item.branch && m.expanded[item.path] && !item.forced {
+			return m.flip(item)
 		}
 	case m.Filter:
 		return m.editQuery(msg.(tui.Key)), nil
 	}
 	return m, nil
+}
+
+// kids returns the children of n, which sits at path: its own, or those a
+// Load fetched.
+func (m Model) kids(n *Node, path string) []Node {
+	if len(n.Children) > 0 {
+		return n.Children
+	}
+	return m.loaded[path]
+}
+
+// flip opens or closes the branch item. Opening a lazy node that has not been
+// loaded starts the load instead, and the node opens when LoadedMsg arrives.
+func (m Model) flip(item visible) (Model, tui.Cmd) {
+	path := item.path
+	if !m.expanded[path] && item.node.Load != nil && len(item.node.Children) == 0 {
+		if _, done := m.loaded[path]; !done {
+			if m.loading[path] {
+				return m, nil
+			}
+			m.loading = withKey(m.loading, path, true)
+			load, name := item.node.Load, m.Name
+			return m, func() tui.Msg { return LoadedMsg{Name: name, Path: path, Children: load()} }
+		}
+	}
+	opened := !m.expanded[path]
+	m.toggle(path)
+	return m, m.notify(item.node, path, opened)
+}
+
+// notify is the Cmd for ExpandedMsg or CollapsedMsg, nil unless Notify is on.
+func (m Model) notify(n *Node, path string, opened bool) tui.Cmd {
+	if !m.Notify {
+		return nil
+	}
+	if opened {
+		return func() tui.Msg { return ExpandedMsg{Node: n, Path: path} }
+	}
+	return func() tui.Msg { return CollapsedMsg{Node: n, Path: path} }
+}
+
+// loadedMsg stores the children a Load returned and opens the node.
+func (m Model) loadedMsg(lm LoadedMsg) (Model, tui.Cmd) {
+	if lm.Name != m.Name || !m.loading[lm.Path] {
+		return m, nil
+	}
+	children := lm.Children
+	if children == nil {
+		children = []Node{}
+	}
+	loaded := make(map[string][]Node, len(m.loaded)+1)
+	for k, v := range m.loaded {
+		loaded[k] = v
+	}
+	loaded[lm.Path] = children
+	m.loaded = loaded
+	m.loading = withKey(m.loading, lm.Path, false)
+	m.expanded = withKey(m.expanded, lm.Path, true)
+	var node *Node
+	for _, it := range m.flatten() {
+		if it.path == lm.Path {
+			node = it.node
+			break
+		}
+	}
+	return m, m.notify(node, lm.Path, true)
+}
+
+// withKey returns a copy of set with key set to v, dropping it when false.
+func withKey(set map[string]bool, key string, v bool) map[string]bool {
+	next := make(map[string]bool, len(set)+1)
+	for k, on := range set {
+		next[k] = on
+	}
+	if v {
+		next[key] = true
+	} else {
+		delete(next, key)
+	}
+	return next
+}
+
+// LoadedMsg carries the children a Node.Load returned. Update returns it from a
+// Cmd; pass it back to the Model's Update like any other Msg. Name is the
+// Model's Name, so a second tree ignores it.
+type LoadedMsg struct {
+	Name     string
+	Path     string
+	Children []Node
+}
+
+// ExpandedMsg is delivered when a branch opens, when Notify is on or after a
+// lazy node loads. Node is nil if the node is not visible (a filter hides it).
+type ExpandedMsg struct {
+	Node *Node
+	Path string
+}
+
+// CollapsedMsg is delivered when a branch closes and Notify is on.
+type CollapsedMsg struct {
+	Node *Node
+	Path string
 }
 
 // editQuery applies a key to the filter text.
@@ -442,7 +571,7 @@ func (m Model) View() string {
 			}
 		}
 		marker := " "
-		if len(item.node.Children) > 0 {
+		if item.branch {
 			if item.open {
 				marker = m.themed().GlyphSet().Expanded
 			} else {
@@ -487,7 +616,7 @@ func (m Model) Linearize() string {
 	}
 	for i, it := range items {
 		line := it.label + ", level " + strconv.Itoa(it.depth+1)
-		if len(it.node.Children) > 0 {
+		if it.branch {
 			if it.open {
 				line += ", expanded"
 			} else {

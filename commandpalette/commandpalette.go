@@ -7,6 +7,9 @@
 // subsequence matching instead of prefix matching, and accepting a result
 // emits a Msg identifying the chosen Command instead of filling the input
 // value — a palette runs a command, it doesn't complete text.
+//
+// Sources add commands that depend on what was typed (open any file, jump to
+// any symbol), run in the background and cancelled when the text changes again.
 package commandpalette
 
 import (
@@ -56,6 +59,17 @@ type Model struct {
 	Bounds    hittest.Rect
 	WheelStep int
 
+	// Sources add commands that depend on the typed text (see Source). Each
+	// time the input changes they run on Tasks, and the answers join the
+	// dropdown when they arrive: pass tui.TaskDoneMsg to Update like any other
+	// Msg. Tasks is made on first use when nil; give it to share one with the
+	// rest of the app. Name tells two palettes apart when both have Sources: a
+	// result is taken only by the palette whose Name equals the one that asked.
+	Sources []Source
+	Tasks   *tui.Tasks
+	Name    string
+
+	results      map[int]sourceResult
 	highlight    int
 	justAccepted bool // suppresses the dropdown right after Enter/Esc
 }
@@ -137,12 +151,13 @@ func (m Model) filtered() []Command {
 		return nil
 	}
 	found := fuzzy.Find(q, len(m.Commands), func(i int) string { return m.Commands[i].Name })
-	if len(found) == 0 {
-		return nil
+	var out []Command
+	for _, r := range found {
+		out = append(out, m.Commands[r.Index])
 	}
-	out := make([]Command, len(found))
-	for i, r := range found {
-		out[i] = m.Commands[r.Index]
+	out = append(out, m.fromSources(q)...)
+	if len(out) == 0 {
+		return nil
 	}
 	return out
 }
@@ -164,6 +179,11 @@ type SelectedMsg struct {
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 	if ev, ok := msg.(tui.MouseEvent); ok {
 		return m.mouse(ev)
+	}
+	if d, ok := msg.(tui.TaskDoneMsg); ok {
+		if m, mine := m.taskDone(d); mine {
+			return m, nil
+		}
 	}
 	if _, ok := msg.(tui.Key); !ok {
 		var cmd tui.Cmd
@@ -194,8 +214,16 @@ func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
 
 	m.justAccepted = false
 	m.highlight = 0
+	before := m.Input.Value()
 	var cmd tui.Cmd
 	m.Input, cmd = m.Input.Update(msg)
+	if m.Input.Value() != before {
+		var run tui.Cmd
+		m, run = m.restart()
+		if run != nil {
+			cmd = tui.Batch(cmd, run)
+		}
+	}
 	return m, cmd
 }
 

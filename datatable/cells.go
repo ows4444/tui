@@ -26,7 +26,7 @@ func (m Model) fit(first int) int {
 	start, cnt := m.window()
 	width := func(c int) int {
 		w := ansi.Width(m.Headers[c])
-		for _, row := range m.Rows[start : start+cnt] {
+		for _, row := range m.rowsIn(start, start+cnt) {
 			if c < len(row) {
 				w = max(w, ansi.Width(row[c]))
 			}

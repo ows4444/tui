@@ -123,3 +123,19 @@ func TestSVGTrimRows(t *testing.T) {
 		t.Error("an empty screen is not kept at one row")
 	}
 }
+
+func TestSVGOfMatchesASession(t *testing.T) {
+	view := ansi.NewStyle().Foreground(ansi.Red).Bold().Render("hi") + " there\nsecond"
+	s := New(paint{view: view}, 20, 4)
+	defer s.Close()
+	want := s.SVG(SVGOptions{TrimRows: true})
+	got := SVGOf(view, 20, 4, SVGOptions{TrimRows: true})
+	wellFormed(t, got)
+	if got != want {
+		t.Fatalf("SVGOf differs from Session.SVG\n got  %s\n want %s", got, want)
+	}
+}
+
+func TestSVGOfClampsItsSize(t *testing.T) {
+	wellFormed(t, SVGOf("x", 0, -3, SVGOptions{}))
+}

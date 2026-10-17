@@ -32,17 +32,24 @@ import (
 	"github.com/ows4444/tui/dialog"
 	"github.com/ows4444/tui/drawer"
 	"github.com/ows4444/tui/emailinput"
+	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/helpscreen"
+	"github.com/ows4444/tui/hexview"
+	"github.com/ows4444/tui/hittest"
+	"github.com/ows4444/tui/hovercard"
 	"github.com/ows4444/tui/loadingbar"
 	"github.com/ows4444/tui/logview"
 	"github.com/ows4444/tui/menu"
+	"github.com/ows4444/tui/menubar"
 	"github.com/ows4444/tui/multiselect"
+	"github.com/ows4444/tui/notificationcenter"
 	"github.com/ows4444/tui/numberinput"
 	"github.com/ows4444/tui/otpinput"
 	"github.com/ows4444/tui/pagination"
 	"github.com/ows4444/tui/passwordinput"
 	"github.com/ows4444/tui/picker"
+	"github.com/ows4444/tui/popover"
 	"github.com/ows4444/tui/radiogroup"
 	"github.com/ows4444/tui/rating"
 	"github.com/ows4444/tui/scrollbar"
@@ -53,6 +60,7 @@ import (
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/toast"
 	"github.com/ows4444/tui/toggle"
+	"github.com/ows4444/tui/tooltip"
 	"github.com/ows4444/tui/transferlist"
 	"github.com/ows4444/tui/treeview"
 	"github.com/ows4444/tui/tuitest"
@@ -110,6 +118,14 @@ func (h overlayHost[T]) View() string { return h.m.Render(sampleScreen) }
 
 // sampleScreen is what an overlay covers: a few lines of ordinary content.
 const sampleScreen = "Project settings\n\nName      tui\nLicense   MIT\nLanguage  Go\nTarget    terminals\nStatus    stable\nOwner     you\nBranch    code"
+
+// staticHost draws a component that only renders (it has no Update) over the
+// sample screen.
+type staticHost struct{ render func(base string) string }
+
+func (staticHost) Init() tui.Cmd                         { return nil }
+func (h staticHost) Update(tui.Msg) (tui.Model, tui.Cmd) { return h, nil }
+func (h staticHost) View() string                        { return h.render(sampleScreen) }
 
 func addOverlay[T overlay[T]](out *[]shot, pkg, title string, w, h int, m func() T, keys ...string) {
 	*out = append(*out, shot{pkg: pkg, title: title, w: w, h: h, keys: keys, model: func() tui.Model { return overlayHost[T]{m()} }})
@@ -192,6 +208,39 @@ func shots() []shot {
 			{Name: "role", Label: "Role", Kind: form.FieldSelect, Options: []string{"admin", "viewer"}},
 		}})
 	})
+	add(&s, "hexview", "Hex view", 76, 4, func() hexview.Model {
+		return hexview.New([]byte("tui: a Go terminal UI library\x00\x01\x02 hex view\n"))
+	}, "v", "right", "right", "right", "down")
+	addOverlay(&s, "tooltip", "Tooltip", 44, 9, func() tooltip.Model {
+		m := tooltip.New("Save the file (ctrl+s)", hittest.Rect{X: 10, Y: 3, W: 8, H: 1})
+		m.Show()
+		return m
+	})
+	addOverlay(&s, "hovercard", "Hover card", 44, 9, func() hovercard.Model {
+		m := hovercard.New("tui", "A Go terminal UI library.\nNo dependencies.", hittest.Rect{X: 10, Y: 3, W: 8, H: 1})
+		m.Show()
+		return m
+	})
+	addOverlay(&s, "popover", "Popover", 44, 9, func() popover.Model {
+		m := popover.New("Anchored near a point", 8, 3)
+		m.Show()
+		return m
+	})
+	addOverlay(&s, "menubar", "Menu bar", 44, 9, func() menubar.Model {
+		m := menubar.New(
+			menubar.Menu{Title: "File", Items: []menubar.Item{{Label: "Open"}, {Label: "Save"}, {Label: "Quit"}}},
+			menubar.Menu{Title: "Edit", Items: []menubar.Item{{Label: "Copy"}, {Label: "Paste"}}},
+		)
+		m.Show(0)
+		return m
+	})
+	s = append(s, shot{pkg: "notificationcenter", title: "Notification center", w: 44, h: 9, model: func() tui.Model {
+		nc := notificationcenter.New(3, 36)
+		nc.Push(notificationcenter.Notification{Message: "Build finished", Variant: widgets.VariantSuccess})
+		nc.Push(notificationcenter.Notification{Message: "Disk almost full", Variant: widgets.VariantWarning})
+		return staticHost{render: nc.Render}
+	}})
+	add(&s, "filepicker", "File picker", 44, 7, func() filepicker.Model { return filepicker.New("testdata/files") }, "down")
 	addOverlay(&s, "dialog", "Dialog", 44, 9, func() dialog.Model { m := dialog.New("Delete file", "This cannot be undone."); m.Show(); return m })
 	addOverlay(&s, "toast", "Toast", 44, 9, func() toast.Model { m := toast.New("Saved successfully"); m.Show(); return m })
 	addOverlay(&s, "contextmenu", "Context menu", 44, 9, func() contextmenu.Model {
