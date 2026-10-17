@@ -74,3 +74,14 @@ func ExampleCalendar() {
 	// 15 16 17 18 19 20 21
 	// 22 23 24 25 26 27 28
 }
+
+// ProgressStats works out elapsed time, rate and ETA from the counts you feed
+// it; ProgressBarStats draws them under the bar.
+func ExampleProgressStats() {
+	start := time.Date(2026, 1, 1, 9, 0, 0, 0, time.UTC)
+	s := widgets.NewProgressStats(start)
+	s.Update(start, 0, 200)
+	s.Update(start.Add(20*time.Second), 50, 200)
+	fmt.Println(s.Text("files"))
+	// Output: 25% · 0:20 elapsed · 2.5 files/s · ETA 1:00
+}

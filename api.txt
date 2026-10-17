@@ -4679,6 +4679,12 @@ const (
 
 	VariantError
 )
+func (s *ProgressStats) ETA() (time.Duration, bool)
+func (s *ProgressStats) Elapsed() time.Duration
+func (s *ProgressStats) Fraction() float64
+func (s *ProgressStats) Rate() float64
+func (s *ProgressStats) Text(unit string) string
+func (s *ProgressStats) Update(now time.Time, done, total float64)
 func (s ProgressStatus) String() string
 func (s ProgressStatus) Variant() Variant
 func (s Sender) Variant() Variant
@@ -4727,11 +4733,13 @@ func Link(text, href string, showHref bool, t theme.Theme) string
 func List(items []string, marker Marker) string
 func ListWith(items []string, marker Marker, t theme.Theme) string
 func MultiProgress(items []ProgressItem, width int, t theme.Theme) string
+func NewProgressStats(start time.Time) *ProgressStats
 func Node(rendered string) layout.Node
 func Pagination(current, total int, t theme.Theme) string
 func PaginationDots(current, total int, t theme.Theme) string
 func Panel(title, content string, t theme.Theme, width int) string
 func ProgressBar(percent float64, width int, t theme.Theme) string
+func ProgressBarStats(s *ProgressStats, width int, unit string, t theme.Theme) string
 func ProgressCircle(percent float64, width int, t theme.Theme) string
 func Spacer(width, height int) string
 func StatusIndicator(label string, variant Variant, t theme.Theme) string
@@ -4771,6 +4779,9 @@ type ProgressItem struct {
 	Label	string
 	Percent	float64
 	Status	ProgressStatus
+}
+type ProgressStats struct {
+	// contains filtered or unexported fields
 }
 type ProgressStatus int
 type Sender int

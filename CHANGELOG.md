@@ -12,6 +12,10 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `widgets.ProgressStats` and `widgets.ProgressBarStats`: elapsed time, rate (over
+  the last ten seconds) and ETA for a progress bar, from the counts the caller
+  feeds in with `Update`. It takes the time as an argument and never reads the
+  clock. `ProgressBarStats` draws the bar with the stats line under it.
 - `tuitest.Session.Find`, `ClickText` and `CursorOn`: a test finds text on the
   screen and clicks it or checks the cursor is on it, without knowing the
   column and row the layout drew it at.
