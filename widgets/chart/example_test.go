@@ -2,6 +2,7 @@ package chart_test
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/theme"
@@ -30,4 +31,20 @@ func ExampleHistogram() {
 	// Output:
 	// [1, 2.5) #########------------
 	// [2.5, 4] #####################
+}
+
+// A Canvas draws with braille dots by default; NewCanvasMarker picks a chunkier
+// marker for fonts and terminals where braille is faint or missing.
+func ExampleNewCanvasMarker() {
+	c := chart.NewCanvasMarker(4, 2, chart.Quadrant)
+	w, h := c.DotSize()
+	c.Line(0, h-1, w-1, 0, nil)
+	fmt.Println(w, h)
+	for _, row := range c.Rows(theme.DarkTheme()) {
+		fmt.Println(strings.TrimRight(ansi.StripANSI(row), " "))
+	}
+	// Output:
+	// 8 4
+	//   ▄▀
+	// ▄▀
 }

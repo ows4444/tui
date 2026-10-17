@@ -53,11 +53,14 @@ type PlotOptions struct {
 	YFormat func(float64) string
 	// Legend adds a line naming each series that has a Name.
 	Legend bool
+	// Marker is the glyph set the lines are drawn with. The zero value is
+	// Braille; the block markers are chunkier and show where braille does not.
+	Marker Marker
 }
 
 // Plot draws one or more series as lines on a shared y axis with labelled
 // ticks, an x axis with optional labels and an optional legend. Lines are
-// plotted in braille dots as LineChart does; where two series share a cell the
+// plotted in braille dots as LineChart does, or with the Marker in PlotOptions; where two series share a cell the
 // later one is drawn. Like LineChart it is a pure function of its data; the
 // result is the plot area plus a label column on the left and one or two
 // lines below, so it is Width plus the widest label columns wide.
@@ -77,7 +80,6 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 		n = max(n, len(s.Values))
 	}
 
-	dotCols, dotRows := o.Width*2, o.Height*4
 	palette := []ansi.Color{t.Primary, t.Secondary, t.Success, t.Warning, t.Error, t.Info}
 	color := func(si int) ansi.Color {
 		if c := series[si].Color; c != nil {
@@ -86,7 +88,8 @@ func Plot(series []Series, o PlotOptions, t theme.Theme) string {
 		return palette[si%len(palette)]
 	}
 
-	canvas := NewCanvas(o.Width, o.Height)
+	canvas := NewCanvasMarker(o.Width, o.Height, o.Marker)
+	dotCols, dotRows := canvas.DotSize()
 	// Bars rise from the bottom of the plot, or from zero when the range
 	// includes it.
 	base := dotRows - 1

@@ -8,9 +8,10 @@ import (
 	"github.com/ows4444/tui/theme"
 )
 
-// Canvas is a grid of braille dots to draw on: each terminal cell holds 2
-// columns by 4 rows of dots, so a Canvas of w x h cells is 2w x 4h dots, with
-// (0, 0) at the top left. Draw points, lines, rectangles and circles, each in
+// Canvas is a grid of dots to draw on. By default each terminal cell holds 2
+// columns by 4 rows of braille dots, so a Canvas of w x h cells is 2w x 4h
+// dots, with (0, 0) at the top left; NewCanvasMarker picks a chunkier Marker
+// with fewer dots per cell. Draw points, lines, rectangles and circles, each in
 // a colour, then take the rows with Rows or String. Plot and LineChart draw on
 // one; it is public for charts and diagrams of your own.
 //
@@ -18,33 +19,51 @@ import (
 // shapes meet in one cell the later one shows. The zero Canvas is empty and
 // zero-sized; use NewCanvas.
 type Canvas struct {
-	w, h    int
-	pattern []rune
-	color   []ansi.Color
+	w, h       int
+	marker     Marker
+	dotW, dotH int // dots per cell
+	pattern    []rune
+	color      []ansi.Color
 }
 
 // NewCanvas returns a Canvas of w x h terminal cells, so 2w x 4h dots. A size
 // that is not positive gives an empty Canvas that ignores drawing.
-func NewCanvas(w, h int) *Canvas {
+func NewCanvas(w, h int) *Canvas { return NewCanvasMarker(w, h, Braille) }
+
+// NewCanvasMarker is NewCanvas drawing with marker m, so a Canvas of w x h cells
+// is w*cols x h*rows dots where cols and rows are m.Dots. An unknown marker
+// draws braille.
+func NewCanvasMarker(w, h int, m Marker) *Canvas {
 	w, h = max(w, 0), max(h, 0)
-	return &Canvas{w: w, h: h, pattern: make([]rune, w*h), color: make([]ansi.Color, w*h)}
+	if m < Braille || m > Block {
+		m = Braille
+	}
+	dw, dh := m.Dots()
+	return &Canvas{w: w, h: h, marker: m, dotW: dw, dotH: dh, pattern: make([]rune, w*h), color: make([]ansi.Color, w*h)}
 }
+
+// Marker returns the marker the Canvas draws with.
+func (c *Canvas) Marker() Marker { return c.marker }
 
 // Size returns the width and height in terminal cells.
 func (c *Canvas) Size() (w, h int) { return c.w, c.h }
 
-// DotSize returns the width and height in dots: twice the cells across and four
-// times the cells down.
-func (c *Canvas) DotSize() (w, h int) { return c.w * 2, c.h * 4 }
+// DotSize returns the width and height in dots: the cells across and down times
+// the dots a cell holds (2 and 4 for braille).
+func (c *Canvas) DotSize() (w, h int) { return c.w * c.dotW, c.h * c.dotH }
 
 // Set lights the dot at column x, row y in colour col (nil takes the theme's
 // primary colour when drawn). A dot outside the Canvas is ignored.
 func (c *Canvas) Set(x, y int, col ansi.Color) {
-	if x < 0 || y < 0 || x >= c.w*2 || y >= c.h*4 {
+	if x < 0 || y < 0 || x >= c.w*c.dotW || y >= c.h*c.dotH {
 		return
 	}
-	i := (y/4)*c.w + x/2
-	c.pattern[i] |= braille.Bit[x%2][y%4]
+	i := (y/c.dotH)*c.w + x/c.dotW
+	if c.marker == Braille {
+		c.pattern[i] |= braille.Bit[x%2][y%4]
+	} else {
+		c.pattern[i] |= 1 << ((y%c.dotH)*c.dotW + x%c.dotW)
+	}
 	c.color[i] = col
 }
 
@@ -106,8 +125,8 @@ func (c *Canvas) Clear() {
 }
 
 // Rows returns the Canvas as one string per row of cells, each w cells wide:
-// a braille cell where a dot is lit (a shade of the glyph set under an ASCII
-// theme), a space elsewhere, coloured per cell.
+// a glyph of the Canvas's marker where a dot is lit (a shade of the glyph set
+// under an ASCII theme), a space elsewhere, coloured per cell.
 func (c *Canvas) Rows(t theme.Theme) []string {
 	g := t.GlyphSet()
 	rows := make([]string, c.h)
@@ -123,7 +142,7 @@ func (c *Canvas) Rows(t theme.Theme) []string {
 			if fg == nil {
 				fg = t.Primary
 			}
-			b.WriteString(ansi.NewStyle().Foreground(fg).Render(braille.DotCell(c.pattern[i], g)))
+			b.WriteString(ansi.NewStyle().Foreground(fg).Render(c.marker.cell(c.pattern[i], g)))
 		}
 		rows[r] = b.String()
 	}
