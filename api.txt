@@ -3788,8 +3788,12 @@ type State struct {
 ## github.com/ows4444/tui/textarea (package textarea)
 
 func (m *Model) Blur()
+func (m *Model) Find(q string) int
+func (m *Model) FindNext(q string) bool
+func (m *Model) FindPrev(q string) bool
 func (m *Model) Focus() tui.Cmd
 func (m *Model) InsertString(s string)
+func (m *Model) ReplaceAll(q, repl string) int
 func (m *Model) Reset()
 func (m *Model) SelectAll()
 func (m *Model) SetCursor(pos int)
@@ -3878,6 +3882,10 @@ type Model struct {
 	Motion	motion.Preference
 
 	KeyMap	KeyMap
+
+	Highlighter	func(line string) ansi.Text
+
+	AutoIndent	bool
 	// contains filtered or unexported fields
 }
 

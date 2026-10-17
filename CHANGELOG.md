@@ -12,6 +12,11 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- Text area editing: `textarea.Model.Highlighter` colours the text from a function
+  of one line (View, DrawCells, soft wrap, scrolling and the selection all follow
+  it); `AutoIndent` copies the leading whitespace to a new line; `Find`,
+  `FindNext`, `FindPrev` select matches ignoring case and `ReplaceAll` replaces
+  them in one undo step.
 - `appshell.Stack`: a screen stack. A screen pushes another over itself with
   `PushCmd` and the pushed one pops itself with `PopCmd(result)`, which delivers
   the result to the screens below; `Replace`, `ViewAt` and `Depth` complete it.

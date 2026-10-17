@@ -108,6 +108,20 @@ type Model struct {
 	// they are always inserted.
 	KeyMap KeyMap
 
+	// Highlighter, when set, colours the text: it is called with one line of
+	// the value (no newline) and returns that line as styled spans whose text
+	// adds up to the line, rune for rune. Spans left unstyled take TextStyle;
+	// the cursor and selection draw over the colours. A result that does not add
+	// up to the line is ignored for that line. It is called once for each
+	// visible row, so it should be cheap or cache; wire a lexer in with it.
+	// Nil (the default) leaves View and DrawCells as they were.
+	Highlighter func(line string) ansi.Text
+
+	// AutoIndent, when true, makes the Newline key start the new line with the
+	// leading spaces and tabs of the line the cursor was on. Off (the default),
+	// a new line starts at column 0.
+	AutoIndent bool
+
 	value         doc // text and line index; persistent, see doc.go
 	cursor        int
 	focused       bool
@@ -395,7 +409,11 @@ func (m *Model) handleKey(k tui.Key) tui.Cmd {
 		_, lineEnd := m.currentLineBounds()
 		m.cursor = lineEnd
 	case keyHit(k, km.Newline):
-		m.typeRune('\n')
+		if m.AutoIndent {
+			m.insertRunes(append([]rune{'\n'}, m.indentBefore()...), false)
+		} else {
+			m.typeRune('\n')
+		}
 	case keyHit(k, km.DeleteBack):
 		if !del() {
 			m.deleteBeforeCursor()
@@ -936,7 +954,7 @@ func (m Model) view() string {
 		return b.String()
 	}
 
-	if _, _, ok := m.selection(); ok {
+	if _, _, ok := m.selection(); ok || m.Highlighter != nil {
 		return m.selectionView()
 	}
 
