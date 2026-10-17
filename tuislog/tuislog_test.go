@@ -159,8 +159,7 @@ func TestEscapeSequencesCannotReachTheScreen(t *testing.T) {
 func TestTimeColumn(t *testing.T) {
 	var l lines
 	h := New(l.add, &Options{TimeFormat: "2006"})
-	var r slog.Record
-	r = slog.NewRecord(time.Date(2026, 10, 17, 1, 2, 3, 0, time.UTC), slog.LevelInfo, "x", 0)
+	r := slog.NewRecord(time.Date(2026, 10, 17, 1, 2, 3, 0, time.UTC), slog.LevelInfo, "x", 0)
 	_ = h.Handle(context.Background(), r)
 	h = New(l.add, &Options{})
 	_ = h.Handle(context.Background(), r)

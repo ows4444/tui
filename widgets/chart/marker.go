@@ -89,7 +89,7 @@ func sextant(n int) string {
 	if n > 42 {
 		k--
 	}
-	return string(rune(0x1FB00 + k))
+	return string(rune(0x1FB00 + k)) // #nosec G115 -- k is 0 to 59, so the result is U+1FB00 to U+1FB3B
 }
 
 // cell returns the glyph for pattern, the bits of the dots set in one cell, or

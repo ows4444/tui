@@ -209,7 +209,7 @@ func markupColor(w string) (Color, bool) {
 		if err != nil {
 			return nil, false
 		}
-		return RGB{R: uint8(v >> 16), G: uint8(v >> 8), B: uint8(v)}, true
+		return RGB{R: uint8(v >> 16 & 0xff), G: uint8(v >> 8 & 0xff), B: uint8(v & 0xff)}, true // #nosec G115 -- masked to a byte
 	}
 	return nil, false
 }
