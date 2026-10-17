@@ -73,7 +73,7 @@ func TestViewCacheFollowsItsInputs(t *testing.T) {
 		"mode":        func(m *Model) { m.Kitty, m.Sixel = false, true },
 		"id":          func(m *Model) { m.ID = 7 },
 		"multiplexer": func(m *Model) { m.Getenv = func(k string) string { return map[string]string{"TMUX": "1"}[k] } },
-		"placeholder": func(m *Model) { m.Kitty = false },
+		"blocks":      func(m *Model) { m.Kitty = false },
 		"cell size": func(m *Model) {
 			m.Kitty, m.Sixel = false, true
 			_ = m.View()

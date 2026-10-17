@@ -2298,11 +2298,20 @@ func (m Model) Tokens() theme.Tokens
 func (m Model) View() string
 func (m Model) WithTokens(tok theme.Tokens) Model
 func Delete(id uint32) string
+func EncodePNG(img image.Image) ([]byte, error)
+func Frames(data []byte) ([]Frame, error)
+func FromImage(img image.Image, width, height int, alt string) (Model, error)
+func HalfBlocks(data []byte, cols, rows int) string
 func Inline(png []byte, cols, rows int) string
 func New(png []byte, width, height int, alt string) Model
 func Sixel(pngData []byte, cols, rows, cellW, cellH int) string
+func ToPNG(data []byte) ([]byte, error)
 func Transmit(png []byte, cols, rows int) string
 func TransmitID(id uint32, png []byte, cols, rows int) string
+type Frame struct {
+	PNG	[]byte
+	Delay	time.Duration
+}
 type Model struct {
 	PNG	[]byte
 
@@ -2320,6 +2329,8 @@ type Model struct {
 
 	ID	uint32
 	Theme	theme.Theme
+
+	PlaceholderOnly	bool
 
 	Getenv	func(string) string
 	// contains filtered or unexported fields

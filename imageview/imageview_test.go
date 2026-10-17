@@ -100,6 +100,7 @@ func TestSmallPNGIsOneChunk(t *testing.T) {
 
 func TestPlaceholderWithoutKitty(t *testing.T) {
 	m := New(noisyPNG(t), 20, 5, "a cat")
+	m.PlaceholderOnly = true
 	v := m.View()
 	if strings.Contains(v, "\x1b_") {
 		t.Fatal("graphics sequence without kitty support")

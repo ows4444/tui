@@ -12,6 +12,12 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ### Added
 
+- `imageview` takes more than PNG and works without a graphics protocol: `New` accepts a
+  JPEG or GIF (its first frame) and keeps its PNG form; `FromImage`, `EncodePNG`
+  and `ToPNG` convert; `Frames` decodes an animated GIF into whole-picture frames with
+  their delays; and where the terminal has no graphics protocol the image is drawn in
+  half blocks, two pixels to a cell (`HalfBlocks`), unless `PlaceholderOnly` is set or
+  the theme's glyph set is ASCII.
 - Two experimental packages: `rangeslider` (two thumbs on one track, Space or `[` and
   `]` to pick one, the low never passing the high, mouse drag) and `timepicker`
   (hours, minutes, optional seconds and AM or PM as fields; arrows, typed digits,

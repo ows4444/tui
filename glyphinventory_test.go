@@ -27,6 +27,7 @@ import (
 var glyphSources = map[string]string{
 	"theme/glyphs.go":                "the Unicode and ASCII glyph sets themselves",
 	"layout/box.go":                  "the Border sets, including ASCIIBorder; Theme.Border selects one",
+	"imageview/formats.go":           "the half-block glyphs of the image fallback; used only when the theme's glyph set is not ASCII",
 	"layout/borders.go":              "more Border sets (block, half block, dashed, markdown, hidden), written as escapes; Theme.Border selects one",
 	"spinner/spinner.go":             "the default frames, replaced by Theme.Glyphs.Spinner",
 	"widgets/bigtext.go":             "the block font, drawn with full blocks and swapped for Theme.Glyphs.BarFull at render",

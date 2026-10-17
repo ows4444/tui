@@ -247,6 +247,7 @@ func TestViewEmitsSixelWhenOnlySixelIsReported(t *testing.T) {
 // Criterion #64: neither reported gives the text fallback.
 func TestViewFallsBackToTextWhenNeitherIsReported(t *testing.T) {
 	m := sixelModel(t)
+	m.PlaceholderOnly = true
 	got := m.View()
 	if strings.Contains(got, "\x1bP") || strings.Contains(got, "\x1b_") || !strings.Contains(ansi.StripANSI(got), "|alt") {
 		t.Errorf("want the text placeholder, got %q", got)
