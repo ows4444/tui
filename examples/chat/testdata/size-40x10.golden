@@ -1,10 +1,10 @@
-Chat        session #1      ⣀⣤⣤⣤⣤⣀      
-                         ⢀⣴⠟⠉⠁  ⠈⠉⠻⣦⡀   
-                        ⢠⡟⠁        ⠈⢻⡄  
-                        ⣿⠁   35%    ⠈⣿  
-                                        
-┌──────────────────────────────────────┐
-│                                      │
-│ Refactor parseArgs to return an      │
-│ error instead of calling os.Exit.    │
-│                                      │
+chat  #general (+3 unread)        ? help
+  after lunch.                          
+mira  09:16                             
+  Please keep it short: one line per    
+  change, newest first.                 
+you  09:20                              
+  On it. Do we mention the scroll region
+  fix?                                  
+›  Write a message and press Enter      
+[Enter] send  [ctrl+n] channel  …       
