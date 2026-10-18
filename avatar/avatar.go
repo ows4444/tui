@@ -439,6 +439,12 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	if drawHook != nil {
 		drawHook()
 	}
+	g, p := m.grid()
+	return g.render(p, glyphs)
+}
+
+// grid lays the figure out and rasterises it, with the palette it is drawn in.
+func (m Model) grid() (grid, palette) {
 	t := m.traits()
 	open := blinkOpen[m.blink%len(blinkOpen)]
 	lookX, zoom := m.moved()
@@ -453,6 +459,5 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	s.zoom = zoom
 	// In cells a pixel is twice as tall as it is wide.
 	s.setLift(lift(from, to, at), 2*s.pixelWidth(m.Width, m.Height))
-	g := s.rasterize(m.Width, m.Height, open == 1)
-	return g.render(m.palette(t), glyphs)
+	return s.rasterize(m.Width, m.Height, open == 1), m.palette(t)
 }

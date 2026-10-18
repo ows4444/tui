@@ -905,6 +905,7 @@ func (m *Model) StartIdle() tui.Cmd
 func (m *Model) StopIdle()
 func (m Model) Blinking() bool
 func (m Model) Colors() (body, eyes, background ansi.RGB)
+func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Idling() bool
 func (m Model) LayoutNode() layout.Node
 func (m Model) Linearize() string

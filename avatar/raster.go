@@ -385,18 +385,24 @@ func (g grid) render(p palette, glyphs theme.Glyphs) string {
 				flush()
 				ink, paper = c.ink, c.paper
 			}
-			switch n := popcount(c.mask); {
-			case n == 0:
-				run.WriteByte(' ')
-			case ascii:
-				run.WriteRune(ramp[min((n-1)*len(ramp)/4, len(ramp)-1)])
-			default:
-				run.WriteRune(quadrant[c.mask])
-			}
+			run.WriteRune(c.glyph(ramp, ascii))
 		}
 		flush()
 	}
 	return out.String()
+}
+
+// glyph is the character that draws the cell: a quadrant block, or under an
+// ASCII glyph set a shade, darker the more of the cell the ink covers.
+func (c cell) glyph(ramp []rune, ascii bool) rune {
+	switch n := popcount(c.mask); {
+	case n == 0:
+		return ' '
+	case ascii:
+		return ramp[min((n-1)*len(ramp)/4, len(ramp)-1)]
+	default:
+		return quadrant[c.mask]
+	}
 }
 
 func popcount(m uint8) int {
