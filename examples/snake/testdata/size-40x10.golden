@@ -1,0 +1,10 @@
+snake  score 0  best 0  speed 2/5  [paus
+┌──────────────────────────────────────┐
+│     Press an arrow key or click      │
+│               to start               │
+│· · · · · · · ▓▓▓▓██· · · · · · · · · │
+│· · · · · · · · · · · · · · · · · · · │
+│· · · · · · · · ◆ · · · · · · · · · · │
+└──────────────────────────────────────┘
+eat ◆ to grow; walls and your own body e
+[←↑↓→] steer  [p] pause  [r] restart  … 
