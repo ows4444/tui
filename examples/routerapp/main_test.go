@@ -296,3 +296,33 @@ func TestHelpAndQuit(t *testing.T) {
 		t.Fatal("q did not quit")
 	}
 }
+
+// An open customer shows its avatar beside the name, at every size, never wider
+// than the terminal; it is the same picture each time and smiles once starred.
+func TestCustomerShowsItsAvatar(t *testing.T) {
+	for _, size := range [][2]int{{40, 10}, {80, 24}, {120, 40}, {300, 80}} {
+		m, _ := update(newModel(), tui.ResizeMsg{Width: size[0], Height: size[1]})
+		m = openOrder(m)
+		m, _ = key(m, tui.KeyEsc)
+		if m.top().kind != rCustomer {
+			t.Fatalf("%dx%d: the customer did not open (%v)", size[0], size[1], crumbs(m))
+		}
+		view := text(m)
+		for _, line := range strings.Split(view, "\n") {
+			if ansi.Width(line) > size[0] {
+				t.Errorf("%dx%d: a line is %d wide", size[0], size[1], ansi.Width(line))
+			}
+		}
+		face := m.face(m.top(), m.theme())
+		if size[0] >= 40 && size[1] >= 14 && !strings.Contains(view, ansi.StripANSI(strings.Split(face, "\n")[1])) {
+			t.Errorf("%dx%d: the avatar is not on screen:\n%s", size[0], size[1], view)
+		}
+		if face != m.face(m.top(), m.theme()) {
+			t.Error("the same customer drew two avatars")
+		}
+		starred, _ := runes(m, "s")
+		if starred.face(starred.top(), starred.theme()) == face {
+			t.Errorf("%dx%d: a starred customer looks the same", size[0], size[1])
+		}
+	}
+}

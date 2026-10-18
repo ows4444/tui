@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -92,6 +93,24 @@ func sectionOf(k kind) int {
 	return 0
 }
 
+// faceW and faceH are the cells of a customer's avatar.
+const faceW, faceH = 8, 4
+
+// face is the avatar of the customer on route r: drawn from the name, so the
+// same customer always looks the same, and smiling once starred. It sits beside
+// the name, so a screen reader is not told the name twice.
+func (m model) face(r route, th theme.Theme) string {
+	if r.kind != rCustomer {
+		return ""
+	}
+	a := avatar.New(customerByID(r.id).name)
+	a.Width, a.Height, a.Decorative = faceW, faceH, true
+	if m.starred[r.id] {
+		a.Expression = avatar.ExpressionHappy
+	}
+	return a.SetTheme(th).View()
+}
+
 // head is the lines above the rows of a screen.
 func (m model) head(r route, th theme.Theme) []string {
 	bold := func(s string) string { return ansi.NewStyle().Bold().Render(s) }
@@ -126,8 +145,21 @@ func (m model) content(th theme.Theme, w, h int) layout.Node {
 	head := m.head(r, th)
 	rows := m.rows(r)
 	var kids []layout.FlexChild
-	for _, l := range head {
-		kids = append(kids, layout.FlexChild{Node: layout.Block(fit(" "+l, w))})
+	if face := m.face(r, th); r.kind == rCustomer && face != "" && w >= 30 && h >= len(head)+2 {
+		// The avatar stands beside the four lines that name the customer.
+		text := make([]layout.FlexChild, len(head))
+		for i, l := range head {
+			text[i] = layout.FlexChild{Node: layout.Block(fit(l, w-faceW-2))}
+		}
+		kids = append(kids, layout.FlexChild{Node: layout.Fixed(layout.Row(0,
+			layout.FlexChild{Node: layout.Block(" ")},
+			layout.FlexChild{Node: layout.Fixed(layout.Block(face), layout.Size{W: faceW, H: faceH})},
+			layout.FlexChild{Node: layout.Block(" ")},
+			layout.FlexChild{Node: layout.Column(0, text...)}), layout.Size{W: w, H: len(head)})})
+	} else {
+		for _, l := range head {
+			kids = append(kids, layout.FlexChild{Node: layout.Block(fit(" "+l, w))})
+		}
 	}
 	vis := max(0, h-len(head))
 	off := max(0, r.cur-(vis-1))
