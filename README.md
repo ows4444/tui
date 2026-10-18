@@ -190,7 +190,7 @@ every widget implements `Linearize` for accessible mode; tests in
 | `faces` | 50 ready-made animated Braille characters and a widget that plays them; for a picture derived from a name, see `avatar` | Experimental |
 | `imageview` | PNG through the kitty graphics protocol, iTerm2 inline images or Sixel, with a text placeholder otherwise | Experimental |
 | `clipboard` | A "copy to clipboard" button that writes OSC 52 | Experimental |
-| `avatar` | A deterministic avatar drawn from a name; for ready-made animated characters, see `faces` | Experimental |
+| `avatar` | A deterministic avatar drawn from a name; for ready-made animated characters, see `faces` | Stable-ish |
 | `button` | A pressable button, or a toggle button: Enter, Space or a click reports a press | Experimental |
 | `buttongroup` | A row of buttons with one cursor: a set of actions, or a choice of one or of several | Experimental |
 | `radiogroup` | A set of options of which exactly one is chosen; the arrow keys move and choose | Experimental |

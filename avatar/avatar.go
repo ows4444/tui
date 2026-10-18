@@ -34,8 +34,6 @@
 // written (still cut to 256 bytes). The rules read their data from tables
 // frozen at one Unicode version (see package internal/normname), not from the
 // standard library's, so a new Go release cannot change anyone's avatar.
-//
-// Stability: experimental. Its API may change in any minor release.
 package avatar
 
 import (

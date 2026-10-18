@@ -59,7 +59,7 @@
 // in their own package comment. The README lists every package by level.
 //
 // Experimental: appshell, streamtext, toolapproval, notificationcenter,
-// errorretry, faces, imageview, clipboard, avatar, button, buttongroup,
+// errorretry, faces, imageview, clipboard, button, buttongroup,
 // radiogroup, slider, rating, checkbox, toggle, otpinput, inputgroup,
 // pagination, breadcrumb, transferlist, carousel, tooltip, hovercard,
 // backdrop, fuzzy, prompt, hexview, rangeslider, timepicker, markdownview, window, motion/fx, termpane, tuislog, dropdown.

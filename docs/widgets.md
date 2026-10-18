@@ -61,7 +61,7 @@ in `examples/` that imports the package.
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
 | [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/signup` |
 | [backdrop](../backdrop) | An overlay that dims a finished frame, to put behind a dialog or a drawer; a press on it delivers `PressedMsg`. Experimental | | `tui demo` |
-| [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `tui demo` |
+| [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes, accessories and eye styles, in a colour the name chose; poses, blinks and follows the mouse; also PNG and SVG. For ready-made animated characters, see faces | yes | `examples/routerapp`, `tui demo` |
 | [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | `tui demo` |
 | [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `tui demo` |
 | [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `tui demo` |

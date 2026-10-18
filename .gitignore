@@ -38,3 +38,6 @@ bench/new.txt
 # acline: per-machine state
 .claude/vault/.state/
 examples/ssh/ssh
+
+# the tui command, built in place by go build ./cmd/tui
+/tui
