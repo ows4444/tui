@@ -233,6 +233,12 @@ func TestEveryEntryDrawsACleanFrame(t *testing.T) {
 		for _, keys := range [][]string{nil, {"enter"}, {"right", "down", "enter", "x"}} {
 			s.Keys(keys...)
 			rows := s.Screen()
+			// A slow machine can show the screen between the two halves of a
+			// frame: give the first row of the panes a moment to be drawn.
+			for try := 0; try < 100 && !strings.HasSuffix(strings.TrimRight(rows[1], " "), "│"); try++ {
+				time.Sleep(10 * time.Millisecond)
+				rows = s.Screen()
+			}
 			if len(rows) != 28 {
 				t.Errorf("%s: %d rows", e.name, len(rows))
 			}
