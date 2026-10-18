@@ -276,7 +276,7 @@ const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
 // Categories for the Examples page, most visual first. An example in none of
 // them is listed under "More", so a new example still appears.
 const EXAMPLE_CATEGORIES = [
-	{ id: 'start', title: 'First hour', blurb: 'The smallest programs to read first, and the ones the tutorials build.', names: ['hello', 'counter', 'todo', 'calculator', 'tutorial', 'tutorial2'] },
+	{ id: 'start', title: 'First hour', blurb: 'The smallest programs to read first, and the ones the tutorials build.', names: ['hello', 'counter', 'stopwatch', 'todo', 'calculator', 'tutorial', 'tutorial2'] },
 	{ id: 'forms', title: 'Forms and input', blurb: 'Sign-in, settings, pickers and colour: text fields, focus and the cursor.', names: ['login', 'signup', 'settings', 'planner', 'colorlab'] },
 	{ id: 'data', title: 'Lists, tables and dashboards', blurb: 'Browsing, filtering and watching data: tables, trees, charts, logs and queries.', names: ['files', 'csvedit', 'jsonx', 'pkgs', 'launcher', 'procmon', 'sqlbrowse', 'logtail', 'weather', 'charts', 'dashboard'] },
 	{ id: 'text', title: 'Text and documents', blurb: 'Reading and editing: a pager, a notepad, markdown, source code and bytes.', names: ['pager', 'notepad', 'mdstudio', 'codebrowse', 'docsreader', 'hexedit'] },
