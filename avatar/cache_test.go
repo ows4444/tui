@@ -3,6 +3,7 @@ package avatar
 import (
 	"bytes"
 	"image/png"
+	"strconv"
 	"testing"
 
 	"github.com/ows4444/tui/theme"
@@ -12,7 +13,8 @@ func countDraws(t *testing.T) *int {
 	t.Helper()
 	n := 0
 	drawHook = func() { n++ }
-	t.Cleanup(func() { drawHook = nil })
+	shared.reset()
+	t.Cleanup(func() { drawHook = nil; shared.reset() })
 	return &n
 }
 
@@ -284,38 +286,77 @@ func TestRepeatedAnimationFramesAreNotRedrawn(t *testing.T) {
 	}
 }
 
-// The store is bounded: past frameMemory pictures the oldest is dropped and
-// drawn again when it is next shown, and what is returned is always what an
-// uncached Model returns.
-func TestFrameMemoryIsBounded(t *testing.T) {
+// The store is bounded: past viewMemory views or pngMemory images the oldest
+// is dropped and drawn again when it is next shown, and what is returned is
+// always what an uncached Model returns.
+func TestMemoryIsBounded(t *testing.T) {
 	draws := countDraws(t)
-	m := New("alain00")
-	m.Width, m.Height = 24, 12
-	look := func(i int) Model {
-		c := m
-		c.LookX = float64(i) / float64(2*frameMemory)
-		return c
-	}
-	for i := 0; i <= frameMemory; i++ { // one more than fits
-		c := look(i)
-		fresh := c
+	name := func(i int) Model { return New("wall-" + strconv.Itoa(i)) }
+	for i := 0; i <= viewMemory; i++ { // one more than fits
+		m := name(i)
+		fresh := m
 		fresh.cache = nil
-		if c.View() != fresh.View() || string(c.PNG(48)) != string(fresh.PNG(48)) {
-			t.Fatalf("look %d: the cached picture is not the uncached one", i)
+		if m.View() != fresh.View() {
+			t.Fatalf("name %d: the cached picture is not the uncached one", i)
 		}
 	}
-	if n := len(m.cache.views.at); n != frameMemory || len(m.cache.views.order) != frameMemory || len(m.cache.pngs.at) != frameMemory {
-		t.Fatalf("the store holds %d views and %d images, want %d of each", n, len(m.cache.pngs.at), frameMemory)
+	look := func(i int) Model {
+		m := New("alain00")
+		m.LookX = float64(i) / float64(2*pngMemory)
+		return m
+	}
+	for i := 0; i <= pngMemory; i++ {
+		m := look(i)
+		fresh := m
+		fresh.cache = nil
+		if string(m.PNG(48)) != string(fresh.PNG(48)) {
+			t.Fatalf("look %d: the cached image is not the uncached one", i)
+		}
+	}
+	shared.mu.Lock()
+	views, images := len(shared.views.at), len(shared.pngs.at)
+	shared.mu.Unlock()
+	if views != viewMemory || images != pngMemory {
+		t.Fatalf("the store holds %d views and %d images, want %d and %d", views, images, viewMemory, pngMemory)
 	}
 	*draws = 0
-	last := look(frameMemory)
-	_, _ = last.View(), last.PNG(48)
+	_, _ = name(viewMemory).View(), look(pngMemory).PNG(48)
 	if *draws != 0 {
-		t.Errorf("the newest picture was drawn again (%d draws)", *draws)
+		t.Errorf("the newest pictures were drawn again (%d draws)", *draws)
 	}
-	oldest := look(0)
-	_, _ = oldest.View(), oldest.PNG(48)
+	_, _ = name(0).View(), look(0).PNG(48)
 	if *draws != 2 {
-		t.Errorf("the dropped picture was drawn %d times on its return, want 2 (a View and a PNG)", *draws)
+		t.Errorf("the dropped pictures were drawn %d times on their return, want 2", *draws)
+	}
+}
+
+// A Model made anew for each frame, as a list makes one for each row, finds
+// the picture the last frame drew.
+func TestANewModelPerFrameHitsTheCache(t *testing.T) {
+	draws := countDraws(t)
+	for frame := 0; frame < 3; frame++ {
+		for i := 0; i < 100; i++ {
+			_ = New("row-" + strconv.Itoa(i)).View()
+		}
+	}
+	if *draws != 100 {
+		t.Errorf("300 views of 100 names drew %d times, want 100", *draws)
+	}
+}
+
+// BenchmarkAvatarWall measures a list that makes a Model for each of 100 rows
+// on every frame.
+func BenchmarkAvatarWall(b *testing.B) {
+	names := make([]string, 100)
+	for i := range names {
+		names[i] = "row-" + strconv.Itoa(i)
+	}
+	b.ReportAllocs()
+	for b.Loop() {
+		for _, n := range names {
+			m := New(n)
+			m.Width, m.Height = 8, 4
+			_ = m.View()
+		}
 	}
 }

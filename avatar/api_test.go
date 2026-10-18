@@ -53,3 +53,18 @@ func TestMutatorsChangeTheModelTheyAreCalledOn(t *testing.T) {
 		t.Error("SetExpression on the kept model changed nothing")
 	}
 }
+
+// A Decorative avatar is silent, so a label beside it is not read twice.
+func TestDecorativeAvatarLinearizesToNothing(t *testing.T) {
+	m := avatar.New("ada")
+	if got := m.Linearize(); got != "Avatar: ada" {
+		t.Fatalf("Linearize = %q", got)
+	}
+	m.Decorative = true
+	if got := m.Linearize(); got != "" {
+		t.Errorf("a decorative avatar says %q", got)
+	}
+	if m.View() == "" {
+		t.Error("Decorative hid the picture")
+	}
+}

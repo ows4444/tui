@@ -108,6 +108,9 @@ type Model struct {
 	// motion.Normal. With motion.Reduced, Blink, StartIdle and React play
 	// nothing.
 	Motion motion.Preference
+	// Decorative marks the avatar as sitting beside the name it stands for, so
+	// Linearize says nothing and a screen reader does not hear the name twice.
+	Decorative bool
 	// Theme supplies the glyph set: under an ASCII one the avatar is drawn
 	// with its Shades. The colours come from Name, not from the theme.
 	Theme theme.Theme
@@ -137,18 +140,36 @@ type Model struct {
 	cache *viewCache
 }
 
-// viewCache memoises the Views and the PNGs of a Model, so a frame that
-// shows the same avatar does not lay it out and rasterise it again. Copies of
-// a Model share the cache. A Model built as a struct literal has no cache and
-// draws each time.
+// viewCache memoises the Views and the PNGs of every Model made by New, so a
+// frame that shows the same avatar does not lay it out and rasterise it again,
+// even when the Model is made anew for each frame, as a list does for each
+// row. One cache is shared by all of them and is bounded: past viewMemory
+// pictures, or pngMemory images, the one stored longest ago is dropped and
+// drawn again if it is shown again. A Model built as a struct literal has no
+// cache and draws each time.
 type viewCache struct {
 	mu    sync.Mutex
 	views frames[string]
 	pngs  frames[[]byte]
 }
 
-// frameMemory is how many pictures of each kind a Model keeps.
-const frameMemory = 24
+// viewMemory and pngMemory are how many pictures of each kind are kept: a wall
+// of a few hundred avatars, and the frames of the longest loop, the rock, at
+// two sizes.
+const (
+	viewMemory = 512
+	pngMemory  = 32
+)
+
+// shared is the cache of every Model made by New.
+var shared = &viewCache{}
+
+// reset empties the cache; tests use it to start from a known state.
+func (c *viewCache) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.views, c.pngs = frames[string]{}, frames[[]byte]{}
+}
 
 // frames is a small store of pictures by what they were drawn from.
 type frames[V any] struct {
@@ -161,16 +182,19 @@ func (f *frames[V]) get(k viewKey) (V, bool) {
 	return v, ok
 }
 
-func (f *frames[V]) put(k viewKey, v V) {
+// put stores v under k, dropping the oldest picture when limit are kept.
+func (f *frames[V]) put(k viewKey, v V, limit int) {
 	if f.at == nil {
 		f.at = map[viewKey]V{}
 	}
-	if len(f.order) == frameMemory {
-		delete(f.at, f.order[0])
-		f.order = append(f.order[:0], f.order[1:]...)
+	if _, ok := f.at[k]; !ok {
+		if len(f.order) >= limit {
+			delete(f.at, f.order[0])
+			f.order = append(f.order[:0], f.order[1:]...)
+		}
+		f.order = append(f.order, k)
 	}
 	f.at[k] = v
-	f.order = append(f.order, k)
 }
 
 type viewKey struct {
@@ -203,7 +227,7 @@ var drawHook func()
 // alike, so a frame shown before is not drawn again, even by a new Model made
 // for it.
 func New(name string) Model {
-	return Model{Name: name, Width: DefaultWidth, Height: DefaultHeight, Theme: theme.DarkTheme(), cache: &viewCache{}}
+	return Model{Name: name, Width: DefaultWidth, Height: DefaultHeight, Theme: theme.DarkTheme(), cache: shared}
 }
 
 func (m Model) traits() traits {
@@ -382,7 +406,7 @@ func (m Model) View() string {
 	view, ok := c.views.get(key)
 	if !ok {
 		view = m.draw(glyphs)
-		c.views.put(key, view)
+		c.views.put(key, view, viewMemory)
 	}
 	return view
 }

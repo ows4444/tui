@@ -947,6 +947,8 @@ type Model struct {
 
 	Motion	motion.Preference
 
+	Decorative	bool
+
 	Theme	theme.Theme
 	// contains filtered or unexported fields
 }

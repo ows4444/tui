@@ -41,7 +41,7 @@ func (m Model) PNG(size int) []byte {
 	img, ok := c.pngs.get(key)
 	if !ok {
 		img = m.encode(size)
-		c.pngs.put(key, img)
+		c.pngs.put(key, img, pngMemory)
 	}
 	return img
 }
