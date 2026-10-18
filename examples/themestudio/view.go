@@ -22,9 +22,13 @@ func (m model) rightW() int { return m.size().W - leftW - 1 }
 
 func (m model) showRight() bool { return m.size().W >= 70 }
 
-func (m model) tokenRows(ui theme.Theme) layout.Node {
+func (m model) tokenRows(ui theme.Theme, h int) layout.Node {
 	var rows []layout.FlexChild
+	top := max(0, m.sel-(h-1)) // keep the selected colour in view
 	for i, tk := range tokens {
+		if i < top || i >= top+h {
+			continue
+		}
 		id := "tok-" + strconv.Itoa(i)
 		c := toRGB(tk.get(m.t))
 		mark := " "
@@ -43,7 +47,7 @@ func (m model) tokenRows(ui theme.Theme) layout.Node {
 		}
 		rows = append(rows, layout.FlexChild{Node: layout.Named(id, layout.Block(st.Render(pad(label, leftW))))})
 	}
-	return layout.Fixed(layout.Column(0, rows...), layout.Size{W: leftW, H: len(tokens)})
+	return layout.Fixed(layout.Column(0, rows...), layout.Size{W: leftW, H: len(rows)})
 }
 
 func (m model) button(id, label string, ui theme.Theme) layout.FlexChild {
@@ -166,7 +170,7 @@ func (m model) screen() layout.Node {
 		}
 		body = layout.Column(0, lines...)
 	case !m.showRight():
-		body = layout.Column(0, layout.FlexChild{Node: m.tokenRows(ui)})
+		body = layout.Column(0, layout.FlexChild{Node: m.tokenRows(ui, bodyH)})
 	default:
 		sep := make([]layout.FlexChild, bodyH)
 		for i := range sep {
@@ -176,7 +180,7 @@ func (m model) screen() layout.Node {
 			layout.FlexChild{Node: m.editor(ui)}, layout.FlexChild{Node: layout.Block("")},
 			layout.FlexChild{Node: m.preview(ui, bodyH-6)})
 		body = layout.Row(0,
-			layout.FlexChild{Node: m.tokenRows(ui)},
+			layout.FlexChild{Node: m.tokenRows(ui, bodyH)},
 			layout.FlexChild{Node: layout.Fixed(layout.Column(0, sep...), layout.Size{W: 1, H: bodyH})},
 			layout.FlexChild{Node: layout.Fixed(right, layout.Size{W: m.rightW(), H: bodyH})})
 	}

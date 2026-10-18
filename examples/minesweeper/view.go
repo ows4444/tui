@@ -122,7 +122,7 @@ func (m model) screen() layout.Node {
 	w := m.size().W
 	hints := widgets.Footer(w, widgets.Hint{Key: "←↑↓→", Action: "move"}, widgets.Hint{Key: "space", Action: "open"}, widgets.Hint{Key: "f", Action: "flag"},
 		widgets.Hint{Key: "c", Action: "chord"}, widgets.Hint{Key: "n", Action: "new"}, widgets.Hint{Key: "?", Action: "help"}, widgets.Hint{Key: "q", Action: "quit"})
-	body := layout.Node(layout.Block(""))
+	body := layout.Node(layout.Fixed(layout.Block(""), layout.Size{W: m.size().W, H: max(1, m.size().H-3)}))
 	if m.fits() {
 		inner := 2 * m.g.lv.w
 		rows := m.boardRows(th)
