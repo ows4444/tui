@@ -1,4 +1,4 @@
-package avatar
+package normname
 
 import (
 	"os"

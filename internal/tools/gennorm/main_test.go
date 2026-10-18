@@ -9,7 +9,9 @@ import (
 )
 
 const (
-	fakeData = "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;\n" +
+	fakeData = "0020;SPACE;Zs;0;WS;;;;;N;;;;;\n" +
+		"00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;\n" +
+		"0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;\n" +
 		"00C5;LATIN CAPITAL LETTER A WITH RING ABOVE;Lu;0;L;0041 030A;;;;N;;;;00E5;\n" +
 		"00B5;MICRO SIGN;Ll;0;L;<compat> 03BC;;;;N;;;;;\n" +
 		"0300;COMBINING GRAVE ACCENT;Mn;230;NSM;;;;;N;;;;;\n" +
@@ -19,6 +21,7 @@ const (
 		"0958;DEVANAGARI LETTER QA;Lo;0;L;0915 093C;;;;N;;;;;\n" +
 		"212B;ANGSTROM SIGN;Lu;0;L;00C5;;;;N;;;;00E5;\n"
 	fakeProps = "# comment\n0958..095F  ; Full_Composition_Exclusion # Lo\n212B ; Full_Composition_Exclusion\n00C5 ; NFD_QC; N\n"
+	fakeCore  = "# comment\n0041..005A    ; Cased # L&  [26] LATIN CAPITAL LETTER A..Z\n00B7 ; Case_Ignorable # Po\n0300..036F    ; Case_Ignorable # Mn\n"
 	fakeTest  = "# header\n@Part0 # Specific cases\n1E0A;1E0A;0044 0307;1E0A;0044 0307; # comment\n" +
 		"@Part1 # Character by character test\n" +
 		"00C0;00C0;0041 0300;00C0;0041 0300; # one\n00C1;00C1;0041 0301;00C1;0041 0301; # two\n"
@@ -114,45 +117,87 @@ func TestSampleTestKeepsShortPartsWhole(t *testing.T) {
 // own -check.
 func TestRunVerifiesHashesAndChecks(t *testing.T) {
 	dir := t.TempDir()
-	for name, data := range map[string]string{unicodeData: fakeData, normProps: fakeProps, normTest: fakeTest} {
+	for name, data := range map[string]string{unicodeData: fakeData, normProps: fakeProps, normTest: fakeTest, derivedCore: fakeCore} {
 		if err := os.WriteFile(filepath.Join(dir, name), []byte(data), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
-	out, vec := filepath.Join(dir, "tables.go"), filepath.Join(dir, "vectors.txt")
-	if err := run(out, vec, dir, false, false); err == nil || !strings.Contains(err.Error(), "pinned") {
+	out, fold, vec := filepath.Join(dir, "tables.go"), filepath.Join(dir, "fold.go"), filepath.Join(dir, "vectors.txt")
+	if err := run(out, fold, vec, dir, false, false); err == nil || !strings.Contains(err.Error(), "pinned") {
 		t.Fatalf("run accepted files that do not match the pins: %v", err)
 	}
 	if _, err := os.Stat(out); err == nil {
 		t.Error("run wrote the tables despite a hash mismatch")
 	}
-	if err := run(out, vec, dir, false, true); err != nil {
+	if err := run(out, fold, vec, dir, false, true); err != nil {
 		t.Errorf("-print-hashes failed: %v", err)
 	}
-	if err := run(out, vec, filepath.Join(dir, "missing"), false, false); err == nil {
+	if err := run(out, fold, vec, filepath.Join(dir, "missing"), false, false); err == nil {
 		t.Error("run accepted a missing directory")
 	}
 
 	saved := sources
 	t.Cleanup(func() { sources = saved })
 	sources = nil
-	for _, name := range []string{unicodeData, normProps, normTest} {
+	for _, name := range []string{unicodeData, normProps, normTest, derivedCore} {
 		b, _ := os.ReadFile(filepath.Join(dir, name))
 		sources = append(sources, struct{ path, sha256 string }{name, sha(b)})
 	}
-	if err := run(out, vec, dir, true, false); err == nil {
+	if err := run(out, fold, vec, dir, true, false); err == nil {
 		t.Error("-check passed with no output files")
 	}
-	if err := run(out, vec, dir, false, false); err != nil {
+	if err := run(out, fold, vec, dir, false, false); err != nil {
 		t.Fatal(err)
 	}
-	if err := run(out, vec, dir, true, false); err != nil {
+	if err := run(out, fold, vec, dir, true, false); err != nil {
 		t.Errorf("-check failed on files just written: %v", err)
 	}
 	if err := os.WriteFile(vec, []byte("stale"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := run(out, vec, dir, true, false); err == nil || !strings.Contains(err.Error(), "out of date") {
+	if err := run(out, fold, vec, dir, true, false); err == nil || !strings.Contains(err.Error(), "out of date") {
 		t.Errorf("-check passed on a stale file: %v", err)
+	}
+}
+
+func TestGenerateFoldBuildsTheLowercaseAndTrimTables(t *testing.T) {
+	a, err := generateFold([]byte(fakeData), []byte(fakeCore))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := generateFold([]byte(fakeData), []byte(fakeCore))
+	if err != nil || !bytes.Equal(a, b) {
+		t.Fatalf("two runs differ (err %v)", err)
+	}
+	src := string(a)
+	for _, want := range []string{
+		"const UnicodeVersion = " + `"` + unicodeVersion + `"`,
+		"{0x0041, 0x0061},", // a lowercase mapping
+		"{0x00C5, 0x00E5},",
+		"{0x0020, 0x0020},", // a space
+		"{0x00A0, 0x00A0},", // a no-break space
+		"{0x0041, 0x005A},", // a Cased run
+		"{0x0300, 0x036F},", // a Case_Ignorable run
+		"{0x00B7, 0x00B7},",
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("output lacks %q:\n%s", want, src)
+		}
+	}
+	if _, err := generateFold([]byte(fakeData), []byte("# empty\n")); err == nil {
+		t.Error("generateFold accepted data with no Cased or Case_Ignorable")
+	}
+	if _, err := generateFold([]byte("0041;A;Lu\n"), []byte(fakeCore)); err == nil {
+		t.Error("generateFold accepted a short line")
+	}
+}
+
+func TestAppendSpanJoinsRunsThatTouch(t *testing.T) {
+	var s []span
+	s = appendSpan(s, 1, 3)
+	s = appendSpan(s, 4, 5)
+	s = appendSpan(s, 9, 9)
+	if len(s) != 2 || s[0] != (span{1, 5}) || s[1] != (span{9, 9}) {
+		t.Fatalf("%v", s)
 	}
 }

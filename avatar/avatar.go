@@ -25,7 +25,11 @@
 // A name is put in Unicode Normalization Form C, trimmed and lowercased
 // before it is hashed, so "Alain" and " alain " are one avatar, and so are a
 // name written with combining marks ("e" followed by U+0301) and its
-// precomposed spelling. Set Raw to hash the name as written.
+// precomposed spelling. Only the first 256 bytes of a name count, so a very
+// long one costs no more than a short one. Set Raw to hash the name as
+// written (still cut to 256 bytes). The rules read their data from tables
+// frozen at one Unicode version (see package internal/normname), not from the
+// standard library's, so a new Go release cannot change anyone's avatar.
 //
 // Stability: experimental. Its API may change in any minor release.
 package avatar

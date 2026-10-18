@@ -4,8 +4,9 @@ import (
 	"math"
 	"math/bits"
 	"strings"
-	"unicode"
 	"unicode/utf8"
+
+	"github.com/ows4444/tui/internal/normname"
 )
 
 // The seed is hashed once into a 32-bit state, and each trait continues from
@@ -55,84 +56,10 @@ func stream(state uint32, key string) float64 {
 	return float64(finalize(feedString(feed(state, sep), key))) / 4294967296
 }
 
-// normalize puts a name in Unicode Normalization Form C, trims it and
-// lowercases it, so "Alain" and " alain " are one avatar, as are the two
-// spellings of an accented letter.
-func normalize(s string) string {
-	return lower(strings.TrimFunc(nfc(s), trimmed))
-}
-
-// trimmed reports whether r is trimmed from the ends of a name: the ASCII
-// whitespace, the no-break space, the byte order mark, the line and paragraph
-// separators and every space separator (Zs). It differs from unicode.IsSpace
-// on U+0085 (not trimmed) and U+FEFF (trimmed), and the vectors pin both.
-func trimmed(r rune) bool {
-	switch r {
-	case '\t', '\n', '\v', '\f', '\r', ' ', 0xA0, 0xFEFF, 0x2028, 0x2029:
-		return true
-	}
-	return unicode.Is(unicode.Zs, r)
-}
-
-// lower is the Unicode default lowercasing: the simple lowercase mapping of
-// each rune, plus the two rules of SpecialCasing.txt that are not locale bound.
-// U+0130 becomes "i" and a combining dot, and a capital sigma at the end of a
-// word becomes a final sigma.
-func lower(s string) string {
-	rs := []rune(s)
-	var b strings.Builder
-	b.Grow(len(s))
-	for i, r := range rs {
-		switch {
-		case r == 0x130:
-			b.WriteRune('i')
-			b.WriteRune(0x307)
-		case r == 0x3A3 && finalSigma(rs, i):
-			b.WriteRune(0x3C2)
-		default:
-			b.WriteRune(unicode.ToLower(r))
-		}
-	}
-	return b.String()
-}
-
-// finalSigma is the Final_Sigma condition of the Unicode standard (3.13): the
-// sigma follows a cased letter and no cased letter follows it, where
-// case-ignorable runes on either side are skipped.
-func finalSigma(rs []rune, i int) bool {
-	before := false
-	for j := i - 1; j >= 0; j-- {
-		if caseIgnorable(rs[j]) {
-			continue
-		}
-		before = cased(rs[j])
-		break
-	}
-	if !before {
-		return false
-	}
-	for j := i + 1; j < len(rs); j++ {
-		if caseIgnorable(rs[j]) {
-			continue
-		}
-		return !cased(rs[j])
-	}
-	return true
-}
-
-func cased(r rune) bool {
-	return unicode.IsUpper(r) || unicode.IsLower(r) || unicode.IsTitle(r) ||
-		unicode.Is(unicode.Other_Lowercase, r) || unicode.Is(unicode.Other_Uppercase, r)
-}
-
-func caseIgnorable(r rune) bool {
-	switch r {
-	case '\'', '.', ':', '^', '`', 0xA8, 0xAF, 0xB4, 0xB7, 0xB8, 0x2018, 0x2019, 0x2024, 0x2027,
-		0xFE13, 0xFE52, 0xFE55, 0xFF07, 0xFF0E, 0xFF1A:
-		return true
-	}
-	return unicode.In(r, unicode.Mn, unicode.Me, unicode.Cf, unicode.Lm, unicode.Sk)
-}
+// normalize puts a name in the form it is hashed in (see package normname):
+// Normalization Form C, trimmed, lowercased and cut to 256 bytes, so "Alain"
+// and " alain " are one avatar, as are the two spellings of an accented letter.
+func normalize(s string) string { return normname.Name(s) }
 
 // traits reads the values a name hashes to. Every value is addressed by a
 // string key, so the keys are an append-only namespace.
@@ -144,7 +71,9 @@ type traits struct {
 }
 
 func newTraits(name string, raw bool) traits {
-	if !raw {
+	if raw {
+		name = normname.Cap(name)
+	} else {
 		name = normalize(name)
 	}
 	return traits{state: seedState(name)}
