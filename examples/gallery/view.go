@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/cellbuf"
 	"github.com/ows4444/tui/theme"
 )
 
@@ -76,7 +77,11 @@ func (m model) pageLines(th theme.Theme) []string {
 		right := []string{bold("Overlays"), faint("d dialog   w drawer"), faint("p popover  t toast"), "", chose}
 		return append([]string{bold("Menu"), ""}, beside(split(menu), right, 24)...)
 	case pageLoading:
-		rows := split(m.list.View())
+		// The list draws straight into a cell grid, and its rows are read back
+		// from it to sit beside the scroll bar.
+		grid := cellbuf.New(12, m.list.Height)
+		m.list.DrawCells(grid, grid.Bounds())
+		rows := grid.Lines()
 		bar := split(m.scroll.SetTheme(th).View())
 		list := make([]string, len(rows))
 		for i := range rows {
