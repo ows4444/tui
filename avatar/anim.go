@@ -1,6 +1,7 @@
 package avatar
 
 import (
+	"github.com/ows4444/tui/hittest"
 	"math"
 	"time"
 
@@ -116,6 +117,33 @@ func (m *Model) Hover(over bool) tui.Cmd {
 	return nil
 }
 
+// Bounds is the screen rectangle the avatar covers, from X and Y, Width by
+// Height cells.
+func (m Model) Bounds() hittest.Rect {
+	return hittest.Rect{X: m.X, Y: m.Y, W: max(m.Width, 0), H: max(m.Height, 0)}
+}
+
+// pointer follows a mouse event: while the pointer is over Bounds the idle loop
+// runs and the eyes look at it; when it leaves, both stop and the eyes return
+// to rest. Only motion and presses count, and a click never changes anything
+// else. Set X and Y to where the avatar is drawn and send the Program's
+// mouse events to Update (tui.WithMouse).
+func (m Model) pointer(ev tui.MouseEvent) (Model, tui.Cmd) {
+	if ev.Action == tui.MouseActionRelease {
+		return m, nil
+	}
+	b := m.Bounds()
+	if !b.Contains(ev.X, ev.Y) {
+		cmd := m.Hover(false)
+		m.LookAt(0, 0)
+		return m, cmd
+	}
+	cmd := m.Hover(true)
+	// The cell under the pointer minus the centre cell of the avatar.
+	m.LookAt(ev.X-(b.X+b.W/2), ev.Y-(b.Y+b.H/2))
+	return m, cmd
+}
+
 // Idling reports whether the idle loop is running.
 func (m Model) Idling() bool { return m.idling }
 
@@ -125,6 +153,9 @@ func (m Model) Idling() bool { return m.idling }
 // the avatar idles. It ignores a tick or a release that another avatar, or
 // an animation since replaced, scheduled, and every other Msg.
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd) {
+	if ev, ok := msg.(tui.MouseEvent); ok {
+		return m.pointer(ev)
+	}
 	if cmd, ok := m.posing(msg); ok {
 		return m, cmd
 	}

@@ -1,6 +1,7 @@
 package avatar_test
 
 import (
+	"github.com/ows4444/tui"
 	"testing"
 
 	"github.com/ows4444/tui/avatar"
@@ -66,5 +67,37 @@ func TestDecorativeAvatarLinearizesToNothing(t *testing.T) {
 	}
 	if m.View() == "" {
 		t.Error("Decorative hid the picture")
+	}
+}
+
+// Motion over the avatar's Bounds starts the idle loop and turns the eyes
+// toward the pointer; leaving stops both.
+func TestMouseOverBoundsHoversAndLooks(t *testing.T) {
+	m := avatar.New("mouse")
+	m.X, m.Y = 10, 5
+	if b := m.Bounds(); b.X != 10 || b.Y != 5 || b.W != m.Width || b.H != m.Height {
+		t.Fatalf("Bounds = %+v", b)
+	}
+	move := func(x, y int) tui.MouseEvent { return tui.MouseEvent{X: x, Y: y, Action: tui.MouseActionMotion} }
+
+	m, cmd := m.Update(move(10+m.Width-1, 5+m.Height/2))
+	if !m.Idling() || cmd == nil {
+		t.Error("the pointer arriving did not start the idle loop")
+	}
+	if m.LookX <= 0 {
+		t.Errorf("the pointer is right of centre but LookX = %v", m.LookX)
+	}
+	m, cmd = m.Update(move(10+m.Width-2, 5+m.Height/2))
+	if cmd != nil || !m.Idling() {
+		t.Error("staying over the avatar changed the idle loop")
+	}
+	m, _ = m.Update(move(0, 0))
+	if m.Idling() || m.LookX != 0 || m.LookY != 0 {
+		t.Error("leaving did not stop the loop and centre the eyes")
+	}
+	before := m
+	m, cmd = m.Update(tui.MouseEvent{X: 11, Y: 6, Action: tui.MouseActionRelease})
+	if cmd != nil || m.Idling() != before.Idling() {
+		t.Error("a release changed the avatar")
 	}
 }

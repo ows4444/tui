@@ -19,7 +19,9 @@
 // eases into it), React pulls a face for a moment and lets it go, Blink closes and reopens the eyes once
 // and StartIdle keeps the avatar breathing, blinking and glancing aside, all
 // three driven by Update, and LookAt turns the eyes toward a target such as
-// the mouse pointer. Blink, StartIdle, StopIdle, Hover, LookAt, React and
+// the mouse pointer. For the mouse, set X and Y to where the avatar is drawn
+// and pass the Program's mouse events to Update: the idle loop runs while the
+// pointer is over Bounds and the eyes follow it. Blink, StartIdle, StopIdle, Hover, LookAt, React and
 // SetExpression change the Model they are called on: call them on the one your
 // own model keeps (m.avatar.Blink()), never on a copy that is then thrown away.
 //
@@ -69,6 +71,10 @@ type Model struct {
 	// Name is who the avatar stands for: a username, an email, an id. It is
 	// trimmed and lowercased before hashing unless Raw is set.
 	Name string
+	// X and Y are the screen cell of the avatar's top-left corner, for the
+	// mouse: Update compares a pointer event with Bounds. Leave them zero if you
+	// do not send mouse events.
+	X, Y int
 	// Width and Height are the size in terminal cells. The figure is square
 	// and centred, so the shorter side (counting a row as two columns)
 	// decides how large it is drawn.
@@ -111,8 +117,9 @@ type Model struct {
 	// Decorative marks the avatar as sitting beside the name it stands for, so
 	// Linearize says nothing and a screen reader does not hear the name twice.
 	Decorative bool
-	// Theme supplies the glyph set: under an ASCII one the avatar is drawn
-	// with its Shades. The colours come from Name, not from the theme.
+	// Theme supplies the glyph set (under an ASCII one the avatar is drawn
+	// with its Shades) and the page colour the body is held apart from: its
+	// Background, else its TextInverse. The hue comes from Name.
 	Theme theme.Theme
 
 	blink  int  // frame of the blink being played; 0 is at rest

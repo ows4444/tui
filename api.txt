@@ -904,6 +904,7 @@ func (m *Model) SetExpression(e Expression) tui.Cmd
 func (m *Model) StartIdle() tui.Cmd
 func (m *Model) StopIdle()
 func (m Model) Blinking() bool
+func (m Model) Bounds() hittest.Rect
 func (m Model) Colors() (body, eyes, background ansi.RGB)
 func (m Model) DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)
 func (m Model) Idling() bool
@@ -926,6 +927,8 @@ type Expression int
 type EyeStyle int
 type Model struct {
 	Name	string
+
+	X, Y	int
 
 	Width, Height	int
 
