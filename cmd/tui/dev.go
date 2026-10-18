@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -153,7 +154,7 @@ func dev(cfg devConfig, stop <-chan struct{}) error {
 		return err
 	}
 	defer os.RemoveAll(tmp)
-	bin := filepath.Join(tmp, "app")
+	bin := filepath.Join(tmp, "app"+exeSuffix)
 	say := func(format string, a ...any) { fmt.Fprintf(cfg.status, "tui dev: "+format+"\n", a...) }
 	for {
 		base := snapshot(cfg.watch)
@@ -285,3 +286,12 @@ func resetTerminal(cfg devConfig) {
 		_ = cmd.Run() // best effort: there may be no stty, or no terminal
 	}
 }
+
+// exeSuffix is what a built program is named with: Windows will not run a file
+// without .exe.
+var exeSuffix = func() string {
+	if runtime.GOOS == "windows" {
+		return ".exe"
+	}
+	return ""
+}()

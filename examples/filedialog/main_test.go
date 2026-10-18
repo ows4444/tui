@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -367,6 +368,9 @@ func TestF2SwitchesModes(t *testing.T) {
 }
 
 func TestInfoPanelDescribesTheSelection(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file modes are Unix permissions; Windows reports its own")
+	}
 	m, _ := open(t, false)
 	m = runes(m, "data")
 	out := text(m)

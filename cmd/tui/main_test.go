@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -91,6 +92,9 @@ func TestGeneratedProjectBuildsAndPasses(t *testing.T) {
 // Where the directory cannot be made, or written, the error is returned and
 // nothing is half-described as created.
 func TestNewReportsFilesystemErrors(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("chmod does not make a directory read-only on Windows")
+	}
 	var out bytes.Buffer
 	file := filepath.Join(t.TempDir(), "plain")
 	if err := os.WriteFile(file, []byte("x"), 0o644); err != nil {

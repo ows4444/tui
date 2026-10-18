@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"testing"
 	"time"
 
@@ -13,6 +14,9 @@ import (
 // folder is a fixture with fixed times, and the path bar starts at it, so the
 // goldens do not hold the temporary path.
 func TestSizeMatrix(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the screens show Unix file modes")
+	}
 	root := fixture(t)
 	testutil.SizeMatrix(t, func() tui.Model {
 		m := newModel(root, false)
