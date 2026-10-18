@@ -218,6 +218,10 @@ Vi mode for `textarea` and `textinput`: set `Vi` and the widget is modal (counts
 
 ### Changed
 
+- BREAKING: `avatar.Model.Shape` returns a `Silhouette` (use `.String()` for the name); `Model.Hue` is a `*float64`, nil lets the name choose and a hue of 0 is a real pin; the `Trait*` constants, `Trait` and `Model.Pins` are removed (use `Hue`, `Tone`, `Silhouette`, `Accessory` and `Eyes`). `avatar` was experimental.
+
+### Changed
+
 - The data table's `LayoutNode` honours `FrozenCols`: when the columns do not fit
   the allotted width it scrolls them, keeping the frozen ones, as `View` does.
   Before, it shrank every column with an ellipsis. A table with `FrozenCols` of 0

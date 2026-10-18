@@ -892,51 +892,6 @@ const (
 	ToneBright
 	ToneInk
 )
-const (
-	TraitBodySize	Trait	= iota
-
-	TraitBodyProportion
-
-	TraitBodySquareness
-
-	TraitEyeSize
-
-	TraitEyeRoundness
-
-	TraitEyeSquareness
-
-	TraitEyeSeparation
-
-	TraitEyeLean
-
-	TraitGazeX
-
-	TraitGazeY
-
-	TraitTilt
-
-	TraitSquat
-
-	TraitCornerRounding
-
-	TraitPetals
-
-	TraitPetalDistance
-
-	TraitPetalSize
-
-	TraitPetalRotation
-
-	TraitLobes
-
-	TraitNubs
-
-	TraitNubAngle
-
-	TraitNubSize
-
-	TraitTipLength
-)
 const MaxPNGSize = 512
 const ReactHold = 1500 * time.Millisecond
 func (a Accessory) String() string
@@ -957,13 +912,12 @@ func (m Model) PNG(size int) []byte
 func (m Model) Reacting() bool
 func (m Model) SVG() string
 func (m Model) SetTheme(t theme.Theme) Model
-func (m Model) Shape() string
+func (m Model) Shape() Silhouette
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
 func (s EyeStyle) String() string
 func (s Silhouette) String() string
 func (t Tone) String() string
-func (t Trait) String() string
 func New(name string) Model
 type Accessory int
 type Background int
@@ -978,7 +932,7 @@ type Model struct {
 
 	Raw	bool
 
-	Hue	float64
+	Hue	*float64
 
 	Tone	Tone
 
@@ -986,8 +940,6 @@ type Model struct {
 
 	Accessory	Accessory
 	Eyes		EyeStyle
-
-	Pins	map[Trait]float64
 
 	Expression	Expression
 
@@ -1000,7 +952,6 @@ type Model struct {
 }
 type Silhouette int
 type Tone int
-type Trait int
 
 ## github.com/ows4444/tui/backdrop (package backdrop)
 

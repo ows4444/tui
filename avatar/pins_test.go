@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-var allTraits = []Trait{
-	TraitBodySize, TraitBodyProportion, TraitBodySquareness, TraitEyeSize, TraitEyeRoundness,
-	TraitEyeSquareness, TraitEyeSeparation, TraitEyeLean, TraitGazeX, TraitGazeY,
+var allTraits = []traitID{
+	traitBodySize, traitBodyProportion, traitBodySquareness, traitEyeSize, traitEyeRoundness,
+	traitEyeSquareness, traitEyeSeparation, traitEyeLean, traitGazeX, traitGazeY,
 }
 
 var pinNames = []string{"ada", "linus", "grace", "ken", "margaret", "dennis", "barbara", "alan", "hedy", "edsger", "user-1", "user-12", "user-21"}
@@ -18,36 +18,36 @@ func TestNoPinsIsTheNamesOwnAvatar(t *testing.T) {
 	for _, name := range pinNames {
 		own := New(name)
 		m := New(name)
-		m.Pins = map[Trait]float64{}
+		m.traitPins = map[traitID]float64{}
 		if m.View() != own.View() || m.SVG() != own.SVG() {
-			t.Errorf("%q: an empty Pins changed the avatar", name)
+			t.Errorf("%q: an empty traitPins changed the avatar", name)
 		}
 		// A key that is not a trait pins nothing.
-		m.Pins = map[Trait]float64{-1: 0.5, traitCount: 0.5, 99: 0.5}
+		m.traitPins = map[traitID]float64{-1: 0.5, traitCount: 0.5, 99: 0.5}
 		if m.SVG() != own.SVG() {
 			t.Errorf("%q: an unknown trait changed the avatar", name)
 		}
 	}
-	if Trait(99).String() != "unknown" || Trait(-1).String() != "unknown" {
+	if traitID(99).String() != "unknown" || traitID(-1).String() != "unknown" {
 		t.Error("an unknown trait is not named unknown")
 	}
 }
 
 // measure returns what each trait came out as in a figure: the number the
 // trait's position is read into.
-func measure(m Model) map[Trait]float64 {
+func measure(m Model) map[traitID]float64 {
 	t := m.traits()
-	return map[Trait]float64{
-		TraitBodySize:       t.num("body.r", 31, 38),
-		TraitBodyProportion: t.num("body.ratio", 0.92, 1.08),
-		TraitBodySquareness: t.num("body.n", 1.9, 2.5),
-		TraitEyeSize:        t.num("eye.rx", 0.075, 0.105),
-		TraitEyeRoundness:   t.num("eye.ratio", 1.9, 3.2),
-		TraitEyeSquareness:  t.num("eye.n", 3.5, 6),
-		TraitEyeSeparation:  t.num("eye.gap", 0.1, 0.24),
-		TraitEyeLean:        t.num("eye.lean", -1, 1),
-		TraitGazeX:          t.jitter("gaze.x", 0.09),
-		TraitGazeY:          t.num("gaze.y", -0.2, 0.08),
+	return map[traitID]float64{
+		traitBodySize:       t.num("body.r", 31, 38),
+		traitBodyProportion: t.num("body.ratio", 0.92, 1.08),
+		traitBodySquareness: t.num("body.n", 1.9, 2.5),
+		traitEyeSize:        t.num("eye.rx", 0.075, 0.105),
+		traitEyeRoundness:   t.num("eye.ratio", 1.9, 3.2),
+		traitEyeSquareness:  t.num("eye.n", 3.5, 6),
+		traitEyeSeparation:  t.num("eye.gap", 0.1, 0.24),
+		traitEyeLean:        t.num("eye.lean", -1, 1),
+		traitGazeX:          t.jitter("gaze.x", 0.09),
+		traitGazeY:          t.num("gaze.y", -0.2, 0.08),
 	}
 }
 
@@ -60,7 +60,7 @@ func TestAPinnedTraitIsTheSameForEveryName(t *testing.T) {
 		for _, name := range pinNames {
 			own := New(name)
 			m := New(name)
-			m.Pins = map[Trait]float64{tr: 0.9}
+			m.traitPins = map[traitID]float64{tr: 0.9}
 			before, after := measure(own), measure(m)
 			values[after[tr]] = true
 			for _, other := range allTraits {
@@ -102,7 +102,7 @@ func TestPinsAreClamped(t *testing.T) {
 	for _, tr := range allTraits {
 		at := func(v float64) string {
 			m := New("ada")
-			m.Pins = map[Trait]float64{tr: v}
+			m.traitPins = map[traitID]float64{tr: v}
 			return m.SVG()
 		}
 		if at(-3) != at(0) {
@@ -127,16 +127,16 @@ func TestPinnedEyesStayInsideTheBody(t *testing.T) {
 				// Vary the four traits that place and size the eyes; hold
 				// the rest at an end chosen by the combination.
 				c := combo
-				pins := map[Trait]float64{}
-				for _, tr := range []Trait{TraitEyeSize, TraitEyeRoundness, TraitEyeSeparation, TraitGazeX} {
+				pins := map[traitID]float64{}
+				for _, tr := range []traitID{traitEyeSize, traitEyeRoundness, traitEyeSeparation, traitGazeX} {
 					pins[tr] = ends[c%3]
 					c /= 3
 				}
-				for i, tr := range []Trait{TraitBodySize, TraitBodyProportion, TraitBodySquareness, TraitEyeSquareness, TraitEyeLean, TraitGazeY} {
+				for i, tr := range []traitID{traitBodySize, traitBodyProportion, traitBodySquareness, traitEyeSquareness, traitEyeLean, traitGazeY} {
 					pins[tr] = ends[(combo+i)%3]
 				}
 				m := New(name)
-				m.Silhouette, m.Pins = s, pins
+				m.Silhouette, m.traitPins = s, pins
 				f := layoutFigure(m.traits())
 				sc := newScene(f, nil)
 				for i, eye := range f.eyes {
@@ -161,19 +161,19 @@ func TestPinsInvalidateTheCache(t *testing.T) {
 	m := New("ada")
 	m.Width, m.Height = 24, 12
 	own := m.View()
-	m.Pins = map[Trait]float64{TraitEyeSize: 1}
+	m.traitPins = map[traitID]float64{traitEyeSize: 1}
 	big := m.View()
 	if big == own {
 		t.Fatal("a pin did not change the View")
 	}
-	m.Pins[TraitEyeSize] = 0
+	m.traitPins[traitEyeSize] = 0
 	if small := m.View(); small == big || small == own {
 		t.Error("changing a pin in place did not redraw")
 	}
 	if m.pinKey() != "a0e0;3=0;" || New("ada").pinKey() != "" {
 		t.Errorf("pinKey = %q", m.pinKey())
 	}
-	m.Pins = nil
+	m.traitPins = nil
 	if m.View() != own {
 		t.Error("removing the pins did not return the name's own avatar")
 	}

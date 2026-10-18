@@ -223,7 +223,7 @@ func TestShapeHistogramMatchesVectors(t *testing.T) {
 	v := loadVectors(t)
 	got := map[string]int{}
 	for i := 0; i < 20000; i++ {
-		got[New(fmt.Sprintf("histogram-%d", i)).Shape()]++
+		got[New(fmt.Sprintf("histogram-%d", i)).Shape().String()]++
 	}
 	for name, want := range v.Histogram {
 		if got[name] != want {

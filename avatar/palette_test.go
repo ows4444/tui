@@ -44,7 +44,7 @@ func TestBodyAndEyesKeepTheirContrastOnEveryPage(t *testing.T) {
 		for _, bg := range []Background{BackgroundNone, BackgroundSquircle} {
 			for _, tone := range []Tone{TonePastel, TonePale, ToneMid, ToneDeep, ToneBright, ToneInk} {
 				for hue := 1.0; hue < 361; hue += 10 {
-					m := Model{Name: "x", Width: 8, Height: 4, Hue: hue, Tone: tone, Theme: th, Background: bg}
+					m := Model{Name: "x", Width: 8, Height: 4, Hue: &hue, Tone: tone, Theme: th, Background: bg}
 					body, eyes, plate := m.Colors()
 					ref := ansi.RGB{}
 					if bg == BackgroundNone {

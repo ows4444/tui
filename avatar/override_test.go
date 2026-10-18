@@ -41,15 +41,15 @@ func TestNoOverrideIsTheNamesOwnAvatar(t *testing.T) {
 	for _, name := range names {
 		own := avatar.New(name)
 		m := avatar.New(name)
-		m.Hue, m.Tone, m.Silhouette = 0, avatar.ToneAuto, avatar.SilhouetteAuto
+		m.Hue, m.Tone, m.Silhouette = nil, avatar.ToneAuto, avatar.SilhouetteAuto
 		if m.View() != own.View() || m.SVG() != own.SVG() {
 			t.Errorf("%q: the zero overrides changed the avatar", name)
 		}
-		m.Hue, m.Tone, m.Silhouette = math.NaN(), 99, -4
+		m.Hue, m.Tone, m.Silhouette = deg(math.NaN()), 99, -4
 		if m.SVG() != own.SVG() || m.Shape() != own.Shape() {
 			t.Errorf("%q: invalid overrides changed the avatar", name)
 		}
-		m.Hue = math.Inf(1)
+		m.Hue = deg(math.Inf(1))
 		if m.SVG() != own.SVG() {
 			t.Errorf("%q: an infinite hue changed the avatar", name)
 		}
@@ -66,7 +66,7 @@ func TestPinnedHueKeepsEachNamesFigure(t *testing.T) {
 	for _, name := range names {
 		own := avatar.New(name)
 		m := avatar.New(name)
-		m.Hue = 210
+		m.Hue = deg(210)
 		if m.Shape() != own.Shape() {
 			t.Errorf("%q: a pinned hue changed the silhouette from %s to %s", name, own.Shape(), m.Shape())
 		}
@@ -83,7 +83,7 @@ func TestPinnedHueKeepsEachNamesFigure(t *testing.T) {
 	// Another hue is another colour, in the cool half of the wheel for 250
 	// and the warm half for 30.
 	cool, warm := avatar.New("ada"), avatar.New("ada")
-	cool.Hue, cool.Tone, warm.Hue, warm.Tone = 250, avatar.ToneMid, 30, avatar.ToneMid
+	cool.Hue, cool.Tone, warm.Hue, warm.Tone = deg(250), avatar.ToneMid, deg(30), avatar.ToneMid
 	cb, _, _ := cool.Colors()
 	wb, _, _ := warm.Colors()
 	if cb.B <= cb.R || wb.R <= wb.B {
@@ -91,7 +91,7 @@ func TestPinnedHueKeepsEachNamesFigure(t *testing.T) {
 	}
 	// 360 is the hue that 0 cannot name; hues wrap in both directions.
 	full, wrapped, negative, same := avatar.New("ada"), avatar.New("ada"), avatar.New("ada"), avatar.New("ada")
-	full.Hue, wrapped.Hue, negative.Hue, same.Hue = 360, 720, -150, 210
+	full.Hue, wrapped.Hue, negative.Hue, same.Hue = deg(360), deg(720), deg(-150), deg(210)
 	if full.SVG() != wrapped.SVG() || negative.SVG() != same.SVG() || full.SVG() == avatar.New("ada").SVG() {
 		t.Error("hues do not wrap at 360")
 	}
@@ -105,7 +105,7 @@ func TestPinnedSilhouetteAndTone(t *testing.T) {
 		for _, name := range names {
 			m := avatar.New(name)
 			m.Silhouette = s
-			if m.Shape() != s.String() {
+			if m.Shape() != s {
 				t.Errorf("%q pinned to %v draws %s", name, s, m.Shape())
 			}
 			figures[m.SVG()] = true
@@ -118,7 +118,7 @@ func TestPinnedSilhouetteAndTone(t *testing.T) {
 	swatches := map[ansi.RGB]bool{}
 	for i, tone := range allTones {
 		m := avatar.New("ada")
-		m.Hue, m.Tone = 30, tone
+		m.Hue, m.Tone = deg(30), tone
 		body, _, _ := m.Colors()
 		swatches[body] = true
 		if tone.String() != want[i] {
@@ -136,7 +136,7 @@ func TestOverridesKeepTheEyesLegible(t *testing.T) {
 	for hue := 1.0; hue <= 360; hue += 3 {
 		for _, tone := range append([]avatar.Tone{avatar.ToneAuto}, allTones...) {
 			m := avatar.New("ada")
-			m.Hue, m.Tone = hue, tone
+			m.Hue, m.Tone = deg(hue), tone
 			body, eyes, _ := m.Colors()
 			if c := contrast(body, eyes); c < worst {
 				worst = c
@@ -154,7 +154,7 @@ func TestOverridesInvalidateTheCache(t *testing.T) {
 	m.Width, m.Height = 12, 6
 	seen := map[string]bool{m.View(): true}
 	for _, change := range []func(){
-		func() { m.Hue = 120 },
+		func() { m.Hue = deg(120) },
 		func() { m.Tone = avatar.ToneInk },
 		func() { m.Silhouette = avatar.SilhouetteSun },
 	} {
@@ -166,3 +166,6 @@ func TestOverridesInvalidateTheCache(t *testing.T) {
 		}
 	}
 }
+
+// deg is a pinned hue in degrees.
+func deg(h float64) *float64 { return &h }

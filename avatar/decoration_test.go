@@ -2,25 +2,25 @@ package avatar
 
 import "testing"
 
-var decorations = []Trait{
-	TraitTilt, TraitSquat, TraitCornerRounding, TraitPetals, TraitPetalDistance, TraitPetalSize,
-	TraitPetalRotation, TraitLobes, TraitNubs, TraitNubAngle, TraitNubSize, TraitTipLength,
+var decorations = []traitID{
+	traitTilt, traitSquat, traitCornerRounding, traitPetals, traitPetalDistance, traitPetalSize,
+	traitPetalRotation, traitLobes, traitNubs, traitNubAngle, traitNubSize, traitTipLength,
 }
 
 // readers lists, per decoration trait, the silhouettes that read it.
-var readers = map[Trait][]Silhouette{
-	TraitTilt:           {SilhouetteBoxy, SilhouetteHexagon, SilhouetteTriangle},
-	TraitSquat:          {SilhouetteCapsule},
-	TraitCornerRounding: {SilhouetteHexagon, SilhouetteTriangle},
-	TraitPetals:         {SilhouetteSun},
-	TraitPetalDistance:  {SilhouetteSun},
-	TraitPetalSize:      {SilhouetteSun},
-	TraitPetalRotation:  {SilhouetteSun},
-	TraitLobes:          {SilhouetteCloud},
-	TraitNubs:           {SilhouetteNub},
-	TraitNubAngle:       {SilhouetteNub},
-	TraitNubSize:        {SilhouetteNub},
-	TraitTipLength:      {SilhouetteDroplet},
+var readers = map[traitID][]Silhouette{
+	traitTilt:           {SilhouetteBoxy, SilhouetteHexagon, SilhouetteTriangle},
+	traitSquat:          {SilhouetteCapsule},
+	traitCornerRounding: {SilhouetteHexagon, SilhouetteTriangle},
+	traitPetals:         {SilhouetteSun},
+	traitPetalDistance:  {SilhouetteSun},
+	traitPetalSize:      {SilhouetteSun},
+	traitPetalRotation:  {SilhouetteSun},
+	traitLobes:          {SilhouetteCloud},
+	traitNubs:           {SilhouetteNub},
+	traitNubAngle:       {SilhouetteNub},
+	traitNubSize:        {SilhouetteNub},
+	traitTipLength:      {SilhouetteDroplet},
 }
 
 // A decoration trait pinned on a silhouette that reads it comes out the same
@@ -42,7 +42,7 @@ func TestDecorationPinsBelongToTheirSilhouettes(t *testing.T) {
 				own := New(name)
 				own.Silhouette = s
 				m := own
-				m.Pins = map[Trait]float64{tr: 0.07}
+				m.traitPins = map[traitID]float64{tr: 0.07}
 				if m.SVG() != own.SVG() {
 					changed++
 				}
@@ -73,10 +73,10 @@ func TestDecorationPinsBelongToTheirSilhouettes(t *testing.T) {
 // every silhouette, the eyes stay inside the body and the body inside the
 // frame.
 func TestPinnedDecorationKeepsTheFigureWhole(t *testing.T) {
-	check := func(s Silhouette, name string, pins map[Trait]float64) {
+	check := func(s Silhouette, name string, pins map[traitID]float64) {
 		t.Helper()
 		m := New(name)
-		m.Silhouette, m.Pins = s, pins
+		m.Silhouette, m.traitPins = s, pins
 		f := layoutFigure(m.traits())
 		sc := newScene(f, nil)
 		for i, eye := range f.eyes {
@@ -93,10 +93,10 @@ func TestPinnedDecorationKeepsTheFigureWhole(t *testing.T) {
 	for s := SilhouetteRound; s <= SilhouetteTriangle; s++ {
 		for _, name := range pinNames[:6] {
 			for _, end := range []float64{0, 1} {
-				all := map[Trait]float64{TraitBodySize: 1, TraitBodyProportion: end}
+				all := map[traitID]float64{traitBodySize: 1, traitBodyProportion: end}
 				for _, tr := range decorations {
-					check(s, name, map[Trait]float64{tr: end})
-					check(s, name, map[Trait]float64{tr: end, TraitBodySize: 1, TraitEyeSize: 1, TraitEyeSeparation: 1})
+					check(s, name, map[traitID]float64{tr: end})
+					check(s, name, map[traitID]float64{tr: end, traitBodySize: 1, traitEyeSize: 1, traitEyeSeparation: 1})
 					all[tr] = end
 				}
 				check(s, name, all)
@@ -108,19 +108,19 @@ func TestPinnedDecorationKeepsTheFigureWhole(t *testing.T) {
 // The number of petals, lobes and nubs follows the pin from the fewest to
 // the most.
 func TestPinnedCounts(t *testing.T) {
-	count := func(s Silhouette, tr Trait, at float64) int {
+	count := func(s Silhouette, tr traitID, at float64) int {
 		m := New("ada")
-		m.Silhouette, m.Pins = s, map[Trait]float64{tr: at}
+		m.Silhouette, m.traitPins = s, map[traitID]float64{tr: at}
 		return len(layoutFigure(m.traits()).petals)
 	}
 	for _, c := range []struct {
 		s         Silhouette
-		tr        Trait
+		tr        traitID
 		low, high int
 	}{
-		{SilhouetteSun, TraitPetals, 6, 9},
-		{SilhouetteCloud, TraitLobes, 4, 6},
-		{SilhouetteNub, TraitNubs, 1, 2},
+		{SilhouetteSun, traitPetals, 6, 9},
+		{SilhouetteCloud, traitLobes, 4, 6},
+		{SilhouetteNub, traitNubs, 1, 2},
 	} {
 		if lo, hi := count(c.s, c.tr, 0), count(c.s, c.tr, 1); lo != c.low || hi != c.high {
 			t.Errorf("%v on %v: %d to %d, want %d to %d", c.tr, c.s, lo, hi, c.low, c.high)

@@ -12,15 +12,16 @@
 // mapping from a name to its figure and colours is frozen: the tests pin it
 // against the reference vectors in testdata.
 //
-// Hue, Tone and Silhouette pin the colour or the shape, and Pins any single
-// trait such as the size of the eyes, for an app with a house style, while
-// the name still decides everything else.
+// Hue, Tone, Silhouette, Accessory and Eyes pin the colour or the look, for an
+// app with a house style, while the name still decides everything else.
 //
 // The figure can react. Expression sets a pose the eyes hold (SetExpression
 // eases into it), React pulls a face for a moment and lets it go, Blink closes and reopens the eyes once
 // and StartIdle keeps the avatar breathing, blinking and glancing aside, all
 // three driven by Update, and LookAt turns the eyes toward a target such as
-// the mouse pointer.
+// the mouse pointer. Blink, StartIdle, StopIdle, Hover, LookAt, React and
+// SetExpression change the Model they are called on: call them on the one your
+// own model keeps (m.avatar.Blink()), never on a copy that is then thrown away.
 //
 // A name is put in Unicode Normalization Form C, trimmed and lowercased
 // before it is hashed, so "Alain" and " alain " are one avatar, and so are a
@@ -79,9 +80,9 @@ type Model struct {
 	Raw bool
 	// Hue pins the colour's hue, an angle in degrees in the OKLCh colour
 	// space: about 30 is red-orange, 90 yellow, 140 green, 250 blue and 320
-	// magenta. Zero lets the name choose; use 360 for the hue at 0. The name
+	// magenta; 0 and 360 are the same hue. Nil lets the name choose. The name
 	// still chooses the tone and the figure.
-	Hue float64
+	Hue *float64
 	// Tone pins how light and saturated the body is. The zero value,
 	// ToneAuto, lets the name choose.
 	Tone Tone
@@ -92,12 +93,9 @@ type Model struct {
 	// drawn. Their zero values let the name choose.
 	Accessory Accessory
 	Eyes      EyeStyle
-	// Pins fixes individual traits of the figure, each at a position from 0
-	// to 1 across the range a name would choose from; a value outside that
-	// is clamped. A trait not in the map, and every trait when it is nil,
-	// comes from the name. Copies of a Model share the map: assign a new one
-	// to change the pins of one copy.
-	Pins map[Trait]float64
+	// traitPins fixes single traits of the figure for the tests, each at a
+	// position from 0 to 1; it is not part of the API.
+	traitPins map[traitID]float64
 	// Expression is the pose the eyes hold. The zero value, ExpressionNone,
 	// is the figure at rest. Assigning it changes the pose at once;
 	// SetExpression eases into it.
@@ -140,24 +138,19 @@ type Model struct {
 }
 
 // viewCache memoises the Views and the PNGs of a Model, so a frame that
-// shows the same avatar does not lay it out and rasterise it again. Each is
-// keyed on every field the output depends on, so changing one draws a new
-// picture; the last frameMemory of each are kept, so an animation that comes
-// back to a frame it has shown, as a blink, a tremble and a rock all do, does
-// not draw it twice. Copies of a Model share the cache. A Model built as a
-// struct literal has no cache and draws each time.
+// shows the same avatar does not lay it out and rasterise it again. Copies of
+// a Model share the cache. A Model built as a struct literal has no cache and
+// draws each time.
 type viewCache struct {
 	mu    sync.Mutex
 	views frames[string]
 	pngs  frames[[]byte]
 }
 
-// frameMemory is how many pictures of each kind a Model keeps: enough for
-// every frame of its longest loop, the rock, at two sizes.
+// frameMemory is how many pictures of each kind a Model keeps.
 const frameMemory = 24
 
-// frames is a small store of pictures by what they were drawn from. When it
-// is full the picture stored longest ago is dropped.
+// frames is a small store of pictures by what they were drawn from.
 type frames[V any] struct {
 	at    map[viewKey]V
 	order []viewKey
@@ -206,8 +199,9 @@ type viewKey struct {
 var drawHook func()
 
 // New returns a Model for name at DefaultWidth by DefaultHeight cells, using
-// theme.DarkTheme(). It remembers the pictures it has drawn lately, so a
-// frame it has shown before is not drawn again.
+// theme.DarkTheme(). The pictures drawn lately are remembered for every Model
+// alike, so a frame shown before is not drawn again, even by a new Model made
+// for it.
 func New(name string) Model {
 	return Model{Name: name, Width: DefaultWidth, Height: DefaultHeight, Theme: theme.DarkTheme(), cache: &viewCache{}}
 }
@@ -280,11 +274,11 @@ func (m Model) palette(t traits) palette {
 	return p
 }
 
-// Shape returns the name of the avatar's silhouette: round, organic, boxy,
-// capsule, nub, cloud, droplet, hexagon, sun or triangle. It is the pinned
-// Silhouette when one is set.
-func (m Model) Shape() string {
-	return shapes[pickShape(m.traits().at("shape"))].name
+// Shape returns the avatar's silhouette, never SilhouetteAuto: the pinned
+// Silhouette when one is set, else the one the name chose. Its String is the
+// name, such as "round".
+func (m Model) Shape() Silhouette {
+	return SilhouetteRound + Silhouette(pickShape(m.traits().at("shape")))
 }
 
 // Colors returns the colours the avatar is drawn in now: the body, the eyes,
@@ -317,7 +311,7 @@ func (m Model) plate() path {
 }
 
 // SVG returns the avatar as SVG markup on a 100 by 100 view box, with no
-// width or height, so the page sizes it. Hue, Tone, Silhouette and Pins are
+// width or height, so the page sizes it. Hue, Tone, Silhouette, Accessory and Eyes are
 // part of the figure and are drawn, and so are the pose it holds, with its
 // eyebrows, mouth and tint, how it lifts or sinks, and LookX and LookY. It is a
 // still: the middle of an ease, a tremble or a rock, a blink in progress and the
@@ -403,9 +397,13 @@ func (m Model) key(width, height int) viewKey {
 	if wobble > 0 && m.tween == 0 && !m.shown().pose().rock {
 		wobble = 2 - wobble%2
 	}
+	hue, pinned := m.hue()
+	if !pinned {
+		hue = -1
+	}
 	return viewKey{
 		name: m.Name, raw: m.Raw, width: width, height: height, bg: m.Background,
-		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
+		hue: hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
 		expression: m.shown(), from: m.easing(), tween: m.tween, wobble: wobble, blink: m.blink,
 		page: m.pageRGB(),

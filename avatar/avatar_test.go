@@ -150,7 +150,7 @@ func TestShapeIsOneOfTheTen(t *testing.T) {
 		"cloud": true, "droplet": true, "hexagon": true, "sun": true, "triangle": true}
 	seen := map[string]bool{}
 	for i := 0; i < 400; i++ {
-		s := avatar.New("user-" + strings.Repeat("x", i%7) + string(rune('a'+i%26)) + string(rune('0'+i%10))).Shape()
+		s := avatar.New("user-" + strings.Repeat("x", i%7) + string(rune('a'+i%26)) + string(rune('0'+i%10))).Shape().String()
 		if !known[s] {
 			t.Fatalf("unknown shape %q", s)
 		}

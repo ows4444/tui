@@ -104,7 +104,7 @@ func TestPNGFollowsThePose(t *testing.T) {
 		"expression": func(m *avatar.Model) { m.Expression = avatar.ExpressionSurprised },
 		"look":       func(m *avatar.Model) { m.LookAt(100, 0) },
 		"blink":      func(m *avatar.Model) { m.Blink() },
-		"hue":        func(m *avatar.Model) { m.Hue = 140 },
+		"hue":        func(m *avatar.Model) { m.Hue = deg(140) },
 		"silhouette": func(m *avatar.Model) { m.Silhouette = avatar.SilhouetteSun },
 	}
 	for what, change := range changes {
