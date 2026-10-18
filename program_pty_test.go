@@ -573,9 +573,19 @@ func (s *screenSession) resizeTo(cols, rows int, want string) []string {
 		s.sync()
 		return strings.HasPrefix(s.scr.Lines()[0], want)
 	})
-	// Let any trailing repaint bytes land before judging the screen.
-	s.pump(80*time.Millisecond, nil)
-	s.sync()
+	// Let any trailing repaint bytes land before judging the screen: wait
+	// until the screen has not changed for 150 ms (at most 20 rounds; a loaded
+	// runner can repaint the lower rows well after the first).
+	last := ""
+	for round := 0; round < 20; round++ {
+		s.pump(150*time.Millisecond, nil)
+		s.sync()
+		now := strings.Join(s.scr.Lines(), "\n")
+		if now == last {
+			break
+		}
+		last = now
+	}
 	return s.scr.Lines()
 }
 

@@ -25,7 +25,7 @@ import (
 
 const (
 	settleQuiet   = 25 * time.Millisecond
-	settleFrame   = 250 * time.Millisecond
+	settleFrame   = time.Second
 	settleTimeout = 5 * time.Second
 )
 
@@ -74,6 +74,12 @@ type Session struct {
 	mu     sync.Mutex
 	screen *vtscreen.Screen
 	writes int
+	// lastView is the last View the model gave; awaitWrite is set when a View
+	// differs from it and cleared by the next write to the screen. Settle waits
+	// for that write, since on a slow machine it can trail the View by longer
+	// than the quiet time.
+	lastView   string
+	awaitWrite bool
 
 	closeOnce sync.Once
 }
@@ -122,6 +128,7 @@ func (sw screenWriter) Write(p []byte) (int, error) {
 	sw.s.mu.Lock()
 	sw.s.screen.Write(p)
 	sw.s.writes++
+	sw.s.awaitWrite = false
 	sw.s.mu.Unlock()
 	return len(p), nil
 }
@@ -198,7 +205,13 @@ func (h *host) View() string {
 	if !h.sized {
 		return ""
 	}
-	return h.inner.View()
+	v := h.inner.View()
+	h.s.mu.Lock()
+	if v != h.s.lastView {
+		h.s.lastView, h.s.awaitWrite = v, true
+	}
+	h.s.mu.Unlock()
+	return v
 }
 
 // Unwrap and Rewrap let the Program find the optional interfaces (CursorPlacer,
@@ -256,7 +269,7 @@ func (s *Session) settle(n *atomic.Int64, want int64) {
 	quietSince := time.Now()
 	for time.Now().Before(deadline) {
 		s.mu.Lock()
-		w := s.writes
+		w, awaiting := s.writes, s.awaitWrite
 		s.mu.Unlock()
 		u, v := s.updates.Load(), s.viewed.Load()
 		if u != lastU || w != lastW || v != lastV {
@@ -265,7 +278,7 @@ func (s *Session) settle(n *atomic.Int64, want int64) {
 			// The frame of the last Update has not been asked for yet: on a
 			// slow machine the render lags the Update by more than the quiet
 			// time. Wait for it, but not for ever: a Program may skip a View.
-			if v >= u || time.Since(quietSince) >= settleFrame {
+			if (v >= u && !awaiting) || time.Since(quietSince) >= settleFrame {
 				return
 			}
 		}
