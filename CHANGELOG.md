@@ -10,6 +10,16 @@ Unreleased that names it; see [CONTRIBUTING.md](CONTRIBUTING.md#changelog).
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] - 2026-10-18
+
+Release candidate for v1.0.0, condition 7 of `docs/v1.md`. It replaces
+`1.0.0-rc.1`, which was cut before matrix rounds 3 to 5, the rebuilt examples and
+the avatar work: the week of soak has to be run on the code that becomes v1.0.0.
+The only breaking changes since rc.1 are in `avatar`, which was experimental
+then (the first `- BREAKING:` entry in Changed below). `avatar` is now
+Stable-ish, and a breaking change found in the week it is out would be a reason
+to cut an rc.3.
+
 ### Added
 
 The example programs were rebuilt: 45 programs under `examples/`, new or rewritten, (a file manager, notepad, calculator, kanban board, paint, snake, minesweeper, SQL browser, log viewer, charts, hex editor, markdown studio, theme studio, layout lab, input lab, agent shell, workspace and desktop, router apps, a gallery of overlays, loading states and fields, and more), each with a size-matrix test and a screen on the Examples page. The programs they replace (`agentshell`, `asyncload`, `avatar`, `buildlog`, `canvas`, `controls`, `cursorfield`, `diskuse`, `faces`, `focus`, `form`, `gallery`, `inlinebuild`, `inlinechat`, `inlinespinners`, `inlinetall`, `inputs`, `inspector`, `inventory`, `jsonview`, `list`, `logbrowser`, `loginflow`, `menus`, `mixedscreen`, `newproject`, `panes`, `pickers`, `procstream`, `router`, `setupflow`, `splashscreen`, `splitedit`, `table`, `themefollow`, `timers`, `welcomescreen`) were removed; `tui demo` is the widget catalog. The example programs follow the terminal between its dark and light theme (`tui.WithTheme`, `WithColorSchemeReports`), give a screen reader plain text under `ACCESSIBLE=1`, and write no file unless asked to with a flag (`paint` and `themestudio` take `-out`). `examples/internal/ui` holds what they share. `examples/probe` stays: it is the program the Windows pseudo-console and pty tests drive.
