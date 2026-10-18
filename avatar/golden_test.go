@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ows4444/tui/cellbuf"
 	"github.com/ows4444/tui/theme"
 )
 
@@ -77,13 +78,26 @@ func FuzzAvatar(f *testing.F) {
 		if m.Width > 0 && m.Height > 0 && strings.Count(v, "\n") != m.Height-1 {
 			t.Fatalf("%q: %d rows, want %d", name, strings.Count(v, "\n")+1, m.Height)
 		}
+		if m.Width > 0 && m.Height > 0 && m.Width <= 40 {
+			if got, want := drawn(m), cellsOf(m); got != want {
+				t.Fatalf("%q: DrawCells differs from View", name)
+			}
+		}
 		_ = m.Linearize()
 		m.Colors()
-		if s := m.SVG(); strings.Contains(s, name) && len(name) > 3 && !strings.Contains("<>svgpathcircle", name) {
-			t.Fatalf("the name appears in the SVG: %q", name)
+		// Markup characters of the name never reach the SVG.
+		if svg := m.SVG(); strings.ContainsAny(name, "<>\"&'") && strings.ContainsAny(strings.NewReplacer("<path", "", "<circle", "", "<g", "", "<svg", "", "</", "", "/>", "", ">", "").Replace(svg), "<>&'") {
+			t.Fatalf("the name leaked into the SVG: %q", name)
 		}
 		if w%8 == 0 {
 			_ = m.PNG(int(w%32) + 1)
 		}
 	})
+}
+
+// drawn is m drawn by DrawCells into a grid of its own size.
+func drawn(m Model) string {
+	buf := cellbuf.New(m.Width, m.Height)
+	m.DrawCells(buf, buf.Bounds())
+	return buf.String()
 }

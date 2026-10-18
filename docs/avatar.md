@@ -61,6 +61,16 @@ Program's mouse events: while the pointer is over `Bounds` the idle loop runs
 and the eyes follow it. The states and what moves between them are drawn in
 `avatar/states.go`.
 
+## Reading state, themes and layout
+
+`Blinking`, `Idling` and `Reacting` say which animation is running. `SetTheme`
+makes the Model a `tui.ThemeSetter`, so a root model can forward the Program's
+theme; the body is held at 3:1 against the theme's page colour (or the plate),
+and the eyes at 4.5:1 against the body. `LayoutNode` puts an avatar in a
+`layout` tree at the size it is given. `DrawCells` draws the same picture as
+`View` straight into a cell grid, for a model that is a `tui.CellDrawer`.
+`Linearize` is what a screen reader hears.
+
 ## Outside the terminal
 
 `SVG()` returns markup on a 100 by 100 view box and `PNG(size)` an image up to
