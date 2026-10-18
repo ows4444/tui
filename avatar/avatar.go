@@ -5,7 +5,8 @@
 //
 // The avatar stands for somebody. For a catalog of ready-made animated
 // characters, picked by index or name to show a mood or a status, use
-// package faces.
+// package faces. docs/avatar.md says which to use when, and how to wire
+// either into a list, a house style, the mouse and a PNG or SVG.
 //
 // View draws the figure in terminal cells, PNG returns it as an image for a
 // terminal that shows images, and SVG returns it as markup. The

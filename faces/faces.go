@@ -8,7 +8,7 @@
 // IndexFor pick one for any string, the same one every time, and ColorFor
 // picks it a colour. To give any
 // string a picture of its own, with a figure and a colour derived from it,
-// use package avatar.
+// use package avatar. docs/avatar.md says which to use when.
 //
 // Stability: experimental. Its API may change in any minor release.
 package faces

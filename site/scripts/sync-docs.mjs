@@ -46,6 +46,7 @@ const pages = [
 	{ src: "docs/widgets.md", slug: "widgets", seoTitle: 'Go terminal UI widgets: inputs, tables, trees, dialogs | tui',
 		description: "Stateless widget functions and stateful component packages for Go terminal UIs: the shared contracts, and a catalog of every component with its example program." },
 	{ src: 'docs/input.md', slug: 'input' },
+	{ src: 'docs/avatar.md', slug: 'avatar', seoTitle: 'Avatars from a name in a Go terminal UI | tui' },
 	{ src: 'docs/animation.md', slug: 'animation', seoTitle: 'Animation in a Go terminal UI: easing, tweens and springs | tui' },
 	{ src: 'docs/background-work.md', slug: 'background-work', seoTitle: 'Background work in a Go terminal UI: Cmds, tasks and cancellation | tui' },
 	{ src: 'docs/forms.md', slug: 'forms', seoTitle: 'Forms in a Go terminal UI: fields, validation and groups | tui' },

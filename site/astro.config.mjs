@@ -99,6 +99,7 @@ export default defineConfig({
 						{ label: 'Forms', link: '/forms/' },
 						{ label: 'Tables', link: '/tables/' },
 						{ label: 'Animation', link: '/animation/' },
+						{ label: 'Avatars and faces', link: '/avatar/' },
 						{ label: 'Background work', link: '/background-work/' },
 						{ label: 'Development tools', link: '/devtools/' },
 						{ label: 'Theming', link: '/theming/' },

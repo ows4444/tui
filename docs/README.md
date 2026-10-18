@@ -18,6 +18,7 @@ can't. Start with the [README](../README.md).
 | Handle keys, mouse and paste | [Input](input.md) |
 | Pick and compose widgets | [Widgets](widgets.md) |
 | Animate a value or a region | [Animation](animation.md) |
+| Draw a figure from a name, or pick a character | [Avatars and faces](avatar.md) |
 | Run slow work without freezing the screen | [Background work](background-work.md) |
 | Ask for several values with validation | [Forms](forms.md) |
 | Show and edit tabular data | [Tables](tables.md) |
