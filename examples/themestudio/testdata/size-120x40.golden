@@ -1,0 +1,40 @@
+themestudio ◂ tokyo-night ▸ 20/20                                                                                       
+▸ ██ Primary      #7aa2f7     │Primary  #7aa2f7  ████  6.79:1 on background  ✓ AA                                       
+  ██ Secondary    #bb9af7     │▸R ███████████████░░░░░░░░░░░░░░░░░ 122                                                  
+  ██ Success      #9ece6a     │G ████████████████████░░░░░░░░░░░░ 162                                                   
+  ██ Warning      #e0af68     │B ██████████████████████████████░░ 247                                                   
+  ██ Error        #f7768e     │[x reset] [0 all] [b border: base] [g glyphs: base] [s save]                             
+  ██ Info         #7dcfff     │ Preview · tokyo-night                                                                   
+  ██ Muted        #565f89     │ Body text in the text colour, and muted for the quiet parts.                            
+  ██ Text         #c0caf5     │  Primary   Secondary  ▌ focused                                                         
+  ██ Text inverse #1a1b26     │ ✓ done  ⚠ careful  ✗ failed  ℹ note                                                     
+  ██ Border       #292e42     │ ██████████░░░░░░░░ 60%                                                                  
+  ██ Focus        #7aa2f7     │ ▾ tree • muted item   selected row                                                      
+  ██ Selection    #283b4d     │ Tab one  Tab two  Tab three                                                             
+  ██ Background   #1a1b26     │ ┌──────────────────────────┐                                                            
+  ██ Surface      #242632     │ │ A card on the surface    │                                                            
+  ██ Overlay      #2e303f     │ └──────────────────────────┘                                                            
+                              │  Overlay: menu or dialog                                                                
+                              │ Below 4.5:1: Muted 2.8                                                                  
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+                              │                                                                                         
+No changes to tokyo-night yet; saving writes the base alone                                                             
+[↑↓] colour  [tab] slider  [←→] change  [[ ]] base  [s] save  [?] help  [q] quit                                        
