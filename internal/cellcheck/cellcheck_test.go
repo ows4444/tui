@@ -20,3 +20,12 @@ func TestFallbacksDetects(t *testing.T) {
 		t.Errorf("control char view: %v", fb)
 	}
 }
+
+func TestFallbacksViewChecksARenderedString(t *testing.T) {
+	if fb := FallbacksView("\x1b[32mgreen\x1b[0m", 40, 10); len(fb) != 0 {
+		t.Errorf("clean string: %v", fb)
+	}
+	if fb := FallbacksView("a\x01b", 40, 10); len(fb) == 0 {
+		t.Error("a control character did not fall back")
+	}
+}

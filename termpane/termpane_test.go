@@ -4,6 +4,8 @@ package termpane
 
 import (
 	"context"
+	"github.com/ows4444/tui/keymap"
+	"github.com/ows4444/tui/layout"
 	"strings"
 	"testing"
 	"time"
@@ -354,5 +356,39 @@ func TestHostileOutputCannotReachTheHostTerminal(t *testing.T) {
 	}
 	if !strings.Contains(m.Linearize(), "f") {
 		t.Error("Linearize lost the text")
+	}
+}
+
+func TestBindingsAreTheDefaultsUntilYouSetOthers(t *testing.T) {
+	m := New("true")
+	if got := len(m.Bindings()); got != 3 {
+		t.Fatalf("%d bindings", got)
+	}
+	m.KeyMap = KeyMap{}
+	if len(m.Bindings()) != 3 || len(m.Bindings()[0].Keys) == 0 {
+		t.Error("an empty KeyMap did not fall back to the defaults")
+	}
+	m.KeyMap = KeyMap{ScrollUp: keymap.NewBinding("up", "ctrl+u")}
+	if got := m.Bindings()[0].Keys; len(got) != 1 || got[0] != "ctrl+u" {
+		t.Errorf("custom binding lost: %v", got)
+	}
+}
+
+func TestLayoutNodeRendersNothingWithoutRoom(t *testing.T) {
+	m := New("true")
+	if got := m.LayoutNode().Render(layout.Size{W: 0, H: 3}); got != "" {
+		t.Errorf("zero width drew %q", got)
+	}
+	if got := m.LayoutNode().Render(layout.Size{W: 5, H: 0}); got != "" {
+		t.Errorf("zero height drew %q", got)
+	}
+}
+
+func TestScrollOffsetIsClampedToWhatExists(t *testing.T) {
+	m := New("true")
+	m.offset = 7
+	m.clampOffset() // no terminal yet
+	if m.offset != 0 {
+		t.Errorf("offset %d with no terminal", m.offset)
 	}
 }

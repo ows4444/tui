@@ -82,10 +82,26 @@ func TestEncodeMouse(t *testing.T) {
 		{"wheel up", ev(tui.MouseButtonWheelUp, tui.MouseActionPress, 0), 1, "\x1b[<64;5;3M"},
 		{"drag in click mode", ev(tui.MouseButtonLeft, tui.MouseActionMotion, 0), 1, ""},
 		{"drag", ev(tui.MouseButtonLeft, tui.MouseActionMotion, 0), 2, "\x1b[<32;5;3M"},
+		{"middle", ev(tui.MouseButtonMiddle, tui.MouseActionPress, 0), 1, "\x1b[<1;5;3M"},
+		{"wheel down", ev(tui.MouseButtonWheelDown, tui.MouseActionPress, 0), 1, "\x1b[<65;5;3M"},
+		{"wheel left", ev(tui.MouseButtonWheelLeft, tui.MouseActionPress, 0), 1, "\x1b[<66;5;3M"},
+		{"wheel right", ev(tui.MouseButtonWheelRight, tui.MouseActionPress, 0), 1, "\x1b[<67;5;3M"},
+		{"no button", ev(tui.MouseButtonNone, tui.MouseActionMotion, 0), 2, ""},
 		{"modifiers", ev(tui.MouseButtonLeft, tui.MouseActionPress, input.ModShift|input.ModAlt|input.ModCtrl), 1, "\x1b[<28;5;3M"},
 	} {
 		if got := encodeMouse(c.ev, 4, 2, c.mode); got != c.want {
 			t.Errorf("%s: %q; want %q", c.name, got, c.want)
+		}
+	}
+}
+
+func TestCtrlByte(t *testing.T) {
+	for r, want := range map[rune]string{
+		'a': "\x01", 'z': "\x1a", 'A': "\x01", 'Z': "\x1a", '@': "\x00", ' ': "\x00",
+		'[': "\x1b", '\\': "\x1c", ']': "\x1d", '^': "\x1e", '_': "\x1f", '?': "\x7f", '1': "", '!': "",
+	} {
+		if got := ctrlByte(r); got != want {
+			t.Errorf("ctrlByte(%q) = %q, want %q", r, got, want)
 		}
 	}
 }
