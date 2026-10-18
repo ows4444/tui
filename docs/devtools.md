@@ -36,8 +36,8 @@ compiler's errors and waits for the next change. When the program exits by
 itself, `tui dev` waits for a change too. Ctrl+C stops it.
 
 ```
-tui dev ./examples/panes
-tui dev ./examples/inventory -- --demo
+tui dev ./examples/workspace
+tui dev ./examples/pkgs
 ```
 
 ## Seeing your app

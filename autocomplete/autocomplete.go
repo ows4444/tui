@@ -112,7 +112,7 @@ func (m Model) Bindings() []keymap.Binding {
 
 // Focus and Blur delegate to the embedded Input, so a parent composing
 // several fields (some textinput.Model, some autocomplete.Model) can
-// drive focus across all of them the same way — see examples/form.
+// drive focus across all of them the same way — see examples/signup.
 func (m *Model) Focus() tui.Cmd { return m.Input.Focus() }
 
 // Blur unfocuses the embedded Input; see Focus.
@@ -183,8 +183,8 @@ type AcceptedMsg struct {
 // Update forwards most keys to Input, intercepting Up/Down/Tab/Enter/Esc
 // to drive the dropdown while it's open (has at least one filtered
 // suggestion). If your app also uses Esc to quit, check that globally
-// before forwarding to Autocomplete (the same pattern examples/list and
-// examples/form already use for Ctrl+C/Esc) — otherwise Esc will only
+// before forwarding to Autocomplete (the same pattern examples/files and
+// examples/signup already use for Ctrl+C/Esc) — otherwise Esc will only
 // ever close the dropdown, never reach your quit handling, since
 // Autocomplete consumes it whenever the dropdown is open. With Mouse on, a
 // tui.MouseEvent is handled as described on Mouse.

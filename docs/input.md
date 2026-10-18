@@ -166,7 +166,7 @@ m.ring, cmd = m.ring.Route(msg, m.fields()...)
 return m, cmd
 ```
 
-From `examples/focus/main.go`, the reference program for focus.
+From `examples/hello/main.go`, a small program that moves focus between a field and two buttons.
 
 - `focus.Bind(&w)` works for any widget whose pointer has `Focus() tui.Cmd` and
   `Blur()` (`focus.Focusable`). Bind fields of the model value you are about to

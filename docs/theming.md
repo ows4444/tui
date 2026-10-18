@@ -103,7 +103,7 @@ is a `ThemeSetter`, or a `Themeable` whose `SetTheme` returns the child's type.
 
 A fixed theme follows the terminal when you give it to `WithTheme` as
 `theme.Pair(preset)` and turn on `WithColorSchemeReports(true)`; the Program
-calls `SetTheme` again on every switch. `examples/themefollow` does exactly that.
+calls `SetTheme` again on every switch. `examples/themestudio` shows the themes this switches between.
 
 ## Presets
 

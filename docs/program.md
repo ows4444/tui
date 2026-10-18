@@ -183,7 +183,7 @@ moves to a new line so the prompt starts below it.
 and redraw the live region below them. On the alternate screen there is no
 scrollback, so the Program holds those lines (up to 10,000; the oldest are
 dropped beyond that) and writes them once it leaves the alternate screen, with
-`ExitAltScreen` or on exit. `examples/inlinebuild` is an inline program that
+`ExitAltScreen` or on exit. `examples/buildstatus` is an inline program that
 commits finished lines with `Println`.
 
 ## Stray prints

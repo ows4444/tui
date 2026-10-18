@@ -142,8 +142,8 @@ fmt.Println("cursor row:", m.Cursor())
 // cursor row: 1
 ```
 
-Source: `Example`, `datatable/example_test.go`. `examples/table` is the full
-program, confirming a row with Enter via `datatable.SelectedMsg`.
+Source: `Example`, `datatable/example_test.go`. `examples/files` is a full
+program that uses `datatable`.
 
 ## A dialog and its dismissal message
 

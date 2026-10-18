@@ -36,18 +36,15 @@ Most programs in `examples/` build the screen as a `layout.Node` in a helper
 and draw it in `View`:
 
 ```go
-func (m model) View() string { return layout.Draw(m.screen(), layout.Unconstrained()) }
+func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 ```
 
-From `examples/focus/main.go` (the same line appears in `examples/pager`,
-`examples/login`, `examples/procstream` and others).
+From `examples/hello/main.go`; most programs in `examples/` draw this way, with
+`m.size()` the size of the last `tui.ResizeMsg`.
 
-`Draw` renders at the measured size. To fill the terminal exactly, keep the
-`Width` and `Height` of the last `tui.ResizeMsg` in your model and call
-`layout.DrawTight(root, layout.Size{W: w, H: h})`: the root is rendered at
-exactly that size, so `Fill` children take all the remaining space.
-`examples/dashboard` caps only the width:
-`layout.Constraints{MaxW: maxW, MaxH: layout.Unbounded}`.
+`DrawTight` renders the root at exactly that size, so `Fill` children take all
+the remaining space. `Draw` renders at the measured size instead: use it with
+`layout.Constraints{MaxW: maxW, MaxH: layout.Unbounded}` to cap only the width.
 
 `Draw` always returns a rectangle: every row is padded to the widest one
 (`ExampleDraw_rectangle`). Compare drawn output by content, not raw width.

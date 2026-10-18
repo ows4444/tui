@@ -16,9 +16,9 @@ These are small but complete tools, each with a test:
 
 | Example | What it does |
 |---|---|
-| [examples/jsonview](../examples/jsonview) | Explore a JSON file or a pipe as a tree you can search. |
-| [examples/diskuse](../examples/diskuse) | See what takes the space in a directory: sorted, filterable, enter to descend. |
-| [examples/newproject](../examples/newproject) | Ask a few questions and write a project skeleton, with `prompt` and no Model. |
+| [examples/jsonx](../examples/jsonx) | Explore a JSON file or a pipe as a tree you can search. |
+| [examples/files](../examples/files) | Browse a directory in two panes with a preview; it only reads. |
+| [examples/survey](../examples/survey) | Answer a questionnaire at the command line, with `prompt` and no Model of its own. |
 | [examples/tutorial](../examples/tutorial) and [tutorial2](../examples/tutorial2) | The task list the tutorials build. |
 
 The other [examples](../examples) each show one idea.

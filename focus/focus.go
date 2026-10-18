@@ -1,11 +1,11 @@
 // Package focus is a small focus-traversal helper: a Ring tracks which of n
 // items has focus and moves it with Tab and Shift+Tab, wrapping at the ends
 // and skipping disabled items. It replaces the modulo arithmetic every
-// multi-field screen otherwise hand-rolls (see examples/focus).
+// multi-field screen otherwise hand-rolls (see examples/hello).
 //
 // Route and Bind go one step further: they blur the old widget, focus the new
 // one and send every other message to the focused widget only, so a screen
-// needs no per-widget switch (see examples/focus).
+// needs no per-widget switch (see examples/hello).
 //
 // Tab follows index order unless the Ring is given another with WithOrder.
 // LayoutOrder derives one from a layout.Node, reading order of where each

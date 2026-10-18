@@ -74,8 +74,8 @@ $ go run ./examples/counter
 ```
 
 Every directory under [examples/](examples) is a runnable program, for instance
-`./examples/dashboard`, `./examples/form`, `./examples/signup`,
-`./examples/agentshell` and `./examples/probe`.
+`./examples/dashboard`, `./examples/kanban`, `./examples/signup`,
+`./examples/codeagent` and `./examples/inputlab`.
 
 ## Help and community
 
@@ -254,9 +254,9 @@ Packages under `internal/` are not public API.
 
 ## Terminal probe results
 
-[examples/probe](examples/probe/main.go) reports what a terminal supports
-(colour depth, focus reporting, OSC 11 background detection) and leaves a
-`probe:` line in the scrollback. No probe run is recorded for any terminal yet,
+[examples/inputlab](examples/inputlab/main.go) shows every key, mouse, paste and
+focus event as it arrives and reports what the terminal answered to the
+capability probe (kitty keys and graphics, Sixel, synchronized output). No probe run is recorded for any terminal yet,
 so every row is unverified. The middle column is what `ansi/profile.go` detects
 from the environment alone, not a measured result.
 

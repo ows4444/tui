@@ -67,4 +67,4 @@ m.Height = 20
 
 Only the rows near the window are asked for. Sort, filter and editing need all
 the rows in hand, so they are off for a source. `SetSource` swaps it; `SetRows`
-goes back to in-memory rows. See `examples/table` and `examples/asyncload`.
+goes back to in-memory rows. See `examples/csvedit` and `examples/weather`.

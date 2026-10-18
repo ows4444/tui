@@ -113,7 +113,7 @@ uses it whenever the direct path is unavailable:
 - when the terminal size is unknown
 - once an inline frame has scrolled rows into scrollback
 
-`examples/canvas` is a `CellDrawer` widget. Of the library's components,
+A `CellDrawer` root is drawn straight into the cell grid. Of the library's components,
 `viewport`, `logview`, `virtuallist`, `textarea`, `streamtext`, `datatable`,
 `picker`, `multiselect`, `treeview`, `spinner`, `tabs`, `menu`, `filepicker` and
 `textinput` implement it; each has a test

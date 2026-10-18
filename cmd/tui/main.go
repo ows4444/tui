@@ -11,7 +11,7 @@
 //	go run github.com/ows4444/tui/cmd/tui colors nord
 //	go run github.com/ows4444/tui/cmd/tui borders
 //	go run github.com/ows4444/tui/cmd/tui easings out-bounce
-//	go run github.com/ows4444/tui/cmd/tui dev ./examples/panes
+//	go run github.com/ows4444/tui/cmd/tui dev ./examples/workspace
 //	go run github.com/ows4444/tui/cmd/tui demo        (try every widget, live)
 //
 // It writes a directory holding go.mod, main.go (a small Model), main_test.go

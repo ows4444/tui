@@ -35,8 +35,8 @@ with `TERM=screen`) are detected at a lower depth. Pin the profile with
 `ansi.TrueColor`, overrides `NO_COLOR` (`TestExplicitColorProfileOverridesNoColor`).
 An empty `NO_COLOR` counts as unset.
 
-`examples/probe` shows the detected profile, focus reports and the background
-colour for the terminal you run it in.
+`examples/inputlab` shows what the terminal answered to the capability probe, and its
+focus and colour-scheme reports, for the terminal you run it in.
 
 ## Dumb terminals
 

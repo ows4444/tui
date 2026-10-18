@@ -58,73 +58,73 @@ in `examples/` that imports the package.
 | --- | --- | --- | --- |
 | [accordion](../accordion) | A list of collapsible sections | yes | `examples/settings` |
 | [appshell](../appshell) | Header, full-width input, scrollable content and optional key-hints footer, composed from existing widgets. Experimental | | |
-| [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/form` |
-| [backdrop](../backdrop) | An overlay that dims a finished frame, to put behind a dialog or a drawer; a press on it delivers `PressedMsg`. Experimental | | `examples/gallery` |
-| [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `examples/avatar` |
-| [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | `examples/gallery` |
-| [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `examples/controls` |
-| [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `examples/controls` |
-| [carousel](../carousel) | One slide of several at a time, with a row of dots under it, ` ○ ● ○ `; Left, Right, Home, End or a click change the slide and deliver `ChangedMsg`. Experimental | | `examples/gallery` |
-| [checkbox](../checkbox) | One box with a label, drawn `[x] Label`; Space or a click checks and unchecks it, and `Indeterminate` draws `[-]`. For a list of them see multiselect. Experimental | | `examples/controls` |
+| [autocomplete](../autocomplete) | A text input with a filtered suggestion dropdown | yes | `examples/signup` |
+| [backdrop](../backdrop) | An overlay that dims a finished frame, to put behind a dialog or a drawer; a press on it delivers `PressedMsg`. Experimental | | `tui demo` |
+| [avatar](../avatar) | A deterministic avatar for a name: one of ten silhouettes with two eyes, in a colour the name chose. For ready-made animated characters, see faces. Experimental | | `tui demo` |
+| [breadcrumb](../breadcrumb) | A trail, ` Home / Docs / Guide `, with a cursor moved by Left and Right; Enter or a click delivers `ChosenMsg`. `Max` folds a long trail around an ellipsis. Experimental | | `tui demo` |
+| [button](../button) | A pressable button with variants and sizes; Enter, Space or a click delivers `PressedMsg`. With `Toggle` set, a toggle button that is on or off. Experimental | | `tui demo` |
+| [buttongroup](../buttongroup) | A row of buttons with one cursor moved by Left and Right: actions, or toggle buttons of which one or several are on. Experimental | | `tui demo` |
+| [carousel](../carousel) | One slide of several at a time, with a row of dots under it, ` ○ ● ○ `; Left, Right, Home, End or a click change the slide and deliver `ChangedMsg`. Experimental | | `tui demo` |
+| [checkbox](../checkbox) | One box with a label, drawn `[x] Label`; Space or a click checks and unchecks it, and `Indeterminate` draws `[-]`. For a list of them see multiselect. Experimental | | `tui demo` |
 | [clipboard](../clipboard) | A "copy to clipboard" button that writes OSC 52. Experimental | | |
-| [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `examples/timers` |
-| [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes  `examples/pickers` |
+| [clockview](../clockview) | A wall-clock, stopwatch or countdown timer |  `tui demo` |
+| [colorpicker](../colorpicker) | A palette-swatch and hex-input colour picker | yes  `tui demo` |
 | [commandpalette](../commandpalette) | A text input with a fuzzy-filtered dropdown of Commands ("Ctrl+K" style) | yes | |
-| [confirm](../confirm) | A yes/no prompt | yes | `examples/form` |
-| [contextmenu](../contextmenu) | A popup menu opened at an anchor point | yes  `examples/menus` |
-| [datatable](../datatable) | `widgets.Table` plus row navigation | yes | `examples/table`, `examples/inspector` |
-| [datepicker](../datepicker) | A keyboard-navigable calendar on `time.Time` | yes  `examples/pickers` |
+| [confirm](../confirm) | A yes/no prompt | yes | `examples/signup` |
+| [contextmenu](../contextmenu) | A popup menu opened at an anchor point | yes  `tui demo` |
+| [datatable](../datatable) | `widgets.Table` plus row navigation | yes | `examples/csvedit`, `examples/jsonx` |
+| [datepicker](../datepicker) | A keyboard-navigable calendar on `time.Time` | yes  `tui demo` |
 | [dialog](../dialog) | A modal box with title and message, composited over the screen, dismissed with Enter/Esc | yes | `examples/dashboard` |
 | [dropdown](../dropdown) | A closed one-line control that shows the chosen option and opens a list of the others: Enter opens, arrows move, typing jumps, Enter chooses, Esc closes. Experimental | | |
-| [drawer](../drawer) | An overlay anchored to an edge of the base view | yes  `examples/panes` |
-| [emailinput](../emailinput) | A `textinput.Model` wrapper that rejects whitespace |  `examples/inputs` |
+| [drawer](../drawer) | An overlay anchored to an edge of the base view | yes  `examples/workspace` |
+| [emailinput](../emailinput) | A `textinput.Model` wrapper that rejects whitespace |  `tui demo` |
 | [errorretry](../errorretry) | An error with retry (Enter or `r`, up to `MaxRetries`) and dismiss (Esc). Experimental | yes | |
-| [faces](../faces) | A catalog of 50 ready-made animated Braille characters and a widget that plays them. For a picture derived from a name, see avatar. Experimental | | `examples/faces` |
-| [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes  `examples/pickers` |
+| [faces](../faces) | A catalog of 50 ready-made animated Braille characters and a widget that plays them. For a picture derived from a name, see avatar. Experimental | | `tui demo` |
+| [filepicker](../filepicker) | A filesystem browser, one directory at a time | yes  `tui demo` |
 | [form](../form) | A validating column of labelled fields (text, select, checkbox, multi-select, text area) with Submit, optionally in titled groups shown one at a time | yes | `examples/login`, `examples/signup` |
 | [helpscreen](../helpscreen) | A full-screen key-binding help overlay | | |
-| [hovercard](../hovercard) | An overlay with a title and a body, drawn under its target while the pointer is on the target or the card; Esc closes it. Experimental | | `examples/gallery` |
-| [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `examples/avatar` |
+| [hovercard](../hovercard) | An overlay with a title and a body, drawn under its target while the pointer is on the target or the card; Esc closes it. Experimental | | `tui demo` |
+| [imageview](../imageview) | A PNG drawn with the kitty graphics protocol, iTerm2 inline images or Sixel, or a text placeholder. Experimental | | `tui demo` |
 | [loadingbar](../loadingbar) | An indeterminate progress animation | | `examples/dashboard` |
-| [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | `examples/gallery` |
-| [logview](../logview) | An append-only scrolling log | | `examples/procstream` |
-| [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/agentshell` |
-| [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune |  `examples/inputs` |
-| [menu](../menu) | Nested-navigation list on top of `picker.Model` | yes  `examples/menus` |
-| [menubar](../menubar) | A horizontal bar of titled dropdown menus | yes  `examples/menus` |
-| [multiselect](../multiselect) | A multi-choice list: Space toggles, Enter confirms | yes | `examples/list` |
+| [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | `tui demo` |
+| [logview](../logview) | An append-only scrolling log | | `examples/logtail` |
+| [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/codeagent` |
+| [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune |  `tui demo` |
+| [menu](../menu) | Nested-navigation list on top of `picker.Model` | yes  `tui demo` |
+| [menubar](../menubar) | A horizontal bar of titled dropdown menus | yes  `tui demo` |
+| [multiselect](../multiselect) | A multi-choice list: Space toggles, Enter confirms | yes | `examples/todo` |
 | [notificationcenter](../notificationcenter) | A panel showing every queued notification at once. Experimental | | |
-| [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `examples/inputs` |
-| [otpinput](../otpinput) | A short code typed one character to a cell, `[4][8][2] — [1][ ][ ]`; a paste fills the cells, and `ChangedMsg` says when it is complete. Experimental | | `examples/gallery` |
-| [pagination](../pagination) | A row of page numbers, ` 1  …  9 [10] 11  …  20 `; Left, Right, Home, End or a click change the page and deliver `ChangedMsg`. Experimental | | `examples/gallery` |
-| [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/focus` |
-| [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/loginflow`, `examples/router`, `examples/setupflow` |
-| [popover](../popover) | An overlay anchored near a point | yes  `examples/panes` |
-| [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | `examples/controls` |
+| [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `tui demo` |
+| [otpinput](../otpinput) | A short code typed one character to a cell, `[4][8][2] — [1][ ][ ]`; a paste fills the cells, and `ChangedMsg` says when it is complete. Experimental | | `tui demo` |
+| [pagination](../pagination) | A row of page numbers, ` 1  …  9 [10] 11  …  20 `; Left, Right, Home, End or a click change the page and deliver `ChangedMsg`. Experimental | | `tui demo` |
+| [passwordinput](../passwordinput) | A `textinput.Model` wrapper that masks the value | | `examples/hello` |
+| [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/signup`, `examples/routerapp`, `examples/signup` |
+| [popover](../popover) | An overlay anchored near a point | yes  `examples/workspace` |
+| [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | `tui demo` |
 | [hexview](../hexview) | Bytes as a hex dump: offset, hex in groups, an ASCII gutter, a cursor, a selection copied as hex (`y`), and the mouse. Experimental | | `examples/` none yet; see `hexview` `Example` |
-| [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | `examples/controls` |
-| [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/panes` |
-| [skeleton](../skeleton) | A loading placeholder block |  `examples/timers` |
-| [slider](../slider) | A value in a range on a track with a thumb; arrows, Page Up and Page Down, Home and End move it, and the pointer can press or drag. Experimental | | `examples/controls` |
-| [spinner](../spinner) | An animated loading indicator, with 18 named animations (`Presets`, `Lookup`, `WithPreset`) and ASCII fallbacks | | `examples/asyncload`, `examples/buildlog`, `examples/inlinespinners` |
-| [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes  `examples/panes` |
-| [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/agentshell` |
-| [tabs](../tabs) | A horizontal tab bar | yes | `examples/settings`, `examples/inspector` |
-| [taginput](../taginput) | A text input plus a list of committed tags drawn as `widgets.Tag` chips | yes  `examples/inputs` |
+| [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | `tui demo` |
+| [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/workspace` |
+| [skeleton](../skeleton) | A loading placeholder block |  `tui demo` |
+| [slider](../slider) | A value in a range on a track with a thumb; arrows, Page Up and Page Down, Home and End move it, and the pointer can press or drag. Experimental | | `tui demo` |
+| [spinner](../spinner) | An animated loading indicator, with 18 named animations (`Presets`, `Lookup`, `WithPreset`) and ASCII fallbacks | | `examples/weather`, `examples/buildstatus` |
+| [splitpane](../splitpane) | Two `layout.Node`s with a divider moved by keyboard or mouse | yes  `examples/workspace` |
+| [streamtext](../streamtext) | Text revealed a few characters at a time (`New` streams, `NewTypewriter` types). Experimental | | `examples/chat`, `examples/codeagent` |
+| [tabs](../tabs) | A horizontal tab bar | yes | `examples/settings`, `examples/jsonx` |
+| [taginput](../taginput) | A text input plus a list of committed tags drawn as `widgets.Tag` chips | yes  `tui demo` |
 | [termpane](../termpane) | A program run on a pseudo-terminal and drawn in a pane: a shell or a full-screen tool inside the app, with keys, paste, mouse, resize and scrollback. darwin and linux only. Experimental | | |
-| [textarea](../textarea) | A multi-line text input | yes | `examples/focus`, `examples/agentshell` |
-| [textinput](../textinput) | A single-line text input | yes | `examples/focus`, `examples/cursorfield`, `examples/form` |
+| [textarea](../textarea) | A multi-line text input | yes | `examples/hello`, `examples/codeagent` |
+| [textinput](../textinput) | A single-line text input | yes | `examples/hello`, `examples/cursorfield`, `examples/signup` |
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |
-| [toggle](../toggle) | An on/off switch with a label, drawn `(○  )` and `(  ●)`; Space or Enter flips it, Left and Right set it. Experimental | | `examples/controls` |
-| [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/agentshell` |
-| [tooltip](../tooltip) | An overlay with a short hint, drawn under its target while the pointer is over it. Experimental | | `examples/gallery` |
-| [transferlist](../transferlist) | Two lists side by side; Enter, Space or a click moves the item under the cursor to the other list and delivers `ChangedMsg`. Experimental | | `examples/gallery` |
-| [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/inspector` |
+| [toggle](../toggle) | An on/off switch with a label, drawn `(○  )` and `(  ●)`; Space or Enter flips it, Left and Right set it. Experimental | | `tui demo` |
+| [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/codeagent` |
+| [tooltip](../tooltip) | An overlay with a short hint, drawn under its target while the pointer is over it. Experimental | | `tui demo` |
+| [transferlist](../transferlist) | Two lists side by side; Enter, Space or a click moves the item under the cursor to the other list and delivers `ChangedMsg`. Experimental | | `tui demo` |
+| [treeview](../treeview) | A hierarchical expandable tree | yes | `examples/jsonx` |
 | [tuislog](../tuislog) | A `log/slog` handler that writes one styled line per record, above the live region of a running Program or to any function. Experimental | | |
 | [viewport](../viewport) | A scrollable window onto content taller than it | yes | `examples/pager` |
-| [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes  `examples/panes` |
+| [virtuallist](../virtuallist) | A scrolling window onto a large uniform-height list that never builds off-screen rows | yes  `examples/workspace` |
 | [window](../window) | A desktop of overlapping windows moved by the title bar, resized by the edges, raised by a press and closed by the close box, with the same actions on the keyboard. Experimental | yes | |
-| [wizard](../wizard) | Step navigation for multi-step flows, drawn with `widgets.Stepper` | | `examples/form` |
+| [wizard](../wizard) | Step navigation for multi-step flows, drawn with `widgets.Stepper` | | `examples/signup` |
 
 Every package listed has an `Example` in its `example_test.go`
 (`TestEveryPackageHasExample` in `exampleevery_test.go` requires one per
@@ -154,6 +154,6 @@ package: it sits below the components. Use `layout.Block(s)` (or
 `Gauge`, each with a `Linearize...` function for accessible output.
 `examples/chat` and `examples/dashboard` use `widgets/chart`.
 
-`examples/welcomescreen`, `examples/splashscreen`, `examples/loginflow` and
-`examples/setupflow` build whole screens from `widgets` functions and a
+`examples/hello`, `examples/signup` and
+`examples/kanban` build whole screens from `widgets` functions and a
 `layout.Row`.
