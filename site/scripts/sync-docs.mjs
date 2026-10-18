@@ -276,12 +276,13 @@ const mdx = (s) => s.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, '&lt;');
 // Categories for the Examples page, most visual first. An example in none of
 // them is listed under "More", so a new example still appears.
 const EXAMPLE_CATEGORIES = [
-	{ id: 'showcase', title: 'Showcase', blurb: 'Full screens that show what a tui program can look like.', names: ['dashboard', 'canvas', 'chat', 'welcomescreen', 'splashscreen', 'probe', 'faces', 'avatar'] },
-	{ id: 'forms', title: 'Forms and input', blurb: 'Text fields, sign-in and multi-step flows, focus and the cursor.', names: ['loginflow', 'setupflow', 'login', 'signup', 'form', 'inputs', 'controls', 'pickers', 'focus', 'cursorfield'] },
-	{ id: 'lists', title: 'Lists, tables and navigation', blurb: 'Selection, tabs, scrolling and switching screens.', names: ['inspector', 'table', 'list', 'menus', 'panes', 'settings', 'router', 'pager'] },
-	{ id: 'layout', title: 'Layout and rendering', blurb: 'Composing string and cell children, and the smallest program.', names: ['mixedscreen', 'counter'] },
-	{ id: 'async', title: 'Async and streaming', blurb: 'Commands that resolve later, child processes and committed output.', names: ['asyncload', 'timers', 'procstream', 'buildlog', 'agentshell'] },
-	{ id: 'inline', title: 'Inline mode', blurb: 'Programs that draw in the normal scrollback instead of the alternate screen; their first frame is small by design.', names: ['inlinespinners', 'inlinebuild', 'inlinechat', 'inlinetall'] },
+	{ id: 'start', title: 'First hour', blurb: 'The smallest programs to read first, and the ones the tutorials build.', names: ['hello', 'counter', 'todo', 'calculator', 'tutorial', 'tutorial2'] },
+	{ id: 'forms', title: 'Forms and input', blurb: 'Sign-in, settings, pickers and colour: text fields, focus and the cursor.', names: ['login', 'signup', 'settings', 'planner', 'colorlab'] },
+	{ id: 'data', title: 'Lists, tables and dashboards', blurb: 'Browsing, filtering and watching data: tables, trees, charts, logs and queries.', names: ['files', 'csvedit', 'jsonx', 'pkgs', 'launcher', 'procmon', 'sqlbrowse', 'logtail', 'weather', 'charts', 'dashboard'] },
+	{ id: 'text', title: 'Text and documents', blurb: 'Reading and editing: a pager, a notepad, markdown, source code and bytes.', names: ['pager', 'notepad', 'mdstudio', 'codebrowse', 'docsreader', 'hexedit'] },
+	{ id: 'apps', title: 'Apps and games', blurb: 'Programs that are mostly mouse: dragging cards, drawing, a snake, a mine field and an animated splash.', names: ['kanban', 'paint', 'snake', 'minesweeper', 'fireandfx'] },
+	{ id: 'shell', title: 'Layout, shell and tools', blurb: 'Split panes, screens with a back button, chat and agent shells, and the workbenches for layout, themes and input.', names: ['workspace', 'routerapp', 'chat', 'codeagent', 'layoutlab', 'themestudio', 'inputlab'] },
+	{ id: 'inline', title: 'Inline mode', blurb: 'Programs that draw in the normal scrollback instead of the alternate screen; their first frame is small by design.', names: ['survey', 'buildstatus'] },
 ];
 
 function syncExamples() {
@@ -321,7 +322,7 @@ function syncExamples() {
 	const meta = {
 		slug: 'examples',
 		title: 'Examples',
-		seoTitle: 'Go terminal UI examples: 30 runnable tui programs with screens',
+		seoTitle: `Go terminal UI examples: ${withScreen.length} runnable tui programs with screens`,
 		description: 'Every program under examples/, with the 80×24 screen its test checks.',
 	};
 	const head = frontmatter({ title: meta.title, description: meta.description, editUrl: false, head: pageHead(meta) });
