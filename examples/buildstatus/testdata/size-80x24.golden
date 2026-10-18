@@ -1,0 +1,10 @@
+Building  0.0s  ·  0/8 done  ·  1 running, up to 3
+⠋ fetch modules   ░░░░░░░░░░ 0%   
+· compile ansi    waits for fetch modules
+· compile layout  waits for fetch modules
+· compile widgets waits for fetch modules
+· link tui        waits for compile ansi, compile layout, compile widgets
+· vet             waits for compile ansi, compile layout, compile widgets
+· test            waits for link tui
+· package         waits for link tui, vet, test
+ctrl+c cancel  ·  +/- jobs  ·  v output  ·  ? help
