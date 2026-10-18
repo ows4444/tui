@@ -301,3 +301,23 @@ func TestTheAvatarEntryChangesNameAndExpression(t *testing.T) {
 		t.Errorf("E gave state %d, want 105", got)
 	}
 }
+
+func TestTheAvatarEntryIsAnImageWhereTheTerminalDrawsImages(t *testing.T) {
+	defer func() { demoCaps = tui.Capabilities{} }()
+	build := func() string {
+		for _, e := range demoEntries() {
+			if e.name == "Avatar" {
+				return e.build().View()
+			}
+		}
+		t.Fatal("no Avatar entry")
+		return ""
+	}
+	if strings.Contains(build(), "1337;File") {
+		t.Error("an image without the terminal saying it draws them")
+	}
+	demoCaps = tui.Capabilities{InlineImages: true}
+	if !strings.Contains(build(), "1337;File") {
+		t.Error("no inline image on iTerm")
+	}
+}

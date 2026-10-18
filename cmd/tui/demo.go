@@ -114,6 +114,10 @@ type demoApp struct {
 	w, h int
 }
 
+// demoCaps is what the terminal said it can draw, for the entries that show an
+// image where it can; the zero value is cells only.
+var demoCaps tui.Capabilities
+
 // demoMinW and demoMinH are the smallest terminal the catalog is laid out for.
 const (
 	demoMinW = 60
@@ -187,6 +191,9 @@ func (a *demoApp) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	switch m := msg.(type) {
 	case tui.ResizeMsg:
 		a.w, a.h = m.Width, m.Height
+		return a, nil
+	case tui.CapabilitiesMsg:
+		demoCaps = m.Capabilities
 		return a, nil
 	case tui.Key:
 		switch {
@@ -417,7 +424,7 @@ func runDemo(args []string, out io.Writer) error {
 			return fmt.Errorf("no widget called %q; tui demo -list shows them", start)
 		}
 	}
-	_, err := tui.NewProgram(newDemoApp(entries, start), tui.WithAltScreen(true)).Run()
+	_, err := tui.NewProgram(newDemoApp(entries, start), tui.WithAltScreen(true), tui.WithCapabilityProbe(0)).Run()
 	return err
 }
 

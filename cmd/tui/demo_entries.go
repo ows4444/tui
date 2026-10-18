@@ -16,6 +16,7 @@ import (
 	"github.com/ows4444/tui/datatable"
 	"github.com/ows4444/tui/datepicker"
 	"github.com/ows4444/tui/dropdown"
+	"github.com/ows4444/tui/imageview"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/markdownview"
 	"github.com/ows4444/tui/multiselect"
@@ -273,7 +274,14 @@ func feedbackEntries() []entry {
 					m.Width, m.Height = 16, 8
 					m.Background = avatar.BackgroundCircle
 					m.Expression = avatar.Expression(state / 100)
-					return m.SetTheme(th).View() + "\n" + m.Shape().String() + ", " + m.Expression.String()
+					m = m.SetTheme(th)
+					picture := m.View()
+					if c := demoCaps; c.KittyGraphics || c.InlineImages || c.Sixel {
+						img := imageview.New(m.PNG(128), m.Width, m.Height, m.Linearize())
+						img.Kitty, img.Inline, img.Sixel = c.KittyGraphics, !c.KittyGraphics && c.InlineImages, !c.KittyGraphics && !c.InlineImages && c.Sixel
+						picture = img.View()
+					}
+					return picture + "\n" + m.Shape().String() + ", " + m.Expression.String()
 				}}
 			},
 		},
