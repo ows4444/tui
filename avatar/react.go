@@ -17,8 +17,8 @@ const ReactHold = 1500 * time.Millisecond
 // A pose change is eased over tweenFrames frames, tweenInterval apart: the
 // eyes are drawn part of the way from the old pose to the new one on each.
 const (
-	tweenFrames   = 4
-	tweenInterval = 45 * time.Millisecond
+	tweenFrames   = 6
+	tweenInterval = 30 * time.Millisecond
 )
 
 // A pose that moves while it is held is redrawn every wobbleInterval. A

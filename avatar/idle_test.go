@@ -2,6 +2,7 @@ package avatar
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
@@ -155,7 +156,8 @@ func TestIdleGlancesBreathesAndBlinks(t *testing.T) {
 			glanced = true
 			still := m
 			still.idling = false
-			if m.View() == still.View() {
+			// The edges of the hump are too small to move a pixel.
+			if math.Abs(lookX) > 0.5*math.Abs(i.glanceX) && m.View() == still.View() {
 				t.Fatal("a glance did not move the eyes")
 			}
 		}

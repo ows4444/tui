@@ -58,22 +58,27 @@ type idle struct {
 // breathBeats is the number of beats in one breath, glanceBeats how many a
 // glance is held for, and breathDepth how much a breath grows and shrinks
 // the body.
+//
+// A beat is short, about a ninth of a second, so a breath and a glance move in
+// small steps instead of jumping: a breath is breathBeats of them and a glance
+// eases out and back over glanceBeats.
 const (
-	breathBeats = 8
-	glanceBeats = 2
+	beatScale   = 3 // beats per old beat; the rhythm of a name is drawn in old beats
+	breathBeats = 8 * beatScale
+	glanceBeats = 2 * beatScale
 	breathDepth = 0.035
 )
 
 func (m Model) idle() idle {
 	t := m.traits()
 	i := idle{
-		beat:        time.Duration(t.num("idle.beat", 360, 520)) * time.Millisecond,
-		blinkEvery:  t.count("idle.blink", 7, 13),
-		glanceEvery: t.count("idle.glance", 11, 19),
+		beat:        time.Duration(t.num("idle.beat", 360, 520)) * time.Millisecond / beatScale,
+		blinkEvery:  t.count("idle.blink", 7, 13) * beatScale,
+		glanceEvery: t.count("idle.glance", 11, 19) * beatScale,
 		glanceX:     0.75,
 	}
-	i.blinkAt = t.count("idle.blink.at", 0, i.blinkEvery-1)
-	i.glanceAt = t.count("idle.glance.at", 0, i.glanceEvery-glanceBeats)
+	i.blinkAt = t.count("idle.blink.at", 0, i.blinkEvery/beatScale-1) * beatScale
+	i.glanceAt = t.count("idle.glance.at", 0, i.glanceEvery/beatScale-glanceBeats/beatScale) * beatScale
 	if t.at("idle.glance.x") < 0.5 {
 		i.glanceX = -i.glanceX
 	}
@@ -192,13 +197,19 @@ func (m Model) moved() (lookX, zoom float64) {
 	}
 	i := m.idle()
 	if at := m.beat % i.glanceEvery; at >= i.glanceAt && at < i.glanceAt+glanceBeats {
-		lookX = i.glanceX
+		// Out and back along a smooth hump, not a jump.
+		lookX = i.glanceX * math.Pow(math.Sin(math.Pi*(float64(at-i.glanceAt)+0.5)/glanceBeats), 2)
 	}
 	return lookX, 1 + breathDepth*breath[m.beat%breathBeats]
 }
 
 // breath is one breath, sampled once per beat: a sine from rest, in and out.
-var breath = [breathBeats]float64{0, 0.71, 1, 0.71, 0, -0.71, -1, -0.71}
+var breath = func() (b [breathBeats]float64) {
+	for i := range b {
+		b[i] = math.Sin(2 * math.Pi * float64(i) / breathBeats)
+	}
+	return b
+}()
 
 // Compile-time proof that Model satisfies tui.Component[Model] — see
 // tui.Component's doc comment for what this contract means and why.
