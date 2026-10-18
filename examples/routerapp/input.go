@@ -179,6 +179,15 @@ func (m model) mouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
 	if m.help {
 		return m, nil
 	}
+	if m.top().kind == rCustomer && m.size().W >= 30 {
+		a := m.avatarOf(m.top())
+		over := a.Bounds().Contains(ev.X, ev.Y)
+		if over || m.faceModel.Name == a.Name && (a.Idling() || a.Reacting()) {
+			var cmd tui.Cmd
+			m.faceModel, cmd = a.Update(ev)
+			return m, cmd
+		}
+	}
 	id := m.hit(ev.X, ev.Y)
 	switch {
 	case ev.Action == tui.MouseActionMotion:

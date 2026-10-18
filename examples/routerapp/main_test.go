@@ -326,3 +326,26 @@ func TestCustomerShowsItsAvatar(t *testing.T) {
 		}
 	}
 }
+
+// Moving over the customer's avatar wakes it and a click makes it react; moving
+// away lets it rest.
+func TestAvatarFollowsTheMouse(t *testing.T) {
+	m := openOrder(ready())
+	m, _ = key(m, tui.KeyEsc)
+	a := m.avatarOf(m.top())
+	in := a.Bounds()
+	move := func(x, y int) tui.MouseEvent { return tui.MouseEvent{X: x, Y: y, Action: tui.MouseActionMotion} }
+
+	m, _ = update(m, move(in.X+2, in.Y+1))
+	if !m.faceModel.Idling() {
+		t.Fatal("the pointer over the avatar did not wake it")
+	}
+	m, cmd := update(m, tui.MouseEvent{X: in.X + 2, Y: in.Y + 1, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
+	if !m.faceModel.Reacting() || cmd == nil {
+		t.Fatal("a click on the avatar did not make it react")
+	}
+	m, _ = update(m, move(0, 0))
+	if m.faceModel.Idling() {
+		t.Error("moving away left the avatar awake")
+	}
+}

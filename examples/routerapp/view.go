@@ -103,12 +103,25 @@ func (m model) face(r route, th theme.Theme) string {
 	if r.kind != rCustomer {
 		return ""
 	}
-	a := avatar.New(customerByID(r.id).name)
-	a.Width, a.Height, a.Decorative = faceW, faceH, true
-	if m.starred[r.id] {
-		a.Expression = avatar.ExpressionHappy
+	return m.avatarOf(r).SetTheme(th).View()
+}
+
+// avatarOf is the kept avatar if it is the customer's, else a fresh one placed
+// where the screen draws it.
+func (m model) avatarOf(r route) avatar.Model {
+	name := customerByID(r.id).name
+	a := m.faceModel
+	if a.Name != name {
+		a = avatar.New(name)
+		a.Width, a.Height, a.Decorative = faceW, faceH, true
 	}
-	return a.SetTheme(th).View()
+	a.X, a.Y = m.sideW()+2, 2 // beside the sidebar and its rule, below the title and its rule
+	if m.starred[r.id] && a.Expression == avatar.ExpressionNone {
+		a.Expression = avatar.ExpressionHappy
+	} else if !m.starred[r.id] {
+		a.Expression = avatar.ExpressionNone
+	}
+	return a
 }
 
 // head is the lines above the rows of a screen.

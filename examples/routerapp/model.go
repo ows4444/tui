@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
@@ -56,18 +57,19 @@ const (
 )
 
 type model struct {
-	th      ui.Theming // the theme the Program chose; see SetTheme
-	stack   []route
-	side    bool // the sidebar has the keys
-	sideCur int
-	starred map[int]bool
-	shipped map[int]bool
-	compact bool // sidebar shows icons only
-	notify  bool
-	toasts  []toast
-	ticking bool
-	hover   string
-	help    bool
+	th        ui.Theming // the theme the Program chose; see SetTheme
+	stack     []route
+	side      bool // the sidebar has the keys
+	sideCur   int
+	starred   map[int]bool
+	shipped   map[int]bool
+	compact   bool // sidebar shows icons only
+	notify    bool
+	toasts    []toast
+	ticking   bool
+	hover     string
+	faceModel avatar.Model // the open customer's avatar, kept so its animation survives frames
+	help      bool
 
 	width, height int
 }
@@ -172,7 +174,10 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	case tui.MouseEvent:
 		return m.mouse(msg)
 	}
-	return m, nil
+	// Whatever else arrives may be a tick of the avatar's animation.
+	var cmd tui.Cmd
+	m.faceModel, cmd = m.faceModel.Update(msg)
+	return m, cmd
 }
 
 // ---- screens ---------------------------------------------------------------

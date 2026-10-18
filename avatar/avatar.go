@@ -22,7 +22,7 @@
 // three driven by Update, and LookAt turns the eyes toward a target such as
 // the mouse pointer. For the mouse, set X and Y to where the avatar is drawn
 // and pass the Program's mouse events to Update: the idle loop runs while the
-// pointer is over Bounds and the eyes follow it. Blink, StartIdle, StopIdle, Hover, LookAt, React and
+// pointer is over Bounds and the eyes follow it, and a left click makes it React. Blink, StartIdle, StopIdle, Hover, LookAt, React and
 // SetExpression change the Model they are called on: call them on the one your
 // own model keeps (m.avatar.Blink()), never on a copy that is then thrown away.
 //

@@ -101,3 +101,22 @@ func TestMouseOverBoundsHoversAndLooks(t *testing.T) {
 		t.Error("a release changed the avatar")
 	}
 }
+
+// A left click on the avatar makes it pull a face; a click elsewhere does not.
+func TestLeftClickOverBoundsReacts(t *testing.T) {
+	m := avatar.New("click")
+	m.X, m.Y = 3, 3
+	press := func(x, y int, b tui.MouseButton) tui.MouseEvent {
+		return tui.MouseEvent{X: x, Y: y, Button: b, Action: tui.MouseActionPress}
+	}
+	if out, _ := m.Update(press(0, 0, tui.MouseButtonLeft)); out.Reacting() {
+		t.Error("a click outside reacted")
+	}
+	if out, _ := m.Update(press(4, 4, tui.MouseButtonRight)); out.Reacting() {
+		t.Error("a right click reacted")
+	}
+	out, cmd := m.Update(press(4, 4, tui.MouseButtonLeft))
+	if !out.Reacting() || cmd == nil {
+		t.Error("a left click on the avatar did not react")
+	}
+}

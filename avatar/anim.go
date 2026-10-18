@@ -125,8 +125,7 @@ func (m Model) Bounds() hittest.Rect {
 
 // pointer follows a mouse event: while the pointer is over Bounds the idle loop
 // runs and the eyes look at it; when it leaves, both stop and the eyes return
-// to rest. Only motion and presses count, and a click never changes anything
-// else. Set X and Y to where the avatar is drawn and send the Program's
+// to rest. A left press over the avatar makes it React with a face of its own. Set X and Y to where the avatar is drawn and send the Program's
 // mouse events to Update (tui.WithMouse).
 func (m Model) pointer(ev tui.MouseEvent) (Model, tui.Cmd) {
 	if ev.Action == tui.MouseActionRelease {
@@ -139,6 +138,9 @@ func (m Model) pointer(ev tui.MouseEvent) (Model, tui.Cmd) {
 		return m, cmd
 	}
 	cmd := m.Hover(true)
+	if ev.Action == tui.MouseActionPress && ev.Button == tui.MouseButtonLeft {
+		cmd = tui.Batch(cmd, m.React())
+	}
 	// The cell under the pointer minus the centre cell of the avatar.
 	m.LookAt(ev.X-(b.X+b.W/2), ev.Y-(b.Y+b.H/2))
 	return m, cmd
