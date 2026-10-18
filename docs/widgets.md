@@ -33,11 +33,12 @@ packages assert them at compile time with lines such as
 
 | Contract | Shape | Asserted by |
 | --- | --- | --- |
-| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, breadcrumb, button, buttongroup, carousel, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, emailinput, errorretry, faces, filepicker, form, inputgroup, loadingbar, logview, maskedinput, menu, multiselect, numberinput, otpinput, pagination, passwordinput, picker, radiogroup, rating, hexview, skeleton, slider, spinner, streamtext, tabs, taginput, textarea, textinput, toggle, toolapproval, transferlist, treeview, viewport, virtuallist |
+| `tui.Component[T]` | `Update(tui.Msg) (T, tui.Cmd)`, `View() string` | accordion, appshell, autocomplete, avatar, breadcrumb, button, buttongroup, carousel, checkbox, clipboard, clockview, colorpicker, commandpalette, confirm, datatable, datepicker, dropdown, emailinput, errorretry, faces, filepicker, form, hexview, inputgroup, loadingbar, logview, markdownview, maskedinput, menu, multiselect, numberinput, otpinput, pagination, passwordinput, picker, radiogroup, rangeslider, rating, scrollbar, skeleton, slider, spinner, splitpane, streamtext, tabs, taginput, termpane, textarea, textinput, timepicker, toggle, toolapproval, transferlist, treeview, viewport, virtuallist, window |
 | `tui.Overlay[T]` | `Open() bool`, `Update`, `Render(base string) string`. It composites onto a drawn frame. `Show` and `Hide` are pointer methods outside the interface | backdrop, contextmenu, dialog, drawer, helpscreen, hovercard, menubar, popover, toast, tooltip |
 | `tui.ThemeSetter[T]` | `SetTheme(theme.Theme) T` | every component except clockview, logview, markdown, viewport and wizard; see [Theming](theming.md) |
 | `tui.Linearizer` | `Linearize() string`, plain text for accessible output | every component has the method; most assert it. See [Accessibility](accessibility.md) |
-| `tui.CursorProvider` | `CursorCell() (x, y int, ok bool)` | textarea, textinput |
+| `tui.CursorProvider` | `CursorCell() (x, y int, ok bool)` | inputgroup, textarea, textinput |
+| `tui.CellDrawer` | `DrawCells(buf *cellbuf.Buffer, r cellbuf.Rect)`, draws into the cell grid with no View string to parse | avatar, form |
 
 Every component `Model` also has `LayoutNode()`, a test enforces it, and most
 have `Tokens()` and `WithTokens()`. Some packages implement a contract's
@@ -89,9 +90,11 @@ in `examples/` that imports the package.
 | [inputgroup](../inputgroup) | A `textinput.Model` with fixed text before and after it, such as `https://` and `.com`; the suffix keeps its column and the cursor cell is reported past the prefix. Experimental | yes | `tui demo` |
 | [logview](../logview) | An append-only scrolling log | | `examples/logtail` |
 | [markdown](../markdown) | A CommonMark subset rendered as styled, width-aware text | | `examples/chat`, `examples/codeagent` |
+| [markdownview](../markdownview) | A Markdown document read in a window: it scrolls, jumps between headings and links, follows in-page links with a back and forward history, and reports other links as a `LinkMsg`. Experimental | yes | `examples/docsreader`, `examples/mdstudio` |
 | [maskedinput](../maskedinput) | A `textinput.Model` wrapper that masks each character with a configurable rune |  `tui demo` |
 | [menu](../menu) | Nested-navigation list on top of `picker.Model` | yes  `tui demo` |
 | [menubar](../menubar) | A horizontal bar of titled dropdown menus | yes  `tui demo` |
+| [motion/fx](../motion/fx) | Effects for a region of cells that appears or goes away: `Fade`, `Dissolve`, `Slide` and `Sweep`, as a function of progress; `Wrap` applies one to a Model. Experimental | | `examples/fireandfx` |
 | [multiselect](../multiselect) | A multi-choice list: Space toggles, Enter confirms | yes | `examples/todo` |
 | [notificationcenter](../notificationcenter) | A panel showing every queued notification at once. Experimental | | |
 | [numberinput](../numberinput) | A `textinput.Model` wrapper that accepts digits and one leading `-` |  `tui demo` |
@@ -101,6 +104,7 @@ in `examples/` that imports the package.
 | [picker](../picker) | A single-choice list (InkUI's "Select") | yes | `examples/signup`, `examples/routerapp`, `examples/signup` |
 | [popover](../popover) | An overlay anchored near a point | yes  `examples/workspace` |
 | [radiogroup](../radiogroup) | A set of options of which exactly one is chosen, drawn as `( ) Label` rows or on one row; the arrow keys move and choose, and a change delivers `ChangedMsg`. Experimental | | `tui demo` |
+| [rangeslider](../rangeslider) | A range chosen from a span with two thumbs on a track; Space switches thumbs, Left and Right step, Page Up and Page Down jump. Experimental | yes | |
 | [hexview](../hexview) | Bytes as a hex dump: offset, hex in groups, an ASCII gutter, a cursor, a selection copied as hex (`y`), and the mouse. Experimental | | `examples/` none yet; see `hexview` `Example` |
 | [rating](../rating) | A score out of `Max` as filled and empty marks; Left and Right, a digit, or a click set it. Experimental | | `tui demo` |
 | [scrollbar](../scrollbar) | A track and thumb showing how much content is visible and where | yes  `examples/workspace` |
@@ -114,6 +118,7 @@ in `examples/` that imports the package.
 | [termpane](../termpane) | A program run on a pseudo-terminal and drawn in a pane: a shell or a full-screen tool inside the app, with keys, paste, mouse, resize and scrollback. darwin and linux only. Experimental | | |
 | [textarea](../textarea) | A multi-line text input | yes | `examples/hello`, `examples/codeagent` |
 | [textinput](../textinput) | A single-line text input | yes | `examples/hello`, `examples/cursorfield`, `examples/signup` |
+| [timepicker](../timepicker) | A time of day in fields (hours, minutes, seconds, AM or PM), moved with Left and Right and changed with Up, Down or digits, on `time.Time`. Experimental | yes | `examples/planner` |
 | [toast](../toast) | A transient notification in a screen corner that closes after `Duration` | | `examples/dashboard` |
 | [toggle](../toggle) | An on/off switch with a label, drawn `(○  )` and `(  ●)`; Space or Enter flips it, Left and Right set it. Experimental | | `tui demo` |
 | [toolapproval](../toolapproval) | A gate-before-execution prompt for an agent tool call. Experimental | yes | `examples/codeagent` |

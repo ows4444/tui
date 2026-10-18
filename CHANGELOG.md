@@ -220,7 +220,7 @@ Vi mode for `textarea` and `textinput`: set `Vi` and the widget is modal (counts
 
 ### Changed
 
-- BREAKING: `avatar.Model.Shape` returns a `Silhouette` (use `.String()` for the name); `Model.Hue` is a `*float64`, nil lets the name choose and a hue of 0 is a real pin; the `Trait*` constants, `Trait` and `Model.Pins` are removed (use `Hue`, `Tone`, `Silhouette`, `Accessory` and `Eyes`). `avatar` was experimental.
+- BREAKING: `avatar.Model.Shape` returns a `Silhouette` (use `.String()` for the name); `Model.Hue` is a `*float64`, nil lets the name choose and a hue of 0 is a real pin; `Model.Pins`, the `Trait` type, its `String` method and its constants (`TraitBodyProportion`, `TraitBodySize`, `TraitBodySquareness`, `TraitCornerRounding`, `TraitEyeLean`, `TraitEyeRoundness`, `TraitEyeSeparation`, `TraitEyeSize`, `TraitEyeSquareness`, `TraitGazeX`, `TraitGazeY`, `TraitLobes`, `TraitNubAngle`, `TraitNubSize`, `TraitNubs`, `TraitPetalDistance`, `TraitPetalRotation`, `TraitPetalSize`, `TraitPetals`, `TraitSquat`, `TraitTilt`, `TraitTipLength`) are removed (use `Hue`, `Tone`, `Silhouette`, `Accessory` and `Eyes`); `MaxPNGSize` is 256, not 512. `avatar` was experimental.
 
 ### Changed
 
