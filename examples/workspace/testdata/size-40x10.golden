@@ -1,0 +1,10 @@
+workspace                               
+▸main.go  notes.md  todo.txt       1/26 
+   1  package main                      
+   2                                    
+   3  import (                          
+   4      "flag"                        
+   5      "fmt"                         
+   6      "os"                          
+Small window: some panes hidden         
+[tab] pane  [.,] tab  [[ ]] resize  …   

@@ -1,0 +1,24 @@
+workspace                                                                       
+▸Files  Outline    1/18 │▸main.go  notes.md  todo.txt                      1/26 
+▾ workspace             │   1  package main                                     
+  ▾ cmd                 │   2                                                   
+      main.go           │   3  import (                                         
+  ▾ internal            │   4      "flag"                                       
+    ▸ cache             │   5      "fmt"                                        
+    ▸ config            │   6      "os"                                         
+    ▸ server            │   7  )                                                
+      doc.go            │   8                                                   
+  ▾ testdata            │   9  // run starts the server and waits for it to stop
+      golden.txt        │  10  func run(addr string) error {                    
+      sample.json       │  11      s := newServer(addr)                         
+    README.md           │───────────────────────────────────────────────────────
+    go.mod              │▸Output  Problems  Log                            1/31 
+    go.sum              │build step 1 of 30: ok                                 
+    Makefile            │build step 2 of 30: ok                                 
+    LICENSE             │build step 3 of 30: ok                                 
+    CHANGELOG.md        │build step 4 of 30: ok                                 
+    .gitignore          │build step 5 of 30: ok                                 
+                        │build step 6 of 30: ok                                 
+                        │build step 7 of 30: ok                                 
+Editor focused  ·  main.go                                                      
+[tab] pane  [.,] tab  [[ ]] resize  [c] collapse  [z] zoom  [?] help  [q] quit  
