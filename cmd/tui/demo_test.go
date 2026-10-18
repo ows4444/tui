@@ -280,3 +280,24 @@ func TestTheSpinnerAnimatesAndTheThemeReachesTheWidget(t *testing.T) {
 		t.Error("changing the theme did not restyle the widget")
 	}
 }
+
+func TestTheAvatarEntryChangesNameAndExpression(t *testing.T) {
+	s := tuitest.New(newDemoApp(demoEntries(), "Avatar"), 100, 28)
+	defer s.Close()
+	first := screenText(s)
+	if !strings.Contains(first, "ada") && !strings.Contains(first, "happy") && !strings.Contains(first, "round") && !strings.Contains(first, "organic") {
+		t.Logf("first screen:\n%s", first)
+	}
+	if !strings.Contains(first, "avatar.New") {
+		t.Fatalf("the Avatar entry is not shown:\n%s", first)
+	}
+	if got := avatarKeys(0, tui.Key{Type: tui.KeyRight}); got != 1 {
+		t.Errorf("Right moved to name %d", got)
+	}
+	if got := avatarKeys(0, tui.Key{Type: tui.KeyLeft}); got != len(avatarNames)-1 {
+		t.Errorf("Left from the first name went to %d", got)
+	}
+	if got := avatarKeys(5, tui.Key{Type: tui.KeyRunes, Text: "e"}); got != 105 {
+		t.Errorf("E gave state %d, want 105", got)
+	}
+}
