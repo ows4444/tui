@@ -4,6 +4,7 @@ import (
 	"flag"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
@@ -77,6 +78,9 @@ func TestCtrlCCancelsAndKeepsWhatFinished(t *testing.T) {
 		s.Send(tickMsg{})
 	}
 	s.Keys("ctrl+c")
+	for n := 0; !s.Done() && n < 500; n++ { // the program leaves a moment after the key
+		time.Sleep(10 * time.Millisecond)
+	}
 	if !s.Done() {
 		t.Fatal("did not exit")
 	}
