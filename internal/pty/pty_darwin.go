@@ -8,9 +8,13 @@ import (
 	"unsafe"
 )
 
+// ptmxPath is a variable so that a test can point at something that is not a
+// pseudo-terminal and reach the error returns.
+var ptmxPath = "/dev/ptmx"
+
 // Open opens a new pseudo-terminal pair. The caller closes both files.
 func Open() (master, slave *os.File, err error) {
-	master, err = os.OpenFile("/dev/ptmx", os.O_RDWR, 0)
+	master, err = os.OpenFile(ptmxPath, os.O_RDWR, 0)
 	if err != nil {
 		return nil, nil, err
 	}
