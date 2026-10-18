@@ -324,7 +324,7 @@ function syncExamples() {
 		slug: 'examples',
 		title: 'Examples',
 		seoTitle: `Go terminal UI examples: ${withScreen.length} runnable tui programs with screens`,
-		description: 'Every program under examples/, with the 80×24 screen its test checks.',
+		description: 'Every program under examples/ with the 80×24 screen its test checks: dashboards, editors, games, a file manager, forms, charts and more.',
 	};
 	const head = frontmatter({ title: meta.title, description: meta.description, editUrl: false, head: pageHead(meta) });
 	// The page is MDX: examples are grouped by category (EXAMPLE_CATEGORIES)
@@ -398,7 +398,7 @@ function syncWidgetGallery() {
 		slug: 'widget-gallery',
 		title: 'Widget gallery',
 		seoTitle: 'Go terminal UI widget gallery: pictures of every tui component',
-		description: `A picture of ${index.length} tui components, each drawn by a small real program and checked by a test.`,
+		description: `A picture of ${index.length} tui components, each drawn by a small real program and checked against a golden file, so you can see a widget before you use it.`,
 	};
 	const head = frontmatter({ title: meta.title, description: meta.description, editUrl: false, head: pageHead(meta) });
 	const intro =

@@ -1,11 +1,13 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
+import { execFileSync } from 'node:child_process';
 
 const repo = 'https://github.com/ows4444/tui';
 const site = 'https://tui.nizaami.com';
 const description =
-	'tui is a terminal UI (TUI) framework for Go built on the Elm Architecture: Model, Update and View. Standard library only, with 40+ widgets, flex and grid layout, theming, a cell-diff renderer, accessible output and a headless test harness.';
+	'tui is a terminal UI (TUI) framework for Go built on the Elm Architecture: Model, Update and View. Standard library only, with 60+ widgets, flex and grid layout, theming, a cell-diff renderer, accessible output and a headless test harness.';
 
 // Structured data for search engines and AI assistants: the site, and the Go
 // library it documents. Every field is a fact from the repository.
@@ -39,9 +41,26 @@ const jsonLd = {
 	],
 };
 
+// The repository file a page is made from, for the sitemap's lastmod.
+const sources = { '': 'README.md', overview: 'README.md', architecture: 'docs/architecture/overview.md', changelog: 'CHANGELOG.md', contributing: 'CONTRIBUTING.md', examples: 'examples', 'widget-gallery': 'internal/tools/widgetshots' };
+
+// lastmod is the date of the last commit that touched the page's source, so a
+// page that did not change keeps its date. Undefined when git has no answer.
+function lastmod(url) {
+	const slug = new URL(url).pathname.replace(/^\/|\/$/g, '');
+	const file = sources[slug] ?? `docs/${slug}.md`;
+	try {
+		const out = execFileSync('git', ['log', '-1', '--format=%cI', '--', file], { cwd: '..', encoding: 'utf8' }).trim();
+		return out || undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 export default defineConfig({
 	site,
 	integrations: [
+		sitemap({ serialize: (item) => ({ ...item, lastmod: lastmod(item.url) }) }),
 		starlight({
 			title: 'tui',
 			description,
