@@ -109,11 +109,27 @@ func TestClickingAFolderInTheTreeShowsItsFiles(t *testing.T) {
 	want(t, s, "util/")
 }
 
+// clickTree clicks the tree row that holds label until text shows. A click that
+// lands while a slow machine is still catching up with the first frame is
+// lost, so it is made again, up to three times.
+func clickTree(t *testing.T, s *tuitest.Session, label, text string) {
+	t.Helper()
+	for try := 0; try < 3; try++ {
+		x, y, ok := s.Find(label)
+		if !ok {
+			t.Fatalf("no %q in the tree:\n%s", label, screen(s))
+		}
+		s.Click(x+3, y)
+		if s.WaitForText(text, time.Second) {
+			return
+		}
+	}
+	t.Fatalf("clicking %q never showed %q:\n%s", label, text, screen(s))
+}
+
 func TestTreeKeysMoveThroughFolders(t *testing.T) {
 	s := start(t)
-	x, y, _ := s.Find("▸ docs")
-	s.Click(x+3, y) // focuses the tree on docs
-	want(t, s, "guide.md")
+	clickTree(t, s, "▸ docs", "guide.md") // focuses the tree on docs
 	s.Keys("down")
 	want(t, s, "util/") // src, the next folder
 	absent(t, s, "guide.md  ")

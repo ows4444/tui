@@ -75,7 +75,10 @@ func TestEachOverlayOpensAndCloses(t *testing.T) {
 }
 
 func TestToastShowsAndDismissesItself(t *testing.T) {
-	s := session(t)
+	m := newModel()
+	m.toast.Duration = 300 * time.Millisecond // the default, 3 seconds, is as long as gone waits
+	s := tuitest.New(m, 100, 28)
+	t.Cleanup(s.Close)
 	s.Keys("t")
 	want(t, s, "Saved")
 	gone(t, s, "Saved")
