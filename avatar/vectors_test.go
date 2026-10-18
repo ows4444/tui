@@ -7,6 +7,8 @@ import (
 	"math"
 	"os"
 	"testing"
+
+	"github.com/ows4444/tui/theme"
 )
 
 // vectors is testdata/vectors.json, the reference vectors that freeze the
@@ -24,6 +26,7 @@ type vectors struct {
 	Palette []struct {
 		Hue, Tone float64
 		Hex       struct{ Bg, Head, Eye string }
+		Light     struct{ Bg, Head, Eye string }
 	}
 	Cases []struct {
 		Seed          string
@@ -34,11 +37,20 @@ type vectors struct {
 		Extra         []string
 		Petals        int
 		Palette       struct{ Bg, Head, Eye string }
+		Accessory     string
+		EyeKind       string `json:"eyeKind"`
 	}
 	Histogram map[string]int
+	Accessory map[string]int
+	EyeKind   map[string]int `json:"eyeKind"`
 	Markup    map[string]string
 	Hashes    [][3]string
 }
+
+// The two pages the vectors are recorded on: a model with the stock dark theme,
+// which is what New gives, and one with the stock light theme.
+func darkGround() ground  { return New("x").ground() }
+func lightGround() ground { return New("x").SetTheme(theme.LightTheme()).ground() }
 
 func loadVectors(t *testing.T) vectors {
 	t.Helper()
@@ -82,10 +94,15 @@ func TestPaletteMatchesVectors(t *testing.T) {
 		t.Fatalf("only %d palette vectors", len(v.Palette))
 	}
 	for _, p := range v.Palette {
-		got := paletteFor(p.Hue, p.Tone)
+		got := paletteFor(p.Hue, p.Tone, darkGround())
 		if hex(got.bg) != p.Hex.Bg || hex(got.head) != p.Hex.Head || hex(got.eye) != p.Hex.Eye {
-			t.Errorf("hue %v tone %v = %s %s %s, want %s %s %s", p.Hue, p.Tone,
+			t.Errorf("hue %v tone %v on a dark page = %s %s %s, want %s %s %s", p.Hue, p.Tone,
 				hex(got.bg), hex(got.head), hex(got.eye), p.Hex.Bg, p.Hex.Head, p.Hex.Eye)
+		}
+		got = paletteFor(p.Hue, p.Tone, lightGround())
+		if hex(got.bg) != p.Light.Bg || hex(got.head) != p.Light.Head || hex(got.eye) != p.Light.Eye {
+			t.Errorf("hue %v tone %v on a light page = %s %s %s, want %s %s %s", p.Hue, p.Tone,
+				hex(got.bg), hex(got.head), hex(got.eye), p.Light.Bg, p.Light.Head, p.Light.Eye)
 		}
 	}
 }
@@ -125,7 +142,13 @@ func TestGeometryMatchesVectors(t *testing.T) {
 		if len(f.petals) != c.Petals {
 			t.Errorf("%s: %d petals, want %d", name, len(f.petals), c.Petals)
 		}
-		p := paletteFor(tr.num("hue", 0, 360), tr.at("tone"))
+		if got := accessoryNameOf(tr, f.kind); got != c.Accessory {
+			t.Errorf("%s: accessory %s, want %s", name, got, c.Accessory)
+		}
+		if got := eyeKindOf(tr.at("eye.kind")).name; got != c.EyeKind {
+			t.Errorf("%s: eyes %s, want %s", name, got, c.EyeKind)
+		}
+		p := paletteFor(tr.num("hue", 0, 360), tr.at("tone"), darkGround())
 		if hex(p.bg) != c.Palette.Bg || hex(p.head) != c.Palette.Head || hex(p.eye) != c.Palette.Eye {
 			t.Errorf("%s: palette %s %s %s, want %+v", name, hex(p.bg), hex(p.head), hex(p.eye), c.Palette)
 		}
@@ -141,14 +164,10 @@ func TestGeometryMatchesVectors(t *testing.T) {
 // pinning the shape trait, and of three whole avatars.
 func TestMarkupMatchesVectors(t *testing.T) {
 	v := loadVectors(t)
-	pinned := map[string]float64{
-		"round": 0.11, "organic": 0.35, "boxy": 0.54, "capsule": 0.65, "nub": 0.745,
-		"cloud": 0.825, "droplet": 0.888, "hexagon": 0.933, "sun": 0.965, "triangle": 0.99,
-	}
-	for shape, at := range pinned {
+	for shape, at := range pinnedShapes {
 		tr := newTraits("alain", false)
 		tr.fixed = map[string]float64{"shape": at}
-		got := svg(layoutFigure(tr), paletteFor(tr.num("hue", 0, 360), tr.at("tone")), nil)
+		got := svg(layoutFigure(tr), paletteFor(tr.num("hue", 0, 360), tr.at("tone"), darkGround()), nil, 0)
 		if want := v.Markup["shape:"+shape]; got != want {
 			t.Errorf("shape:%s\n got %s\nwant %s", shape, got, want)
 		}
@@ -225,4 +244,13 @@ func TestRound2RoundsHalfUp(t *testing.T) {
 	if got := num(math.Copysign(0, -1)); got != "0" {
 		t.Errorf("num(-0) = %q", got)
 	}
+}
+
+// accessoryNameOf is the name of the accessory a name wears on a body of kind.
+func accessoryNameOf(t traits, kind shapeKind) string { return pickAccessory(t, kind).String() }
+
+// pinnedShapes are the positions that force each silhouette.
+var pinnedShapes = map[string]float64{
+	"round": 0.11, "organic": 0.35, "boxy": 0.54, "capsule": 0.65, "nub": 0.745,
+	"cloud": 0.825, "droplet": 0.888, "hexagon": 0.933, "sun": 0.965, "triangle": 0.99,
 }

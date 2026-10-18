@@ -56,7 +56,8 @@ func (m Model) encode(size int) []byte {
 	f := layoutFigure(t)
 	s := newScene(f, m.plate())
 	from, to, at := m.poses()
-	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), m.tremble(to, f, 0), blinkOpen[m.blink%len(blinkOpen)], 1))
+	posed := f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), m.tremble(to, f, 0), blinkOpen[m.blink%len(blinkOpen)], 1)
+	s.setEyes(posed)
 	s.zoom = zoom
 	s.setLift(lift(from, to, at), 0)
 	p := m.palette(t)
@@ -64,6 +65,7 @@ func (m Model) encode(size int) []byte {
 
 	cx, cy, side := s.bounds()
 	unit := side / float64(size)
+	s.setMarks(posed.marks, unit)
 	x0, y0 := cx-side/2, cy-side/2
 	img := image.NewNRGBA(image.Rect(0, 0, size, size))
 	// The layer at every corner of the pixel lattice, sampled once: a pixel

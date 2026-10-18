@@ -125,17 +125,52 @@ var tones = [...]struct{ upTo, l, c float64 }{
 	{1.0, 0.34, 0.035},  // ink
 }
 
-// darkSurface is the darkest page the body must stay visible on.
+// darkSurface is the page assumed when the theme names no background: the
+// darkest page a terminal draws.
 var darkSurface = oklch{0.145, 0, 0}
+
+// eyeFloor is the contrast the eyes keep against the body: 4.5, the level for
+// text, with a little over for the rounding to 8 bits.
+const eyeFloor = 4.55
+
+// bodyFloor is the contrast the body keeps against what it is drawn on, the
+// level WCAG asks of a graphic that carries meaning (3, with a little over for the rounding to 8 bits).
+const bodyFloor = 3.05
+
+// ground is what the body is drawn on: the plate when there is one, otherwise
+// the page, which is the theme's background.
+type ground struct {
+	page   oklch
+	plated bool
+}
+
+// ref is the colour the body is held apart from: the plate (bg, the one in
+// the palette) when there is one, otherwise the page.
+func (g ground) ref(bg ansi.RGB) oklch {
+	if g.plated {
+		return oklchOf(bg)
+	}
+	return g.page
+}
 
 // palette is the three colours of an avatar.
 type palette struct{ bg, head, eye ansi.RGB }
 
+// plateFor is the plate that sets a body of lightness l off: pale for a dark
+// body and dark for a light one, so the two always differ by more than the
+// body floor, whatever the hue.
+func plateFor(l, hue float64) oklch {
+	if l > 0.62 {
+		return oklch{0.3, 0.05, hue}
+	}
+	return oklch{0.965, 0.02, hue}
+}
+
 // paletteFor resolves the colours for a hue in degrees and a tone position in
-// [0, 1). The eyes flip to light on a dark body, and two contrast floors are
-// enforced: the body against the backdrop (1.25) and the eyes against the
-// body (4.5).
-func paletteFor(hue, tone float64) palette {
+// [0, 1), on ground g. The body moves in lightness, keeping its hue and
+// chroma, until it reaches bodyFloor against the ground; the eyes flip to light
+// on a dark body and reach 4.5:1 against it.
+func paletteFor(hue, tone float64, g ground) palette {
 	t := tones[0]
 	for _, b := range tones {
 		if tone < b.upTo {
@@ -143,15 +178,24 @@ func paletteFor(hue, tone float64) palette {
 			break
 		}
 	}
-	bg := oklch{0.965, 0.01, hue}
-	head := ensureContrast(oklch{t.l, t.c, hue}, darkSurface, 1.5)
+	head := oklch{t.l, t.c, hue}
+	plate := plateFor(head.l, hue)
+	ref := g.page
+	if g.plated {
+		ref = plate
+	}
+	head = ensureContrast(head, ref, bodyFloor)
+	return palette{bg: plate.rgb(), head: head.rgb(), eye: eyeFor(head, hue).rgb()}
+}
+
+// eyeFor is the eye colour for a body: light on a dark body, dark on a light
+// one, moved if need be until it reaches 4.5:1 against it (eyeFloor).
+func eyeFor(head oklch, hue float64) oklch {
 	eye := oklch{0.97, 0.012, hue}
 	if head.l >= 0.5 {
 		eye = oklch{0.17, 0.02, hue}
 	}
-	head = ensureContrast(head, bg, 1.25)
-	eye = ensureContrast(eye, head, 4.5)
-	return palette{bg: bg.rgb(), head: head.rgb(), eye: eye.rgb()}
+	return ensureContrast(eye, head, eyeFloor)
 }
 
 const hexDigits = "0123456789abcdef"

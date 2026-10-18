@@ -287,7 +287,7 @@ func TestSetExpressionDuringAReaction(t *testing.T) {
 	}
 }
 
-// A reaction is drawn by PNG as well, leaves SVG and Linearize alone, and
+// A reaction is drawn by PNG and SVG as well, leaves Linearize alone, and
 // carries on through a blink and the idle loop.
 func TestReactionComposes(t *testing.T) {
 	m := reactor("ada")
@@ -298,8 +298,11 @@ func TestReactionComposes(t *testing.T) {
 	if string(m.PNG(48)) == png {
 		t.Error("PNG does not draw the reaction")
 	}
-	if m.SVG() != svg || m.Linearize() != spoken {
-		t.Error("a reaction changed the SVG or the spoken text")
+	if m.SVG() == svg {
+		t.Error("the SVG does not draw the reaction")
+	}
+	if m.Linearize() != spoken {
+		t.Error("a reaction changed the spoken text")
 	}
 	shown := m.shown()
 	m, _ = beat(t, m)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/ows4444/tui/ansi"
@@ -32,8 +33,8 @@ func TestTintsMatchVectors(t *testing.T) {
 	seen := map[string]int{}
 	for _, c := range v.Tints {
 		tr := newTraits(c.Seed, false)
-		rest := paletteFor(tr.num("hue", 0, 360), tr.at("tone"))
-		got := rest.tinted(targets[c.Expression], c.Heat)
+		rest := paletteFor(tr.num("hue", 0, 360), tr.at("tone"), darkGround())
+		got := rest.tinted(targets[c.Expression], c.Heat, darkGround())
 		if hex(got.head) != c.Palette.Head || hex(got.eye) != c.Palette.Eye {
 			t.Errorf("%s on %q: body %s eyes %s, want %s %s", c.Expression, c.Seed, hex(got.head), hex(got.eye), c.Palette.Head, c.Palette.Eye)
 		}
@@ -52,12 +53,11 @@ func TestTintsMatchVectors(t *testing.T) {
 func wcag(a, b ansi.RGB) float64 { return contrast(oklchOf(a), oklchOf(b)) }
 
 // The mad expression flushes the body toward red; the poses with no tint
-// leave the colours alone; SVG stays in the avatar's own colours.
+// leave the colours alone; SVG is drawn in the tinted colour.
 func TestMadTintsTheBodyAndOthersDoNot(t *testing.T) {
 	for _, name := range []string{"alain00", "tove", "kasper", "mdawais", "user-1", "ada", "linus"} {
 		m := New(name)
 		body, eyes, plate := m.Colors()
-		svg := m.SVG()
 		for e := ExpressionNone; int(e) < len(poses); e++ {
 			m.Expression = e
 			b, ey, pl := m.Colors()
@@ -85,8 +85,8 @@ func TestMadTintsTheBodyAndOthersDoNot(t *testing.T) {
 		if red(b) <= red(body) {
 			t.Errorf("%q: the mad body %v has no more red in it than %v", name, b, body)
 		}
-		if m.SVG() != svg {
-			t.Errorf("%q: an expression changed the SVG", name)
+		if !strings.Contains(m.SVG(), `fill="`+hex(b)+`"`) || strings.Contains(m.SVG(), `fill="`+hex(body)+`"`) {
+			t.Errorf("%q: the SVG is not drawn in the tinted body colour", name)
 		}
 		// View and PNG are drawn in the tinted colour.
 		if code := "38;2;" + sgr(b); !containsSGR(m.View(), code) || containsSGR(m.View(), "38;2;"+sgr(body)) {
@@ -103,7 +103,7 @@ func TestTintedEyesStayLegible(t *testing.T) {
 		for hue := 0.0; hue < 360; hue += 5 {
 			for _, tone := range []float64{0.1, 0.3, 0.5, 0.7, 0.9, 0.97} {
 				for _, heat := range []float64{0.55, 0.6, 0.62, 1} {
-					p := paletteFor(hue, tone).tinted(tn, heat)
+					p := paletteFor(hue, tone, darkGround()).tinted(tn, heat, darkGround())
 					if c := wcag(p.head, p.eye); c < worst {
 						worst = c
 						if c < 4.5 {

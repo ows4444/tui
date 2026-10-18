@@ -83,14 +83,14 @@ func TestLinearizeNamesTheExpression(t *testing.T) {
 	}
 }
 
-// SVG stays the resting figure, and an expression still blinks and looks.
+// SVG draws the pose, and an expression still blinks and looks.
 func TestExpressionComposesWithLookAndBlink(t *testing.T) {
 	m := avatar.New("alain00")
 	m.Width, m.Height = 24, 12
 	rest := m.SVG()
 	m.Expression = avatar.ExpressionSurprised
-	if m.SVG() != rest {
-		t.Error("an expression changed the SVG")
+	if m.SVG() == rest {
+		t.Error("an expression did not change the SVG")
 	}
 	posed := m.View()
 	m.LookAt(100, 0)
@@ -112,28 +112,29 @@ func TestExpressionComposesWithLookAndBlink(t *testing.T) {
 	}
 }
 
-// The seven expressions that came first draw exactly what they drew before
-// the roster grew: these are digests of their Views at 16x8, taken then.
-func TestTheFirstSevenExpressionsAreUnchanged(t *testing.T) {
+// The seven expressions that came first draw what they drew when the figures
+// were frozen for v1.0.0, eyebrows and mouths included: these are digests of
+// their Views at 16x8, taken then.
+func TestTheFirstSevenExpressionsAreFrozen(t *testing.T) {
 	byName := map[string]avatar.Expression{}
 	for _, e := range expressions {
 		byName[e.String()] = e
 	}
 	for _, pin := range [][3]string{
-		{"alain00", "happy", "d54c97fe0939"},
-		{"alain00", "sad", "34a38c343c41"},
-		{"alain00", "mad", "95e8e3157e85"},
-		{"alain00", "surprised", "2dec66737185"},
-		{"alain00", "wink", "d70b9d276bc4"},
-		{"alain00", "sleepy", "504d8b8d6192"},
-		{"alain00", "thinking", "fa524b31aedd"},
-		{"kasper", "happy", "77a23151e2e0"},
-		{"kasper", "sad", "e485e3de43c6"},
-		{"kasper", "mad", "3a10743f16bb"},
-		{"kasper", "surprised", "c7afa3eefa70"},
-		{"kasper", "wink", "d03acc1937cd"},
-		{"kasper", "sleepy", "84243ad685cd"},
-		{"kasper", "thinking", "1f4daf9a117e"},
+		{"alain00", "happy", "7f2949e4a4c7"},
+		{"alain00", "sad", "54927602ad1a"},
+		{"alain00", "mad", "6fb02132dc82"},
+		{"alain00", "surprised", "35cfa6a518fe"},
+		{"alain00", "wink", "7c9474949385"},
+		{"alain00", "sleepy", "ee2c00c22328"},
+		{"alain00", "thinking", "f9a1a4fdf0f3"},
+		{"kasper", "happy", "d34febacce81"},
+		{"kasper", "sad", "4ffab559c884"},
+		{"kasper", "mad", "da7eee6a01b9"},
+		{"kasper", "surprised", "72126475e43d"},
+		{"kasper", "wink", "f5079d372916"},
+		{"kasper", "sleepy", "74666d50a2a5"},
+		{"kasper", "thinking", "f2dc179ee655"},
 	} {
 		m := avatar.New(pin[0])
 		m.Width, m.Height, m.Expression = 16, 8, byName[pin[1]]

@@ -57,6 +57,7 @@ type scene struct {
 	body   []region
 	petals []circle
 	eyes   [2]region
+	marks  []region // eyebrows and the mouth, in the eyes' layer
 	eyeAt  [2]point
 	// zoom draws the body this many times its size at rest; 0 is 1. It is
 	// how the idle loop breathes, and has no effect over a plate.
@@ -87,6 +88,11 @@ func (s scene) at(x, y float64) layer {
 	if fy := y - s.lift; s.inBody(x, fy) {
 		for _, e := range s.eyes {
 			if e.contains(x, fy) {
+				return layerEye
+			}
+		}
+		for _, m := range s.marks {
+			if m.contains(x, fy) {
 				return layerEye
 			}
 		}
@@ -181,6 +187,16 @@ func (s *scene) setEyes(f figure) {
 	s.eyeAt = f.eyeAt
 	for i, e := range f.eyes {
 		s.eyes[i] = newRegion(e)
+	}
+}
+
+// setMarks takes the marks that a pixel pw frame units wide can show.
+func (s *scene) setMarks(marks []mark, pw float64) {
+	s.marks = nil
+	for _, m := range marks {
+		if m.thick >= markShare*pw {
+			s.marks = append(s.marks, newRegion(m.p))
+		}
 	}
 }
 

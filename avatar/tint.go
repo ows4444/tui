@@ -21,10 +21,6 @@ var (
 	tintBile  = &tint{h: 142, l: 0.66, pull: 0.6, c: 0.13}  // sickness
 )
 
-// tintFloor is the eye-to-body contrast a tinted palette keeps, at the tint
-// and at every step on the way to it.
-const tintFloor = 4.55
-
 // oklchOf converts an sRGB colour to OKLCh.
 func oklchOf(c ansi.RGB) oklch {
 	lin := func(v uint8) float64 {
@@ -61,41 +57,22 @@ func mixRGB(a, b ansi.RGB, t float64) ansi.RGB {
 	}.rgb()
 }
 
-// target returns the body and eye colours at the far end of tint t for a
-// palette: the body pulled to the tint, and the eyes moved in lightness
-// until they clear tintFloor against it, and against every step between the
-// palette and the target.
-func (t *tint) target(head, eye ansi.RGB) (ansi.RGB, ansi.RGB) {
-	base, baseEye := oklchOf(head), oklchOf(eye)
-	hot := ensureContrast(oklch{l: base.l + (t.l-base.l)*t.pull, c: math.Max(base.c, t.c), h: t.h}, darkSurface, 1.5)
-	hotEye := ensureContrast(baseEye, hot, tintFloor)
-	dir := -1.0
-	if hotEye.l >= hot.l {
-		dir = 1
-	}
-	hotHead := hot.rgb()
-	for pass := 0; pass < 40; pass++ {
-		e := hotEye.rgb()
-		worst := math.Inf(1)
-		for i := 0; i <= 10; i++ {
-			at := float64(i) / 10
-			worst = math.Min(worst, contrast(oklchOf(mixRGB(eye, e, at)), oklchOf(mixRGB(head, hotHead, at))))
-		}
-		if worst >= tintFloor {
-			return hotHead, e
-		}
-		l := math.Min(1, math.Max(0, hotEye.l+dir*0.02))
-		if l == hotEye.l {
-			return hotHead, e
-		}
-		hotEye.l = l
-	}
-	return hotHead, hotEye.rgb()
+// target returns the body colour at the far end of tint t for a body colour
+// head on ground ref: pulled to the tint, then held to bodyFloor against the
+// ground.
+func (t *tint) target(head ansi.RGB, ref oklch) ansi.RGB {
+	base := oklchOf(head)
+	return ensureContrast(oklch{l: base.l + (t.l-base.l)*t.pull, c: math.Max(base.c, t.c), h: t.h}, ref, bodyFloor).rgb()
 }
 
-// tinted returns p with its body and eyes moved heat of the way toward t.
-func (p palette) tinted(t *tint, heat float64) palette {
-	head, eye := t.target(p.head, p.eye)
-	p.head, p.eye = mixRGB(p.head, head, heat), mixRGB(p.eye, eye, heat)
+// tinted returns p with its body moved heat of the way toward t, on ground g,
+// and kept at bodyFloor against the ground at every step of the way. The eyes
+// are not mixed: they are chosen for the body as it is, as paletteFor does, so
+// they clear 4.5:1 at every step.
+func (p palette) tinted(t *tint, heat float64, g ground) palette {
+	ref := g.ref(p.bg)
+	hue := oklchOf(p.eye).h
+	head := ensureContrast(oklchOf(mixRGB(p.head, t.target(p.head, ref), heat)), ref, bodyFloor)
+	p.head, p.eye = head.rgb(), eyeFor(head, hue).rgb()
 	return p
 }

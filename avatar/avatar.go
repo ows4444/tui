@@ -88,6 +88,10 @@ type Model struct {
 	// Silhouette pins the shape. The zero value, SilhouetteAuto, lets the
 	// name choose; the name still sizes and places it.
 	Silhouette Silhouette
+	// Accessory pins what the body wears on top, and Eyes how the eyes are
+	// drawn. Their zero values let the name choose.
+	Accessory Accessory
+	Eyes      EyeStyle
 	// Pins fixes individual traits of the figure, each at a position from 0
 	// to 1 across the range a name would choose from; a value outside that
 	// is clamped. A trait not in the map, and every trait when it is nil,
@@ -194,6 +198,7 @@ type viewKey struct {
 	blink         int
 	ascii         bool
 	shades        string
+	page          ansi.RGB // the page colour the body is held apart from
 }
 
 // drawHook, when non-nil, is called each time View draws the figure. Tests
@@ -219,7 +224,39 @@ func (m Model) restPalette(t traits) palette {
 	if !pinned {
 		hue = t.num("hue", 0, 360)
 	}
-	return paletteFor(hue, t.at("tone"))
+	return paletteFor(hue, t.at("tone"), m.ground())
+}
+
+// ground is what the body is drawn on: the plate if Background is set, else the
+// page, which is the theme's background (or its inverse text colour, or a dark
+// page when it names neither).
+func (m Model) ground() ground {
+	return ground{page: m.page(), plated: m.Background != BackgroundNone}
+}
+
+// page is the colour of the page behind the avatar, from the theme.
+func (m Model) page() oklch { return oklchOf(m.pageRGB()) }
+
+func (m Model) pageRGB() ansi.RGB {
+	for _, c := range []ansi.Color{m.Theme.Background, m.Theme.TextInverse} {
+		if rgb, ok := rgbOf(c); ok {
+			return rgb
+		}
+	}
+	return darkSurface.rgb()
+}
+
+// rgbOf resolves a theme colour to RGB; a nil or unknown colour is not ok.
+func rgbOf(c ansi.Color) (ansi.RGB, bool) {
+	switch v := c.(type) {
+	case ansi.RGB:
+		return v, true
+	case ansi.Color256:
+		return v.RGB(), true
+	case ansi.BasicColor:
+		return v.RGB(), true
+	}
+	return ansi.RGB{}, false
 }
 
 // palette is the colours the avatar is drawn in now: its own, tinted by the
@@ -230,14 +267,15 @@ func (m Model) palette(t traits) palette {
 		if pose.tint == nil {
 			return rest
 		}
-		return rest.tinted(pose.tint, pose.heat)
+		return rest.tinted(pose.tint, pose.heat, m.ground())
 	}
 	from, to, at := m.poses()
 	p := wear(to)
 	if at < 1 && (from.tint != nil || to.tint != nil) {
 		// Part of the way from one pose's colours to the other's.
 		a := wear(from)
-		p.head, p.eye = mixRGB(a.head, p.head, at), mixRGB(a.eye, p.eye, at)
+		head := ensureContrast(oklchOf(mixRGB(a.head, p.head, at)), m.ground().ref(rest.bg), bodyFloor)
+		p.head, p.eye = head.rgb(), eyeFor(head, oklchOf(rest.eye).h).rgb()
 	}
 	return p
 }
@@ -280,19 +318,28 @@ func (m Model) plate() path {
 
 // SVG returns the avatar as SVG markup on a 100 by 100 view box, with no
 // width or height, so the page sizes it. Hue, Tone, Silhouette and Pins are
-// part of the figure and are drawn. It is the figure at rest:
-// Expression, a reaction, LookX, LookY, a blink in progress and the idle
-// loop do not change it.
+// part of the figure and are drawn, and so are the pose it holds, with its
+// eyebrows, mouth and tint, how it lifts or sinks, and LookX and LookY. It is a
+// still: the middle of an ease, a tremble or a rock, a blink in progress and the
+// idle loop are not drawn.
 func (m Model) SVG() string {
-	t := m.traits()
-	return svg(layoutFigure(t), m.restPalette(t), m.plate())
+	still := m
+	still.tween, still.wobble, still.blink, still.idling = 0, 0, 0, false
+	t := still.traits()
+	f := layoutFigure(t)
+	pose := still.shown().pose()
+	f = f.posed(pose, pose, 1, unit(still.LookX), unit(still.LookY), 0, 1, 1)
+	return svg(f, still.palette(t), still.plate(), pose.lift)
 }
 
-func svg(f figure, p palette, plate path) string {
+func svg(f figure, p palette, plate path, lift float64) string {
 	var b strings.Builder
 	b.WriteString(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">`)
 	if plate != nil {
 		b.WriteString(`<path d="` + plate.String() + `" fill="` + hex(p.bg) + `"/>`)
+	}
+	if lift != 0 {
+		b.WriteString(`<g transform="translate(0 ` + num(round2(lift)) + `)">`)
 	}
 	b.WriteString(`<g fill="` + hex(p.head) + `">`)
 	for _, c := range f.petals {
@@ -305,7 +352,14 @@ func svg(f figure, p palette, plate path) string {
 	for _, e := range f.eyes {
 		b.WriteString(`<path d="` + e.String() + `"/>`)
 	}
-	b.WriteString(`</g></svg>`)
+	for _, mk := range f.marks {
+		b.WriteString(`<path d="` + mk.p.String() + `"/>`)
+	}
+	b.WriteString(`</g>`)
+	if lift != 0 {
+		b.WriteString(`</g>`)
+	}
+	b.WriteString(`</svg>`)
 	return b.String()
 }
 
@@ -354,6 +408,7 @@ func (m Model) key(width, height int) viewKey {
 		hue: m.Hue, tone: m.Tone, silhouette: m.Silhouette, pins: m.pinKey(),
 		lookX: unit(unit(m.LookX) + lookX), lookY: unit(m.LookY), zoom: zoom,
 		expression: m.shown(), from: m.easing(), tween: m.tween, wobble: wobble, blink: m.blink,
+		page: m.pageRGB(),
 	}
 }
 
@@ -370,7 +425,9 @@ func (m Model) draw(glyphs theme.Glyphs) string {
 	from, to, at := m.poses()
 	// A tremble is at least half a pixel wide, or it would not show.
 	shift := m.tremble(to, f, 0.5*s.pixelWidth(m.Width, m.Height))
-	s.setEyes(f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), shift, open, s.eyeBoost(f, m.Width, m.Height)))
+	posed := f.posed(from, to, at, unit(unit(m.LookX)+lookX), unit(m.LookY), shift, open, s.eyeBoost(f, m.Width, m.Height))
+	s.setEyes(posed)
+	s.setMarks(posed.marks, s.pixelWidth(m.Width, m.Height))
 	s.zoom = zoom
 	// In cells a pixel is twice as tall as it is wide.
 	s.setLift(lift(from, to, at), 2*s.pixelWidth(m.Width, m.Height))

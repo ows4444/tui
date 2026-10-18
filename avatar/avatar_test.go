@@ -75,12 +75,12 @@ func TestViewWithoutColourIsTheBodyWithEyeHoles(t *testing.T) {
 	m.Width, m.Height = 12, 6
 	got := ansi.StripANSI(m.View())
 	want := strings.Join([]string{
-		"  \u2597\u2584\u2584\u2584\u2584\u2584\u2584\u2596  ",
-		"\u2597\u259f\u2588\u259b\u259c\u2588\u2588\u2588\u2588\u2588\u2599\u2596",
-		"\u2590\u2588\u2588\u258c \u2588\u2588\u258c \u259c\u2588\u258c",
-		"\u2590\u2588\u2588\u2588\u2584\u259f\u2588\u2588\u2584\u259f\u2588\u258c",
-		"\u259d\u259c\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u259b\u2598",
-		"  \u259d\u2580\u2580\u2580\u2580\u2580\u2580\u2598  ",
+		" ▗▙▄▄▄▄▄▄▟▖ ",
+		" ▟████████▙ ",
+		"▐██▌ ██▌ ██▌",
+		"▐███ ███ ▐█▌",
+		"▝██████████▘",
+		"  ▀▀████▀▀  ",
 	}, "\n")
 	if got != want {
 		t.Errorf("got\n%s\nwant\n%s", got, want)

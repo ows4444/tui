@@ -67,6 +67,8 @@ type figure struct {
 	eyes   [2]path
 	// eyeAt is each eye's centre.
 	eyeAt [2]point
+	// marks are the eyebrows and the mouth the pose draws.
+	marks []mark
 	// face is the region the eyes were fitted into, and eye holds what each
 	// was drawn from, so posed can draw them again somewhere else.
 	face ellipse
@@ -124,18 +126,27 @@ func (f figure) posed(a, b pose, at, lx, ly, shift, open, boost float64) figure 
 			f.eyes[i] = dome(cx, cy+ry/2, rx, ry, rot)
 		}
 	}
+	// The marks are those of the pose it is nearer to; there is nothing
+	// between a brow and no brow.
+	shown := b
+	if at < 0.5 {
+		shown = a
+	}
+	f.marks = f.marksFor(shown, dx, dy)
 	return f
 }
 
 func layoutFigure(t traits) figure {
 	kind := pickShape(t.at("shape"))
-	r := t.num("body.r", 31, 38) * shapes[kind].core
+	acc := pickAccessory(t, kind)
+	r := t.num("body.r", 31, 38) * shapes[kind].core * accessories[acc].shrink
 	b := ellipse{
 		cx: 50 + t.jitter("body.x", 1.5),
 		cy: 50 + t.jitter("body.y", 1.5),
 		rx: r,
 		ry: r * t.num("body.ratio", 0.92, 1.08),
 	}
+	b.cy += accessories[acc].up * b.ry / 2 // room above for what it wears
 	n := t.num("body.n", 1.9, 2.5)
 	radii := make([]float64, t.count("body.pts", 6, 8))
 	for i := range radii {
@@ -209,6 +220,11 @@ func layoutFigure(t traits) figure {
 		face = ellipse{b.cx, b.cy + b.ry*0.1, b.rx * 0.54, b.ry * 0.36}
 		f.core = polygon(b.cx, b.cy, b.rx, b.ry, 3, t.num("poly.round", 0.24, 0.5), t.num("body.rot", -5, 5))
 	}
+	if acc != accNone {
+		petals, extra := acc.parts(t, b)
+		f.petals = append(f.petals, petals...)
+		f.extra = append(f.extra, extra...)
+	}
 	fitEyes(&f, t, b.rx, face)
 	return f
 }
@@ -221,12 +237,40 @@ func minOf(v []float64) float64 {
 	return m
 }
 
-// fitEyes places the two capsule eyes inside face. Their size is a fraction
+// eyeKind is one way a name draws its eyes: how wide they are against the usual,
+// the range of their height over width, and of their squareness. Most names
+// get the tall capsule; the rest get dots, ovals or thin slits.
+type eyeKind struct {
+	name             string
+	upTo             float64
+	wide             float64
+	ratioLo, ratioHi float64
+	nLo, nHi         float64
+}
+
+var eyeKinds = [...]eyeKind{
+	{"capsule", 0.55, 1, 1.9, 3.2, 3.5, 6},
+	{"dot", 0.72, 1.3, 1, 1.2, 2, 2.5},
+	{"oval", 0.88, 1.12, 1.35, 1.75, 2, 2.4},
+	{"slit", 1, 0.72, 3.4, 4.4, 3.5, 6},
+}
+
+func eyeKindOf(v float64) eyeKind {
+	for _, k := range eyeKinds {
+		if v < k.upTo {
+			return k
+		}
+	}
+	return eyeKinds[len(eyeKinds)-1]
+}
+
+// fitEyes places the two eyes inside face. Their size is a fraction
 // of the body radius rx, and the whole cluster is scaled down when it would
 // otherwise reach past 90% of the face on either axis.
 func fitEyes(f *figure, t traits, rx float64, face ellipse) {
-	er0 := t.num("eye.rx", 0.075, 0.105) * rx
-	ratio := t.num("eye.ratio", 1.9, 3.2)
+	k := eyeKindOf(t.at("eye.kind"))
+	er0 := t.num("eye.rx", 0.075, 0.105) * rx * k.wide
+	ratio := t.num("eye.ratio", k.ratioLo, k.ratioHi)
 	scale := t.num("eye.scale", 0.78, 1.24)
 	stretch := t.num("eye.stretch", 0.85, 1.18)
 	clearance := t.num("eye.gap", 0.1, 0.24) * rx
@@ -257,7 +301,7 @@ func fitEyes(f *figure, t traits, rx float64, face ellipse) {
 
 	cx := face.cx + gx*fit
 	cy := face.cy + gy*fit
-	en := t.num("eye.n", 3.5, 6)
+	en := t.num("eye.n", k.nLo, k.nHi)
 	f.face = face
 	f.eye = [2]eyeSpec{
 		{cx - gap, cy, er, eyeRy, en, lean},

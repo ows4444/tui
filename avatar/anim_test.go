@@ -182,14 +182,17 @@ func TestLookIsBounded(t *testing.T) {
 	}
 }
 
-// SVG is the figure at rest, whatever the eyes are doing.
-func TestSVGIgnoresLookAndBlink(t *testing.T) {
+// SVG is a still: it follows the look but not a blink in progress.
+func TestSVGFollowsTheLookButNotTheBlink(t *testing.T) {
 	m := large("alain00")
 	rest := m.SVG()
-	m.LookAt(40, -9)
 	m.Blink()
 	if m.SVG() != rest {
-		t.Error("SVG changed with the look or the blink")
+		t.Error("SVG changed with the blink")
+	}
+	m.LookAt(40, -9)
+	if m.SVG() == rest {
+		t.Error("SVG ignores the look")
 	}
 }
 

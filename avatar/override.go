@@ -41,6 +41,56 @@ func (s Silhouette) kind() (shapeKind, bool) {
 	return shapeKind(s - SilhouetteRound), true
 }
 
+// Accessory pins what the body wears on top: ears, a bunny's ears, an
+// antenna, a tuft of hair or horns. AccessoryAuto, the zero value, lets the
+// name choose, which is none for about half of all names. Only the round,
+// organic, boxy, capsule and hexagon silhouettes wear one: on any other the pin
+// changes nothing.
+type Accessory int
+
+// The accessories.
+const (
+	AccessoryAuto Accessory = iota
+	AccessoryNone
+	AccessoryEars
+	AccessoryBunny
+	AccessoryAntenna
+	AccessoryTuft
+	AccessoryHorns
+)
+
+// String returns the accessory's name, such as "ears"; AccessoryAuto and any
+// value that is not an accessory are "auto".
+func (a Accessory) String() string {
+	if a <= AccessoryAuto || int(a) > len(accessories) {
+		return "auto"
+	}
+	return accessories[a-1].name
+}
+
+// EyeStyle pins how the eyes are drawn: tall capsules, round dots, ovals or
+// thin slits. EyesAuto, the zero value, lets the name choose, which is a capsule
+// for just over half of all names.
+type EyeStyle int
+
+// The eye styles.
+const (
+	EyesAuto EyeStyle = iota
+	EyesCapsule
+	EyesDot
+	EyesOval
+	EyesSlit
+)
+
+// String returns the style's name, such as "dot"; EyesAuto and any value that
+// is not a style are "auto".
+func (s EyeStyle) String() string {
+	if s <= EyesAuto || int(s) > len(eyeKinds) {
+		return "auto"
+	}
+	return eyeKinds[s-1].name
+}
+
 // Tone pins the avatar's swatch: how light and how saturated its body is.
 // ToneAuto, the zero value, lets the name choose.
 type Tone int
@@ -195,6 +245,20 @@ func (m Model) pins() map[string]float64 {
 		}
 		pin("shape", lo, shapes[k].upTo)
 	}
+	if a := int(m.Accessory) - 1; a >= 0 && a < len(accessories) {
+		lo := 0.0
+		if a > 0 {
+			lo = accessories[a-1].upTo
+		}
+		pin("acc.kind", lo, accessories[a].upTo)
+	}
+	if e := int(m.Eyes) - 1; e >= 0 && e < len(eyeKinds) {
+		lo := 0.0
+		if e > 0 {
+			lo = eyeKinds[e-1].upTo
+		}
+		pin("eye.kind", lo, eyeKinds[e].upTo)
+	}
 	if m.Tone >= TonePastel && m.Tone <= ToneInk {
 		i := int(m.Tone - TonePastel)
 		lo := 0.0
@@ -221,10 +285,11 @@ func (m Model) hue() (float64, bool) {
 // pinKey is Pins as a string, for the View cache: the pinned traits in order
 // with their positions. An unpinned Model gives "".
 func (m Model) pinKey() string {
-	if len(m.Pins) == 0 {
+	if len(m.Pins) == 0 && m.Accessory == AccessoryAuto && m.Eyes == EyesAuto {
 		return ""
 	}
 	var b strings.Builder
+	b.WriteString("a" + strconv.Itoa(int(m.Accessory)) + "e" + strconv.Itoa(int(m.Eyes)) + ";")
 	for t := Trait(0); t < traitCount; t++ {
 		if at, ok := m.Pins[t]; ok {
 			b.WriteString(strconv.Itoa(int(t)))

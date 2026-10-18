@@ -170,7 +170,7 @@ func TestPinsInvalidateTheCache(t *testing.T) {
 	if small := m.View(); small == big || small == own {
 		t.Error("changing a pin in place did not redraw")
 	}
-	if m.pinKey() != "3=0;" || New("ada").pinKey() != "" {
+	if m.pinKey() != "a0e0;3=0;" || New("ada").pinKey() != "" {
 		t.Errorf("pinKey = %q", m.pinKey())
 	}
 	m.Pins = nil

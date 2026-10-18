@@ -816,6 +816,15 @@ type Source func(ctx context.Context, text string) []string
 ## github.com/ows4444/tui/avatar (package avatar)
 
 const (
+	AccessoryAuto	Accessory	= iota
+	AccessoryNone
+	AccessoryEars
+	AccessoryBunny
+	AccessoryAntenna
+	AccessoryTuft
+	AccessoryHorns
+)
+const (
 	BackgroundNone	Background	= iota
 	BackgroundSquircle
 	BackgroundCircle
@@ -853,6 +862,13 @@ const (
 	ExpressionShy
 
 	ExpressionSick
+)
+const (
+	EyesAuto	EyeStyle	= iota
+	EyesCapsule
+	EyesDot
+	EyesOval
+	EyesSlit
 )
 const (
 	SilhouetteAuto	Silhouette	= iota
@@ -923,6 +939,7 @@ const (
 )
 const MaxPNGSize = 512
 const ReactHold = 1500 * time.Millisecond
+func (a Accessory) String() string
 func (e Expression) String() string
 func (m *Model) Blink() tui.Cmd
 func (m *Model) Hover(over bool) tui.Cmd
@@ -943,12 +960,15 @@ func (m Model) SetTheme(t theme.Theme) Model
 func (m Model) Shape() string
 func (m Model) Update(msg tui.Msg) (Model, tui.Cmd)
 func (m Model) View() string
+func (s EyeStyle) String() string
 func (s Silhouette) String() string
 func (t Tone) String() string
 func (t Trait) String() string
 func New(name string) Model
+type Accessory int
 type Background int
 type Expression int
+type EyeStyle int
 type Model struct {
 	Name	string
 
@@ -963,6 +983,9 @@ type Model struct {
 	Tone	Tone
 
 	Silhouette	Silhouette
+
+	Accessory	Accessory
+	Eyes		EyeStyle
 
 	Pins	map[Trait]float64
 
