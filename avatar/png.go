@@ -10,7 +10,7 @@ import (
 )
 
 // MaxPNGSize is the largest side, in pixels, PNG draws (a 256 pixel image is
-// about 11 ms cold; a terminal cell is rarely more than 20 pixels); a larger size is
+// about 13 ms cold; a terminal cell is rarely more than 20 pixels); a larger size is
 // drawn at this one.
 const MaxPNGSize = 256
 
