@@ -74,7 +74,7 @@ func newFixture() *fixture {
 	return &fixture{
 		delay: func(p place) time.Duration {
 			h := fnv.New32a()
-			h.Write([]byte(p.Name))
+			_, _ = h.Write([]byte(p.Name))
 			return 300*time.Millisecond + time.Duration(h.Sum32()%600)*time.Millisecond
 		},
 		now:   time.Now,
@@ -139,7 +139,7 @@ func (f *fixture) forecast(ctx context.Context, p place) (forecast, error) {
 func (f *fixture) build(p place) forecast {
 	now := f.now()
 	h := fnv.New32a()
-	h.Write([]byte(p.Name))
+	_, _ = h.Write([]byte(p.Name))
 	seed := float64(h.Sum32() % 1000)
 	base := 28 - math.Abs(p.Lat)*0.5 // colder away from the equator
 	fc := forecast{Place: p, Fetched: now, Provider: f.name()}

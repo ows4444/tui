@@ -604,7 +604,7 @@ func main() {
 	}
 	abs, err := filepath.Abs(dir)
 	if err == nil {
-		_, err = os.Stat(abs)
+		_, err = os.Stat(abs) // #nosec G703 -- the folder the user asked to browse
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

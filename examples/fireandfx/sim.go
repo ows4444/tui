@@ -56,7 +56,7 @@ func (f fire) step(wind int) fire {
 			if int(f.rand()%1000) < rate%1000 {
 				loss++
 			}
-			f.heat[(y-1)*f.w+dx] = uint8(max(0, p-loss))
+			f.heat[(y-1)*f.w+dx] = uint8(max(0, min(maxHeat, p-loss)))
 		}
 	}
 	return f

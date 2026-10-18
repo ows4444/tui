@@ -117,12 +117,3 @@ func step(ps []proc, rng *rand.Rand) ([]proc, float64, float64) {
 }
 
 func clamp(v, lo, hi float64) float64 { return max(lo, min(hi, v)) }
-
-// totals are the machine-wide CPU and memory percentages for ps.
-func totals(ps []proc) (cpu, mem float64) {
-	for _, p := range ps {
-		cpu += p.cpu
-		mem += p.mem
-	}
-	return clamp(cpu/4, 0, 100), clamp(mem, 0, 100)
-}

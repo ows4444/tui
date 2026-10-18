@@ -198,7 +198,7 @@ func TestOpenMeteoFailures(t *testing.T) {
 			t.Errorf("%s: no error", name)
 		}
 	}
-	o := meteo(t, func(w http.ResponseWriter, r *http.Request) { http.Error(w, "x", 503) })
+	o := meteo(t, func(w http.ResponseWriter, r *http.Request) { http.Error(w, "x", http.StatusServiceUnavailable) })
 	if _, err := o.search(context.Background(), "a"); err == nil || !strings.Contains(err.Error(), "503") {
 		t.Fatalf("search err = %v", err)
 	}

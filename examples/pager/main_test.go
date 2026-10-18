@@ -300,7 +300,7 @@ func TestEmptyInput(t *testing.T) {
 		t.Fatalf("\n%s", text(m))
 	}
 	m = runes(runes(runes(m, "G"), "j"), "/")
-	m = key(m, tui.KeyEsc)
+	_ = key(m, tui.KeyEsc)
 }
 
 func TestHelpAndQuit(t *testing.T) {
@@ -324,7 +324,7 @@ func TestHelpAndQuit(t *testing.T) {
 
 func TestQuitStopsTheReader(t *testing.T) {
 	m := newModel("x").begin(strings.NewReader(lines(5)), true)
-	m, cmd := update(m, tui.Key{Type: tui.KeyCtrlC})
+	_, cmd := update(m, tui.Key{Type: tui.KeyCtrlC})
 	if !isQuit(cmd) {
 		t.Fatal("Ctrl+C did not quit")
 	}

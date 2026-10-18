@@ -785,7 +785,7 @@ func main() {
 	if len(os.Args) > 1 {
 		dir = os.Args[1]
 	}
-	info, err := os.Stat(dir)
+	info, err := os.Stat(dir) // #nosec G703 -- the folder the user asked to browse
 	if err != nil || !info.IsDir() {
 		fmt.Fprintf(os.Stderr, "codebrowse: %s is not a folder\n", dir)
 		os.Exit(1)

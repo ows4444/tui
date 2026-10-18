@@ -360,7 +360,7 @@ func TestEmptyFolder(t *testing.T) {
 	if _, cmd := update(m, tui.Key{Type: tui.KeyRunes, Text: "q"}); !isQuit(cmd) {
 		t.Fatal("q did not quit an empty reader")
 	}
-	m = press(m, 3, 3)
+	_ = press(m, 3, 3)
 }
 
 func TestNarrowTerminalHidesTheSidebar(t *testing.T) {

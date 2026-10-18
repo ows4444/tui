@@ -55,7 +55,6 @@ type model struct {
 	cursor int // point under the hover cursor, or -1
 	zeroY  bool
 	dragX  int // pointer column while dragging, or -1
-	moved  bool
 	hover  string
 	help   bool
 	msg    string

@@ -22,7 +22,7 @@ func parseHex(s string) (ansi.RGB, bool) {
 	if err != nil {
 		return ansi.RGB{}, false
 	}
-	return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, true
+	return ansi.RGB{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n)}, true // #nosec G115 -- n has at most 24 bits, each byte is cut on purpose
 }
 
 func hex(c ansi.RGB) string { return fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B) }

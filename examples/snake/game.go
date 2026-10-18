@@ -69,7 +69,7 @@ func (g *game) place() pt {
 	if free <= 0 {
 		return pt{-1, -1}
 	}
-	n := int(g.rand() % uint64(free))
+	n := int(g.rand() % uint64(free)) // #nosec G115 -- free is positive and below the board size
 	for y := 0; y < g.h; y++ {
 		for x := 0; x < g.w; x++ {
 			if p := (pt{x, y}); !g.on(p) {

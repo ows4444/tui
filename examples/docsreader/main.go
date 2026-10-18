@@ -594,7 +594,7 @@ func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 func main() {
 	var fsys fs.FS = sampleDocs()
 	if len(os.Args) > 1 {
-		info, err := os.Stat(os.Args[1])
+		info, err := os.Stat(os.Args[1]) // #nosec G703 -- the folder the user asked to read
 		if err != nil || !info.IsDir() {
 			fmt.Fprintf(os.Stderr, "docsreader: %s is not a folder\n", os.Args[1])
 			os.Exit(1)

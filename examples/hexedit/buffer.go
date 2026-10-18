@@ -206,7 +206,7 @@ func inspect(data []byte, pos int) []string {
 		fmt.Sprintf("offset  0x%08x (%d)", pos, pos),
 		fmt.Sprintf("hex     0x%02x", b),
 		fmt.Sprintf("u8      %d", b),
-		fmt.Sprintf("i8      %d", int8(b)),
+		fmt.Sprintf("i8      %d", int8(b)), // #nosec G115 -- the same byte read as signed, on purpose
 		fmt.Sprintf("binary  %08b", b),
 		fmt.Sprintf("char    %s", asciiOf(b)),
 	}
@@ -217,7 +217,7 @@ func inspect(data []byte, pos int) []string {
 	if len(rest) >= 4 {
 		le := binary.LittleEndian.Uint32(rest)
 		out = append(out, fmt.Sprintf("u32 le  %d", le), fmt.Sprintf("u32 be  %d", binary.BigEndian.Uint32(rest)),
-			fmt.Sprintf("i32 le  %d", int32(le)), fmt.Sprintf("f32 le  %g", math.Float32frombits(le)))
+			fmt.Sprintf("i32 le  %d", int32(le)) /* #nosec G115 -- the same four bytes read as signed, on purpose */, fmt.Sprintf("f32 le  %g", math.Float32frombits(le)))
 	}
 	return out
 }

@@ -355,11 +355,11 @@ func (m model) click(id string, x int) (tui.Model, tui.Cmd) {
 	case id == "hex":
 		return m.focusOn(onHex)
 	case strings.HasPrefix(id, "tr-"):
-		fmt.Sscanf(id, "tr-%d", &i)
+		_, _ = fmt.Sscanf(id, "tr-%d", &i)
 		m.focus, m.drag = focus(i), i
 		return m.slideTo(i, x), nil
 	case strings.HasPrefix(id, "sw-"):
-		fmt.Sscanf(id, "sw-%d", &i)
+		_, _ = fmt.Sscanf(id, "sw-%d", &i)
 		m.focus = onPalette
 		return m.adopt(i), nil
 	}

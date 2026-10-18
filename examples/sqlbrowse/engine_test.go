@@ -247,7 +247,7 @@ func TestErrorPositionsPointAtTheProblem(t *testing.T) {
 }
 
 func TestFormatAndCompare(t *testing.T) {
-	for v, want := range map[value]string{nil: "NULL", 3.0: "3", 2.5: "2.5", 1.0 / 3: "0.333333", true: "true", false: "false", "x": "x", -0.0: "0", 1e20: "100000000000000000000"} {
+	for v, want := range map[value]string{nil: "NULL", 3.0: "3", 2.5: "2.5", 1.0 / 3: "0.333333", true: "true", false: "false", "x": "x", 0.0: "0", 1e20: "100000000000000000000"} {
 		if got := format(v); got != want {
 			t.Errorf("format(%v) = %q, want %q", v, got, want)
 		}

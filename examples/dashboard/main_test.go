@@ -240,7 +240,7 @@ func TestTicksUpdateTheDataAndPauseStopsThem(t *testing.T) {
 	if m.w.cur == before || m.ticks != 1 || cmd == nil {
 		t.Fatal("a tick did not advance the machine and ask for the next")
 	}
-	m, cmd = update(runes(m, " "), nil)
+	m, _ = update(runes(m, " "), nil)
 	if !m.paused || !strings.Contains(text(m), "‖ paused") {
 		t.Fatal("space did not pause")
 	}

@@ -77,7 +77,7 @@ func (m model) pick(r string) model {
 		}
 	}
 	if n, err := strconv.Atoi(r); err == nil && n >= 1 && n <= numColours {
-		m.colour = uint8(n)
+		m.colour = uint8(max(1, min(numColours, n)))
 	}
 	return m
 }
@@ -163,8 +163,9 @@ func (m model) click(ev tui.MouseEvent, id string) model {
 		n, _ := strconv.Atoi(id[5:])
 		m.tool = tool(n)
 	case strings.HasPrefix(id, "col-"):
-		n, _ := strconv.Atoi(id[4:])
-		m.colour = uint8(n)
+		if c := id[4] - '0'; c >= 1 && c <= numColours { // "col-N", N one digit
+			m.colour = c
+		}
 		if m.tool == eraser {
 			m.tool = pen
 		}

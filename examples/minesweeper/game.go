@@ -71,7 +71,7 @@ func (g game) lay(sx, sy int) game {
 		safe = func(x, y int) bool { return x == sx && y == sy }
 	}
 	for n := 0; n < g.lv.mine; {
-		x, y := int(g.rand()%uint64(g.lv.w)), int(g.rand()%uint64(g.lv.h))
+		x, y := int(g.rand()%uint64(g.lv.w)), int(g.rand()%uint64(g.lv.h)) // #nosec G115 -- the sizes are small positive numbers
 		if i := y*g.lv.w + x; !g.cells[i].mine && !safe(x, y) {
 			g.cells[i].mine = true
 			n++

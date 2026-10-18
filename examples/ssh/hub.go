@@ -232,9 +232,3 @@ func (h *hub) rename(id int, nick string) (string, error) {
 	deliver(out, hubMsg{ev: ev, users: users})
 	return nick, nil
 }
-
-func (h *hub) online() int {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	return len(h.subs)
-}

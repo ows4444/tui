@@ -49,12 +49,11 @@ type model struct {
 	bar menubar.Model
 	in  textinput.Model
 
-	mode    mode
-	then    string // what to do once changes are discarded: "new", "open" or "quit"
-	query   string // the last thing searched for
-	found   string // the query the editor has already selected a match for
-	replace string // the text found, while its replacement is typed
-	msg     string
+	mode  mode
+	then  string // what to do once changes are discarded: "new", "open" or "quit"
+	query string // the last thing searched for
+	found string // the query the editor has already selected a match for
+	msg   string
 
 	numbers, wrap, space, curline bool
 

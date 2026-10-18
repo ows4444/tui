@@ -49,10 +49,6 @@ var roles = []prompt.Choice[string]{
 
 var tools = []string{"Editor plugins", "Linters", "Test frameworks", "Profilers", "Debuggers", "Code generators"}
 
-// questions is how many prompts ask(cfg) opens, so a test can give each one
-// its own input.
-const questions = 8
-
 func validName(s string) error {
 	if strings.TrimSpace(s) == "" {
 		return errors.New("your name cannot be empty")

@@ -43,7 +43,6 @@ type model struct {
 	caps                          *tui.Capabilities
 	last                          time.Time
 	now                           func() time.Time
-	hover                         string
 
 	width, height int
 }

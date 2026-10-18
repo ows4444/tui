@@ -644,9 +644,7 @@ func (m model) previewNode(th theme.Theme) layout.Node {
 	n := m.selected()
 	head := ansi.NewStyle().Faint().Render(fmt.Sprintf("%s · %s", kindName(n), sizeInfo(n)))
 	lines := []string{head}
-	for _, l := range strings.Split(n.pretty(8192), "\n") {
-		lines = append(lines, l)
-	}
+	lines = append(lines, strings.Split(n.pretty(8192), "\n")...)
 	var kids []layout.FlexChild
 	rule := ansi.NewStyle().Foreground(th.Muted).Render("│")
 	for i := 0; i < h; i++ {

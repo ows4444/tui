@@ -603,7 +603,6 @@ func (m model) lines(th theme.Theme) []string {
 		body := m.mark(ansi.Truncate(e.summary(), max(1, w-ansi.Width(head))), ansi.NewStyle())
 		line := ansi.Truncate(head+body, w)
 		if i == m.cur {
-			line = ansi.NewStyle().Background(th.Selection).Render(pad(ansi.StripANSI(line), w))
 			line = m.selectedLine(e, cursor+fold, w, th)
 		}
 		out = append(out, line)
