@@ -193,6 +193,9 @@ body {
 .hero {
 	position: relative;
 	display: grid;
+	/* minmax(0, 1fr), not auto: a column sized to its content lets the
+	   terminal screen (a wide, unwrapped pre) push the page wider than a phone. */
+	grid-template-columns: minmax(0, 1fr);
 	gap: 3rem;
 	align-items: center;
 	padding-block: clamp(2rem, 6vw, 5rem) 2rem;
@@ -552,6 +555,8 @@ body {
 
 /* Terminal window used for real screen captures (src/components/Screen.astro) */
 .screen {
+	min-width: 0;
+	max-width: 100%;
 	/* The 16 ANSI colours, as a terminal theme sets them: GitHub Dark's,
 	   with black, white and bright blue adjusted so the pairs the examples
 	   use (black or white text on bright backgrounds) stay readable.

@@ -4,6 +4,7 @@
 import { LinkButton } from '@astrojs/starlight/components';
 import Install from './Install.astro';
 import Screen from './Screen.astro';
+import { facts } from '../facts.mjs';
 
 const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title, tagline, actions = [] } = data.hero || {};
@@ -13,7 +14,7 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
 	<div class="hero-copy">
 		<a class="eyebrow" href="https://github.com/ows4444/tui">
 			<span class="pulse" aria-hidden="true"></span>
-			Open source · MIT · Go 1.25+
+			Open source · MIT · Go {facts.go}+
 		</a>
 		<h1 id="_top" data-page-title set:html={title} />
 		{tagline && <p class="tagline" set:html={tagline} />}
@@ -37,7 +38,7 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
 
 <ul class="stats not-content" aria-label="tui at a glance">
 	<li><strong>0</strong><span>module dependencies</span></li>
-	<li><strong>40+</strong><span>widget packages</span></li>
-	<li><strong>30</strong><span>runnable examples</span></li>
+	<li><strong>{Math.floor(facts.packages / 10) * 10}+</strong><span>packages and widgets</span></li>
+	<li><strong>{facts.examples}</strong><span>runnable examples</span></li>
 	<li><strong>7</strong><span>supported OSes</span></li>
 </ul>
