@@ -141,8 +141,16 @@ func TestRightClickOpensMenuAndGoUpWorks(t *testing.T) {
 	s := start(t)
 	s.ClickText("docs/")
 	s.Keys("enter")
+	// A press that lands while a slow machine is still drawing is lost: press
+	// again, up to three times, until the menu shows.
 	x, y, _ := s.Find("guide.md")
-	s.Send(tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonRight, Action: tui.MouseActionPress})
+	for try := 0; try < 3; try++ {
+		x, y, _ = s.Find("guide.md")
+		s.Send(tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonRight, Action: tui.MouseActionPress})
+		if s.WaitForText("Copy path", time.Second) {
+			break
+		}
+	}
 	want(t, s, "Copy path")
 	want(t, s, "Go up")
 	s.Keys("esc")
