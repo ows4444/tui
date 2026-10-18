@@ -1,0 +1,10 @@
+layoutlab                               
+▸1 Flex   2 Grid   3 Wrap   4 Anchor    
+▸direction        ◂░░░░░░░░░░▸ Row      
+ gap              ◂██░░░░░░░░▸ 1        
+ justify          ◂░░░░░░░░░░▸ Start    
+ children         ◂███░░░░░░░▸ 3        
+ child            ◂░░░░░░░░░░▸ 0        
+   basis          ◂██░░░░░░░░▸ 10       
+direction = Row  ·  Flex                
+[1-4] mode  [↑↓] setting  [←→] change  …
