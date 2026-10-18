@@ -24,6 +24,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/fuzzy"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
@@ -65,6 +66,7 @@ type job struct {
 type tickMsg struct{ seq int }
 
 type model struct {
+	th   ui.Theming // the theme the Program chose; see SetTheme
 	pkgs []pkg
 	tab  tab
 	cur  int // index into visible()
@@ -788,7 +790,7 @@ func (m model) helpNode(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	var body layout.Node = m.listNode(th)
 	switch {
@@ -814,9 +816,9 @@ func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 func main() {
 	opts := []tui.ProgramOption{tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)}
 	// ReducedMotion is known as soon as the Program exists, before Run.
-	p := tui.NewProgram(newModel(false), opts...)
+	p := ui.NewProgram(newModel(false), opts...)
 	if p.ReducedMotion() {
-		p = tui.NewProgram(newModel(true), opts...)
+		p = ui.NewProgram(newModel(true), opts...)
 	}
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

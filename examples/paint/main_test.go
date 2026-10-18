@@ -302,3 +302,13 @@ func TestHoverShowsThePosition(t *testing.T) {
 		t.Fatalf("no position:\n%s", text(m))
 	}
 }
+
+func TestSaveIsOffWithoutOut(t *testing.T) {
+	m := drag(t, ready(), tui.MouseButtonLeft, pt{0, 0}, pt{3, 0})
+	if m.path != "" {
+		t.Fatalf("path %q: the default must write nothing", m.path)
+	}
+	if m = runes(m, "s"); !strings.Contains(m.msg, "-out FILE") || !m.dirty {
+		t.Fatalf("msg %q", m.msg)
+	}
+}

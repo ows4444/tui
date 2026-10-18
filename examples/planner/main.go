@@ -21,6 +21,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/timepicker"
@@ -44,6 +45,7 @@ const (
 )
 
 type model struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
 	today  day
 	booked map[string]bool
 	month  day // first of the month shown
@@ -521,7 +523,7 @@ func (m model) helpPanel(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	sz := m.size()
 	if m.help {
 		return layout.Column(0, block(ansi.NewStyle().Bold().Foreground(th.Primary).Render("Book a room: keys")),
@@ -551,7 +553,7 @@ func (m model) screen() layout.Node {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	p := tui.NewProgram(initialModel(time.Now()), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(initialModel(time.Now()), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

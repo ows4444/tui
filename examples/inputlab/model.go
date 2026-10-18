@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -25,6 +26,7 @@ type entry struct {
 }
 
 type model struct {
+	th       ui.Theming // the theme the Program chose; see SetTheme
 	log      []entry
 	total    int
 	counts   [numKinds]int

@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/theme"
 )
 
 // app makes the program of one session. send delivers a message to that
@@ -188,6 +189,7 @@ func run(ch ssh.Channel, t *term, user, remote string, newApp app) {
 	// The Program may close what it reads from when it ends; the channel must stay
 	// open for the exit status, so it is handed over as a plain Reader.
 	p := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion), tui.WithBracketedPaste(true),
+		tui.WithTheme(theme.DefaultAuto()), tui.WithColorSchemeReports(true),
 		tui.WithInput(struct{ io.Reader }{ch}), tui.WithOutput(ch), tui.WithTerminal(t))
 	mu.Lock()
 	prog = p

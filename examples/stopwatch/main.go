@@ -17,11 +17,12 @@ import (
 	"os"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 )
 
 func main() {
 	m := newModel()
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

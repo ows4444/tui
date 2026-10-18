@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/motion/fx"
@@ -42,6 +43,7 @@ var effects = []effect{
 type tickMsg struct{}
 
 type model struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
 	scene  scene
 	fire   fire
 	sim    int // plasma time, in steps

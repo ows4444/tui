@@ -28,6 +28,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/spinner"
 	"github.com/ows4444/tui/textinput"
@@ -65,6 +66,7 @@ type loadedMsg struct {
 }
 
 type model struct {
+	th       ui.Theming // the theme the Program chose; see SetTheme
 	prov     provider
 	tasks    *tui.Tasks
 	spin     spinner.Model
@@ -101,7 +103,7 @@ func newModel(p provider, debounce time.Duration, city string) model {
 	in.Placeholder = "type a city"
 	in.Width = 30
 	in.Focus()
-	return model{prov: p, tasks: tui.NewTasks(), spin: spinner.New(), debounce: debounce, now: time.Now, in: in, typing: true, startCity: city}
+	return model{prov: p, tasks: tui.NewTasks(), spin: calm(spinner.New()), debounce: debounce, now: time.Now, in: in, typing: true, startCity: city}
 }
 
 func (m model) Init() tui.Cmd {
@@ -624,7 +626,7 @@ func (m model) statusLine(th theme.Theme) string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	var body layout.Node
 	switch {
@@ -660,7 +662,7 @@ func main() {
 		p, debounce = newOpenMeteo(), 250*time.Millisecond
 	}
 	city := strings.Join(flag.Args(), " ")
-	if _, err := tui.NewProgram(newModel(p, debounce, city), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(newModel(p, debounce, city), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

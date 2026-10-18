@@ -25,6 +25,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
@@ -42,6 +43,7 @@ type row struct {
 }
 
 type model struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
 	root   *node
 	source string
 	open   map[*node]bool // containers that are open
@@ -726,7 +728,7 @@ func (m model) helpNode(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	title := ansi.NewStyle().Bold().Foreground(th.Primary).Render("jsonx") + "  " + ansi.NewStyle().Bold().Render(m.source)
 	var body layout.Node = m.treeNode(th)
@@ -785,7 +787,7 @@ func main() {
 		defer tty.Close()
 		opts = append(opts, tui.WithInput(tty))
 	}
-	if _, err := tui.NewProgram(newModel(root, source), opts...).Run(); err != nil {
+	if _, err := ui.NewProgram(newModel(root, source), opts...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

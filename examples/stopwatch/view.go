@@ -168,7 +168,7 @@ func (m model) status() string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	s := m.size()
 	bodyH := max(1, s.H-chromeRows)
 	hints := widgets.Footer(s.W, widgets.Hint{Key: "1-3", Action: "tab"}, widgets.Hint{Key: "space", Action: "start/stop"}, widgets.Hint{Key: "l", Action: "lap"},

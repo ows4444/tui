@@ -115,7 +115,7 @@ func (m model) status() string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	hints := widgets.Footer(w, widgets.Hint{Key: "←↑↓→", Action: "steer"}, widgets.Hint{Key: "p", Action: "pause"}, widgets.Hint{Key: "r", Action: "restart"},
 		widgets.Hint{Key: "+/-", Action: "speed"}, widgets.Hint{Key: "?", Action: "help"}, widgets.Hint{Key: "q", Action: "quit"})

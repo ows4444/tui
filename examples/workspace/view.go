@@ -121,7 +121,7 @@ func (m model) status() string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	s := m.size()
 	g := m.geo()
 	title := ansi.NewStyle().Bold().Foreground(th.Primary).Render("workspace")

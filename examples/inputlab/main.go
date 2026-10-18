@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 )
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 	if !*legacy {
 		opts = append(opts, tui.WithKeyboard(tui.KeyboardDisambiguate|tui.KeyboardReportEvents|tui.KeyboardReportAllKeys))
 	}
-	if _, err := tui.NewProgram(newModel(), opts...).Run(); err != nil {
+	if _, err := ui.NewProgram(newModel(), opts...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

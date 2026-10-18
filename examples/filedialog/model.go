@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/filepicker"
 	"github.com/ows4444/tui/layout"
 )
@@ -25,6 +26,7 @@ var filters = []struct {
 const chromeRows = 6 // title, path, filter row, status, buttons, hints
 
 type model struct {
+	th         ui.Theming // the theme the Program chose; see SetTheme
 	fp         filepicker.Model
 	save       bool
 	showHidden bool

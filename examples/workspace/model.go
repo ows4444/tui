@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -24,6 +25,7 @@ const (
 )
 
 type model struct {
+	th                     ui.Theming // the theme the Program chose; see SetTheme
 	focus                  int
 	tab                    [3]int
 	off                    [3][3]int // scroll offset per pane and tab

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/theme"
 )
 
 // heading is one "#" heading of the source, with the line it is on.
@@ -57,11 +58,16 @@ func current(hs []heading, line int) int {
 // words counts the words of md.
 func words(md string) int { return len(strings.Fields(md)) }
 
+// highlighter returns the editor's Highlighter for a theme.
+func highlighter(th theme.Theme) func(string) ansi.Text {
+	return func(line string) ansi.Text { return highlightLine(th, line) }
+}
+
 // highlightLine colours the markup of one source line: headings, list markers,
 // fences, and `code`. The text is unchanged, so the editor's columns hold.
-func highlightLine(line string) ansi.Text {
-	head := ansi.NewStyle().Bold().Foreground(ansi.BrightCyan)
-	code := ansi.NewStyle().Foreground(ansi.BrightYellow)
+func highlightLine(th theme.Theme, line string) ansi.Text {
+	head := ansi.NewStyle().Bold().Foreground(th.Primary)
+	code := ansi.NewStyle().Foreground(th.Warning)
 	faint := ansi.NewStyle().Faint()
 	t := strings.TrimLeft(line, " ")
 	switch {

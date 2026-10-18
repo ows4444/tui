@@ -22,6 +22,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/theme"
@@ -39,6 +40,7 @@ var intervals = []time.Duration{500 * time.Millisecond, time.Second, 2 * time.Se
 type tickMsg struct{ seq int }
 
 type model struct {
+	th       ui.Theming // the theme the Program chose; see SetTheme
 	w        *world
 	order    []int // panel ids, in the order they are shown
 	focus    int   // index into order
@@ -396,7 +398,7 @@ func (m model) helpBody(th theme.Theme) []string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	lines := m.body(th)
 	if m.help {
@@ -420,7 +422,7 @@ func (m model) screen() layout.Node {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	if _, err := tui.NewProgram(newModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(newModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

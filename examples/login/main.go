@@ -25,6 +25,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/passwordinput"
@@ -71,6 +72,7 @@ type shakeMsg struct{ seq, step int }
 type lockMsg struct{ seq int }
 
 type model struct {
+	th   ui.Theming // the theme the Program chose; see SetTheme
 	user textinput.Model
 	pass passwordinput.Model
 	spin spinner.Model
@@ -518,7 +520,7 @@ func (m model) helpBody(th theme.Theme) []layout.FlexChild {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	var body []layout.FlexChild
 	switch {
 	case m.help:
@@ -556,9 +558,9 @@ func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 func main() {
 	opts := []tui.ProgramOption{tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)}
 	// ReducedMotion is known as soon as the Program exists, before Run.
-	p := tui.NewProgram(newModel(false), opts...)
+	p := ui.NewProgram(newModel(false), opts...)
 	if p.ReducedMotion() {
-		p = tui.NewProgram(newModel(true), opts...)
+		p = ui.NewProgram(newModel(true), opts...)
 	}
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

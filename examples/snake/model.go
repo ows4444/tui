@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 )
@@ -20,6 +21,7 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	g     game
 	level int // 0 to 4
 	best  int

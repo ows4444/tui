@@ -26,6 +26,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
@@ -48,6 +49,7 @@ var sliderMax = [...]float64{360, 100, 100}
 var sliderUnit = [...]string{"°", "%", "%"}
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	rgb     ansi.RGB
 	h, s, l float64 // the sliders, kept apart from rgb so a grey does not lose its hue
 	hexIn   textinput.Model
@@ -498,7 +500,7 @@ func (m model) helpPanel(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	sz := m.size()
 	if m.help {
 		return layout.Column(0, block(ansi.NewStyle().Bold().Foreground(th.Primary).Render("Colour lab: keys")), layout.FlexChild{Node: m.helpPanel(th)})
@@ -537,7 +539,7 @@ func main() {
 	flag.Parse()
 	m := initialModel()
 	m.out = *out
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

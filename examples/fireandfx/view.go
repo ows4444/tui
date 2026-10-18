@@ -166,7 +166,7 @@ func (m model) status() string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	rows := m.sceneRows(th)
 	if m.help {

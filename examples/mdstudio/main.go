@@ -23,6 +23,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/markdownview"
 	"github.com/ows4444/tui/textarea"
@@ -58,6 +59,7 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	st    store
 	path  string
 	saved string
@@ -91,7 +93,7 @@ func newModel(st store, path string) (model, error) {
 	m := model{st: st, path: path, saved: text, syncIdx: -2}
 	m.ed = textarea.New()
 	m.ed.Mouse, m.ed.AutoIndent, m.ed.SoftWrap, m.ed.ShowLineNumbers = true, true, true, true
-	m.ed.Highlighter = highlightLine
+	m.ed.Highlighter = highlighter(m.theme())
 	m.ed.SetValue(text)
 	m.ed.SetCursor(0)
 	m.ed.Focus()
@@ -709,7 +711,7 @@ func (m model) helpLines(th theme.Theme) []string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	lines := m.body(th)
 	if m.help {
@@ -741,7 +743,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "mdstudio:", err)
 		os.Exit(1)
 	}
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

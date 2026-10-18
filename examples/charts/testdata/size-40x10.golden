@@ -1,10 +1,10 @@
 charts  Temperature (°C)                
  Temperature   Latency   Waves   Growth 
  Line   Scatter   Bars   Histogram      
- 40┤        ⣀⣀⣀⣀⣀⣀⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⠤⢄⣀⣀⣀      
-  0┤⣒⣒⣒⣒⣒⣭⣭⣭⠤⠤⠤⠒⠒⠒⠛⠛⠛⠋⠉⠉⠉⠉⠉⠑⠒⠒⠢⠤⠤⠤⣭⣭⣭⣒⣒ 
--20┤⠉⠉⠉⠉⠉                            ⠉⠉ 
+ 20┤⣀⣀⣀⣀⣀⣀⣀⣀⠤⠤⠤⣤⣤⣤⣒⣒⣒⣲⣶⣶⣶⣶⣶⣦⣤⣤⡤⠤⠤⠤⠤⠤⠤⣀⣀ 
+-20┤⠒⠒⠒⠒⠒⠛⠛⠛⠉⠉⠉               ⠈⠉⠉⠉⠛⠛⠛⠒⠒ 
    └─────────────────────────────────── 
     Jan    Apr      Jun     Sep     Dec 
 ● 1 Berlin  ● 2 Cairo  ● 3 Oslo         
 all 12 points  ·  hover for values, whee
+[←→] cursor  [+/-] zoom  [tab] data  …  

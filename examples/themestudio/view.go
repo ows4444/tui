@@ -156,7 +156,7 @@ func (m model) title(ui theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	ui := theme.DarkTheme()
+	ui := m.theme()
 	s := m.size()
 	bodyH := max(1, s.H-chromeRows)
 	hints := widgets.Footer(s.W, widgets.Hint{Key: "↑↓", Action: "colour"}, widgets.Hint{Key: "tab", Action: "slider"}, widgets.Hint{Key: "←→", Action: "change"},

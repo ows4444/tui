@@ -24,6 +24,7 @@ import (
 	"github.com/ows4444/tui/breadcrumb"
 	"github.com/ows4444/tui/contextmenu"
 	"github.com/ows4444/tui/datatable"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/splitpane"
 	"github.com/ows4444/tui/theme"
@@ -49,6 +50,7 @@ const (
 )
 
 type model struct {
+	th   ui.Theming // the theme the Program chose; see SetTheme
 	fsys fs.FS
 	root string // name shown for the top folder
 
@@ -507,7 +509,7 @@ func (m model) title(text string, p pane, th theme.Theme) layout.FlexChild {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	hide := ""
 	if m.showHidden {
 		hide = "  (hidden shown)"
@@ -609,7 +611,7 @@ func main() {
 		os.Exit(1)
 	}
 	m := newModel(os.DirFS(abs), filepath.Base(abs))
-	p := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion), tui.WithMultiClick(400*time.Millisecond))
+	p := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion), tui.WithMultiClick(400*time.Millisecond))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

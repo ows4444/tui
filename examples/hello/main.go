@@ -16,15 +16,17 @@ import (
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/button"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/focus"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
-	"github.com/ows4444/tui/theme"
 )
 
 var names = []string{"name", "greet", "quit"}
 
 type model struct {
+	th       ui.Theming // the theme the Program chose; see SetTheme
+	help     bool
 	name     textinput.Model
 	greet    button.Model
 	quit     button.Model
@@ -82,7 +84,14 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 		}
 		return m.sayHello(), nil
 	case tui.Key:
+		if m.help && msg.Type != tui.KeyCtrlC {
+			m.help = false
+			return m, nil
+		}
 		switch {
+		case msg.Type == tui.KeyF1:
+			m.help = true
+			return m, nil
 		case msg.Type == tui.KeyCtrlC:
 			return m, tui.Quit()
 		case msg.Type == tui.KeyEnter && m.ring.Current() == 0:
@@ -105,8 +114,8 @@ func (m model) sayHello() model {
 	return m
 }
 
-func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+func (m model) mainScreen() layout.Node {
+	th := m.theme()
 	greeting := ansi.NewStyle().Faint().Render("Press Enter, or click Greet.")
 	if m.greeting != "" {
 		greeting = ansi.NewStyle().Bold().Foreground(th.Success).Render(m.greeting)
@@ -119,6 +128,7 @@ func (m model) screen() layout.Node {
 			layout.FlexChild{Node: layout.Named("quit", layout.Block(m.quit.View()))},
 		)},
 		{Node: layout.Block(greeting)},
+		{Node: layout.Block(ansi.NewStyle().Faint().Render("F1 help · Tab next · Ctrl+C quit"))},
 	}
 	// On a short terminal the padding, the gaps and the title go.
 	gap, box := 1, layout.NewBox().Border(th.Border).PaddingAll(1)
@@ -132,7 +142,7 @@ func (m model) screen() layout.Node {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	p := tui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

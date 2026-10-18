@@ -29,6 +29,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/fuzzy"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
@@ -61,6 +62,7 @@ type run struct {
 }
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	cmds    []command
 	recents []string // names, newest first
 	in      textinput.Model
@@ -504,7 +506,7 @@ func (m model) helpNode(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	src := "sample project, scripted"
 	if m.file {
@@ -548,7 +550,7 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

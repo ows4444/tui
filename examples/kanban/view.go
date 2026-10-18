@@ -127,7 +127,7 @@ func (m model) status(th theme.Theme) string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	title := ansi.NewStyle().Bold().Foreground(th.Primary).Render("kanban") + ansi.NewStyle().Faint().Render("  "+strconv.Itoa(len(m.b.cols[2]))+" of "+strconv.Itoa(m.b.total())+" done")
 	var heads, cols []layout.FlexChild

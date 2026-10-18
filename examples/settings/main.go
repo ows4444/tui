@@ -23,6 +23,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -43,6 +44,7 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	cats  []category
 	saved values // what Apply last kept
 	cur   values // what the screen shows
@@ -611,7 +613,7 @@ func (m model) footer(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	sz := m.size()
 	h := max(1, sz.H-4) // all but the title, the help line, the buttons and the footer
 	listW := sz.W
@@ -658,7 +660,7 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	p := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

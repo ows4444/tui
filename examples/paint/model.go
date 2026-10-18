@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -28,6 +29,7 @@ const (
 )
 
 type model struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
 	g      grid
 	tool   tool
 	colour uint8 // 1 to 8
@@ -52,7 +54,7 @@ type model struct {
 }
 
 func newModel() model {
-	return model{colour: 1, brush: 1, hx: -1, hy: -1, path: "paint.txt"}
+	return model{colour: 1, brush: 1, hx: -1, hy: -1}
 }
 
 func (m model) Init() tui.Cmd { return nil }
@@ -209,6 +211,10 @@ func (m model) clear() model {
 }
 
 func (m model) save() model {
+	if m.path == "" {
+		m.msg = "Not saved: run with -out FILE to say where"
+		return m
+	}
 	if err := os.WriteFile(m.path, []byte(m.g.text()), 0o600); err != nil {
 		m.msg = "Could not save: " + err.Error()
 		return m

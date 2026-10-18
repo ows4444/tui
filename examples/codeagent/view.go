@@ -153,7 +153,7 @@ func (m model) toolLines(i int, b block, th theme.Theme, w int) []layout.FlexChi
 
 // lines is the whole transcript, one node per row.
 func (m model) lines() []layout.FlexChild {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	var out []layout.FlexChild
 	for i, b := range m.blocks {
@@ -273,7 +273,7 @@ func (m model) helpLines(th theme.Theme) []string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	s := m.size()
 	n := max(1, s.H-chromeRows)
 	hints := widgets.Footer(s.W, widgets.Hint{Key: "enter", Action: "send"}, widgets.Hint{Key: "y/n", Action: "approve/deny"}, widgets.Hint{Key: "↑↓", Action: "history"},

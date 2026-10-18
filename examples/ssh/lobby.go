@@ -6,6 +6,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -21,6 +22,7 @@ const (
 // lobby is the program every session runs: a shared chat room. It talks to the
 // other sessions only through the hub.
 type lobby struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
 	hub    *hub
 	id     int
 	nick   string
@@ -309,7 +311,7 @@ func (l *lobby) logWidth() int {
 
 // rows is the log as wrapped, styled lines.
 func (l *lobby) rows() []string {
-	th := theme.DarkTheme()
+	th := l.theme()
 	w := l.logWidth()
 	var out []string
 	faint := ansi.NewStyle().Faint()
@@ -379,7 +381,7 @@ func (l *lobby) promptRow() string {
 	if cur < len(rs) {
 		at, after = string(rs[cur]), string(rs[cur+1:])
 	}
-	label := ansi.NewStyle().Bold().Foreground(ansi.BrightCyan).Render(l.nick + "› ")
+	label := ansi.NewStyle().Bold().Foreground(l.theme().Primary).Render(l.nick + "› ")
 	if len(l.prompt) == 0 {
 		return ansi.Truncate(label+ansi.NewStyle().Reverse().Render(" ")+ansi.NewStyle().Faint().Render("say something (/help)"), w)
 	}
@@ -409,7 +411,7 @@ func (l *lobby) status() string {
 }
 
 func (l *lobby) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := l.theme()
 	s := l.size()
 	n := max(1, s.H-chromeRows)
 	hints := widgets.Footer(s.W, widgets.Hint{Key: "enter", Action: "send"}, widgets.Hint{Key: "tab", Action: "@name"}, widgets.Hint{Key: "pgup", Action: "scroll"},

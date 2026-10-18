@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/ows4444/tui/theme"
 	"reflect"
 	"strings"
 	"testing"
@@ -56,7 +57,7 @@ func TestPlainAndWords(t *testing.T) {
 func TestHighlightKeepsTheTextWhole(t *testing.T) {
 	for _, line := range []string{"# Heading", "plain `code` and `more`", "```go", "> quote", "unclosed `tick", "", "  - item"} {
 		var b strings.Builder
-		for _, sp := range highlightLine(line) {
+		for _, sp := range highlightLine(theme.DarkTheme(), line) {
 			b.WriteString(sp.Text)
 		}
 		if b.String() != line {

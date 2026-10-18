@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 )
@@ -65,6 +66,7 @@ const (
 type tickMsg struct{}
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	blocks  []block
 	plan    []planStep
 	pc      int // next plan step to start

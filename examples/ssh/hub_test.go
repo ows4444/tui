@@ -37,9 +37,10 @@ func join(t *testing.T, h *hub, nick string) (int, string, *inbox) {
 
 func TestJoinNamesAreCleanedAndUnique(t *testing.T) {
 	h, _ := testHub(10)
-	for in, want := range map[string]string{"ada": "ada", "ada ": "ada2", "ADA": "ADA3", "": "guest", "  ": "guest2", "a b c": "abc", "\x1b[31mred\x1b[0m": "red"} {
-		if _, got, _ := join(t, h, in); got != want {
-			t.Errorf("join(%q) = %q, want %q", in, got, want)
+	// in order: the number a repeated name gets depends on who came first
+	for _, c := range []struct{ in, want string }{{"ada", "ada"}, {"ada ", "ada2"}, {"ADA", "ADA3"}, {"", "guest"}, {"  ", "guest2"}, {"a b c", "abc"}, {"\x1b[31mred\x1b[0m", "red"}} {
+		if _, got, _ := join(t, h, c.in); got != c.want {
+			t.Errorf("join(%q) = %q, want %q", c.in, got, c.want)
 		}
 	}
 	if _, name, _ := join(t, h, strings.Repeat("x", 40)); len([]rune(name)) != maxNick {

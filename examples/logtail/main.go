@@ -29,6 +29,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/textinput"
@@ -46,6 +47,7 @@ const (
 type genMsg struct{ seq int }
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	ents    []entry
 	vis     []int // indexes into ents of the entries that pass the filters
 	nextID  int
@@ -703,7 +705,7 @@ func (m model) helpNode(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	var body layout.Node
 	if m.help {
@@ -764,7 +766,7 @@ func main() {
 	default:
 		m = m.fromGenerator(time.Date(2026, 10, 18, 9, 30, 0, 0, time.UTC))
 	}
-	if _, err := tui.NewProgram(m, opts...).Run(); err != nil {
+	if _, err := ui.NewProgram(m, opts...).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

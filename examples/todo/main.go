@@ -19,6 +19,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
@@ -42,6 +43,8 @@ type task struct {
 }
 
 type model struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
+	help   bool
 	tasks  []task
 	filter filter
 	cursor int // index into the visible tasks
@@ -218,6 +221,13 @@ func (m model) update(msg tui.Msg) (tui.Model, tui.Cmd) {
 }
 
 func (m model) key(k tui.Key) (tui.Model, tui.Cmd) {
+	if m.help {
+		if k.Type == tui.KeyCtrlC {
+			return m, tui.Quit()
+		}
+		m.help = false
+		return m, nil
+	}
 	switch k.Type {
 	case tui.KeyCtrlC, tui.KeyEsc:
 		return m, tui.Quit()
@@ -244,6 +254,8 @@ func (m model) key(k tui.Key) (tui.Model, tui.Cmd) {
 			m.cursor++
 		case "k":
 			m.cursor--
+		case "?":
+			m.help = true
 		case "a", "/":
 			m.typing = true
 			return m, m.input.Focus()
@@ -275,6 +287,12 @@ func (m model) typingKey(k tui.Key) (tui.Model, tui.Cmd) {
 }
 
 func (m model) mouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
+	if m.help {
+		if ev.Action == tui.MouseActionPress {
+			m.help = false
+		}
+		return m, nil
+	}
 	hit, ok := hittest.HitMap(m.screen(), m.size()).At(ev.X, ev.Y)
 	if ev.Action == tui.MouseActionMotion {
 		m.hover = ""
@@ -345,8 +363,8 @@ func (m model) panelWidth() int {
 	return max(24, min(64, w-4))
 }
 
-func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+func (m model) mainScreen() layout.Node {
+	th := m.theme()
 	inner := m.panelWidth() - 4 // border and padding
 	if m.compact() {
 		inner = m.panelWidth() - 2
@@ -403,6 +421,7 @@ func (m model) screen() layout.Node {
 		widgets.Hint{Key: "click", Action: "tick"},
 		widgets.Hint{Key: "↑↓", Action: "move"},
 		widgets.Hint{Key: "a", Action: "add"},
+		widgets.Hint{Key: "?", Action: "help"},
 		widgets.Hint{Key: "q", Action: "quit"},
 	)
 
@@ -476,7 +495,7 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	p := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

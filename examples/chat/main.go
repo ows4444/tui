@@ -24,6 +24,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/textinput"
@@ -54,6 +55,7 @@ type live struct {
 }
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	chans []channel
 	cur   int
 	input textinput.Model
@@ -127,7 +129,7 @@ func styledName(th theme.Theme, who string) string {
 // the last message, with a cursor; before its first character it is the typing
 // indicator.
 func (m model) historyLines(w int) []string {
-	th := theme.DarkTheme()
+	th := m.theme()
 	ch := m.chans[m.cur]
 	var out []string
 	add := func(from, at, text string) {
@@ -534,7 +536,7 @@ func (m model) hints() layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	body := m.pane(th)
 	if m.wide() {
 		body = layout.Row(0, layout.FlexChild{Node: m.sidebar(th)}, layout.FlexChild{Node: body})
@@ -552,9 +554,9 @@ func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 func main() {
 	opts := []tui.ProgramOption{tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)}
 	// ReducedMotion is known as soon as the Program exists, before Run.
-	p := tui.NewProgram(newModel(false), opts...)
+	p := ui.NewProgram(newModel(false), opts...)
 	if p.ReducedMotion() {
-		p = tui.NewProgram(newModel(true), opts...)
+		p = ui.NewProgram(newModel(true), opts...)
 	}
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

@@ -325,3 +325,13 @@ func TestHelpAndQuit(t *testing.T) {
 		t.Fatal("q did not quit")
 	}
 }
+
+func TestSaveIsOffWithoutOut(t *testing.T) {
+	m := key(ready(), tui.KeyRight)
+	if m.path != "" {
+		t.Fatalf("path %q: the default must write nothing", m.path)
+	}
+	if m = runes(m, "s"); !strings.Contains(m.msg, "-out FILE") {
+		t.Fatalf("msg %q", m.msg)
+	}
+}

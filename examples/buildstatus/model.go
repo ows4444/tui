@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/motion"
 	"github.com/ows4444/tui/spinner"
 )
@@ -17,6 +18,7 @@ const tickEvery = 100 * time.Millisecond
 type tickMsg struct{}
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	b       build
 	verbose bool
 	still   bool // reduced motion: no spinner frames

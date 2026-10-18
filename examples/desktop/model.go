@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
@@ -40,6 +41,7 @@ type modal struct {
 type tickMsg struct{}
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	desk    window.Model
 	hidden  []window.Window // hidden to the task bar, in the order they were hidden
 	closed  []window.Window // closed, F3 brings them back

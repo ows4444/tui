@@ -22,6 +22,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/form"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
@@ -46,6 +47,7 @@ const (
 )
 
 type model struct {
+	th     ui.Theming // the theme the Program chose; see SetTheme
 	form   form.Model
 	phase  phase
 	values map[string]string // what the form submitted, for the review
@@ -380,7 +382,7 @@ func (m model) hints() layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	gap := 1
 	if m.compact() {
 		gap = 0
@@ -419,7 +421,7 @@ func (m model) screen() layout.Node {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	p := tui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

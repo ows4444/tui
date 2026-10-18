@@ -225,7 +225,7 @@ func (m model) status() string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	s := m.size()
 	h := m.rows()
 	title := "Open file"

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -19,6 +20,7 @@ type undo struct {
 }
 
 type model struct {
+	th       ui.Theming // the theme the Program chose; see SetTheme
 	b        board
 	col, row int // the selected card; row -1 when the column is empty
 	ed       *edit

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/uitest"
 	"github.com/ows4444/tui/layout"
 )
 
@@ -273,4 +274,14 @@ func TestHelpAndQuitKeys(t *testing.T) {
 	if _, cmd := r.a.Update(tui.Key{Type: tui.KeyCtrl, Code: 'd'}); cmd == nil {
 		t.Fatal("Ctrl+D should leave")
 	}
+}
+
+func TestLobbyFollowsTheThemeAndSpeaksPlainly(t *testing.T) {
+	uitest.Check(t, func() tui.Model {
+		l, err := newLobby(newHub(5), "ada", "10.0.0.1:1", (&inbox{}).send)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return l
+	})
 }

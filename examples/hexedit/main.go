@@ -25,6 +25,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
@@ -54,6 +55,7 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	st    store
 	path  string
 	buf   buffer
@@ -765,7 +767,7 @@ func (m model) helpLines(th theme.Theme) []layout.FlexChild {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	title := ansi.NewStyle().Bold().Foreground(th.Primary).Render("hexedit")
 	body := m.body(th)
@@ -801,7 +803,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "hexedit:", err)
 		os.Exit(1)
 	}
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

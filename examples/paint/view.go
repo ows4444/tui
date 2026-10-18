@@ -123,7 +123,7 @@ func (m model) status() string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	inner := 2 * m.g.w
 	hints := widgets.Footer(w, widgets.Hint{Key: "p e l r f", Action: "tool"}, widgets.Hint{Key: "1-8", Action: "colour"}, widgets.Hint{Key: "space", Action: "draw"},

@@ -23,6 +23,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
@@ -47,6 +48,7 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	st    store
 	path  string
 	cur   sheet
@@ -748,7 +750,7 @@ func (m model) helpNode(th theme.Theme) layout.Node {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	body := m.gridNode(th)
 	if m.help {
@@ -778,7 +780,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "csvedit:", err)
 		os.Exit(1)
 	}
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

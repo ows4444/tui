@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 )
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 	}
 	m := newModel(dir, *save)
 	// the dialog is drawn on the terminal's own screen, so the path can be printed after
-	final, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run()
+	final, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

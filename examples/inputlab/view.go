@@ -143,7 +143,7 @@ func lastGap(m model) string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	s := m.size()
 	rows := m.logRows()
 	hints := widgets.Footer(s.W, widgets.Hint{Key: "ctrl+c", Action: "quit"}, widgets.Hint{Key: "ctrl+p", Action: "pause"}, widgets.Hint{Key: "ctrl+l", Action: "clear"},

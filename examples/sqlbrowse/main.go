@@ -30,6 +30,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/textinput"
 	"github.com/ows4444/tui/theme"
@@ -62,6 +63,7 @@ const (
 )
 
 type model struct {
+	th  ui.Theming // the theme the Program chose; see SetTheme
 	db  *database
 	now func() time.Time
 
@@ -841,7 +843,7 @@ func (m model) statusLine(th theme.Theme) string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	var right layout.Node
 	switch {
@@ -871,7 +873,7 @@ func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 func main() {
 	out := flag.String("out", "", "also write the exported CSV to this file")
 	flag.Parse()
-	if _, err := tui.NewProgram(newModel(fixture(), *out, nil), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(newModel(fixture(), *out, nil), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

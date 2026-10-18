@@ -22,6 +22,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -43,6 +44,7 @@ var kindNames = [numKinds]string{"Line", "Scatter", "Bars", "Histogram"}
 const chrome = 8 // title, two tab rows, the x axis and its labels, legend, status, hints
 
 type model struct {
+	th   ui.Theming // the theme the Program chose; see SetTheme
 	sets []dataset
 	ds   int
 	kind kind
@@ -96,7 +98,7 @@ func (m model) size() layout.Size {
 	return layout.Size{W: m.width, H: m.height}
 }
 
-func (m model) plotH() int { return max(3, m.size().H-chrome) }
+func (m model) plotH() int { return max(2, m.size().H-chrome) }
 
 // scale is the y range and tick step the current chart is drawn with.
 func (m model) scale() (lo, hi, step float64, ok bool) {
@@ -589,7 +591,7 @@ func (m model) helpLines(th theme.Theme) []string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	var names []string
 	for _, d := range m.sets {
@@ -633,7 +635,7 @@ func (m model) unit() string {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	if _, err := tui.NewProgram(newModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(newModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

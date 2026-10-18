@@ -20,6 +20,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
@@ -37,6 +38,7 @@ const (
 type tickMsg time.Time
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	procs []proc
 	rng   *rand.Rand
 
@@ -479,7 +481,7 @@ func (m model) stat(label string, value float64, hist []float64, th theme.Theme)
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.size().W
 	cw := widths(w)
 	cpu, mem := m.cpuHist[len(m.cpuHist)-1], m.memHist[len(m.memHist)-1]
@@ -551,7 +553,7 @@ func (m model) dialog(th theme.Theme) layout.Node {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	p := tui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

@@ -17,6 +17,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/menubar"
 	"github.com/ows4444/tui/textarea"
@@ -38,6 +39,8 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
+	help  bool
 	st    store
 	path  string
 	saved string // the text as last saved or opened
@@ -229,6 +232,17 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 }
 
 func (m model) key(k tui.Key) (tui.Model, tui.Cmd) {
+	if m.help {
+		if k.Type == tui.KeyCtrlC {
+			return m, tui.Quit()
+		}
+		m.help = false
+		return m, nil
+	}
+	if k.Type == tui.KeyF1 {
+		m.help = true
+		return m, nil
+	}
 	switch m.mode {
 	case modeDiscard:
 		return m.discardKey(k)
@@ -379,6 +393,12 @@ func (m model) submit() (tui.Model, tui.Cmd) {
 }
 
 func (m model) mouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
+	if m.help {
+		if ev.Action == tui.MouseActionPress {
+			m.help = false
+		}
+		return m, nil
+	}
 	var cmd tui.Cmd
 	if m.mode == modeDiscard {
 		return m, nil
@@ -426,13 +446,13 @@ func (m model) bottom(th theme.Theme) string {
 	case modeEdit:
 		return ansi.NewStyle().Faint().Render(widgets.Footer(w,
 			widgets.Hint{Key: "ctrl+s", Action: "save"}, widgets.Hint{Key: "ctrl+o", Action: "open"},
-			widgets.Hint{Key: "ctrl+f", Action: "find"}, widgets.Hint{Key: "ctrl+q", Action: "quit"}))
+			widgets.Hint{Key: "ctrl+f", Action: "find"}, widgets.Hint{Key: "f1", Action: "help"}, widgets.Hint{Key: "ctrl+q", Action: "quit"}))
 	}
 	return m.in.View()
 }
 
-func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+func (m model) mainScreen() layout.Node {
+	th := m.theme()
 	return layout.Column(0,
 		layout.FlexChild{Node: layout.Block(m.bar.View())},
 		layout.Fill(m.ed.LayoutNode()),
@@ -455,7 +475,7 @@ func main() {
 		path = os.Args[1]
 	}
 	m := newModel(diskStore{}, path)
-	if _, err := tui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

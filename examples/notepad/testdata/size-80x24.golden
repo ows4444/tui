@@ -21,4 +21,4 @@
                                                                                 
                                                                                 
  main.go                                                  Ln 1, Col 1  15 lines 
-[ctrl+s] save  [ctrl+o] open  [ctrl+f] find  [ctrl+q] quit                      
+[ctrl+s] save  [ctrl+o] open  [ctrl+f] find  [f1] help  [ctrl+q] quit           

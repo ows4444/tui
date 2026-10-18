@@ -7,6 +7,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/clockview"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 )
@@ -37,6 +38,7 @@ type zone struct {
 type tickMsg struct{ seq int }
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	tab   tab
 	now   func() time.Time
 	w     watch

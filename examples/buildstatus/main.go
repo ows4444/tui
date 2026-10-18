@@ -22,6 +22,7 @@ import (
 	"os"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 		os.Exit(2)
 	}
 	m := newModel(*jobs, *fail)
-	final, err := tui.NewProgram(m, tui.WithAltScreen(false)).Run()
+	final, err := ui.NewProgram(m, tui.WithAltScreen(false)).Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

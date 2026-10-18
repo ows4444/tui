@@ -6,6 +6,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 )
@@ -18,6 +19,7 @@ const (
 )
 
 type model struct {
+	th    ui.Theming // the theme the Program chose; see SetTheme
 	names []string
 	sp    spec
 	t     theme.Theme
@@ -36,7 +38,7 @@ type model struct {
 }
 
 func newModel() model {
-	m := model{names: theme.PresetNames(), path: "theme.json"}
+	m := model{names: theme.PresetNames(), path: ""}
 	m.sp = spec{base: "tokyo-night", over: map[string]string{}}
 	return m.rebuild()
 }
@@ -135,6 +137,10 @@ func (m model) cycleGlyphs() model {
 }
 
 func (m model) save() model {
+	if m.path == "" {
+		m.msg = "Not saved: run with -out FILE to say where"
+		return m
+	}
 	if err := os.WriteFile(m.path, m.sp.document(), 0o600); err != nil {
 		m.msg = "Could not save: " + err.Error()
 		return m

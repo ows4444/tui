@@ -16,6 +16,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
@@ -29,6 +30,7 @@ var steps = [...]int{1, 5, 10}
 const bound = 100
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
 	count   int
 	step    int    // index into steps
 	hover   string // id of the target under the pointer
@@ -189,7 +191,7 @@ func (m model) gauge(w int, th theme.Theme) string {
 }
 
 func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+	th := m.theme()
 	inner := 44
 	if m.width > 0 {
 		inner = max(20, min(inner, m.width-4))
@@ -256,7 +258,7 @@ func (m model) View() string {
 }
 
 func main() {
-	p := tui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

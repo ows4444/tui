@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/motion"
 )
@@ -13,6 +14,7 @@ type tickMsg struct{ seq int }
 const chromeRows = 5 // title bar, top border, bottom border, status, hints
 
 type model struct {
+	th            ui.Theming // the theme the Program chose; see SetTheme
 	g             game
 	lv            int
 	cx, cy        int // the keyboard cursor

@@ -8,21 +8,28 @@
 // the cursor (Shift moves five), Space draws (pen: Space starts and stops a
 // stroke; line and rectangle: Space sets the corner, then Space again),
 // p e l r f pick the tool, 1 to 8 the colour, [ ] the brush size, u undoes, U
-// redoes, c clears, s saves paint.txt in the current directory, ? shows help,
-// q or Ctrl+C quits.
+// redoes, c clears, s saves the picture as text to the file named by -out (it
+// writes nothing without it), ? shows help, q or Ctrl+C quits.
 //
 //	go run ./examples/paint
+//	go run ./examples/paint -out art.txt
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
 	"github.com/ows4444/tui"
+	"github.com/ows4444/tui/examples/internal/ui"
 )
 
 func main() {
-	if _, err := tui.NewProgram(newModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
+	out := flag.String("out", "", "file that s saves the picture to (empty: saving is off)")
+	flag.Parse()
+	m := newModel()
+	m.path = *out
+	if _, err := ui.NewProgram(m, tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion)).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}

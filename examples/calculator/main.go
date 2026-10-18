@@ -15,6 +15,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/examples/internal/ui"
 	"github.com/ows4444/tui/hittest"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
@@ -40,6 +41,8 @@ const (
 type entry struct{ expr, result string }
 
 type model struct {
+	th      ui.Theming // the theme the Program chose; see SetTheme
+	help    bool
 	expr    string
 	done    bool // expr is a finished result, so a digit starts afresh
 	err     string
@@ -135,6 +138,13 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 }
 
 func (m model) key(k tui.Key) (tui.Model, tui.Cmd) {
+	if m.help {
+		if k.Type == tui.KeyCtrlC {
+			return m, tui.Quit()
+		}
+		m.help = false
+		return m, nil
+	}
 	switch k.Type {
 	case tui.KeyCtrlC:
 		return m, tui.Quit()
@@ -156,6 +166,9 @@ func (m model) key(k tui.Key) (tui.Model, tui.Cmd) {
 			return m.press("C")
 		case "y":
 			return m.copy()
+		case "?":
+			m.help = true
+			return m, nil
 		case "=":
 			return m.press("=")
 		case "%", "^":
@@ -185,6 +198,12 @@ func (m model) copy() (model, tui.Cmd) {
 }
 
 func (m model) mouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
+	if m.help {
+		if ev.Action == tui.MouseActionPress {
+			m.help = false
+		}
+		return m, nil
+	}
 	hit, ok := hittest.HitMap(m.screen(), m.size()).At(ev.X, ev.Y)
 	id := ""
 	if ok {
@@ -305,7 +324,7 @@ func (m model) keypad(th theme.Theme) layout.Node {
 	kids = append(kids, rows...)
 	if m.roomy() {
 		kids = append(kids, layout.FlexChild{Node: layout.Block(ansi.NewStyle().Faint().Render(
-			widgets.Footer(gridW, widgets.Hint{Key: "y", Action: "copy"}, widgets.Hint{Key: "q", Action: "quit"})))})
+			widgets.Footer(gridW, widgets.Hint{Key: "y", Action: "copy"}, widgets.Hint{Key: "?", Action: "help"}, widgets.Hint{Key: "q", Action: "quit"})))})
 	}
 	return layout.BoxNode(layout.NewBox().Border(th.Border), layout.Fixed(layout.Column(0, kids...), layout.Size{W: gridW}))
 }
@@ -329,8 +348,8 @@ func (m model) historyPanel(th theme.Theme) layout.Node {
 	return layout.BoxNode(layout.NewBox().Border(th.Border), layout.Fixed(layout.Column(0, kids...), layout.Size{W: w}))
 }
 
-func (m model) screen() layout.Node {
-	th := theme.DarkTheme()
+func (m model) mainScreen() layout.Node {
+	th := m.theme()
 	var content layout.Node = m.keypad(th)
 	if m.wide() {
 		content = layout.Row(2, layout.FlexChild{Node: content}, layout.FlexChild{Node: m.historyPanel(th)})
@@ -341,7 +360,7 @@ func (m model) screen() layout.Node {
 func (m model) View() string { return layout.DrawTight(m.screen(), m.size()) }
 
 func main() {
-	p := tui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
+	p := ui.NewProgram(initialModel(), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion))
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)

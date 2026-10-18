@@ -50,7 +50,7 @@ func (m model) row(i int, th theme.Theme) string {
 }
 
 func (m model) View() string {
-	th := theme.DarkTheme()
+	th := m.theme()
 	w := m.width0()
 	if m.help {
 		return strings.Join([]string{
