@@ -192,6 +192,8 @@ func (a *demoApp) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	case tui.ResizeMsg:
 		a.w, a.h = m.Width, m.Height
 		return a, nil
+	case tui.MouseEvent:
+		return a.mouse(m)
 	case tui.CapabilitiesMsg:
 		demoCaps = m.Capabilities
 		return a, nil
@@ -223,6 +225,53 @@ func (a *demoApp) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 	var cmd tui.Cmd
 	a.live, cmd = updateWidget(a.live, msg)
 	return a, cmd
+}
+
+// mouse follows the pointer. In the list a click selects the row and the wheel
+// moves the cursor; on the widget a click gives it the keys, and a widget that
+// takes the mouse (placeable) is told where it is drawn and sent the event.
+func (a *demoApp) mouse(ev tui.MouseEvent) (tui.Model, tui.Cmd) {
+	if a.w < demoMinW || a.h < demoMinH {
+		return a, nil
+	}
+	press := ev.Action == tui.MouseActionPress
+	if ev.X < demoListW-1 {
+		switch {
+		case press && ev.Button == tui.MouseButtonWheelUp:
+			a.cursor--
+		case press && ev.Button == tui.MouseButtonWheelDown:
+			a.cursor++
+		case press && ev.Button == tui.MouseButtonLeft && ev.Y >= 2 && a.top+ev.Y-2 < len(a.shown):
+			a.cursor = a.top + ev.Y - 2
+			if a.inDemo {
+				a.inDemo = false
+				a.live = a.live.blur()
+			}
+		default:
+			return a, nil
+		}
+		a.cursor = max(0, min(a.cursor, len(a.shown)-1))
+		a.scroll()
+		return a, a.show()
+	}
+	if a.live == nil {
+		return a, nil
+	}
+	var focus tui.Cmd
+	if press && ev.Button == tui.MouseButtonLeft && !a.inDemo {
+		a.live, focus = a.live.focus()
+		a.inDemo = true
+	}
+	p, ok := a.live.(placeable)
+	if !ok {
+		return a, focus
+	}
+	// The widget starts below the box border, the summary and a blank line.
+	summary := strings.Count(ansi.Wrap(a.entries[a.liveOf].summary, max(a.w-demoListW-3, 10)), "\n") + 1
+	a.live = p.place(demoListW, 1+summary+1)
+	var cmd tui.Cmd
+	a.live, cmd = updateWidget(a.live, ev)
+	return a, tui.Batch(focus, cmd)
 }
 
 func updateWidget(w demoWidget, msg tui.Msg) (demoWidget, tui.Cmd) {
@@ -424,7 +473,7 @@ func runDemo(args []string, out io.Writer) error {
 			return fmt.Errorf("no widget called %q; tui demo -list shows them", start)
 		}
 	}
-	_, err := tui.NewProgram(newDemoApp(entries, start), tui.WithAltScreen(true), tui.WithCapabilityProbe(0)).Run()
+	_, err := tui.NewProgram(newDemoApp(entries, start), tui.WithAltScreen(true), tui.WithMouse(tui.MouseAllMotion), tui.WithCapabilityProbe(0)).Run()
 	return err
 }
 

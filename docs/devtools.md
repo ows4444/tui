@@ -15,7 +15,7 @@
 | `tui colors [preset]` | swatches of a preset's roles with their contrast |
 | `tui borders` | a box in each border preset |
 | `tui easings [name]` | plots the easing curves |
-| `tui demo [-list] [widget]` | try the widgets live: a filterable list of 27, the selected one working on the right with its code below, and a key to change the theme |
+| `tui demo [-list] [widget]` | try the widgets live: a filterable list of 28, the selected one working on the right with its code below, and a key to change the theme; the mouse selects a row, scrolls the list and drives the Avatar entry |
 | `tui prompt ...` | ask a question from a shell script |
 | `tui dev [-poll d] [-watch dir]... [package] [-- args]` | build a program, run it on the terminal, and build and run it again whenever the `.go`, `go.mod` or `.tmpl` files of its module change |
 

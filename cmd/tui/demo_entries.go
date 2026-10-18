@@ -9,14 +9,12 @@ import (
 	"github.com/ows4444/tui/theme"
 
 	"github.com/ows4444/tui/accordion"
-	"github.com/ows4444/tui/avatar"
 	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/buttongroup"
 	"github.com/ows4444/tui/checkbox"
 	"github.com/ows4444/tui/datatable"
 	"github.com/ows4444/tui/datepicker"
 	"github.com/ows4444/tui/dropdown"
-	"github.com/ows4444/tui/imageview"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/markdownview"
 	"github.com/ows4444/tui/multiselect"
@@ -266,24 +264,9 @@ func feedbackEntries() []entry {
 			},
 		},
 		{
-			name: "Avatar", group: "feedback", summary: "A figure drawn from a name, always the same; Left and Right change the name, E the expression.",
-			code: []string{`m := avatar.New("ada")`, `m.Width, m.Height = 16, 8`, `m.Expression = avatar.ExpressionHappy`, `m.View() // drawn once, then cached by name`},
-			build: func() demoWidget {
-				return custom{press: avatarKeys, draw: func(th theme.Theme, state int) string {
-					m := avatar.New(avatarNames[state%100])
-					m.Width, m.Height = 16, 8
-					m.Background = avatar.BackgroundCircle
-					m.Expression = avatar.Expression(state / 100)
-					m = m.SetTheme(th)
-					picture := m.View()
-					if c := demoCaps; c.KittyGraphics || c.InlineImages || c.Sixel {
-						img := imageview.New(m.PNG(128), m.Width, m.Height, m.Linearize())
-						img.Kitty, img.Inline, img.Sixel = c.KittyGraphics, !c.KittyGraphics && c.InlineImages, !c.KittyGraphics && !c.InlineImages && c.Sixel
-						picture = img.View()
-					}
-					return picture + "\n" + m.Shape().String() + ", " + m.Expression.String()
-				}}
-			},
+			name: "Avatar", group: "feedback", summary: "A figure drawn from a name, always the same; hover to wake it, click to make it react; Left and Right change the name, E the expression.",
+			code:  []string{`m := avatar.New("ada")`, `m.Width, m.Height = 16, 8`, `m.Expression = avatar.ExpressionHappy`, `m.View() // drawn once, then cached by name`},
+			build: func() demoWidget { return newAvatarDemo() },
 		},
 		{
 			name: "Spinner", group: "feedback", summary: "An animated indicator; 18 named animations to choose from.",
@@ -331,22 +314,4 @@ func layoutEntries() []entry {
 			},
 		},
 	}
-}
-
-// avatarNames are the names the Avatar entry cycles through.
-var avatarNames = []string{"ada", "grace", "linus", "ken", "margaret", "dennis", "barbara", "alan"}
-
-// avatarKeys moves the Avatar entry's state, a name index with the expression
-// times a hundred: Left and Right change the name, E the expression.
-func avatarKeys(state int, k tui.Key) int {
-	name, expr := state%100, state/100
-	switch {
-	case k.Type == tui.KeyRight:
-		name = (name + 1) % len(avatarNames)
-	case k.Type == tui.KeyLeft:
-		name = (name + len(avatarNames) - 1) % len(avatarNames)
-	case k.Type == tui.KeyRunes && strings.EqualFold(k.Text, "e"):
-		expr = (expr + 1) % (int(avatar.ExpressionSick) + 1)
-	}
-	return expr*100 + name
 }

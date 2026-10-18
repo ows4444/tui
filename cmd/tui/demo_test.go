@@ -282,23 +282,61 @@ func TestTheSpinnerAnimatesAndTheThemeReachesTheWidget(t *testing.T) {
 }
 
 func TestTheAvatarEntryChangesNameAndExpression(t *testing.T) {
-	s := tuitest.New(newDemoApp(demoEntries(), "Avatar"), 100, 28)
-	defer s.Close()
-	first := screenText(s)
-	if !strings.Contains(first, "ada") && !strings.Contains(first, "happy") && !strings.Contains(first, "round") && !strings.Contains(first, "organic") {
-		t.Logf("first screen:\n%s", first)
+	w := tui.Model(newAvatarDemo())
+	w, _ = w.Update(tui.Key{Type: tui.KeyRight})
+	if got := w.(avatarDemo).m.Name; got != avatarNames[1] {
+		t.Errorf("Right went to %q", got)
 	}
-	if !strings.Contains(first, "avatar.New") {
-		t.Fatalf("the Avatar entry is not shown:\n%s", first)
+	w, _ = w.Update(tui.Key{Type: tui.KeyLeft})
+	w, _ = w.Update(tui.Key{Type: tui.KeyLeft})
+	if got := w.(avatarDemo).m.Name; got != avatarNames[len(avatarNames)-1] {
+		t.Errorf("Left from the first name went to %q", got)
 	}
-	if got := avatarKeys(0, tui.Key{Type: tui.KeyRight}); got != 1 {
-		t.Errorf("Right moved to name %d", got)
+	w, cmd := w.Update(tui.Key{Type: tui.KeyRunes, Text: "e"})
+	if w.(avatarDemo).m.Expression == 0 || cmd == nil {
+		t.Error("E did not change the expression")
 	}
-	if got := avatarKeys(0, tui.Key{Type: tui.KeyLeft}); got != len(avatarNames)-1 {
-		t.Errorf("Left from the first name went to %d", got)
+}
+
+// The mouse is for the list first: a click selects a row, the wheel moves the
+// cursor, and the pointer and a click reach the avatar where it is drawn.
+func TestTheMouseDrivesTheListAndTheAvatar(t *testing.T) {
+	a := newDemoApp(demoEntries(), "")
+	a.Update(tui.ResizeMsg{Width: 100, Height: 28})
+	at := func(name string) int {
+		for pos, i := range a.shown {
+			if a.entries[i].name == name {
+				return pos
+			}
+		}
+		t.Fatalf("no %s", name)
+		return 0
 	}
-	if got := avatarKeys(5, tui.Key{Type: tui.KeyRunes, Text: "e"}); got != 105 {
-		t.Errorf("E gave state %d, want 105", got)
+	a.Update(tui.MouseEvent{X: 3, Y: 2 + at("Avatar") - a.top, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
+	if a.entries[a.shown[a.cursor]].name != "Avatar" || a.inDemo {
+		t.Fatalf("a click on a row selected %q (inDemo %v)", a.entries[a.shown[a.cursor]].name, a.inDemo)
+	}
+	was := a.cursor
+	a.Update(tui.MouseEvent{X: 3, Y: 3, Button: tui.MouseButtonWheelUp, Action: tui.MouseActionPress})
+	if a.cursor != was-1 {
+		t.Errorf("the wheel moved the cursor to %d from %d", a.cursor, was)
+	}
+	a.Update(tui.MouseEvent{X: 3, Y: 2 + at("Avatar") - a.top, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
+
+	// Over the avatar: the summary wraps to some lines, then a blank, then it.
+	lines := strings.Count(ansi.Wrap(a.entries[a.liveOf].summary, 100-demoListW-3), "\n") + 1
+	x, y := demoListW+4, 1+lines+1+3
+	_, cmd := a.Update(tui.MouseEvent{X: x, Y: y, Action: tui.MouseActionMotion})
+	if !a.live.(avatarDemo).m.Idling() || cmd == nil {
+		t.Fatal("the pointer over the avatar did not wake it")
+	}
+	a.Update(tui.MouseEvent{X: x, Y: y, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
+	if !a.live.(avatarDemo).m.Reacting() || !a.inDemo {
+		t.Error("a click on the avatar did not make it react and take the keys")
+	}
+	a.Update(tui.MouseEvent{X: 60, Y: 25, Action: tui.MouseActionMotion})
+	if a.live.(avatarDemo).m.Idling() {
+		t.Error("the pointer leaving left the avatar awake")
 	}
 }
 
