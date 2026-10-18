@@ -892,7 +892,7 @@ const (
 	ToneBright
 	ToneInk
 )
-const MaxPNGSize = 512
+const MaxPNGSize = 256
 const ReactHold = 1500 * time.Millisecond
 func (a Accessory) String() string
 func (e Expression) String() string

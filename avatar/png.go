@@ -9,9 +9,10 @@ import (
 	"github.com/ows4444/tui/ansi"
 )
 
-// MaxPNGSize is the largest side, in pixels, PNG draws; a larger size is
+// MaxPNGSize is the largest side, in pixels, PNG draws (a 256 pixel image is
+// about 11 ms cold; a terminal cell is rarely more than 20 pixels); a larger size is
 // drawn at this one.
-const MaxPNGSize = 512
+const MaxPNGSize = 256
 
 // PNG returns the avatar as a square PNG image, size pixels on a side, with
 // smooth edges and a transparent background where there is no plate. Like
