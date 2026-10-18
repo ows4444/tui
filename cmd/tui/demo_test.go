@@ -8,6 +8,7 @@ import (
 
 	"github.com/ows4444/tui"
 	"github.com/ows4444/tui/ansi"
+	"github.com/ows4444/tui/button"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/tuitest"
 )
@@ -358,4 +359,44 @@ func TestTheAvatarEntryIsAnImageWhereTheTerminalDrawsImages(t *testing.T) {
 	if !strings.Contains(build(), "1337;File") {
 		t.Error("no inline image on iTerm")
 	}
+}
+
+func TestSmallPiecesOfTheCommand(t *testing.T) {
+	if shorten("short", 10) != "short" || shorten("abcdefghij", 4) != "abcd..." {
+		t.Error("shorten")
+	}
+	if (&exitError{code: 2, msg: "no"}).Error() != "no" || usageError("use it\n").Error() != "use it\n" {
+		t.Error("error texts")
+	}
+	for _, w := range []tui.Model{custom{}, newAvatarDemo(), newLive(button.New("x"))} {
+		if w.Init() != nil {
+			t.Errorf("%T: Init should do nothing", w)
+		}
+	}
+}
+
+func TestTheMouseIsIgnoredWhereItMeansNothing(t *testing.T) {
+	a := newDemoApp(demoEntries(), "")
+	a.Update(tui.MouseEvent{X: 3, Y: 3, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress}) // before any size
+	a.Update(tui.ResizeMsg{Width: 100, Height: 28})
+	cursor := a.cursor
+	for _, ev := range []tui.MouseEvent{
+		{X: 3, Y: 0, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress},       // the border
+		{X: 3, Y: 2 + 999, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress}, // below the last row
+		{X: 3, Y: 3, Button: tui.MouseButtonRight, Action: tui.MouseActionPress},      // another button
+		{X: 3, Y: 3, Action: tui.MouseActionMotion},                                   // moving
+		{X: 60, Y: 5, Button: tui.MouseButtonWheelDown, Action: tui.MouseActionPress}, // the wheel over the widget
+	} {
+		a.Update(ev)
+		if a.cursor != cursor {
+			t.Errorf("%+v moved the cursor", ev)
+		}
+	}
+	a.Update(tui.MouseEvent{X: 3, Y: 3, Button: tui.MouseButtonWheelDown, Action: tui.MouseActionPress})
+	if a.cursor != cursor+1 {
+		t.Errorf("the wheel over the list moved the cursor to %d", a.cursor)
+	}
+	empty := newDemoApp(nil, "")
+	empty.Update(tui.ResizeMsg{Width: 100, Height: 28})
+	empty.Update(tui.MouseEvent{X: 60, Y: 5, Button: tui.MouseButtonLeft, Action: tui.MouseActionPress})
 }

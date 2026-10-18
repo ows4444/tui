@@ -25,6 +25,7 @@ import (
 
 const (
 	settleQuiet   = 25 * time.Millisecond
+	settleFrame   = 250 * time.Millisecond
 	settleTimeout = 5 * time.Second
 )
 
@@ -59,6 +60,7 @@ type Session struct {
 	quit    chan struct{}
 	done    chan struct{}
 	updates atomic.Int64 // every Update, whatever caused it: settle's quiet check
+	viewed  atomic.Int64 // updates at the last View call: settle waits for the frame of the last Update
 	// quitting is set once a Cmd has returned tui.Quit: the program is on its
 	// way out, and settle waits for it to exit, not for quiet.
 	quitting atomic.Bool
@@ -192,6 +194,7 @@ func (h *host) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 }
 
 func (h *host) View() string {
+	defer h.s.viewed.Store(h.s.updates.Load())
 	if !h.sized {
 		return ""
 	}
@@ -249,17 +252,22 @@ func (s *Session) settle(n *atomic.Int64, want int64) {
 		case <-time.After(time.Millisecond):
 		}
 	}
-	lastU, lastW := int64(-1), -1
+	lastU, lastW, lastV := int64(-1), -1, int64(-1)
 	quietSince := time.Now()
 	for time.Now().Before(deadline) {
 		s.mu.Lock()
 		w := s.writes
 		s.mu.Unlock()
-		u := s.updates.Load()
-		if u != lastU || w != lastW {
-			lastU, lastW, quietSince = u, w, time.Now()
+		u, v := s.updates.Load(), s.viewed.Load()
+		if u != lastU || w != lastW || v != lastV {
+			lastU, lastW, lastV, quietSince = u, w, v, time.Now()
 		} else if time.Since(quietSince) >= settleQuiet && !s.quitting.Load() {
-			return
+			// The frame of the last Update has not been asked for yet: on a
+			// slow machine the render lags the Update by more than the quiet
+			// time. Wait for it, but not for ever: a Program may skip a View.
+			if v >= u || time.Since(quietSince) >= settleFrame {
+				return
+			}
 		}
 		select {
 		case <-s.done:
