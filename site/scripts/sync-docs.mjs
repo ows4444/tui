@@ -281,7 +281,7 @@ const EXAMPLE_CATEGORIES = [
 	{ id: 'data', title: 'Lists, tables and dashboards', blurb: 'Browsing, filtering and watching data: tables, trees, charts, logs and queries.', names: ['files', 'csvedit', 'jsonx', 'pkgs', 'launcher', 'procmon', 'sqlbrowse', 'logtail', 'weather', 'charts', 'dashboard'] },
 	{ id: 'text', title: 'Text and documents', blurb: 'Reading and editing: a pager, a notepad, markdown, source code and bytes.', names: ['pager', 'notepad', 'mdstudio', 'codebrowse', 'docsreader', 'hexedit'] },
 	{ id: 'apps', title: 'Apps and games', blurb: 'Programs that are mostly mouse: dragging cards, drawing, a snake, a mine field and an animated splash.', names: ['kanban', 'paint', 'snake', 'minesweeper', 'fireandfx'] },
-	{ id: 'shell', title: 'Layout, shell and tools', blurb: 'Split panes, screens with a back button, chat and agent shells, and the workbenches for layout, themes and input.', names: ['workspace', 'routerapp', 'chat', 'codeagent', 'layoutlab', 'themestudio', 'inputlab', 'probe'] },
+	{ id: 'shell', title: 'Layout, shell and tools', blurb: 'Split panes, screens with a back button, chat and agent shells, and the workbenches for layout, themes and input.', names: ['workspace', 'desktop', 'routerapp', 'chat', 'codeagent', 'layoutlab', 'themestudio', 'inputlab', 'probe'] },
 	{ id: 'inline', title: 'Inline mode', blurb: 'Programs that draw in the normal scrollback instead of the alternate screen; their first frame is small by design.', names: ['survey', 'buildstatus'] },
 ];
 
