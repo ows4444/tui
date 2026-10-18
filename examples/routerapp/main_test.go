@@ -349,3 +349,20 @@ func TestAvatarFollowsTheMouse(t *testing.T) {
 		t.Error("moving away left the avatar awake")
 	}
 }
+
+// On a terminal that draws images the avatar is an image; elsewhere it is cells.
+func TestAvatarIsAnImageWhereTheTerminalDrawsImages(t *testing.T) {
+	m := openOrder(ready())
+	m, _ = key(m, tui.KeyEsc)
+	if strings.Contains(m.View(), "1337;File") {
+		t.Error("an image was sent before the terminal said it draws them")
+	}
+	m, _ = update(m, tui.CapabilitiesMsg{Capabilities: tui.Capabilities{InlineImages: true}})
+	if !strings.Contains(m.View(), "1337;File") {
+		t.Errorf("no inline image on iTerm:\n%s", text(m))
+	}
+	m, _ = update(m, tui.CapabilitiesMsg{Capabilities: tui.Capabilities{KittyGraphics: true}})
+	if !strings.Contains(m.View(), "\x1b_G") {
+		t.Error("no kitty image on kitty")
+	}
+}

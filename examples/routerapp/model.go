@@ -68,7 +68,8 @@ type model struct {
 	toasts    []toast
 	ticking   bool
 	hover     string
-	faceModel avatar.Model // the open customer's avatar, kept so its animation survives frames
+	caps      tui.Capabilities // what the terminal can draw, once the probe answers
+	faceModel avatar.Model     // the open customer's avatar, kept so its animation survives frames
 	help      bool
 
 	width, height int
@@ -173,6 +174,9 @@ func (m model) Update(msg tui.Msg) (tui.Model, tui.Cmd) {
 		return m.key(msg)
 	case tui.MouseEvent:
 		return m.mouse(msg)
+	case tui.CapabilitiesMsg:
+		m.caps = msg.Capabilities
+		return m, nil
 	}
 	// Whatever else arrives may be a tick of the avatar's animation.
 	var cmd tui.Cmd

@@ -5,6 +5,7 @@ import (
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/avatar"
+	"github.com/ows4444/tui/imageview"
 	"github.com/ows4444/tui/layout"
 	"github.com/ows4444/tui/theme"
 	"github.com/ows4444/tui/widgets"
@@ -96,6 +97,9 @@ func sectionOf(k kind) int {
 // faceW and faceH are the cells of a customer's avatar.
 const faceW, faceH = 8, 4
 
+// faceImage is the side, in pixels, of the avatar drawn as an image.
+const faceImage = 128
+
 // face is the avatar of the customer on route r: drawn from the name, so the
 // same customer always looks the same, and smiling once starred. It sits beside
 // the name, so a screen reader is not told the name twice.
@@ -103,7 +107,15 @@ func (m model) face(r route, th theme.Theme) string {
 	if r.kind != rCustomer {
 		return ""
 	}
-	return m.avatarOf(r).SetTheme(th).View()
+	a := m.avatarOf(r).SetTheme(th)
+	if c := m.caps; c.KittyGraphics || c.InlineImages || c.Sixel {
+		// A terminal that draws images gets the smooth picture; the PNG is
+		// cached by what it shows, so only a changed pose is drawn again.
+		img := imageview.New(a.PNG(faceImage), faceW, faceH, a.Linearize())
+		img.Kitty, img.Inline, img.Sixel = c.KittyGraphics, !c.KittyGraphics && c.InlineImages, !c.KittyGraphics && !c.InlineImages && c.Sixel
+		return img.View()
+	}
+	return a.View()
 }
 
 // avatarOf is the kept avatar if it is the customer's, else a fresh one placed
