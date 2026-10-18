@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -457,6 +458,9 @@ func TestEveryWidgetSanitisesCallerText(t *testing.T) {
 		}
 		if build == nil {
 			continue
+		}
+		if pkg == "termpane" && runtime.GOOS != "linux" && runtime.GOOS != "darwin" {
+			continue // an embedded terminal needs a pty, which only these two have
 		}
 		outs := build()
 		rendered := false

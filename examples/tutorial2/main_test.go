@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/tuitest"
@@ -29,6 +30,8 @@ func TestSearchAndFinishATask(t *testing.T) {
 		t.Fatalf("the list was not narrowed:\n%s", got)
 	}
 	s.Keys("down", "enter") // second match: "write tests"
+	// The toggle arrives as a message the picker's Cmd sends, so wait for it.
+	s.WaitForText("2 of 3 left", 5*time.Second)
 	got = screen(s)
 	if !strings.Contains(got, "[x] write tests") || !strings.Contains(got, "2 of 3 left") {
 		t.Fatalf("after marking:\n%s", got)
