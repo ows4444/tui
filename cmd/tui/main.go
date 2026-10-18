@@ -82,7 +82,7 @@ var name = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9._-]*$`)
 // run is main with its arguments and output made explicit, for tests.
 func run(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	switch args[0] {
 	case "new":
@@ -99,7 +99,7 @@ func run(args []string, out io.Writer) error {
 		return runColors(args[1:], out)
 	case "borders":
 		if len(args) != 1 {
-			return errors.New(usage)
+			return usageError(usage)
 		}
 		return runBorders(out)
 	case "easings":
@@ -113,7 +113,7 @@ func run(args []string, out io.Writer) error {
 	case "demo":
 		return runDemo(args[1:], out)
 	}
-	return errors.New(usage)
+	return usageError(usage)
 }
 
 // runNew scaffolds a program: tui new [-module path] <dir>.
@@ -125,7 +125,7 @@ func runNew(args []string, out io.Writer) error {
 		return fmt.Errorf("%v\n%s", err, usage)
 	}
 	if fs.NArg() != 1 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	dir := fs.Arg(0)
 	base := filepath.Base(filepath.Clean(dir))
@@ -167,3 +167,10 @@ func render(path, name string, data any) error {
 	}
 	return err
 }
+
+// usageError is the usage text of a command, returned as the error when the
+// arguments are wrong. It is a block of text that ends in a newline, which an
+// error string by convention does not.
+type usageError string
+
+func (u usageError) Error() string { return string(u) }

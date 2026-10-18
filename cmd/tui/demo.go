@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -357,9 +356,8 @@ func (a *demoApp) scroll() {
 }
 
 var (
-	dim   = ansi.NewStyle().Faint()
-	bold  = ansi.NewStyle().Bold()
-	reset = ansi.Reset
+	dim  = ansi.NewStyle().Faint()
+	bold = ansi.NewStyle().Bold()
 )
 
 func (a *demoApp) View() string {
@@ -454,7 +452,7 @@ func runDemo(args []string, out io.Writer) error {
 		return fmt.Errorf("%v\n%s", err, usage)
 	}
 	if fs.NArg() > 1 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	entries := demoEntries()
 	if *list {

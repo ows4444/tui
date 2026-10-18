@@ -45,7 +45,7 @@ const promptUsage = `usage: tui prompt input [-placeholder s] [-default s] <labe
 // drawn on standard error and reads the terminal.
 func runPrompt(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New(promptUsage)
+		return usageError(promptUsage)
 	}
 	kind, rest := args[0], args[1:]
 	fs := flag.NewFlagSet("prompt "+kind, flag.ContinueOnError)
@@ -58,14 +58,14 @@ func runPrompt(args []string, out io.Writer) error {
 	case "spin":
 		return runSpin(rest)
 	default:
-		return errors.New(promptUsage)
+		return usageError(promptUsage)
 	}
 	if err := fs.Parse(rest); err != nil {
 		return fmt.Errorf("%v\n%s", err, promptUsage)
 	}
 	pos := fs.Args()
 	if len(pos) == 0 {
-		return errors.New(promptUsage)
+		return usageError(promptUsage)
 	}
 	label, choices := pos[0], pos[1:]
 	cfg := prompt.Config{Program: ui(), Placeholder: *placeholder, Default: *def}
@@ -89,7 +89,7 @@ func runPrompt(args []string, out io.Writer) error {
 		}
 	case "select":
 		if len(choices) == 0 {
-			return errors.New(promptUsage)
+			return usageError(promptUsage)
 		}
 		var i int
 		if i, err = prompt.Select(label, choices, cfg); err == nil {
@@ -97,7 +97,7 @@ func runPrompt(args []string, out io.Writer) error {
 		}
 	case "multiselect":
 		if len(choices) == 0 {
-			return errors.New(promptUsage)
+			return usageError(promptUsage)
 		}
 		var is []int
 		if is, err = prompt.MultiSelect(label, choices, cfg); err == nil {
@@ -117,7 +117,7 @@ func runPrompt(args []string, out io.Writer) error {
 func runSpin(args []string) error {
 	label, command, ok := splitDash(args)
 	if !ok || len(command) == 0 {
-		return errors.New(promptUsage)
+		return usageError(promptUsage)
 	}
 	var captured strings.Builder
 	code := 0

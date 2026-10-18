@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -17,7 +16,7 @@ func runKeys(args []string, out io.Writer) error {
 		return runKeyViewer()
 	}
 	if len(args) != 2 || args[0] != "check" {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	fh, err := os.Open(args[1]) // #nosec G304 G703 -- the file the user named
 	if err != nil {

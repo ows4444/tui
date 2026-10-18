@@ -53,7 +53,7 @@ func runDev(args []string, out io.Writer, stop <-chan struct{}) error {
 	}
 	if len(rest) > 0 {
 		if rest[0] != "--" {
-			return errors.New(usage)
+			return usageError(usage)
 		}
 		rest = rest[1:]
 	}

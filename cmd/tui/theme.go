@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -13,12 +12,12 @@ import (
 // runTheme runs `tui theme check [-min ratio] <file.json>` and `tui theme list`.
 func runTheme(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	switch args[0] {
 	case "list":
 		if len(args) != 1 {
-			return errors.New(usage)
+			return usageError(usage)
 		}
 		for _, n := range theme.PresetNames() {
 			fmt.Fprintln(out, n)
@@ -27,7 +26,7 @@ func runTheme(args []string, out io.Writer) error {
 	case "check":
 		return checkTheme(args[1:], out)
 	}
-	return errors.New(usage)
+	return usageError(usage)
 }
 
 // checkTheme parses a theme file and lists every text or accent role below the
@@ -40,7 +39,7 @@ func checkTheme(args []string, out io.Writer) error {
 		return fmt.Errorf("%v\n%s", err, usage)
 	}
 	if fs.NArg() != 1 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	fh, err := os.Open(fs.Arg(0)) // #nosec G304 -- the file the user named
 	if err != nil {

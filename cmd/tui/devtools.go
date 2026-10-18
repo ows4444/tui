@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -96,7 +95,7 @@ func runLog(args []string, out io.Writer, stop <-chan struct{}) error {
 		return fmt.Errorf("%v\n%s", err, usage)
 	}
 	if fs.NArg() != 1 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	path := fs.Arg(0)
 	fh, err := os.Open(path) // #nosec G304 -- the file the user named
@@ -170,7 +169,7 @@ func interrupted() (<-chan struct{}, func()) {
 // where it has one and its contrast against the background.
 func runColors(args []string, out io.Writer) error {
 	if len(args) > 1 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	names := theme.PresetNames()
 	if len(args) == 1 {
@@ -240,7 +239,7 @@ func runEasings(args []string, out io.Writer) error {
 		}
 		names = []string{args[0]}
 	} else if len(args) > 1 {
-		return errors.New(usage)
+		return usageError(usage)
 	}
 	sort.Strings(names)
 	const w, h = 24, 6
