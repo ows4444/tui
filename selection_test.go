@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ows4444/tui/ansi"
 	"github.com/ows4444/tui/input"
@@ -161,6 +162,15 @@ func TestSelectionClearsOnKeyAndPlainClicksPassThrough(t *testing.T) {
 	p.Send(altMouse(MouseActionMotion, 4, 0))
 	p.Send(altMouse(MouseActionRelease, 4, 0))
 	waitFor(t, func() bool { return strings.Contains(string(outBytes(p, out)), "\x1b[7m") })
+	// The frame that draws the selection may still be arriving: wait until the
+	// output has stopped growing, so what is checked below is the key's own frame.
+	for last, quiet := -1, 0; quiet < 5; time.Sleep(10 * time.Millisecond) {
+		if n := len(outBytes(p, out)); n == last {
+			quiet++
+		} else {
+			last, quiet = n, 0
+		}
+	}
 	mark := len(outBytes(p, out))
 	p.Send(Key{Type: KeyRunes, Text: "x"})
 	waitFor(t, func() bool { return len(outBytes(p, out)) > mark })
